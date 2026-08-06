@@ -100,6 +100,10 @@ export const checkPhone = (phone: string) =>
   client.get<{ available: boolean; phone_normalized?: string; reason?: string }>(
     `${AUTH}/auth/check-phone/${encodeURIComponent(phone)}`
   ).then((r) => r.data);
+export const forgotPassword = (phone: string) =>
+  client.post(`${AUTH}/auth/forgot-password`, { phone }).then((r) => r.data);
+export const resetPassword = (phone: string, code: string, new_password: string) =>
+  client.post(`${AUTH}/auth/reset-password`, { phone, code, new_password }).then((r) => r.data);
 
 /* ── Profile ──────────────────────────────────────── */
 export const getMyProfile = () => client.get(`${USER}/users/me`).then((r) => r.data);

@@ -60,7 +60,10 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-brand-grey-500 mt-6">
+        <p className="text-center text-sm text-brand-grey-500 mt-3">
+          <Link href="/forgot-password" className="text-brand-blue hover:underline">Umesahau password?</Link>
+        </p>
+        <p className="text-center text-sm text-brand-grey-500 mt-3">
           Huna akaunti?{' '}
           <Link href="/register" className="text-brand-orange font-semibold hover:underline">Jisajili sasa</Link>
         </p>
