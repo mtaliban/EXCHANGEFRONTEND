@@ -1,10 +1,12 @@
 import axios from 'axios';
 
-const AUTH = process.env.NEXT_PUBLIC_AUTH_API!;
-const USER = process.env.NEXT_PUBLIC_USER_API!;
-const LOC = process.env.NEXT_PUBLIC_LOCATION_API!;
-const MATCH = process.env.NEXT_PUBLIC_MATCH_API!;
-const MSG = process.env.NEXT_PUBLIC_MESSAGING_API!;
+const API = process.env.NEXT_PUBLIC_API_URL!;
+const AUTH = API;
+const USER = API;
+const LOC = API;
+const MATCH = API;
+const MSG = API;
+const ADMIN = API;
 
 const client = axios.create({ timeout: 20000 });
 
@@ -160,5 +162,18 @@ export const listCalls = () =>
 export const listContacts = () =>
   client.get(`${MSG}/messages/contacts`).then((r) => r.data);
 
+/* ── Admin ────────────────────────────────────────── */
+export const adminStats = () => client.get(`${ADMIN}/admin/stats`).then((r) => r.data);
+export const adminUsers = (params?: any) =>
+  client.get(`${ADMIN}/admin/users`, { params }).then((r) => r.data);
+export const adminMatches = (limit = 100) =>
+  client.get(`${ADMIN}/admin/matches`, { params: { limit } }).then((r) => r.data);
+export const adminEvents = (event_type?: string, limit = 100) =>
+  client.get(`${ADMIN}/admin/events`, { params: { event_type, limit } }).then((r) => r.data);
+export const adminGrant = (user_id: string) =>
+  client.post(`${ADMIN}/admin/users/${user_id}/grant-admin`).then((r) => r.data);
+export const adminRevoke = (user_id: string) =>
+  client.post(`${ADMIN}/admin/users/${user_id}/revoke-admin`).then((r) => r.data);
+
 export const MQTT_WS_URL = process.env.NEXT_PUBLIC_MQTT_WS || 'ws://localhost:9001';
-export const MSG_WS_URL = () => `${MSG.replace(/^http/, 'ws')}/ws`;
+export const MSG_WS_URL = () => `${API.replace(/^http/, 'ws')}/ws`;

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 
-const links = [
+const baseLinks = [
   { href: '/dashboard', label: 'Dashibodi', icon: '🏠' },
   { href: '/chats', label: 'Niliochart Nao', icon: '💬' },
   { href: '/contacts', label: 'Niliowasiliana Nao', icon: '📇' },
@@ -17,6 +17,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const links = (user as any)?.is_admin
+    ? [...baseLinks, { href: '/admin', label: 'Admin', icon: '👑' }]
+    : baseLinks;
 
   return (
     <div className="min-h-screen bg-brand-grey-50">

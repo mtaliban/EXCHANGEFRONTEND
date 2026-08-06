@@ -3,10 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   env: {
-    NEXT_PUBLIC_AUTH_API: process.env.NEXT_PUBLIC_AUTH_API || 'http://localhost:8001',
-    NEXT_PUBLIC_USER_API: process.env.NEXT_PUBLIC_USER_API || 'http://localhost:8002',
-    NEXT_PUBLIC_LOCATION_API: process.env.NEXT_PUBLIC_LOCATION_API || 'http://localhost:8003',
-    NEXT_PUBLIC_MATCH_API: process.env.NEXT_PUBLIC_MATCH_API || 'http://localhost:8004',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_MQTT_WS: process.env.NEXT_PUBLIC_MQTT_WS || 'ws://localhost:9001',
   },
 };
 
