@@ -14,7 +14,7 @@ describe('Step1Identity', () => {
     render(<Step1Identity initial={{}} onNext={onNext} />);
     fireEvent.change(screen.getByPlaceholderText(/Kieffer/i), { target: { value: 'Kieffer Madyedye' } });
     fireEvent.change(screen.getByPlaceholderText(/0712345678/i), { target: { value: '123' } });
-    fireEvent.change(screen.getAllByPlaceholderText(/password/i)[0], { target: { value: 'abcdef' } });
+    fireEvent.change(screen.getByPlaceholderText(/Angalau herufi 6/i), { target: { value: 'abcdef' } });
     fireEvent.change(screen.getByPlaceholderText(/Rudia password/i), { target: { value: 'abcdef' } });
     fireEvent.click(screen.getByText(/Endelea/i));
     expect(onNext).not.toHaveBeenCalled();
@@ -26,7 +26,7 @@ describe('Step1Identity', () => {
     render(<Step1Identity initial={{}} onNext={onNext} />);
     fireEvent.change(screen.getByPlaceholderText(/Kieffer/i), { target: { value: 'Kieffer Madyedye' } });
     fireEvent.change(screen.getByPlaceholderText(/0712345678/i), { target: { value: '0712345678' } });
-    fireEvent.change(screen.getAllByPlaceholderText(/password/i)[0], { target: { value: 'abcdef' } });
+    fireEvent.change(screen.getByPlaceholderText(/Angalau herufi 6/i), { target: { value: 'abcdef' } });
     fireEvent.change(screen.getByPlaceholderText(/Rudia password/i), { target: { value: 'abcdef' } });
     fireEvent.click(screen.getByText(/Endelea/i));
     expect(onNext).toHaveBeenCalledWith(expect.objectContaining({
