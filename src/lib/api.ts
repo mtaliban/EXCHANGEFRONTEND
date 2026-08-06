@@ -4,18 +4,24 @@ const AUTH = process.env.NEXT_PUBLIC_AUTH_API!;
 const USER = process.env.NEXT_PUBLIC_USER_API!;
 const LOC = process.env.NEXT_PUBLIC_LOCATION_API!;
 const MATCH = process.env.NEXT_PUBLIC_MATCH_API!;
+const MSG = process.env.NEXT_PUBLIC_MESSAGING_API!;
 
-const client = axios.create({ timeout: 15000 });
+const client = axios.create({ timeout: 20000 });
 
 client.interceptors.request.use((cfg) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('kv_token');
-    if (token) cfg.headers.Authorization = `Bearer ${token}`;
+    const raw = localStorage.getItem('kv_auth');
+    if (raw) {
+      try {
+        const token = JSON.parse(raw)?.state?.token;
+        if (token) cfg.headers.Authorization = `Bearer ${token}`;
+      } catch {}
+    }
   }
   return cfg;
 });
 
-/* ── Location cascading dropdowns ───────────────────── */
+/* ── Location cascading ────────────────────────────── */
 export interface Region { id: number; name: string; }
 export interface District { id: number; name: string; region_id: number; region_name: string; }
 export interface Facility {
@@ -32,10 +38,8 @@ export interface Subject { code: string; name: string; level: string; }
 
 export const getRegions = () =>
   client.get<Region[]>(`${LOC}/locations/regions`).then((r) => r.data);
-
 export const getDistricts = (regionId: number) =>
   client.get<District[]>(`${LOC}/locations/regions/${regionId}/districts`).then((r) => r.data);
-
 export const getFacilities = (
   districtId: number,
   category: 'health' | 'education',
@@ -45,16 +49,10 @@ export const getFacilities = (
   const params: any = { category };
   if (level) params.level = level;
   if (q) params.q = q;
-  return client
-    .get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params })
-    .then((r) => r.data);
+  return client.get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params }).then((r) => r.data);
 };
-
 export const getCadres = (category?: 'health' | 'education') =>
-  client
-    .get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined })
-    .then((r) => r.data);
-
+  client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined }).then((r) => r.data);
 export const getSubjects = () =>
   client.get<Subject[]>(`${LOC}/cadres/subjects`).then((r) => r.data);
 
@@ -82,28 +80,85 @@ export interface RegisterPayload {
   current_station: Station;
   desired_destinations: Destination[];
 }
-export interface RegisterResponse {
+export interface AuthResponse {
   user_id: string;
   full_name: string;
-  phone_primary: string;
-  category: string;
-  cadre_code: string;
+  phone_primary?: string;
+  category?: string;
+  cadre_code?: string;
   access_token: string;
   token_type: string;
 }
-
 export const register = (body: RegisterPayload) =>
-  client.post<RegisterResponse>(`${AUTH}/auth/register`, body).then((r) => r.data);
-
+  client.post<AuthResponse>(`${AUTH}/auth/register`, body).then((r) => r.data);
 export const login = (phone: string, password: string) =>
-  client.post<RegisterResponse>(`${AUTH}/auth/login`, { phone, password }).then((r) => r.data);
-
+  client.post<AuthResponse>(`${AUTH}/auth/login`, { phone, password }).then((r) => r.data);
+export const getMe = () => client.get(`${AUTH}/auth/me`).then((r) => r.data);
 export const checkPhone = (phone: string) =>
-  client
-    .get<{ available: boolean; phone_normalized?: string; reason?: string }>(
-      `${AUTH}/auth/check-phone/${encodeURIComponent(phone)}`
-    )
-    .then((r) => r.data);
+  client.get<{ available: boolean; phone_normalized?: string; reason?: string }>(
+    `${AUTH}/auth/check-phone/${encodeURIComponent(phone)}`
+  ).then((r) => r.data);
 
 /* ── Profile ──────────────────────────────────────── */
-export const getMe = () => client.get(`${USER}/users/me`).then((r) => r.data);
+export const getMyProfile = () => client.get(`${USER}/users/me`).then((r) => r.data);
+export const updateDestinations = (desired_destinations: Destination[]) =>
+  client.put(`${USER}/users/me/destinations`, { desired_destinations }).then((r) => r.data);
+export const updateStation = (current_station: Station) =>
+  client.put(`${USER}/users/me/station`, { current_station }).then((r) => r.data);
+
+/* ── Matches ─────────────────────────────────────── */
+export interface Candidate {
+  user_id: string;
+  full_name: string;
+  phone_primary: string;
+  cadre_display?: string;
+  current_station: any;
+  desired_destinations: any[];
+}
+export interface Match {
+  score: number;
+  candidate: Candidate;
+}
+export const getMatches = (params?: { region_id?: number; district_id?: number; facility_id?: string }) =>
+  client.get<{ total: number; filtered: number; matches: Match[] }>(`${MATCH}/matches/me`, { params }).then((r) => r.data);
+export const getMatchStats = () =>
+  client.get(`${MATCH}/matches/stats`).then((r) => r.data);
+
+/* ── Messaging ───────────────────────────────────── */
+export interface Conversation {
+  conversation_id: string;
+  with_user_id: string;
+  with_full_name: string;
+  with_phone?: string;
+  with_cadre?: string;
+  with_station?: any;
+  last_message_at?: string;
+  last_message_text?: string;
+  last_message_from?: string;
+  unread: number;
+}
+export interface ChatMessage {
+  message_id: string;
+  from_user_id: string;
+  to_user_id: string;
+  text: string;
+  created_at: string;
+  is_read: boolean;
+}
+export const listConversations = () =>
+  client.get<Conversation[]>(`${MSG}/messages/conversations`).then((r) => r.data);
+export const chatHistory = (otherUserId: string) =>
+  client.get<{ conversation_id: string; messages: ChatMessage[] }>(`${MSG}/messages/with/${otherUserId}`).then((r) => r.data);
+export const sendMessage = (to_user_id: string, text: string) =>
+  client.post(`${MSG}/messages`, { to_user_id, text }).then((r) => r.data);
+export const markRead = (otherUserId: string) =>
+  client.post(`${MSG}/messages/mark-read/${otherUserId}`).then((r) => r.data);
+export const logCall = (to_user_id: string, outcome: string = 'initiated') =>
+  client.post(`${MSG}/messages/call`, { to_user_id, outcome }).then((r) => r.data);
+export const listCalls = () =>
+  client.get(`${MSG}/messages/calls`).then((r) => r.data);
+export const listContacts = () =>
+  client.get(`${MSG}/messages/contacts`).then((r) => r.data);
+
+export const MQTT_WS_URL = process.env.NEXT_PUBLIC_MQTT_WS || 'ws://localhost:9001';
+export const MSG_WS_URL = () => `${MSG.replace(/^http/, 'ws')}/ws`;

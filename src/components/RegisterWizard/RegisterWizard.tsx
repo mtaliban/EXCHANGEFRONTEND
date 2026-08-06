@@ -8,6 +8,7 @@ import Step3Station from './Step3Station';
 import Step4Destinations from './Step4Destinations';
 import type { RegisterPayload } from '@/lib/api';
 import { register } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 
 type WizardData = Partial<RegisterPayload> & { subjects: string[] };
 
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export default function RegisterWizard({ onComplete }: Props) {
+  const setAuth = useAuth((s) => s.setAuth);
   const [step, setStep] = useState(1);
   const [data, setData] = useState<WizardData>({ subjects: [], desired_destinations: [] });
   const [submitting, setSubmitting] = useState(false);
@@ -45,9 +47,13 @@ export default function RegisterWizard({ onComplete }: Props) {
     setError(null);
     try {
       const res = await register(merged as RegisterPayload);
-      localStorage.setItem('kv_token', res.access_token);
-      localStorage.setItem('kv_user_id', res.user_id);
-      localStorage.setItem('kv_full_name', res.full_name);
+      setAuth(res.access_token, {
+        user_id: res.user_id,
+        full_name: res.full_name,
+        phone_primary: res.phone_primary || merged.phone_primary!,
+        category: (res.category as any) || merged.category,
+        cadre_code: res.cadre_code || merged.cadre_code,
+      });
       onComplete({ user_id: res.user_id, full_name: res.full_name });
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
