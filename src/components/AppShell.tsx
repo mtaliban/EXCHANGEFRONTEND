@@ -7,8 +7,8 @@ import { useAuth } from '@/lib/auth';
 
 const links = [
   { href: '/dashboard', label: 'Dashibodi', icon: '🏠' },
-  { href: '/chats', label: 'Mazungumzo', icon: '💬' },
-  { href: '/contacts', label: 'Watu', icon: '👥' },
+  { href: '/chats', label: 'Niliochart Nao', icon: '💬' },
+  { href: '/contacts', label: 'Niliowasiliana Nao', icon: '📇' },
   { href: '/profile', label: 'Wasifu', icon: '👤' },
   { href: '/donate', label: 'Changia', icon: '💝' },
 ];
