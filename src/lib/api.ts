@@ -187,5 +187,21 @@ export const adminUpdateUser = (user_id: string, changes: any) =>
 export const adminDeleteUser = (user_id: string) =>
   client.delete(`${ADMIN}/admin/users/${user_id}`).then((r) => r.data);
 
+/* ── Payments (Selcom) ───────────────────────────── */
+export interface PaymentInitiate {
+  amount: number;
+  method: 'mixx' | 'selcom' | 'airtel' | 'mpesa' | 'halopesa' | 'card';
+  phone?: string;
+  purpose?: string;
+}
+export const initiatePayment = (body: PaymentInitiate) =>
+  client.post(`${API}/payments/initiate`, body).then((r) => r.data);
+export const getPaymentStatus = (order_id: string) =>
+  client.get(`${API}/payments/status/${order_id}`).then((r) => r.data);
+export const myPayments = () =>
+  client.get(`${API}/payments/my-history`).then((r) => r.data);
+export const adminAllPayments = (status?: string) =>
+  client.get(`${API}/payments/admin/all`, { params: status ? { status } : {} }).then((r) => r.data);
+
 export const MQTT_WS_URL = process.env.NEXT_PUBLIC_MQTT_WS || 'ws://localhost:9001';
 export const MSG_WS_URL = () => `${API.replace(/^http/, 'ws')}/ws`;
