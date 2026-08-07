@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { getMatches, getMatchStats, logCall, type Match } from '@/lib/api';
 import { useMqttTopics } from '@/lib/useLiveEvents';
+import OnlineNowWidget from '@/components/OnlineNowWidget';
+import { useLive } from '@/lib/liveSocket';
 
 type Tab = 'all' | 'region' | 'district' | 'facility';
 
@@ -70,6 +72,15 @@ export default function DashboardPage() {
         <StatCard color="orange" label="Mikoa Inayohusika" value={stats?.by_region?.length ?? 0} />
         <StatCard color="red" label="Wilaya Inayohusika" value={stats?.by_district?.length ?? 0} />
         <StatCard color="gold" label="Vituo Mahsusi" value={stats?.by_facility?.length ?? 0} />
+      </div>
+
+      {/* Online now — small widget */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-1"><OnlineNowWidget /></div>
+        <div className="md:col-span-2 card">
+          <h3 className="font-bold text-brand-grey-900 mb-2">Live Events (WebSocket)</h3>
+          <LiveEventsList />
+        </div>
       </div>
 
       {/* Filter tabs */}
@@ -142,6 +153,40 @@ export default function DashboardPage() {
         <div className="space-y-2">
           {matches.map((m) => <MatchCard key={m.candidate.user_id} match={m} />)}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function LiveEventsList() {
+  const [events, setEvents] = useState<{ type: string; at: number; text: string }[]>([]);
+  const { subscribe, connected } = useLive();
+  useEffect(() => {
+    const un = subscribe('*', (p: any) => {
+      const type = p.event || p.type || 'unknown';
+      if (type === 'pong') return;
+      const text = type === 'match.found' ? `Match: ${p.candidate?.full_name || ''}` :
+                   type === 'message.sent' ? `Ujumbe kutoka ${p.from_full_name || ''}` :
+                   type === 'typing' ? `Typing: ${p.from_user_id}` :
+                   type === 'call.initiated' ? `Simu kutoka ${p.from_full_name || ''}` : type;
+      setEvents((prev) => [{ type, at: Date.now(), text }, ...prev].slice(0, 8));
+    });
+    return () => un();
+  }, [subscribe]);
+  return (
+    <div>
+      <div className={`text-xs mb-2 ${connected ? 'text-green-600' : 'text-brand-grey-500'}`}>
+        {connected ? '🟢 WebSocket connected' : '⚪ Not connected'}
+      </div>
+      {events.length === 0 && <div className="text-brand-grey-500 text-sm">Hakuna events bado…</div>}
+      <div className="space-y-1">
+        {events.map((e, i) => (
+          <div key={i} className="text-xs flex items-center gap-2 py-1">
+            <span className="badge-gold text-[10px]">{e.type}</span>
+            <span className="text-brand-grey-700 flex-1 truncate">{e.text}</span>
+            <span className="text-brand-grey-400 text-[10px]">{new Date(e.at).toLocaleTimeString('sw-TZ')}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

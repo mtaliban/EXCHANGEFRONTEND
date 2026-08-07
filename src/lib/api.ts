@@ -107,6 +107,10 @@ export const resetPassword = (phone: string, code: string, new_password: string)
 
 /* ── Profile ──────────────────────────────────────── */
 export const getMyProfile = () => client.get(`${USER}/users/me`).then((r) => r.data);
+export const getUserById = (userId: string) => client.get(`${USER}/users/${userId}`).then((r) => r.data);
+export const listOnlineUsers = () => client.get(`${USER}/users/online`).then((r) => r.data);
+export const recentlyActive = (minutes = 60) =>
+  client.get(`${USER}/users/recently-active`, { params: { minutes } }).then((r) => r.data);
 export const updateDestinations = (desired_destinations: Destination[]) =>
   client.put(`${USER}/users/me/destinations`, { desired_destinations }).then((r) => r.data);
 export const updateStation = (current_station: Station) =>
@@ -178,6 +182,10 @@ export const adminGrant = (user_id: string) =>
   client.post(`${ADMIN}/admin/users/${user_id}/grant-admin`).then((r) => r.data);
 export const adminRevoke = (user_id: string) =>
   client.post(`${ADMIN}/admin/users/${user_id}/revoke-admin`).then((r) => r.data);
+export const adminUpdateUser = (user_id: string, changes: any) =>
+  client.patch(`${ADMIN}/admin/users/${user_id}`, changes).then((r) => r.data);
+export const adminDeleteUser = (user_id: string) =>
+  client.delete(`${ADMIN}/admin/users/${user_id}`).then((r) => r.data);
 
 export const MQTT_WS_URL = process.env.NEXT_PUBLIC_MQTT_WS || 'ws://localhost:9001';
 export const MSG_WS_URL = () => `${API.replace(/^http/, 'ws')}/ws`;

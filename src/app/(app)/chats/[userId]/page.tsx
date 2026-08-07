@@ -4,11 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { formatDistanceToNowStrict } from 'date-fns';
-import { chatHistory, sendMessage, logCall, type ChatMessage } from '@/lib/api';
+import { chatHistory, sendMessage, logCall, getUserById, type ChatMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
-
-const API = process.env.NEXT_PUBLIC_API_URL!;
 
 export default function ChatViewPage() {
   const params = useParams<{ userId: string }>();
@@ -25,22 +23,20 @@ export default function ChatViewPage() {
   const typingTimerRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load history + other user info
+  // Load history + full other user profile (name, phone, cadre, online)
   useEffect(() => {
     (async () => {
       try {
-        const [hist, presence] = await Promise.all([
+        const [hist, profile] = await Promise.all([
           chatHistory(otherUserId),
-          axios.get(`${API}/messages/presence/${otherUserId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }).then((r) => r.data).catch(() => null),
+          getUserById(otherUserId).catch(() => null),
         ]);
         setMessages(hist.messages);
-        if (presence) setOther((prev: any) => ({ ...prev, ...presence }));
+        if (profile) setOther(profile);
       } catch {}
     })();
     // eslint-disable-next-line
-  }, [otherUserId, token]);
+  }, [otherUserId]);
 
   // Subscribe to WS events for this specific conversation
   useEffect(() => {
@@ -93,9 +89,9 @@ export default function ChatViewPage() {
   }
 
   async function call() {
+    if (!other?.phone_primary) return;
     try { await logCall(otherUserId, 'initiated'); } catch {}
-    const phone = other?.phone_primary || prompt('Namba ya simu:');
-    if (phone) window.location.href = `tel:${phone}`;
+    window.location.href = `tel:${other.phone_primary}`;
   }
 
   const online = isOnline(otherUserId) || other?.online;
@@ -127,9 +123,12 @@ export default function ChatViewPage() {
             ) : ''}
           </div>
         </div>
-        <a href={other?.phone_primary ? `tel:${other.phone_primary}` : '#'}
-           onClick={call}
-           className="p-2 hover:bg-white/10 rounded-full text-xl" title="Piga simu">📞</a>
+        <button onClick={call}
+           disabled={!other?.phone_primary}
+           className="p-2 hover:bg-white/10 rounded-full text-xl disabled:opacity-50"
+           title={other?.phone_primary ? `Piga: ${other.phone_primary}` : 'Inasubiri phone...'}>
+          📞
+        </button>
       </div>
 
       {/* Messages — WhatsApp look */}
