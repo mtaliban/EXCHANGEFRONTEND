@@ -11,6 +11,8 @@ export interface AuthUser {
   cadre_code?: string;
   cadre_display?: string;
   current_station?: any;
+  email?: string | null;
+  email_verified?: boolean;
 }
 
 interface AuthState {

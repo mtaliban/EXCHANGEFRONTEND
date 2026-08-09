@@ -9,21 +9,16 @@ import Step4Destinations from './Step4Destinations';
 import type { RegisterPayload } from '@/lib/api';
 import { register } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useT } from '@/lib/i18n';
 
 type WizardData = Partial<RegisterPayload> & { subjects: string[] };
-
-const STEPS = [
-  { n: 1, title: 'Utambulisho' },
-  { n: 2, title: 'Kada Yako' },
-  { n: 3, title: 'Kituo cha Sasa' },
-  { n: 4, title: 'Unakotaka Kwenda' },
-];
 
 interface Props {
   onComplete: (data: { user_id: string; full_name: string }) => void;
 }
 
 export default function RegisterWizard({ onComplete }: Props) {
+  const t = useT();
   const setAuth = useAuth((s) => s.setAuth);
   const [step, setStep] = useState(1);
   const [data, setData] = useState<WizardData>({ subjects: [], desired_destinations: [] });
@@ -62,12 +57,19 @@ export default function RegisterWizard({ onComplete }: Props) {
           ? detail
           : Array.isArray(detail)
             ? detail.map((d: any) => d.msg).join(', ')
-            : 'Usajili umeshindwa. Jaribu tena.'
+            : t('wizard.submit_error')
       );
     } finally {
       setSubmitting(false);
     }
   }
+
+  const STEPS = [
+    { n: 1, title: t('wizard.step1') },
+    { n: 2, title: t('wizard.step2') },
+    { n: 3, title: t('wizard.step3') },
+    { n: 4, title: t('wizard.step4') },
+  ];
 
   return (
     <div>

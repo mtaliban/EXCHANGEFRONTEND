@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getCadres, getSubjects, type Cadre, type Subject } from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 interface Props {
   initial: any;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function Step2Cadre({ initial, onBack, onNext }: Props) {
+  const t = useT();
   const [category, setCategory] = useState<'health' | 'education' | ''>(initial.category || '');
   const [cadres, setCadres] = useState<Cadre[]>([]);
   const [cadre_code, setCadreCode] = useState<string>(initial.cadre_code || '');
@@ -19,17 +21,17 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
   useEffect(() => {
     if (!category) { setCadres([]); return; }
-    getCadres(category).then(setCadres).catch(() => setError('Imeshindwa kupakia kada.'));
-  }, [category]);
+    getCadres(category).then(setCadres).catch(() => setError(t('step2.err_load_cadres')));
+  }, [category]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentCadre = cadres.find((c) => c.code === cadre_code);
   const needsSubjects = currentCadre?.requires_subjects;
 
   useEffect(() => {
     if (needsSubjects && subjects.length === 0) {
-      getSubjects().then(setSubjects).catch(() => setError('Imeshindwa kupakia masomo.'));
+      getSubjects().then(setSubjects).catch(() => setError(t('step2.err_load_subjects')));
     }
-  }, [needsSubjects, subjects.length]);
+  }, [needsSubjects, subjects.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSubject(code: string) {
     setSelectedSubjects((prev) =>
@@ -39,19 +41,19 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!category || !cadre_code) { setError('Tafadhali chagua idara na kada.'); return; }
+    if (!category || !cadre_code) { setError(t('step2.err_choose')); return; }
     if (needsSubjects && selectedSubjects.length === 0) {
-      setError('Chagua angalau somo moja.'); return;
+      setError(t('step2.err_subject')); return;
     }
     onNext({ category, cadre_code, subjects: needsSubjects ? selectedSubjects : [] });
   }
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <h2 className="text-xl font-bold text-brand-grey-900 mb-4">Hatua 2: Kada Yako</h2>
+      <h2 className="text-xl font-bold text-brand-grey-900 mb-4">{t('step2.title')}</h2>
 
       <div>
-        <label className="label">Idara *</label>
+        <label className="label">{t('step2.department')} *</label>
         <div className="grid grid-cols-2 gap-3">
           <button type="button"
             onClick={() => { setCategory('health'); setCadreCode(''); }}
@@ -60,7 +62,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
                 ? 'border-brand-blue bg-brand-blue-50 text-brand-blue'
                 : 'border-brand-grey-200 bg-white text-brand-grey-700 hover:border-brand-blue'
             }`}>
-            🏥 Idara ya Afya
+            {t('step2.health')}
           </button>
           <button type="button"
             onClick={() => { setCategory('education'); setCadreCode(''); }}
@@ -69,16 +71,16 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
                 ? 'border-brand-orange bg-brand-orange-50 text-brand-orange'
                 : 'border-brand-grey-200 bg-white text-brand-grey-700 hover:border-brand-orange'
             }`}>
-            👩‍🏫 Idara ya Elimu
+            {t('step2.education')}
           </button>
         </div>
       </div>
 
       {category && (
         <div>
-          <label className="label">Kada / Cheo Chako *</label>
+          <label className="label">{t('step2.cadre')} *</label>
           <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
-            <option value="">-- Chagua kada --</option>
+            <option value="">{t('step2.choose_cadre')}</option>
             {cadres.map((c) => (
               <option key={c.code} value={c.code}>{c.display_name}</option>
             ))}
@@ -88,7 +90,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
       {needsSubjects && (
         <div>
-          <label className="label">Somo Unalofundisha * (chagua yote yanayohusika)</label>
+          <label className="label">{t('step2.subject')}</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {subjects.map((s) => (
               <button key={s.code} type="button" onClick={() => toggleSubject(s.code)}
@@ -107,8 +109,8 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       {error && <p className="text-brand-red text-sm">{error}</p>}
 
       <div className="flex justify-between pt-4">
-        <button type="button" onClick={onBack} className="btn-outline">← Rudi</button>
-        <button type="submit" className="btn-primary">Endelea →</button>
+        <button type="button" onClick={onBack} className="btn-outline">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary">{t('wizard.next')}</button>
       </div>
     </form>
   );

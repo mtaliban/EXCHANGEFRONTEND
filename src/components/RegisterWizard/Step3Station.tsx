@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, type Region, type District, type Facility } from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 interface Props {
   initial: any;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function Step3Station({ initial, onBack, onNext }: Props) {
+  const t = useT();
   const cs = initial.current_station || {};
   const isTeacherPrimary = initial.cadre_code === 'TEACHER_PRIMARY';
   const isTeacherSecondary = initial.cadre_code === 'TEACHER_SECONDARY';
@@ -25,7 +27,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const [facility_name_manual, setFacilityNameManual] = useState<string>(cs.facility_name && !cs.facility_id ? cs.facility_name : '');
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { getRegions().then(setRegions).catch(() => setError('Imeshindwa kupakia mikoa.')); }, []);
+  useEffect(() => { getRegions().then(setRegions).catch(() => setError(t('step3.err_load'))); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (region_id) {
@@ -47,7 +49,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!region_id || !district_id) { setError('Chagua mkoa na wilaya.'); return; }
+    if (!region_id || !district_id) { setError(t('step3.err_region_district')); return; }
     const region = regions.find((r) => r.id === Number(region_id))!;
     const district = districts.find((d) => d.id === Number(district_id))!;
     const facility = facilities.find(
@@ -66,21 +68,21 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <h2 className="text-xl font-bold text-brand-grey-900 mb-4">Hatua 3: Kituo Chako cha Sasa</h2>
+      <h2 className="text-xl font-bold text-brand-grey-900 mb-4">{t('step3.title')}</h2>
 
       <div>
-        <label className="label">Mkoa *</label>
+        <label className="label">{t('step3.region')} *</label>
         <select className="input" value={region_id} onChange={(e) => setRegionId(e.target.value ? Number(e.target.value) : '')} required>
-          <option value="">-- Chagua mkoa --</option>
+          <option value="">{t('step3.choose_region')}</option>
           {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
       </div>
 
       {region_id !== '' && (
         <div>
-          <label className="label">Wilaya *</label>
+          <label className="label">{t('step3.district')} *</label>
           <select className="input" value={district_id} onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : '')} required>
-            <option value="">-- Chagua wilaya --</option>
+            <option value="">{t('step3.choose_district')}</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </div>
@@ -89,10 +91,10 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       {district_id !== '' && (
         <div>
           <label className="label">
-            Kituo ({category === 'health' ? 'kituo cha afya' : 'shule'}) — hiari
+            {t('step3.facility')} ({category === 'health' ? t('step3.facility_health') : t('step3.facility_school')}) — {t('msg.optional')}
           </label>
           <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)}>
-            <option value="">-- Sitachaguliwa / Andika mkono --</option>
+            <option value="">{t('step3.facility_none')}</option>
             {facilities.map((f: any) => (
               <option key={f.id || f.code} value={String(f.id || f.code)}>
                 {f.name}{f.type ? ` (${f.type})` : ''}
@@ -102,7 +104,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
           {!facility_id && (
             <input
               className="input mt-2"
-              placeholder="Au andika jina la kituo mkono"
+              placeholder={t('step3.manual_ph')}
               value={facility_name_manual}
               onChange={(e) => setFacilityNameManual(e.target.value)}
             />
@@ -113,8 +115,8 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       {error && <p className="text-brand-red text-sm">{error}</p>}
 
       <div className="flex justify-between pt-4">
-        <button type="button" onClick={onBack} className="btn-outline">← Rudi</button>
-        <button type="submit" className="btn-primary">Endelea →</button>
+        <button type="button" onClick={onBack} className="btn-outline">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary">{t('wizard.next')}</button>
       </div>
     </form>
   );

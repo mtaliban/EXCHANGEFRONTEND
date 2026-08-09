@@ -4,6 +4,78 @@
 
 :root {
   color-scheme: light;
+  /* ── Light palette ─────────────────────────────── */
+  --brand-blue: 30 64 175;          /* #1E40AF */
+  --brand-blue-50: 239 246 255;     /* #EFF6FF */
+  --brand-blue-100: 219 234 254;    /* #DBEAFE */
+  --brand-blue-500: 59 130 246;     /* #3B82F6 */
+  --brand-blue-600: 37 99 235;      /* #2563EB */
+  --brand-blue-700: 29 78 216;      /* #1D4ED8 */
+  --brand-blue-900: 30 58 138;      /* #1E3A8A */
+  --brand-orange: 234 88 12;        /* #EA580C */
+  --brand-orange-50: 255 247 237;   /* #FFF7ED */
+  --brand-orange-100: 255 237 213;  /* #FFEDD5 */
+  --brand-orange-500: 249 115 22;   /* #F97316 */
+  --brand-orange-600: 234 88 12;    /* #EA580C */
+  --brand-red: 220 38 38;           /* #DC2626 */
+  --brand-red-50: 254 242 242;      /* #FEF2F2 */
+  --brand-red-100: 254 226 226;     /* #FEE2E2 */
+  --brand-red-500: 239 68 68;       /* #EF4444 */
+  --brand-red-600: 220 38 38;       /* #DC2626 */
+  --brand-grey: 107 114 128;        /* #6B7280 */
+  --brand-grey-50: 249 250 251;     /* #F9FAFB */
+  --brand-grey-100: 243 244 246;    /* #F3F4F6 */
+  --brand-grey-200: 229 231 235;    /* #E5E7EB */
+  --brand-grey-300: 209 213 219;    /* #D1D5DB */
+  --brand-grey-500: 107 114 128;    /* #6B7280 */
+  --brand-grey-700: 55 65 81;       /* #374151 */
+  --brand-grey-900: 17 24 39;       /* #111827 */
+  --brand-grey-950: 3 7 18;         /* #030712 — dark surfaces (sidebar/footer) */
+  --brand-gold: 245 158 11;         /* #F59E0B */
+  --brand-gold-50: 255 251 235;     /* #FFFBEB */
+  --brand-gold-100: 254 243 199;    /* #FEF3C7 */
+  --brand-gold-400: 251 191 36;     /* #FBBF24 */
+  --brand-gold-500: 245 158 11;     /* #F59E0B */
+  --brand-gold-600: 217 119 6;      /* #D97706 */
+  --brand-white: 255 255 255;       /* #FFFFFF */
+}
+
+.dark {
+  color-scheme: dark;
+  /* ── Dark palette ──────────────────────────────── */
+  --brand-blue: 59 130 246;         /* #3B82F6 */
+  --brand-blue-50: 23 37 84;        /* #172554 */
+  --brand-blue-100: 30 58 138;      /* #1E3A8A */
+  --brand-blue-500: 96 165 250;     /* #60A5FA */
+  --brand-blue-600: 59 130 246;     /* #3B82F6 */
+  --brand-blue-700: 37 99 235;      /* #2563EB */
+  --brand-blue-900: 30 64 175;      /* #1E40AF */
+  --brand-orange: 249 115 22;       /* #F97316 */
+  --brand-orange-50: 67 20 7;       /* #431407 */
+  --brand-orange-100: 124 45 18;    /* #7C2D12 */
+  --brand-orange-500: 251 146 60;   /* #FB923C */
+  --brand-orange-600: 249 115 22;   /* #F97316 */
+  --brand-red: 239 68 68;           /* #EF4444 */
+  --brand-red-50: 69 10 10;         /* #450A0A */
+  --brand-red-100: 127 29 29;       /* #7F1D1D */
+  --brand-red-500: 248 113 113;     /* #F87171 */
+  --brand-red-600: 239 68 68;       /* #EF4444 */
+  --brand-grey: 156 163 175;        /* #9CA3AF */
+  --brand-grey-50: 17 24 39;        /* #111827 — page bg */
+  --brand-grey-100: 31 41 55;       /* #1F2937 — cards */
+  --brand-grey-200: 55 65 81;       /* #374151 — borders */
+  --brand-grey-300: 75 85 99;       /* #4B5563 */
+  --brand-grey-500: 156 163 175;    /* #9CA3AF — muted text */
+  --brand-grey-700: 209 213 219;    /* #D1D5DB — labels */
+  --brand-grey-900: 243 244 246;    /* #F3F4F6 — main text */
+  --brand-grey-950: 3 7 18;         /* #030712 — stays dark */
+  --brand-gold: 245 158 11;         /* #F59E0B */
+  --brand-gold-50: 69 26 3;         /* #451A03 */
+  --brand-gold-100: 120 53 15;      /* #78350F */
+  --brand-gold-400: 251 191 36;     /* #FBBF24 */
+  --brand-gold-500: 245 158 11;     /* #F59E0B */
+  --brand-gold-600: 217 119 6;      /* #D97706 */
+  --brand-white: 255 255 255;       /* #FFFFFF — text on colored buttons stays white */
 }
 
 html,
@@ -11,8 +83,29 @@ body {
   padding: 0;
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #F9FAFB;
-  color: #111827;
+  background: var(--brand-grey-50);
+  color: var(--brand-grey-900);
+}
+
+/* White card surfaces turn dark in dark mode (bg-white used for cards/bubbles) */
+.dark .bg-white { background-color: rgb(var(--brand-grey-100)); }
+.dark .bg-white\/90 { background-color: rgb(var(--brand-grey-100) / 0.9); }
+.dark .bg-white\/20 { background-color: rgb(255 255 255 / 0.15); }
+.dark .bg-white\/10 { background-color: rgb(255 255 255 / 0.1); }
+
+/* WhatsApp-style chat background (adapts to theme) */
+.chat-bg {
+  background: linear-gradient(180deg, rgb(var(--brand-grey-50)) 0%, rgb(var(--brand-grey-100)) 100%);
+}
+
+/* Smooth theme transition — scoped to major surfaces only (avoids jank on every element) */
+html, body, .card, nav, aside, footer, .btn-primary, .btn-accent, .btn-outline, .input {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+
+/* Apply a temporary transition to everything ONLY while toggling theme (added via JS) */
+html.theme-switching * {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease !important;
 }
 
 @keyframes slide-in {
@@ -20,6 +113,11 @@ body {
   to { transform: translateX(0); opacity: 1; }
 }
 .animate-slide-in { animation: slide-in 0.3s ease-out; }
+@keyframes requestPing {
+  0% { box-shadow: 0 0 0 0 rgb(249 115 22 / 0.5); }
+  70% { box-shadow: 0 0 0 10px rgb(249 115 22 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(249 115 22 / 0); }
+}
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

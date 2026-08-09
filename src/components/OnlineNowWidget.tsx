@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { listOnlineUsers } from '@/lib/api';
 import { useLive } from '@/lib/liveSocket';
+import { useT } from '@/lib/i18n';
 
 /**
  * Widget showing users currently online (WebSocket-connected).
  * Refreshes every 20s + on any WS event.
  */
 export default function OnlineNowWidget() {
+  const t = useT();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { connected, subscribe } = useLive();
@@ -21,11 +23,11 @@ export default function OnlineNowWidget() {
     } finally { setLoading(false); }
   }
 
+  // No HTTP polling — initial load + live WS presence events refresh the list.
   useEffect(() => {
     reload();
-    const t = setInterval(reload, 20000);
     const unsub = subscribe('*', () => reload());
-    return () => { clearInterval(t); unsub(); };
+    return () => unsub();
     // eslint-disable-next-line
   }, []);
 
@@ -34,14 +36,14 @@ export default function OnlineNowWidget() {
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-bold text-brand-grey-900 flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-400'}`}></span>
-          Walio Online Sasa
+          {t('online.title')}
         </h3>
         <span className="badge-gold">{users.length}</span>
       </div>
       {loading && <div className="text-brand-grey-500 text-sm">...</div>}
       {!loading && users.length === 0 && (
         <div className="text-brand-grey-500 text-sm text-center py-4">
-          Hakuna mtu mwingine online sasa
+          {t('online.empty')}
         </div>
       )}
       <div className="space-y-1.5 max-h-64 overflow-y-auto">

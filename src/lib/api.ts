@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_URL, WS_URL } from './config';
 
-const API = process.env.NEXT_PUBLIC_API_URL!;
+const API = API_URL;
 const AUTH = API;
 const USER = API;
 const LOC = API;
@@ -95,6 +96,17 @@ export const register = (body: RegisterPayload) =>
   client.post<AuthResponse>(`${AUTH}/auth/register`, body).then((r) => r.data);
 export const login = (phone: string, password: string) =>
   client.post<AuthResponse>(`${AUTH}/auth/login`, { phone, password }).then((r) => r.data);
+
+/* ── Admin email login + verification ─────────────── */
+export const adminLogin = (email: string, password: string) =>
+  client.post<AuthResponse>(`${AUTH}/auth/admin/login`, { email, password }).then((r) => r.data);
+export const requestEmailVerification = (email: string, password: string, phone?: string) =>
+  client.post<{ ok: boolean; message: string }>(`${AUTH}/auth/email/verify-request`, { email, password, phone })
+    .then((r) => r.data);
+export const confirmEmailVerification = (email: string, code: string) =>
+  client.post<{ ok: boolean; email_verified: boolean; message: string }>(`${AUTH}/auth/email/verify`, { email, code })
+    .then((r) => r.data);
+
 export const getMe = () => client.get(`${AUTH}/auth/me`).then((r) => r.data);
 export const checkPhone = (phone: string) =>
   client.get<{ available: boolean; phone_normalized?: string; reason?: string }>(
@@ -109,6 +121,8 @@ export const resetPassword = (phone: string, code: string, new_password: string)
 export const getMyProfile = () => client.get(`${USER}/users/me`).then((r) => r.data);
 export const getUserById = (userId: string) => client.get(`${USER}/users/${userId}`).then((r) => r.data);
 export const listOnlineUsers = () => client.get(`${USER}/users/online`).then((r) => r.data);
+export const getRecentUsers = (limit = 15) =>
+  client.get<{ count: number; users: any[] }>(`${USER}/users/recent`, { params: { limit } }).then((r) => r.data);
 export const recentlyActive = (minutes = 60) =>
   client.get(`${USER}/users/recently-active`, { params: { minutes } }).then((r) => r.data);
 export const updateDestinations = (desired_destinations: Destination[]) =>
@@ -154,6 +168,8 @@ export interface ChatMessage {
   text: string;
   created_at: string;
   is_read: boolean;
+  delivered_at?: string | null;
+  read_at?: string | null;
 }
 export const listConversations = () =>
   client.get<Conversation[]>(`${MSG}/messages/conversations`).then((r) => r.data);
@@ -169,6 +185,10 @@ export const listCalls = () =>
   client.get(`${MSG}/messages/calls`).then((r) => r.data);
 export const listContacts = () =>
   client.get(`${MSG}/messages/contacts`).then((r) => r.data);
+export const getContactStats = () =>
+  client.get(`${MSG}/messages/contact-stats`).then((r) => r.data);
+export const getPresence = () =>
+  client.get<{ online_user_ids: string[]; count: number }>(`${MSG}/messages/presence`).then((r) => r.data);
 
 /* ── Admin ────────────────────────────────────────── */
 export const adminStats = () => client.get(`${ADMIN}/admin/stats`).then((r) => r.data);
@@ -187,21 +207,67 @@ export const adminUpdateUser = (user_id: string, changes: any) =>
 export const adminDeleteUser = (user_id: string) =>
   client.delete(`${ADMIN}/admin/users/${user_id}`).then((r) => r.data);
 
-/* ── Payments (Selcom) ───────────────────────────── */
-export interface PaymentInitiate {
+/* ── Donations (manual SMS verification) ─────────── */
+export interface DonationSubmit {
   amount: number;
-  method: 'mixx' | 'selcom' | 'airtel' | 'mpesa' | 'halopesa' | 'card';
   phone?: string;
+  sms_text: string;
   purpose?: string;
 }
-export const initiatePayment = (body: PaymentInitiate) =>
-  client.post(`${API}/payments/initiate`, body).then((r) => r.data);
-export const getPaymentStatus = (order_id: string) =>
+export const getDonationInfo = () =>
+  client.get<{ phone: string; currency: string }>(`${API}/payments/info`).then((r) => r.data);
+export const submitDonation = (body: DonationSubmit) =>
+  client.post(`${API}/payments/donate`, body).then((r) => r.data);
+export const getDonationStatus = (order_id: string) =>
   client.get(`${API}/payments/status/${order_id}`).then((r) => r.data);
-export const myPayments = () =>
+export const myDonations = () =>
   client.get(`${API}/payments/my-history`).then((r) => r.data);
-export const adminAllPayments = (status?: string) =>
+export const adminAllDonations = (status?: string) =>
   client.get(`${API}/payments/admin/all`, { params: status ? { status } : {} }).then((r) => r.data);
+export const adminApproveDonation = (order_id: string, note?: string) =>
+  client.post(`${API}/payments/admin/${order_id}/approve`, { note }).then((r) => r.data);
+export const adminRejectDonation = (order_id: string, note?: string) =>
+  client.post(`${API}/payments/admin/${order_id}/reject`, { note }).then((r) => r.data);
 
-export const MQTT_WS_URL = process.env.NEXT_PUBLIC_MQTT_WS || 'ws://localhost:9001';
-export const MSG_WS_URL = () => `${API.replace(/^http/, 'ws')}/ws`;
+/* ── Notifications center ────────────────────────── */
+export interface AppNotification {
+  notification_id: string;
+  type: string;
+  title: string;
+  body: string;
+  data?: any;
+  read: boolean;
+  created_at: string;
+}
+export const getNotifications = (limit = 50) =>
+  client.get<{ total: number; notifications: AppNotification[] }>(`${API}/notifications`, { params: { limit } }).then((r) => r.data);
+export const getUnreadCount = () =>
+  client.get<{ unread: number }>(`${API}/notifications/unread-count`).then((r) => r.data);
+export const markAllNotificationsRead = () =>
+  client.post(`${API}/notifications/read-all`).then((r) => r.data);
+export const markNotificationRead = (notification_id: string) =>
+  client.post(`${API}/notifications/${notification_id}/read`).then((r) => r.data);
+
+/* ── Admin announcements (matangazo) ─────────────── */
+export interface Announcement {
+  announcement_id: string;
+  title: string;
+  message: string;
+  audience: string;
+  created_by_name?: string;
+  created_at: string;
+  recipient_count?: number;
+  dismissed?: boolean;
+}
+export const sendAnnouncement = (body: { title: string; message: string; audience: string; target_user_id?: string }) =>
+  client.post(`${API}/admin/announcements`, body).then((r) => r.data);
+export const getActiveAnnouncements = () =>
+  client.get<{ count: number; announcements: Announcement[] }>(`${API}/announcements/active`).then((r) => r.data);
+export const getAnnouncementUnread = () =>
+  client.get<{ unread: number }>(`${API}/announcements/unread-count`).then((r) => r.data);
+export const dismissAnnouncement = (announcement_id: string) =>
+  client.post(`${API}/announcements/${announcement_id}/dismiss`).then((r) => r.data);
+export const adminListAnnouncements = () =>
+  client.get<{ total: number; announcements: any[] }>(`${API}/admin/announcements`).then((r) => r.data);
+
+export const MSG_WS_URL = () => WS_URL;

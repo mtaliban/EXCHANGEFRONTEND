@@ -1,45 +1,35 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import mqtt, { MqttClient } from 'mqtt';
-import { MQTT_WS_URL } from './api';
+import { useEffect, useState } from 'react';
+import { useLive } from './liveSocket';
 
 /**
- * Subscribe to arbitrary MQTT topics via WebSocket. Payload assumed JSON.
- * Returns latest message per topic + connection state.
+ * Subscribe to live events via the AUTHENTICATED backend WebSocket (secure —
+ * token-based, no MQTT credentials in the browser bundle).
+ *
+ * The MQTT broker stays backend-internal (backend ↔ HiveMQ/Mosquitto). The
+ * browser receives the same events through the /ws endpoint which is already
+ * protected by the user's JWT, so nobody can subscribe to someone else's
+ * notifications without being that user.
+ *
+ * Returns latest message per event + connection state.
+ * `messages` shape matches the old MQTT hook: { topic, payload, at }.
  */
-export function useMqttTopics(topics: string[]) {
-  const [connected, setConnected] = useState(false);
+export function useLiveEvents(events: string[]) {
+  const connected = useLive((s) => s.connected);
+  const subscribe = useLive((s) => s.subscribe);
   const [messages, setMessages] = useState<{ topic: string; payload: any; at: number }[]>([]);
-  const clientRef = useRef<MqttClient | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const client = mqtt.connect(MQTT_WS_URL, {
-      clean: true,
-      reconnectPeriod: 3000,
-      keepalive: 30,
-    });
-    clientRef.current = client;
-
-    client.on('connect', () => {
-      setConnected(true);
-      topics.forEach((t) => client.subscribe(t, { qos: 1 }));
-    });
-    client.on('reconnect', () => setConnected(false));
-    client.on('close', () => setConnected(false));
-    client.on('message', (topic, payload) => {
-      let parsed: any = null;
-      try { parsed = JSON.parse(payload.toString()); } catch { parsed = payload.toString(); }
-      setMessages((prev) => [...prev.slice(-99), { topic, payload: parsed, at: Date.now() }]);
-    });
-
-    return () => {
-      client.end(true);
-      clientRef.current = null;
-    };
+    const unsubs = events.map((ev) =>
+      subscribe(ev, (payload: any) => {
+        setMessages((prev) => [...prev.slice(-99), { topic: ev, payload, at: Date.now() }]);
+      })
+    );
+    return () => unsubs.forEach((u) => u());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topics.join('|')]);
+  }, [events.join('|'), subscribe]);
 
   return { connected, messages };
 }

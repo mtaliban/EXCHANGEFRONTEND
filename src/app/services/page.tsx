@@ -1,20 +1,25 @@
-const services = [
-  { icon: '🏥', title: 'Watumishi wa Afya', desc: 'CO, ANO, EN, RN, MD, Lab Tech, Pharmacist na kada zote za Afya.', color: 'blue' },
-  { icon: '👩‍🏫', title: 'Walimu', desc: 'Elimu Msingi na Sekondari — masomo yote (Math, Physics, Kiswahili, n.k.).', color: 'orange' },
-  { icon: '🔎', title: 'Matching Auto', desc: 'Mfumo unatafuta wenzi kwa haraka kutokana na mkoa, wilaya na kada.', color: 'red' },
-  { icon: '💬', title: 'Chat & Simu', desc: 'Wasiliana moja kwa moja kwenye mfumo au piga simu.', color: 'gold' },
-  { icon: '🔔', title: 'Notifications', desc: 'Utapata taarifa mara moja mtu mpya wa kubadilishana atakapotokea.', color: 'blue' },
-  { icon: '🛡️', title: 'Verification', desc: 'Namba za simu zinathibitishwa — hakuna matapeli.', color: 'red' },
-];
+'use client';
+
+import { useT } from '@/lib/i18n';
 
 export default function ServicesPage() {
+  const t = useT();
+  const services = [
+    { icon: '🏥', title: t('svc.health'), desc: t('svc.health_d'), color: 'blue' },
+    { icon: '👩‍🏫', title: t('svc.teachers'), desc: t('svc.teachers_d'), color: 'orange' },
+    { icon: '🔎', title: t('svc.matching'), desc: t('svc.matching_d'), color: 'red' },
+    { icon: '💬', title: t('svc.chat'), desc: t('svc.chat_d'), color: 'gold' },
+    { icon: '🔔', title: t('svc.notif'), desc: t('svc.notif_d'), color: 'blue' },
+    { icon: '🛡️', title: t('svc.verify'), desc: t('svc.verify_d'), color: 'red' },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
-        <span className="badge-gold mb-3">Huduma Zetu</span>
-        <h1 className="text-4xl font-bold text-brand-grey-900 mb-3">Kile Tunachotoa</h1>
+        <span className="badge-gold mb-3">{t('svc.badge')}</span>
+        <h1 className="text-4xl font-bold text-brand-grey-900 mb-3">{t('svc.title')}</h1>
         <p className="text-brand-grey-500 max-w-2xl mx-auto">
-          Jukwaa kamili la kubadilishana vituo — kutoka usajili hadi kuwasiliana na aliyekusiliana.
+          {t('svc.subtitle')}
         </p>
       </div>
 

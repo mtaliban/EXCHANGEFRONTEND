@@ -8,6 +8,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // node_modules may be root-owned in some dev setups (docker-built) → don't
+    // write the results cache into it.
+    cache: false,
   },
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },

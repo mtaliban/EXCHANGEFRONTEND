@@ -1,16 +1,21 @@
+'use client';
+
+import { useT } from '@/lib/i18n';
+
 export default function ProjectsPage() {
+  const t = useT();
   const projects = [
-    { title: 'Awamu ya Kwanza: Usajili', status: 'Inaendelea', desc: 'Register, Login, na Profile kwa watumishi wote wa Afya na Elimu.', color: 'orange' },
-    { title: 'Awamu ya Pili: Matching & Chat', status: 'Kuja', desc: 'Kuona wanaotaka kuja kwako + kuchat na kupiga simu ndani ya mfumo.', color: 'blue' },
-    { title: 'Awamu ya Tatu: Mobile App', status: 'Kuja', desc: 'App za Android na iOS zenye notifications za real-time.', color: 'red' },
-    { title: 'Awamu ya Nne: Malipo & Verification', status: 'Kuja', desc: 'Integration ya Selcom na Mixx by Yas + OTP verification.', color: 'gold' },
+    { title: t('proj.p1'), status: t('proj.ongoing'), desc: t('proj.p1_d'), color: 'orange' },
+    { title: t('proj.p2'), status: t('proj.upcoming'), desc: t('proj.p2_d'), color: 'blue' },
+    { title: t('proj.p3'), status: t('proj.upcoming'), desc: t('proj.p3_d'), color: 'red' },
+    { title: t('proj.p4'), status: t('proj.upcoming'), desc: t('proj.p4_d'), color: 'gold' },
   ];
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
-        <span className="badge-gold mb-3">Miradi Yetu</span>
-        <h1 className="text-4xl font-bold text-brand-grey-900">Ramani ya Mfumo</h1>
+        <span className="badge-gold mb-3">{t('proj.badge')}</span>
+        <h1 className="text-4xl font-bold text-brand-grey-900">{t('proj.title')}</h1>
       </div>
 
       <div className="space-y-4">

@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -10,13 +11,13 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          blue:   { DEFAULT: '#1E40AF', 50: '#EFF6FF', 100: '#DBEAFE', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 900: '#1E3A8A' },
-          orange: { DEFAULT: '#EA580C', 50: '#FFF7ED', 100: '#FFEDD5', 500: '#F97316', 600: '#EA580C' },
-          red:    { DEFAULT: '#DC2626', 50: '#FEF2F2', 100: '#FEE2E2', 500: '#EF4444', 600: '#DC2626' },
-          grey:   { DEFAULT: '#6B7280', 50: '#F9FAFB', 100: '#F3F4F6', 200: '#E5E7EB', 300: '#D1D5DB', 500: '#6B7280', 700: '#374151', 900: '#111827' },
-          gold:   { DEFAULT: '#F59E0B', 50: '#FFFBEB', 100: '#FEF3C7', 400: '#FBBF24', 500: '#F59E0B', 600: '#D97706' },
-          white:  '#FFFFFF',
+          blue:   { DEFAULT: 'rgb(var(--brand-blue) / <alpha-value>)', 50: 'rgb(var(--brand-blue-50) / <alpha-value>)', 100: 'rgb(var(--brand-blue-100) / <alpha-value>)', 500: 'rgb(var(--brand-blue-500) / <alpha-value>)', 600: 'rgb(var(--brand-blue-600) / <alpha-value>)', 700: 'rgb(var(--brand-blue-700) / <alpha-value>)', 900: 'rgb(var(--brand-blue-900) / <alpha-value>)' },
+          orange: { DEFAULT: 'rgb(var(--brand-orange) / <alpha-value>)', 50: 'rgb(var(--brand-orange-50) / <alpha-value>)', 100: 'rgb(var(--brand-orange-100) / <alpha-value>)', 500: 'rgb(var(--brand-orange-500) / <alpha-value>)', 600: 'rgb(var(--brand-orange-600) / <alpha-value>)' },
+          red:    { DEFAULT: 'rgb(var(--brand-red) / <alpha-value>)', 50: 'rgb(var(--brand-red-50) / <alpha-value>)', 100: 'rgb(var(--brand-red-100) / <alpha-value>)', 500: 'rgb(var(--brand-red-500) / <alpha-value>)', 600: 'rgb(var(--brand-red-600) / <alpha-value>)' },
+          grey:   { DEFAULT: 'rgb(var(--brand-grey) / <alpha-value>)', 50: 'rgb(var(--brand-grey-50) / <alpha-value>)', 100: 'rgb(var(--brand-grey-100) / <alpha-value>)', 200: 'rgb(var(--brand-grey-200) / <alpha-value>)', 300: 'rgb(var(--brand-grey-300) / <alpha-value>)', 500: 'rgb(var(--brand-grey-500) / <alpha-value>)', 700: 'rgb(var(--brand-grey-700) / <alpha-value>)', 900: 'rgb(var(--brand-grey-900) / <alpha-value>)', 950: 'rgb(var(--brand-grey-950) / <alpha-value>)' },
+          gold:   { DEFAULT: 'rgb(var(--brand-gold) / <alpha-value>)', 50: 'rgb(var(--brand-gold-50) / <alpha-value>)', 100: 'rgb(var(--brand-gold-100) / <alpha-value>)', 400: 'rgb(var(--brand-gold-400) / <alpha-value>)', 500: 'rgb(var(--brand-gold-500) / <alpha-value>)', 600: 'rgb(var(--brand-gold-600) / <alpha-value>)' },
         },
+        white: 'rgb(var(--brand-white) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['ui-sans-serif', 'system-ui', 'Inter', 'sans-serif'],

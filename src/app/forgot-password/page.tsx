@@ -4,8 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { forgotPassword } from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 export default function ForgotPasswordPage() {
+  const t = useT();
   const router = useRouter();
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,21 +22,21 @@ export default function ForgotPasswordPage() {
       setMessage(res.message);
       setTimeout(() => router.push(`/reset-password?phone=${encodeURIComponent(phone)}`), 1500);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Kosa la mtandao');
+      setError(err?.response?.data?.detail || t('msg.network_error'));
     } finally { setLoading(false); }
   }
 
   return (
     <div className="max-w-md mx-auto px-4 py-12">
       <div className="card">
-        <h1 className="text-2xl font-bold text-brand-grey-900 mb-2">Umesahau Password?</h1>
+        <h1 className="text-2xl font-bold text-brand-grey-900 mb-2">{t('forgot.title')}</h1>
         <p className="text-brand-grey-500 text-sm mb-6">
-          Weka namba yako ya simu. Utapata code ya kubadilisha password.
+          {t('forgot.subtitle')}
         </p>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="label">Namba ya Simu</label>
+            <label className="label">{t('forgot.phone_label')}</label>
             <input type="tel" className="input" placeholder="0712345678"
               value={phone} onChange={(e) => setPhone(e.target.value)} required autoComplete="tel" />
           </div>
@@ -43,12 +45,12 @@ export default function ForgotPasswordPage() {
           {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
 
           <button type="submit" disabled={loading} className="btn-primary w-full">
-            {loading ? 'Inatuma...' : 'Nipe Code'}
+            {loading ? t('forgot.sending') : t('forgot.submit')}
           </button>
         </form>
 
         <p className="text-center text-sm text-brand-grey-500 mt-6">
-          <Link href="/login" className="text-brand-blue hover:underline">← Rudi kwa Login</Link>
+          <Link href="/login" className="text-brand-blue hover:underline">{t('forgot.back')}</Link>
         </p>
       </div>
     </div>

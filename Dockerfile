@@ -9,9 +9,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # NEXT_PUBLIC_* vars are baked in at build time — pass via docker-compose args
 ARG NEXT_PUBLIC_API_URL=http://localhost:8080
-ARG NEXT_PUBLIC_MQTT_WS=ws://localhost:9001
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_MQTT_WS=$NEXT_PUBLIC_MQTT_WS
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

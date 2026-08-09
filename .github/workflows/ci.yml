@@ -2,7 +2,7 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -31,12 +31,9 @@ jobs:
       - name: Tests (Vitest)
         run: npm run test
 
-      - name: Build (Next.js standalone)
+      - name: Build (Next.js)
         env:
-          NEXT_PUBLIC_AUTH_API: http://localhost:8001
-          NEXT_PUBLIC_USER_API: http://localhost:8002
-          NEXT_PUBLIC_LOCATION_API: http://localhost:8003
-          NEXT_PUBLIC_MATCH_API: http://localhost:8004
+          NEXT_PUBLIC_API_URL: http://localhost:8080
         run: npm run build
 
   docker-build:

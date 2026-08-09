@@ -5,13 +5,16 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
+import { useI18n, useT } from '@/lib/i18n';
+import ThemeToggle from '@/components/ThemeToggle';
+import { Home, Info, Stethoscope, FolderKanban, PhoneCall, Languages, LogOut } from 'lucide-react';
 
 const publicLinks = [
-  { href: '/', label: 'Nyumbani' },
-  { href: '/about', label: 'Kuhusu Sisi' },
-  { href: '/services', label: 'Huduma Zetu' },
-  { href: '/projects', label: 'Miradi Yetu' },
-  { href: '/contact', label: 'Wasiliana Nasi' },
+  { href: '/', label: 'nav.home', icon: Home },
+  { href: '/about', label: 'nav.about', icon: Info },
+  { href: '/services', label: 'nav.services', icon: Stethoscope },
+  { href: '/projects', label: 'nav.projects', icon: FolderKanban },
+  { href: '/contact', label: 'nav.contact', icon: PhoneCall },
 ];
 
 const APP_ROUTES = ['/dashboard', '/chats', '/contacts', '/profile', '/donate', '/admin'];
@@ -22,6 +25,9 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { token, user, logout } = useAuth();
+  const t = useT();
+  const toggleLang = useI18n((s) => s.toggle);
+  const currentLang = useI18n((s) => s.lang);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -51,38 +57,60 @@ export default function Navbar() {
                 key={l.href}
                 href={l.href}
                 className={clsx(
-                  'px-3 py-2 rounded-md text-sm font-medium transition',
+                  'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition',
                   pathname === l.href
                     ? 'text-brand-blue bg-brand-blue-50'
                     : 'text-brand-grey-700 hover:text-brand-blue hover:bg-brand-grey-50'
                 )}
               >
-                {l.label}
+                <l.icon size={16} strokeWidth={2.2} />
+                {t(l.label)}
               </Link>
             ))}
           </div>
 
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={toggleLang}
+              className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-md border border-brand-grey-200 hover:bg-brand-grey-50 text-brand-grey-700 transition"
+              title={t('lang.toggle_title')}
+            >
+              <Languages size={14} />
+              {currentLang.toUpperCase()}
+            </button>
             {isAuthed ? (
               <>
                 <Link href="/dashboard" className="btn-primary text-sm py-2">
-                  Fungua Dashibodi
+                  {t('nav.open_dashboard')}
                 </Link>
                 <button
                   onClick={() => { logout(); router.push('/'); }}
-                  className="text-sm text-brand-red hover:underline px-2"
+                  className="flex items-center gap-1.5 text-sm text-brand-red hover:underline px-2"
+                  title={t('nav.logout')}
                 >
-                  Toka
+                  <LogOut size={14} />
+                  {t('nav.logout')}
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="btn-outline text-sm py-2">Ingia</Link>
-                <Link href="/register" className="btn-accent text-sm py-2">Jisajili</Link>
+                <Link href="/login" className="btn-outline text-sm py-2">{t('nav.login')}</Link>
+                <Link href="/register" className="btn-accent text-sm py-2">{t('nav.register')}</Link>
               </>
             )}
           </div>
 
+          <div className="md:hidden flex items-center gap-1">
+            <ThemeToggle />
+            <button
+              onClick={toggleLang}
+              className="p-1.5 rounded-md border border-brand-grey-200 text-brand-grey-700"
+              title={t('lang.toggle_title')}
+            >
+              <Languages size={16} />
+            </button>
+          </div>
           <button
             className="md:hidden p-2 text-brand-grey-700"
             onClick={() => setOpen(!open)}
@@ -106,35 +134,37 @@ export default function Navbar() {
                 href={l.href}
                 onClick={() => setOpen(false)}
                 className={clsx(
-                  'block px-3 py-2 rounded-md text-sm font-medium',
+                  'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium',
                   pathname === l.href
                     ? 'text-brand-blue bg-brand-blue-50'
                     : 'text-brand-grey-700 hover:bg-brand-grey-50'
                 )}
               >
-                {l.label}
+                <l.icon size={17} strokeWidth={2.2} className="flex-shrink-0" />
+                {t(l.label)}
               </Link>
             ))}
             <div className="flex gap-2 pt-3 border-t border-brand-grey-100 mt-3">
               {isAuthed ? (
                 <>
                   <Link href="/dashboard" onClick={() => setOpen(false)} className="btn-primary flex-1 text-sm py-2">
-                    Dashibodi
+                    {t('nav.open_dashboard')}
                   </Link>
                   <button
                     onClick={() => { logout(); setOpen(false); router.push('/'); }}
-                    className="btn-outline flex-1 text-sm py-2 text-brand-red border-brand-red"
+                    className="btn-outline flex-1 text-sm py-2 text-brand-red border-brand-red flex items-center justify-center gap-1.5"
                   >
-                    Toka
+                    <LogOut size={14} />
+                    {t('nav.logout')}
                   </button>
                 </>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setOpen(false)} className="btn-outline flex-1 text-sm py-2">
-                    Ingia
+                    {t('nav.login')}
                   </Link>
                   <Link href="/register" onClick={() => setOpen(false)} className="btn-accent flex-1 text-sm py-2">
-                    Jisajili
+                    {t('nav.register')}
                   </Link>
                 </>
               )}

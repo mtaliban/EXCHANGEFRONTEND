@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getMe } from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 /**
  * Optimistic auth: if we have token+user in the store, render children immediately.
@@ -11,6 +12,7 @@ import { getMe } from '@/lib/api';
  * If the refresh 401s, we log out.
  */
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
+  const t = useT();
   const router = useRouter();
   const { token, user, setUser, logout } = useAuth();
   const verifiedRef = useRef(false);
@@ -38,7 +40,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-brand-grey-500 text-sm">Inapakia...</div>
+        <div className="text-brand-grey-500 text-sm">{t('msg.loading')}</div>
       </div>
     );
   }

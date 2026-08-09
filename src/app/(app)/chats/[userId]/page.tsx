@@ -4,15 +4,20 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { formatDistanceToNowStrict } from 'date-fns';
-import { chatHistory, sendMessage, logCall, getUserById, type ChatMessage } from '@/lib/api';
+import { chatHistory, sendMessage, logCall, markRead, getUserById, type ChatMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
+import { dayChipLabel, messageTime } from '@/lib/dates';
+import { useT } from '@/lib/i18n';
 
 export default function ChatViewPage() {
+  const t = useT();
   const params = useParams<{ userId: string }>();
   const router = useRouter();
-  const { user, token } = useAuth();
-  const { subscribe, send, isOnline } = useLive();
+  const { user } = useAuth();
+  const { subscribe, send } = useLive();
+  // Live subscription to the online set → re-renders the instant presence changes
+  const onlineUserIds = useLive((s) => s.onlineUserIds);
   const otherUserId = params.userId;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -42,12 +47,18 @@ export default function ChatViewPage() {
   useEffect(() => {
     const unsub1 = subscribe('message.sent', (p) => {
       if (p.from_user_id === otherUserId || p.to_user_id === otherUserId) {
+        const incoming = p.to_user_id === user?.user_id;
+        if (incoming) {
+          // I'm looking at this chat → immediately mark as read + notify sender
+          markRead(otherUserId).catch(() => {});
+        }
         setMessages((prev) => {
           if (prev.some((m) => m.message_id === p.message_id)) return prev;
           return [...prev, {
             message_id: p.message_id, from_user_id: p.from_user_id,
             to_user_id: p.to_user_id, text: p.text,
-            created_at: p.created_at, is_read: false,
+            created_at: p.created_at, is_read: incoming,
+            delivered_at: p.delivered_at || null, read_at: incoming ? new Date().toISOString() : null,
           }];
         });
       }
@@ -62,7 +73,17 @@ export default function ChatViewPage() {
         }
       }
     });
-    return () => { unsub1(); unsub2(); };
+    // WhatsApp-style read receipt: my sent messages flip to blue ✓✓ live
+    // only when the recipient has genuinely read them (read.receipt from backend)
+    const unsub3 = subscribe('read.receipt', (p) => {
+      if (p.read_by === otherUserId) {
+        setMessages((prev) => prev.map((m) =>
+          m.from_user_id === user?.user_id ? { ...m, is_read: true, read_at: p.read_at || m.read_at } : m
+        ));
+      }
+    });
+    return () => { unsub1(); unsub2(); unsub3(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe, otherUserId]);
 
   useEffect(() => {
@@ -94,9 +115,10 @@ export default function ChatViewPage() {
     window.location.href = `tel:${other.phone_primary}`;
   }
 
-  const online = isOnline(otherUserId) || other?.online;
+  // Genuine online = present in the live WS set OR fresh profile flag
+  const online = onlineUserIds.has(otherUserId) || other?.online;
   const lastSeen = other?.last_seen_at ? formatDistanceToNowStrict(new Date(other.last_seen_at), { addSuffix: true }) : null;
-  const initial = (other?.full_name || messages[0]?.from_user_id === user?.user_id ? other?.full_name : messages[0]?.from_user_id)?.charAt?.(0)?.toUpperCase?.() || 'U';
+  const initial = (other?.full_name || 'U')?.charAt(0)?.toUpperCase() || 'U';
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen bg-brand-grey-50">
@@ -115,45 +137,69 @@ export default function ChatViewPage() {
           <div className="font-semibold truncate">{other?.full_name || 'Mtumiaji'}</div>
           <div className="text-xs text-white/80 truncate">
             {theyAreTyping ? (
-              <span className="text-green-300 font-medium">anaandika...</span>
+              <span className="text-green-300 font-medium">{t('chats.typing')}</span>
             ) : online ? (
-              <span className="text-green-300">🟢 online</span>
+              <span className="text-green-300">🟢 {t('chats.online')}</span>
             ) : lastSeen ? (
-              `alionekana ${lastSeen}`
+              `${t('chats.last_seen')} ${lastSeen}`
             ) : ''}
           </div>
         </div>
         <button onClick={call}
            disabled={!other?.phone_primary}
            className="p-2 hover:bg-white/10 rounded-full text-xl disabled:opacity-50"
-           title={other?.phone_primary ? `Piga: ${other.phone_primary}` : 'Inasubiri phone...'}>
+           title={other?.phone_primary ? `${t('chats.call')} ${other.phone_primary}` : t('chats.waiting_phone')}>
           📞
         </button>
       </div>
 
-      {/* Messages — WhatsApp look */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-1"
-           style={{ background: 'linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%)' }}>
+      {/* Messages — WhatsApp look with day separators */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-1 chat-bg">
         {messages.length === 0 && (
           <div className="text-center text-brand-grey-500 text-sm py-16">
-            Anza mazungumzo hapa chini 👇
+            {t('chats.start')}
           </div>
         )}
         {messages.map((m, idx) => {
           const mine = m.from_user_id === user?.user_id;
           const prev = messages[idx - 1];
           const showAvatar = !prev || prev.from_user_id !== m.from_user_id;
+          // WhatsApp-style day separator chip: Leo / Jana / tarehe
+          const newDay = !prev || new Date(m.created_at).toDateString() !== new Date(prev.created_at).toDateString();
+          const read = m.is_read || !!m.read_at;
+          const delivered = !!m.delivered_at;
           return (
-            <div key={m.message_id} className={`flex ${mine ? 'justify-end' : 'justify-start'} ${showAvatar ? 'mt-2' : ''}`}>
-              <div className={`max-w-[75%] px-3 py-1.5 rounded-2xl text-sm shadow-sm ${
-                mine
-                  ? 'bg-brand-blue text-white rounded-br-sm'
-                  : 'bg-white text-brand-grey-900 rounded-bl-sm'
-              }`}>
-                <div className="whitespace-pre-wrap break-words">{m.text}</div>
-                <div className={`text-[10px] mt-0.5 text-right ${mine ? 'text-brand-blue-100' : 'text-brand-grey-500'}`}>
-                  {new Date(m.created_at).toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' })}
-                  {mine && (m.is_read ? ' ✓✓' : ' ✓')}
+            <div key={m.message_id}>
+              {newDay && (
+                <div className="flex justify-center my-3">
+                  <span className="bg-white/90 text-brand-grey-500 text-[11px] font-medium px-3 py-1 rounded-full shadow-sm">
+                    {dayChipLabel(m.created_at)}
+                  </span>
+                </div>
+              )}
+              <div className={`flex ${mine ? 'justify-end' : 'justify-start'} ${showAvatar ? 'mt-2' : ''}`}>
+                {!mine && showAvatar && (
+                  <div className="w-8 h-8 rounded-full bg-brand-blue text-white flex items-center justify-center text-sm font-bold mr-2 mt-1 flex-shrink-0">
+                    {initial}
+                  </div>
+                )}
+                <div className={`max-w-[75%] px-3 py-1.5 rounded-2xl text-sm shadow-sm ${
+                  mine
+                    ? 'bg-brand-blue text-white rounded-br-sm'
+                    : 'bg-white text-brand-grey-900 rounded-bl-sm'
+                }`}>
+                  <div className="whitespace-pre-wrap break-words">{m.text}</div>
+                  <div className={`text-[10px] mt-0.5 text-right flex items-center justify-end gap-0.5 ${mine ? 'text-brand-blue-100' : 'text-brand-grey-500'}`}>
+                    {messageTime(m.created_at)}
+                    {mine && (
+                      <>
+                        {/* WhatsApp ticks: ✓ sent → ✓✓ delivered (grey) → ✓✓ read (blue) */}
+                        <span className={`inline-flex ${read ? 'text-sky-300' : ''}`}>
+                          {read ? '✓✓' : delivered ? '✓✓' : '✓'}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -176,7 +222,7 @@ export default function ChatViewPage() {
       <div className="bg-white border-t border-brand-grey-100 p-2 flex gap-2 sticky bottom-0">
         <input
           className="flex-1 rounded-full border border-brand-grey-200 px-4 py-2.5 focus:outline-none focus:border-brand-blue"
-          placeholder="Andika ujumbe..."
+          placeholder={t('chats.placeholder')}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), submitSend())}
