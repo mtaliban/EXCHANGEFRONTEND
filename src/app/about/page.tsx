@@ -16,7 +16,7 @@ export default function AboutPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         <div className="relative rounded-2xl overflow-hidden shadow-lg group">
           <Image
-            src="/images/hospital-illustration.svg"
+            src="/images/hospital.jpg"
             alt="Vituo vya Afya Tanzania"
             width={700}
             height={450}
@@ -30,7 +30,7 @@ export default function AboutPage() {
         </div>
         <div className="relative rounded-2xl overflow-hidden shadow-lg group">
           <Image
-            src="/images/school-illustration.svg"
+            src="/images/school-classroom.jpg"
             alt="Shule za Tanzania"
             width={700}
             height={450}

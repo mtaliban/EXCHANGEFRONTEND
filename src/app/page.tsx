@@ -42,7 +42,7 @@ export default function HomePage() {
               <div className="absolute -inset-4 bg-gradient-to-tr from-brand-orange/30 to-brand-gold/30 blur-2xl rounded-3xl" />
               <div className="relative rounded-3xl overflow-hidden shadow-2xl ring-1 ring-white/20">
                 <Image
-                  src="/images/hospital-illustration.svg"
+                  src="/images/hospital.jpg"
                   alt="Hospitali ya Tanzania"
                   width={900}
                   height={600}
