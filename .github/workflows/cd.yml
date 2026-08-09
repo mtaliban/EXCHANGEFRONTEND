@@ -47,6 +47,8 @@ jobs:
             mtalibani/kubadilishanafrontend:latest
             mtalibani/kubadilishanafrontend:${{ github.event.workflow_run.head_sha }}
             mtalibani/kubadilishanafrontend:1.0.${{ github.run_number }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL || 'https://api.16-171-23-21.sslip.io' }}
 
   deploy-vercel:
     name: CD 2/2 — Deploy to Vercel (Production)
@@ -56,6 +58,9 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # Backend halisi (Caddy + HTTPS kwenye EC2). Badilisha hapa ikiwa
+      # umeweka domain yako mwenyewe (k.m. https://api.kubadilishana.go.tz).
+      NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://api.16-171-23-21.sslip.io' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -75,6 +80,8 @@ jobs:
 
       - name: Build + Deploy to Vercel
         run: |
+          # NEXT_PUBLIC_* lazima iwepo wakati wa build (baked into JS bundle)
+          echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL" > .env.production
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
           vercel build --prod --token="$VERCEL_TOKEN"
           vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
