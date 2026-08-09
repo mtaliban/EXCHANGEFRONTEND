@@ -10,3 +10,6 @@ coverage/
 
 .next/
 tsconfig.tsbuildinfo
+
+# vercel
+.vercel/
