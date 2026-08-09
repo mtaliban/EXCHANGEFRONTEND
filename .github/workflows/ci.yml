@@ -1,0 +1,47 @@
+name: Frontend CI
+
+# ============================================================
+# CI — Lint / Typecheck / Test / Build pekee.
+# CD (deploy) ni workflow nyingine ("Frontend CD") inayoanza
+# TU baada ya hii kufaulu (workflow_run: completed + success).
+# ============================================================
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: CI — Lint / Typecheck / Test / Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests (Vitest)
+        run: npm run test
+
+      - name: Build (Next.js)
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8080
+        run: npm run build
