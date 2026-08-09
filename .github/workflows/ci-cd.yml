@@ -1,0 +1,101 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============ STEP 1: CI ============
+  test:
+    name: CI — Lint / Typecheck / Test / Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests (Vitest)
+        run: npm run test
+
+      - name: Build (Next.js)
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8080
+        run: npm run build
+
+  docker-build:
+    name: CI — Docker build
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build (validate Dockerfile — not pushed)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: kv-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============ STEP 2: CD (inakuja TU baada ya CI kufaulu) ============
+  deploy:
+    name: CD — Deploy to Vercel (Production)
+    runs-on: ubuntu-latest
+    needs: docker-build
+    # Deploy inafanyika kwenye push ya main pekee (sio pull requests)
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      # Deploy ina-run tu kama secrets zote 3 zipo. Ukikosa hata moja,
+      # step ina-skip kwa rafiki — sio fail nyekundu.
+      - name: Build + Deploy to Vercel
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+        run: |
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+      - name: Skip notice (Vercel secrets bado hazijawekwa)
+        if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
+        run: |
+          echo "::warning::Vercel secrets hazijawekwa bado — deploy imeskipped (hii ni sawa)."
+          echo "Weka VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID kwenye:"
+          echo "https://github.com/mtaliban/EXCHANGEFRONTEND/settings/secrets/actions"
