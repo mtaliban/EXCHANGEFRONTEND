@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { getBoard, getRegions, getFollowedRegions, updateFollowedRegions, logCall, type Region } from '@/lib/api';
+import {
+  getBoard, getRegions, getDistricts, getFacilities,
+  getFollowedRegions, updateFollowedRegions, logCall,
+  type Region, type District, type Facility,
+} from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 
 type Scope = 'incoming' | 'all';
-type Level = 'region' | 'district' | 'facility';
 
 export default function DashboardBoard() {
   const t = useT();
@@ -18,27 +21,45 @@ export default function DashboardBoard() {
   const dests = (user?.desired_destinations || []) as any[];
   const myCategory = user?.category;
   const isEdu = myCategory === 'education';
-  // Default source: mkoa anayotaka kwenda (k.m. Dar) — hii ndiyo "Wanaokuja mkoa wako wanaotokea Dar"
-  const defaultSource = dests[0]?.region_id as number | undefined;
+
+  // Mikoa YOTE anayotaka kwenda (k.m. Dar + Mwanza) — default inachuja kwa zote.
+  const destRegionIds = useMemo(
+    () => Array.from(new Set(dests.map((d) => d.region_id).filter((x): x is number => typeof x === 'number'))),
+    [dests]
+  );
+  const destRegionNames = useMemo(
+    () => Array.from(new Set(dests.map((d) => d.region_name).filter(Boolean))),
+    [dests]
+  );
 
   const [scope, setScope] = useState<Scope>('incoming');
-  const [level, setLevel] = useState<Level>('region');
-  const [regionId, setRegionId] = useState<number | undefined>(defaultSource);
+  // Chanzo: '__dests__' = Mikoa yangu yote (default), '' = Mikoa yote, '123' = mkoa mmoja
+  const [regionSel, setRegionSel] = useState<string>(destRegionIds.length > 0 ? '__dests__' : '');
   const [districtId, setDistrictId] = useState<number | undefined>();
   const [facilityId, setFacilityId] = useState<string | undefined>();
   const [board, setBoard] = useState<any>(null);
   const [regions, setRegions] = useState<Region[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [followed, setFollowed] = useState<number[]>([]);
   const [followSaved, setFollowSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const { connected } = useLive();
   const { messages } = useLiveEvents(['match.found', 'user.registered']);
 
+  const singleRegion = regionSel !== '' && regionSel !== '__dests__' ? Number(regionSel) : undefined;
+
+  const effectiveRegionIds = useMemo(() => {
+    if (regionSel === '__dests__') return destRegionIds;
+    if (singleRegion !== undefined) return [singleRegion];
+    return [];
+  }, [regionSel, destRegionIds, singleRegion]);
+
   const loadBoard = useCallback(async () => {
     setLoading(true);
     try {
       const params: any = { scope };
-      if (regionId !== undefined) params.region_id = regionId;
+      if (effectiveRegionIds.length) params.region_ids = effectiveRegionIds.join(',');
       if (districtId !== undefined) params.district_id = districtId;
       if (facilityId !== undefined) params.facility_id = facilityId;
       const b = await getBoard(params);
@@ -46,13 +67,35 @@ export default function DashboardBoard() {
     } finally {
       setLoading(false);
     }
-  }, [scope, regionId, districtId, facilityId]);
+  }, [scope, effectiveRegionIds, districtId, facilityId]);
 
   // Load regions + followed on mount
   useEffect(() => {
     getRegions().then(setRegions).catch(() => {});
     getFollowedRegions().then((r) => setFollowed(r.region_ids)).catch(() => {});
   }, []);
+
+  // Cascading: wilaya za mkoa mmoja uliochagua
+  useEffect(() => {
+    if (singleRegion !== undefined) {
+      getDistricts(singleRegion).then(setDistricts).catch(() => setDistricts([]));
+    } else {
+      setDistricts([]);
+    }
+    setDistrictId(undefined);
+    setFacilities([]);
+    setFacilityId(undefined);
+  }, [singleRegion]);
+
+  // Cascading: vituo vya wilaya iliyochaguliwa
+  useEffect(() => {
+    if (districtId !== undefined) {
+      getFacilities(districtId, (myCategory as any) || 'health').then(setFacilities).catch(() => setFacilities([]));
+    } else {
+      setFacilities([]);
+    }
+    setFacilityId(undefined);
+  }, [districtId, myCategory]);
 
   useEffect(() => { loadBoard(); }, [loadBoard]);
 
@@ -77,36 +120,38 @@ export default function DashboardBoard() {
   };
 
   const clearFilters = () => {
-    setRegionId(undefined);
+    setRegionSel('__dests__');
     setDistrictId(undefined);
     setFacilityId(undefined);
-    setLevel('region');
   };
 
   const currentRegionName = useMemo(() => {
-    if (regionId !== undefined) {
-      const r = regions.find((x) => x.id === regionId);
+    if (singleRegion !== undefined) {
+      const r = regions.find((x) => x.id === singleRegion);
       if (r) return r.name;
     }
     return null;
-  }, [regionId, regions]);
+  }, [singleRegion, regions]);
 
+  // Stats chips: facility → district → region (kiwango cha sasa)
   const chips = useMemo(() => {
     if (!board) return { list: [] as any[], color: 'blue' };
-    if (level === 'region') return { list: board.by_region || [], color: 'blue' };
-    if (level === 'district') return { list: board.by_district || [], color: 'orange' };
-    return { list: board.by_facility || [], color: 'red' };
-  }, [board, level]);
+    if (facilityId) return { list: board.by_facility || [], color: 'red' };
+    if (districtId) return { list: board.by_district || [], color: 'orange' };
+    return { list: board.by_region || [], color: 'blue' };
+  }, [board, facilityId, districtId]);
 
   const activeFilterLabel = facilityId
     ? chips.list.find((c: any) => c.facility_id === facilityId)?.facility_name
     : districtId
       ? chips.list.find((c: any) => c.district_id === districtId)?.district_name
-      : regionId
-        ? chips.list.find((c: any) => c.region_id === regionId)?.region_name
-        : null;
+      : currentRegionName
+        ? currentRegionName
+        : regionSel === '__dests__' && destRegionNames.length
+          ? destRegionNames.join(', ')
+          : null;
 
-  const hasFilter = regionId !== undefined || districtId !== undefined || facilityId !== undefined;
+  const hasFilter = effectiveRegionIds.length > 0 || districtId !== undefined || facilityId !== undefined;
 
   return (
     <div className="space-y-4">
@@ -139,43 +184,58 @@ export default function DashboardBoard() {
           </div>
         </div>
 
-        {/* Source region selector (default = destination yako) */}
+        {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
         <div className="px-4 md:px-5 pt-4">
-          <label className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{t('board.source_region')}</label>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <select
-              className="input max-w-xs"
-              value={regionId ?? ''}
-              onChange={(e) => { setRegionId(e.target.value ? Number(e.target.value) : undefined); setDistrictId(undefined); setFacilityId(undefined); }}
-            >
+          <label className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{t('board.filter_source')}</label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1.5">
+            <select className="input" value={regionSel}
+              onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); }}>
+              {destRegionIds.length > 0 && (
+                <option value="__dests__">{t('board.my_regions')} ({destRegionNames.join(', ')})</option>
+              )}
               <option value="">{t('board.all_regions')}</option>
               {regions.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
+                <option key={r.id} value={String(r.id)}>{r.name}</option>
               ))}
             </select>
-            {currentRegionName && <span className="text-xs text-brand-blue">📍 {currentRegionName}</span>}
+
+            <select className="input" value={districtId ?? ''}
+              onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : undefined)}
+              disabled={singleRegion === undefined}
+              title={t('board.filter_district_select')}>
+              <option value="">{singleRegion !== undefined ? t('board.any_district') : t('board.choose_district')}</option>
+              {districts.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+
+            <select className="input" value={facilityId ?? ''}
+              onChange={(e) => setFacilityId(e.target.value || undefined)}
+              disabled={districtId === undefined}
+              title={t('board.filter_facility_select')}>
+              <option value="">{districtId !== undefined ? t('board.any_facility') : t('board.choose_facility')}</option>
+              {facilities.map((f: any) => (
+                <option key={f.id || f.code} value={String(f.id || f.code)}>
+                  {f.name}{f.type ? ` (${f.type})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
+            <span className="text-xs text-brand-blue">
+              📍 {activeFilterLabel || ''}
+              {!activeFilterLabel && regionSel === '__dests__' && destRegionNames.length > 0
+                ? `${t('board.my_regions')}: ${destRegionNames.join(', ')}` : ''}
+            </span>
             {hasFilter && (
-              <button type="button" onClick={clearFilters} className="text-xs text-brand-red hover:underline ml-auto">
+              <button type="button" onClick={clearFilters} className="text-xs text-brand-red hover:underline">
                 {t('board.clear_filter')}
               </button>
             )}
           </div>
         </div>
 
-        {/* Level tabs: Mikoa / Wilaya / Halmashauri / Kituo */}
-        <div className="px-4 md:px-5 pt-4">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {(['region', 'district', 'facility'] as Level[]).map((lv) => (
-              <button key={lv} type="button" onClick={() => setLevel(lv)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${level === lv ? 'bg-brand-grey-900 text-white' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200'}`}>
-                {lv === 'region' ? `1. ${t('board.filter_region')}` : lv === 'district' ? `2. ${t('board.filter_district')}` : `4. ${t('board.filter_facility')}`}
-              </button>
-            ))}
-            <span className="text-[11px] text-brand-grey-400 ml-1">3. {t('board.filter_council')} ≈ Wilaya</span>
-          </div>
-        </div>
-
-        {/* Chips (stats za kiwango hicho) */}
+        {/* Stats chips (kiwango cha sasa) */}
         <div className="px-4 md:px-5 pt-3 pb-4">
           {loading ? (
             <div className="text-xs text-brand-grey-400 py-2">{t('action.loading')}</div>
@@ -185,21 +245,25 @@ export default function DashboardBoard() {
             <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
               {chips.list.map((c: any) => {
                 const label = c.region_name || c.district_name || c.facility_name;
-                const isActive = level === 'region' ? c.region_id === regionId
-                  : level === 'district' ? c.district_id === districtId
-                  : c.facility_id === facilityId;
-                const color = level === 'region' ? 'border-brand-blue text-brand-blue bg-brand-blue-50'
-                  : level === 'district' ? 'border-brand-orange text-brand-orange bg-brand-orange-50'
-                  : 'border-brand-red text-brand-red bg-brand-red-50';
+                const isActive = facilityId
+                  ? c.facility_id === facilityId
+                  : districtId
+                    ? c.district_id === districtId
+                    : effectiveRegionIds.includes(c.region_id);
+                const color = facilityId ? 'border-brand-red text-brand-red bg-brand-red-50'
+                  : districtId ? 'border-brand-orange text-brand-orange bg-brand-orange-50'
+                  : 'border-brand-blue text-brand-blue bg-brand-blue-50';
                 return (
                   <button key={label} type="button"
                     onClick={() => {
-                      if (level === 'region') {
-                        setRegionId(c.region_id); setDistrictId(undefined); setFacilityId(undefined);
-                      } else if (level === 'district') {
-                        setDistrictId(c.district_id); setFacilityId(undefined);
-                      } else {
+                      if (facilityId) {
                         setFacilityId(c.facility_id);
+                      } else if (districtId) {
+                        setDistrictId(c.district_id);
+                      } else if (c.region_id) {
+                        setRegionSel(String(c.region_id));
+                        setDistrictId(undefined);
+                        setFacilityId(undefined);
                       }
                     }}
                     className={`px-3 py-1.5 rounded-full border text-xs font-medium transition ${isActive ? color + ' ring-2' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-grey-400'}`}

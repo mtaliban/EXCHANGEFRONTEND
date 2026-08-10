@@ -118,6 +118,7 @@ export interface BoardStats {
 export const getBoard = (params?: {
   scope?: 'incoming' | 'all';
   region_id?: number;
+  region_ids?: string;
   district_id?: number;
   facility_id?: string;
   limit?: number;
