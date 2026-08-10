@@ -52,11 +52,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ═══ AD-BOARD + STATS + GRID (JUU) ═══ */}
-      <DashboardBoard />
-
-      {/* ═══ LIVE REQUEST FEED (mpya juu) ═══ */}
+      {/* ═══ LIVE REQUEST FEED (JUU — grid, mpya juu, online 🟢 + muda) ═══ */}
       <RequestFeed />
+
+      {/* ═══ AD-BOARD + STATS + GRID (chini) ═══ */}
+      <DashboardBoard />
 
       {/* ═══ COMMUNICATION STATS (chini — inafunguka akitaka) ═══ */}
       {contactStats && (

@@ -6,8 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { getRecentUsers, logCall } from '@/lib/api';
-import { formatDistanceToNowStrict } from 'date-fns';
-import { useT } from '@/lib/i18n';
+import { useI18n, useT } from '@/lib/i18n';
 
 interface Request {
   user_id: string;
@@ -21,13 +20,35 @@ interface Request {
   received_at: number; // when this card arrived on MY screen
 }
 
+/** Localized relative time ("dakika 2 zilizopita" / "2 min ago"). */
+function timeAgo(ts: number, lang: 'sw' | 'en'): string {
+  const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (s < 5) return lang === 'sw' ? 'sasa hivi' : 'just now';
+  const m = Math.floor(s / 60);
+  if (m < 1) return lang === 'sw' ? 'dakika chache zilizopita' : 'less than a minute ago';
+  if (m < 60) return lang === 'sw' ? `dakika ${m} zilizopita` : `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return lang === 'sw' ? `saa ${h} zilizopita` : `${h} hr${h > 1 ? 's' : ''} ago`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return lang === 'sw' ? 'jana' : 'yesterday';
+  if (d < 7) return lang === 'sw' ? `siku ${d} zilizopita` : `${d} days ago`;
+  const w = Math.floor(d / 7);
+  if (w < 5) return lang === 'sw' ? `wiki ${w} zilizopita` : `${w} wk ago`;
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return lang === 'sw' ? `miezi ${mo} iliyopita` : `${mo} mo ago`;
+  const y = Math.floor(d / 365);
+  return lang === 'sw' ? `miaka ${y} iliyopita` : `${y} yr ago`;
+}
+
 /**
  * Uber-style "request" feed — kila mtu anayejisajili anapokelewa hapa kama
- * request card (jina, namba, online, chat/call). Mpya juu, zamani zina
- * kusonga chini; muda uliopita unaonyeshwa live.
+ * request card kwenye GRID (kama board). Mpya juu (kushoto), zamani zina
+ * kusonga chini; muda uliopita unaonyeshwa live; aliyepo online ana
+ * alama ya kijani 🟢.
  */
 export default function RequestFeed({ limit = 12 }: { limit?: number }) {
   const t = useT();
+  const lang = useI18n((s) => s.lang);
   const { user } = useAuth();
   const onlineUserIds = useLive((s) => s.onlineUserIds);
   const { messages } = useLiveEvents(['user.registered']);
@@ -99,20 +120,23 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
         <span className="text-xs text-brand-grey-500 dark:text-brand-grey-400">{requests.length} {t('dash.requests')}</span>
       </div>
 
-      <div className="space-y-2">
+      {/* GRID kama board — mpya juu kushoto, zamani zinasonga chini */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {requests.map((r, idx) => (
-          <RequestCard key={r.user_id} r={r} isNew={idx === 0 && now - r.received_at < 90000} now={now} online={onlineUserIds.has(r.user_id)} />
+          <RequestCard key={r.user_id} r={r} isNew={idx === 0 && now - r.received_at < 90000} now={now} lang={lang} online={onlineUserIds.has(r.user_id)} />
         ))}
       </div>
     </div>
   );
 }
 
-function RequestCard({ r, isNew, now, online }: { r: Request; isNew: boolean; now: number; online: boolean }) {
+function RequestCard({ r, isNew, now, lang, online }: { r: Request; isNew: boolean; now: number; lang: 'sw' | 'en'; online: boolean }) {
   const t = useT();
   const initial = r.full_name?.charAt(0)?.toUpperCase() || 'U';
   const from = r.current_station;
   const to = r.desired_destinations?.[0];
+  const createdTs = r.created_at ? new Date(r.created_at).getTime() : r.received_at;
+  const ago = timeAgo(isNaN(createdTs) ? now : createdTs, lang);
 
   async function onCall() {
     if (!r.phone_primary) return;
@@ -121,13 +145,13 @@ function RequestCard({ r, isNew, now, online }: { r: Request; isNew: boolean; no
   }
 
   return (
-    <div className={`p-3.5 rounded-2xl border bg-white dark:bg-brand-grey-100 shadow-soft transition hover:shadow-md ${
-      isNew ? 'border-brand-orange ring-2 ring-brand-orange/30 animate-[requestPing_1.5s_ease-in-out]' : 'border-brand-grey-100 dark:border-brand-grey-200'
+    <div className={`card p-4 flex flex-col gap-2.5 transition group ${
+      isNew ? 'border-brand-orange ring-2 ring-brand-orange/30 animate-[requestPing_1.5s_ease-in-out]' : ''
     }`}>
       <div className="flex items-center gap-3">
         {/* Avatar + online */}
         <div className="relative flex-shrink-0">
-          <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-lg`}>
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-lg">
             {initial}
           </div>
           {online && (
@@ -135,50 +159,59 @@ function RequestCard({ r, isNew, now, online }: { r: Request; isNew: boolean; no
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-brand-grey-900 dark:text-white truncate">{r.full_name}</span>
-            {online && <span className="text-[10px] font-bold text-green-500">🟢 {t('dash.online')}</span>}
-            {r.cadre_display && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand-blue-50 dark:bg-brand-blue-900 text-brand-blue dark:text-brand-blue-500 font-medium">{r.cadre_display}</span>
+            {online && (
+              <span className="text-[10px] font-bold text-green-500 inline-flex items-center gap-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> {t('dash.online')}
+              </span>
             )}
           </div>
-
-          {/* Namba ya simu — inabofyeka */}
-          {r.phone_primary && (
-            <a href={`tel:${r.phone_primary}`} className="inline-flex items-center gap-1 mt-0.5 text-sm text-brand-blue font-semibold hover:underline">
-              📞 {r.phone_primary}
-            </a>
-          )}
-
-          {/* Kutoka → Kwenda (kama usafiri!) */}
-          {from && (
-            <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5 truncate">
-              📍 {from.district_name}, {from.region_name}
-              {to && (
-                <span className="text-brand-orange"> → {to.district_name || to.region_name} ({to.region_name})</span>
-              )}
-            </div>
-          )}
-
-          <div className="text-[11px] text-brand-grey-400 mt-0.5">
-            {r.created_at ? `${t('dash.request_ago')} ${formatDistanceToNowStrict(new Date(r.created_at), { addSuffix: true })}` : t('dash.new_request')}
+          <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">
+            {r.cadre_display || r.cadre_code || '—'}
           </div>
         </div>
+      </div>
 
-        {/* Actions */}
-        <div className="flex flex-col gap-1.5 flex-shrink-0">
-          <Link href={`/chats/${r.user_id}`}
-            className="px-3 py-1.5 rounded-lg bg-brand-blue text-white text-xs font-semibold hover:bg-brand-blue-700 transition text-center"
-            title={t('dash.open_chat')}>
-            💬 {t('dash.chat')}
-          </Link>
-          <button onClick={onCall} disabled={!r.phone_primary}
-            className="px-3 py-1.5 rounded-lg bg-brand-orange text-white text-xs font-semibold hover:bg-brand-orange-600 transition disabled:opacity-40"
-            title={r.phone_primary ? `${t('dash.call_prefix')} ${r.phone_primary}` : t('dash.no_number')}>
-            📞 {t('dash.call')}
-          </button>
+      {/* Namba ya simu — inabofyeka */}
+      {r.phone_primary && (
+        <a href={`tel:${r.phone_primary}`} className="inline-flex items-center gap-1 text-sm text-brand-blue font-semibold hover:underline">
+          📞 {r.phone_primary}
+        </a>
+      )}
+
+      {/* Kutoka → Kwenda (kama usafiri!) */}
+      {from && (
+        <div className="text-xs bg-brand-grey-50 dark:bg-brand-grey-100 rounded-lg px-2.5 py-1.5">
+          <div className="text-brand-grey-500 dark:text-brand-grey-400 truncate">
+            📍 {from.district_name}, {from.region_name}
+          </div>
+          {to && (
+            <div className="text-brand-orange truncate">
+              → {to.district_name || to.region_name} ({to.region_name})
+            </div>
+          )}
         </div>
+      )}
+
+      {/* Muda uliopita — live */}
+      <div className={`text-[11px] font-medium ${isNew ? 'text-brand-orange' : 'text-brand-grey-400'}`}>
+        🕐 {ago}
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 mt-auto pt-1">
+        <Link href={`/chats/${r.user_id}`}
+          className="btn-primary text-xs px-3 py-1.5 flex-1 text-center"
+          title={t('dash.open_chat')}>
+          💬 {t('dash.chat')}
+        </Link>
+        <button onClick={onCall} disabled={!r.phone_primary}
+          className="btn-accent text-xs px-3 py-1.5 flex-1 disabled:opacity-40"
+          title={r.phone_primary ? `${t('dash.call_prefix')} ${r.phone_primary}` : t('dash.no_number')}>
+          📞 {t('dash.call')}
+        </button>
       </div>
     </div>
   );
