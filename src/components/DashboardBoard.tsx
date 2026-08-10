@@ -47,7 +47,14 @@ export default function DashboardBoard() {
   const { connected } = useLive();
   const { messages } = useLiveEvents(['match.found', 'user.registered']);
 
-  const singleRegion = regionSel !== '' && regionSel !== '__dests__' ? Number(regionSel) : undefined;
+  // Mkoa mmoja halisi uliochaguliwa: '__dests__' yenye destination moja pia
+  // inamfanya kuwa mkoa huo (district/kituo vinafanya kazi mara moja).
+  const singleRegion = useMemo(() => {
+    if (regionSel === '__dests__') return destRegionIds.length === 1 ? destRegionIds[0] : undefined;
+    if (regionSel === '') return undefined;
+    const n = Number(regionSel);
+    return Number.isNaN(n) ? undefined : n;
+  }, [regionSel, destRegionIds]);
 
   const effectiveRegionIds = useMemo(() => {
     if (regionSel === '__dests__') return destRegionIds;

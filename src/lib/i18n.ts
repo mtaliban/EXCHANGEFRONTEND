@@ -270,6 +270,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'contacts.call_time': 'simu',
     /* ── Dashboard ── */
     'dash.welcome': 'Karibu', 'dash.request_feed': 'Request Mpya za Kubadilishana',
+    'dash.request_feed_sub': 'Wanaokuja mkoa wako tu — kutoka mikoa unayotaka kwenda',
     'dash.requests': 'request', 'dash.new_user': 'Mtumiaji mpya',
     'dash.request_ago': 'Request muda:', 'dash.new_request': 'Request mpya',
     'dash.online': 'ONLINE', 'dash.chat': 'Chat', 'dash.call': 'Piga',
@@ -622,6 +623,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'contacts.call_time': 'call',
     /* ── Dashboard ── */
     'dash.welcome': 'Welcome', 'dash.request_feed': 'New Exchange Requests',
+    'dash.request_feed_sub': 'Only people coming to your region — from the regions you want to go to',
     'dash.requests': 'request', 'dash.new_user': 'New user',
     'dash.request_ago': 'Request age:', 'dash.new_request': 'New request',
     'dash.online': 'ONLINE', 'dash.chat': 'Chat', 'dash.call': 'Call',

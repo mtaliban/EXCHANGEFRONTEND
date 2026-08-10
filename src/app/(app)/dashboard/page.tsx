@@ -2,27 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { getContactStats } from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import OnlineNowWidget from '@/components/OnlineNowWidget';
 import RequestFeed from '@/components/RequestFeed';
 import DashboardBoard from '@/components/DashboardBoard';
-import ContactStatCard from '@/components/ContactStatCard';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 
 export default function DashboardPage() {
   const t = useT();
   const { user } = useAuth();
-  const [contactStats, setContactStats] = useState<any>(null);
-  const [openStat, setOpenStat] = useState<string | null>(null);
-  const [showComm, setShowComm] = useState(false);
   const { connected } = useLive();
   const { messages } = useLiveEvents(['match.found', 'user.registered', 'payment.approved']);
-
-  useEffect(() => {
-    getContactStats().then(setContactStats).catch(() => {});
-  }, []);
 
   // Notify-ish: live pulse on new events
   const [pulse, setPulse] = useState(0);
@@ -58,40 +49,6 @@ export default function DashboardPage() {
       {/* ═══ AD-BOARD + STATS + GRID (chini) ═══ */}
       <DashboardBoard />
 
-      {/* ═══ COMMUNICATION STATS (chini — inafunguka akitaka) ═══ */}
-      {contactStats && (
-        <div className="card p-4">
-          <button type="button" onClick={() => setShowComm(!showComm)} className="w-full flex items-center justify-between">
-            <h2 className="font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">📊 {t('dash.contact_stats')}</h2>
-            <span className="text-xs text-brand-grey-400">{showComm ? '▲' : '▼'} {t('action.view_all')}</span>
-          </button>
-          {showComm && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
-              <ContactStatCard
-                icon="📥" title={t('contacts.incoming_calls')} count={contactStats.incoming_calls.count}
-                people={contactStats.incoming_calls.people}
-                open={openStat === 'incoming_calls'} onToggle={() => setOpenStat(openStat === 'incoming_calls' ? null : 'incoming_calls')}
-              />
-              <ContactStatCard
-                icon="💬" title={t('contacts.incoming_messages')} count={contactStats.incoming_messages.count}
-                people={contactStats.incoming_messages.people}
-                open={openStat === 'incoming_messages'} onToggle={() => setOpenStat(openStat === 'incoming_messages' ? null : 'incoming_messages')}
-              />
-              <ContactStatCard
-                icon="📤" title={t('contacts.outgoing_calls')} count={contactStats.outgoing_calls.count}
-                people={contactStats.outgoing_calls.people}
-                open={openStat === 'outgoing_calls'} onToggle={() => setOpenStat(openStat === 'outgoing_calls' ? null : 'outgoing_calls')}
-              />
-              <ContactStatCard
-                icon="✉️" title={t('contacts.outgoing_messages')} count={contactStats.outgoing_messages.count}
-                people={contactStats.outgoing_messages.people}
-                open={openStat === 'outgoing_messages'} onToggle={() => setOpenStat(openStat === 'outgoing_messages' ? null : 'outgoing_messages')}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Online now + live events */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-1"><OnlineNowWidget /></div>
@@ -111,10 +68,9 @@ function LiveEventsList() {
   useEffect(() => {
     const un = subscribe('*', (p: any) => {
       const type = p.event || p.type || 'unknown';
-      if (type === 'pong') return;
+      if (type === 'pong' || type === 'presence' || type === 'typing') return;
       const text = type === 'match.found' ? `Match: ${p.candidate?.full_name || ''}` :
                    type === 'message.sent' ? `${t('dash.msg_from')} ${p.from_full_name || ''}` :
-                   type === 'typing' ? `Typing: ${p.from_user_id}` :
                    type === 'call.initiated' ? `${t('dash.call_from')} ${p.from_full_name || ''}` :
                    type === 'user.registered' ? `${t('dash.new_registration')}: ${p.full_name || ''}` :
                    type === 'notification' ? `${p.title || ''}` : type;

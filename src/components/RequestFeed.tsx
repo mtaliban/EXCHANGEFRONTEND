@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { useLiveEvents } from '@/lib/useLiveEvents';
@@ -56,6 +56,25 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
   const [now, setNow] = useState(Date.now());
   const seen = useRef<Set<string>>(new Set());
 
+  // Feed ya LIVE = watu wanaokuja MKOA WANGU tu, kutoka MIKOA yangu ya
+  // destinations (k.m. wako Dar wanaokuja Dodoma). Wengine — wanachujwa kwenye
+  // board (hawaingii feed ya live).
+  const myStation = (user?.current_station || {}) as any;
+  const myRegionId = myStation?.region_id as number | undefined;
+  const myDestIds = ((user?.desired_destinations || []) as any[])
+    .map((d) => d.region_id).filter((x): x is number => typeof x === 'number');
+
+  const isRelevant = useMemo(() => (u: any): boolean => {
+    if (!myRegionId) return true;
+    const wantsToCome = (u.desired_destinations || []).some((d: any) => d.region_id === myRegionId);
+    if (!wantsToCome) return false; // hataki kuja mkoa wangu
+    if (myDestIds.length) {
+      const src = u.current_station?.region_id;
+      if (!myDestIds.includes(src)) return false; // sio kutoka mikoa yangu ya kwenda
+    }
+    return true;
+  }, [myRegionId, myDestIds]);
+
   // Re-render time-ago labels every 30s
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -67,14 +86,15 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
     if (seen.current.size > 200) seen.current.clear();
   }, [requests.length]);
 
-  // Seed initial feed with recently registered users (idara yangu tu)
+  // Seed initial feed: idara yangu + wanaokuja mkoa wangu kutoka mikoa yangu
   useEffect(() => {
     (async () => {
       try {
-        const d = await getRecentUsers(limit * 3);
+        const d = await getRecentUsers(limit * 6);
         const items = d.users
           .filter((u) => u.user_id !== user?.user_id)
           .filter((u) => !user?.category || u.category === user.category)
+          .filter(isRelevant)
           .slice(0, limit)
           .map((u) => ({ ...u, received_at: new Date(u.created_at || Date.now()).getTime() }));
         items.forEach((i) => seen.current.add(i.user_id));
@@ -84,7 +104,8 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
     // eslint-disable-next-line
   }, [limit, user?.category, user?.user_id]);
 
-  // Live: new registration → prepend request card (Uber ping!)
+  // Live: new registration → prepend request card (Uber ping!) — lakini
+  // TU kama anakuja mkoa wangu kutoka mikoa yangu ya destinations.
   useEffect(() => {
     if (!messages.length || !user) return;
     const latest = messages[messages.length - 1];
@@ -94,6 +115,7 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
     // Idara yangu tu — usichanganye walimu na afya kwenye feed
     if (user?.category && p.category !== user.category) return;
     if (!uid || uid === user.user_id || seen.current.has(uid)) return;
+    if (!isRelevant(p)) return;
     seen.current.add(uid);
     const card: Request = {
       user_id: uid,      full_name: p.full_name || t('dash.new_user'),
@@ -109,15 +131,20 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
-          <span className="relative flex w-2.5 h-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
-            <span className="relative inline-flex rounded-full w-2.5 h-2.5 bg-brand-orange"></span>
-          </span>
-          {t('dash.request_feed')}
-        </h2>
-        <span className="text-xs text-brand-grey-500 dark:text-brand-grey-400">{requests.length} {t('dash.requests')}</span>
+      <div className="flex items-start justify-between mb-2 gap-2">
+        <div>
+          <h2 className="font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+            <span className="relative flex w-2.5 h-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
+              <span className="relative inline-flex rounded-full w-2.5 h-2.5 bg-brand-orange"></span>
+            </span>
+            {t('dash.request_feed')}
+          </h2>
+          <p className="text-[11px] text-brand-grey-400 dark:text-brand-grey-500 mt-0.5">
+            {t('dash.request_feed_sub')}
+          </p>
+        </div>
+        <span className="text-xs text-brand-grey-500 dark:text-brand-grey-400 flex-shrink-0">{requests.length} {t('dash.requests')}</span>
       </div>
 
       {/* GRID kama board — mpya juu kushoto, zamani zinasonga chini */}
