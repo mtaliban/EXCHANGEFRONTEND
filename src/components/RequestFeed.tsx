@@ -127,7 +127,30 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
     setRequests((prev) => [card, ...prev].slice(0, limit));
   }, [messages.length, user, limit]);
 
-  if (requests.length === 0) return null;
+  if (requests.length === 0) {
+    return (
+      <div>
+        <div className="flex items-start justify-between mb-2 gap-2">
+          <div>
+            <h2 className="font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+              <span className="relative flex w-2.5 h-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
+                <span className="relative inline-flex rounded-full w-2.5 h-2.5 bg-brand-orange"></span>
+              </span>
+              {t('dash.request_feed')}
+            </h2>
+            <p className="text-[11px] text-brand-grey-400 dark:text-brand-grey-500 mt-0.5">
+              {t('dash.request_feed_sub')}
+            </p>
+          </div>
+        </div>
+        <div className="card p-6 text-center">
+          <div className="text-2xl mb-2">🎯</div>
+          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400">{t('dash.request_feed_empty')}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
