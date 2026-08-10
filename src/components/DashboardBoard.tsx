@@ -11,6 +11,7 @@ import {
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
+import { getInitial } from '@/lib/initials';
 
 type Scope = 'incoming' | 'all';
 
@@ -337,7 +338,7 @@ export default function DashboardBoard() {
 
 function BoardCard({ c, online }: { c: any; online: boolean }) {
   const t = useT();
-  const initial = c.full_name?.charAt(0)?.toUpperCase() || 'U';
+  const initial = getInitial(c.full_name);
   const from = c.current_station;
   const to = c.desired_destinations?.[0];
   const scorePct = c.score != null ? Math.round(c.score * 100) : null;

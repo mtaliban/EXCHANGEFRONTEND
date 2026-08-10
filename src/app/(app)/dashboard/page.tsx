@@ -10,6 +10,7 @@ import RequestFeed from '@/components/RequestFeed';
 import DashboardBoard from '@/components/DashboardBoard';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
+import { getInitial } from '@/lib/initials';
 
 export default function DashboardPage() {
   const t = useT();
@@ -24,7 +25,7 @@ export default function DashboardPage() {
   }, [messages.length]);
 
   const myStation = (user?.current_station || {}) as any;
-  const initial = user?.full_name?.charAt(0)?.toUpperCase() || 'U';
+  const initial = getInitial(user?.full_name);
 
   return (
     <div className="p-4 md:p-6 space-y-6">

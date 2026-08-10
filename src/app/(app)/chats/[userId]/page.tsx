@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { dayChipLabel, messageTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
+import { getInitial } from '@/lib/initials';
 
 export default function ChatViewPage() {
   const t = useT();
@@ -118,7 +119,7 @@ export default function ChatViewPage() {
   // Genuine online = present in the live WS set OR fresh profile flag
   const online = onlineUserIds.has(otherUserId) || other?.online;
   const lastSeen = other?.last_seen_at ? formatDistanceToNowStrict(new Date(other.last_seen_at), { addSuffix: true }) : null;
-  const initial = (other?.full_name || 'U')?.charAt(0)?.toUpperCase() || 'U';
+  const initial = getInitial(other?.full_name);
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen bg-brand-grey-50">

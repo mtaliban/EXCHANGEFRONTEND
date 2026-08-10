@@ -8,6 +8,7 @@ import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
+import { getInitial } from '@/lib/initials';
 
 export default function ChatsPage() {
   const t = useT();
@@ -61,7 +62,7 @@ export default function ChatsPage() {
                 className="flex items-center gap-3 p-4 hover:bg-brand-grey-50 transition">
                 <div className="relative flex-shrink-0">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold">
-                    {c.with_full_name?.charAt(0).toUpperCase()}
+                    {getInitial(c.with_full_name)}
                   </div>
                   {onlineUserIds.has(c.with_user_id) && (
                     <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-white"></span>

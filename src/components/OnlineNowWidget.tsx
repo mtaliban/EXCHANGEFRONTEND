@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { listOnlineUsers } from '@/lib/api';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
+import { getInitial } from '@/lib/initials';
 
 /**
  * Widget showing users currently online (WebSocket-connected).
@@ -52,7 +53,7 @@ export default function OnlineNowWidget() {
             className="flex items-center gap-2 p-2 rounded-lg hover:bg-brand-grey-50 transition">
             <div className="relative flex-shrink-0">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white text-xs font-bold">
-                {u.full_name?.charAt(0).toUpperCase()}
+                {getInitial(u.full_name)}
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
             </div>

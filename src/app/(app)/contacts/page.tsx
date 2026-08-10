@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { listContacts, getContactStats, logCall } from '@/lib/api';
 import ContactStatCard from '@/components/ContactStatCard';
 import { useT } from '@/lib/i18n';
+import { getInitial } from '@/lib/initials';
 
 export default function ContactsPage() {
   const t = useT();
@@ -91,7 +92,7 @@ export default function ContactsPage() {
               <div key={c.user_id} className="p-4 hover:bg-brand-grey-50 transition">
                 <div className="flex items-start gap-3">
                   <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold flex-shrink-0">
-                    {c.full_name?.charAt(0).toUpperCase()}
+                    {getInitial(c.full_name)}
                     {c.online && (
                       <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-400 border-2 border-white"></span>
                     )}

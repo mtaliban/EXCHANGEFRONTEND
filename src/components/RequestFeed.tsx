@@ -7,6 +7,7 @@ import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { getRecentUsers, logCall } from '@/lib/api';
 import { useI18n, useT } from '@/lib/i18n';
+import { getInitial } from '@/lib/initials';
 
 interface Request {
   user_id: string;
@@ -63,6 +64,11 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
   const myRegionId = myStation?.region_id as number | undefined;
   const myDestIds = ((user?.desired_destinations || []) as any[])
     .map((d) => d.region_id).filter((x): x is number => typeof x === 'number');
+  // Kiwango cha elimu: mwalimu wa MSINGI aone MSINGI tu, SEKONDARI → sekondari tu.
+  const myLevel =
+    user?.cadre_code === 'TEACHER_PRIMARY' ? 'Primary'
+    : user?.cadre_code === 'TEACHER_SECONDARY' ? 'Secondary'
+    : null;
 
   const isRelevant = useMemo(() => (u: any): boolean => {
     if (!myRegionId) return true;
@@ -72,8 +78,15 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
       const src = u.current_station?.region_id;
       if (!myDestIds.includes(src)) return false; // sio kutoka mikoa yangu ya kwenda
     }
+    if (myLevel) {
+      const uLevel =
+        u.cadre_code === 'TEACHER_PRIMARY' ? 'Primary'
+        : u.cadre_code === 'TEACHER_SECONDARY' ? 'Secondary'
+        : null;
+      if (uLevel !== myLevel) return false; // msingi ↔ msingi, sekondari ↔ sekondari
+    }
     return true;
-  }, [myRegionId, myDestIds]);
+  }, [myRegionId, myDestIds, myLevel]);
 
   // Re-render time-ago labels every 30s
   useEffect(() => {
@@ -181,7 +194,7 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
 
 function RequestCard({ r, isNew, now, lang, online }: { r: Request; isNew: boolean; now: number; lang: 'sw' | 'en'; online: boolean }) {
   const t = useT();
-  const initial = r.full_name?.charAt(0)?.toUpperCase() || 'U';
+  const initial = getInitial(r.full_name);
   const from = r.current_station;
   const to = r.desired_destinations?.[0];
   const createdTs = r.created_at ? new Date(r.created_at).getTime() : r.received_at;
