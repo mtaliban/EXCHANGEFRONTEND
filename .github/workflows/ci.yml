@@ -43,5 +43,5 @@ jobs:
 
       - name: Build (Next.js)
         env:
-          NEXT_PUBLIC_API_URL: http://localhost:8080
+          NEXT_PUBLIC_API_URL: https://api.16-171-23-21.sslip.io
         run: npm run build

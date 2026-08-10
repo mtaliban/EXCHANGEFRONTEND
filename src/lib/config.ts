@@ -28,8 +28,13 @@ function localApi(baked: string): string {
   return 'http://localhost:8080';
 }
 
+// Default ya production (Caddy HTTPS kwenye EC2). Inatumika kama build haina
+// env var — ili bundle isishipwe kamwe ikiwa na localhost kwenye internet.
+// Local dev bado inafanya kazi: isLocalHost() inarudisha local backend.
+const PRODUCTION_API_URL = 'https://api.16-171-23-21.sslip.io';
+
 export const API_URL: string = (() => {
-  const baked = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  const baked = process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
   if (isLocalHost()) return localApi(baked);
   if (/localhost|127\.0\.0\.1/.test(baked)) {
     console.warn('[config] Not on localhost but NEXT_PUBLIC_API_URL points to', baked, '— set it to the public backend URL at build time.');
@@ -38,7 +43,7 @@ export const API_URL: string = (() => {
 })();
 
 export const WS_URL: string = (() => {
-  const baked = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  const baked = process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
   const base = isLocalHost() ? localApi(baked) : baked;
   return `${base.replace(/^http/, 'ws')}/ws`;
 })();
