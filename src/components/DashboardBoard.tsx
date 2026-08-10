@@ -222,8 +222,8 @@ export default function DashboardBoard() {
         {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
         <div className="px-4 md:px-5 pt-4">
           <label className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{t('board.filter_source')}</label>
-          <div className="flex flex-wrap gap-2 mt-1.5">
-            <select className="input flex-1 min-w-[160px]" value={regionSel}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mt-1.5">
+            <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={regionSel}
               onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); }}>
               {watchedIds.length > 0 && (
                 <option value="__all__">
@@ -240,7 +240,7 @@ export default function DashboardBoard() {
               ))}
             </select>
 
-            <select className="input flex-1 min-w-[160px]" value={districtId ?? ''}
+            <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={districtId ?? ''}
               onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : undefined)}
               disabled={singleRegion === undefined}
               title={t('board.filter_district_select')}>
@@ -250,7 +250,7 @@ export default function DashboardBoard() {
               ))}
             </select>
 
-            <select className="input flex-1 min-w-[160px]" value={facilityId ?? ''}
+            <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={facilityId ?? ''}
               onChange={(e) => setFacilityId(e.target.value || undefined)}
               disabled={districtId === undefined}
               title={t('board.filter_facility_select')}>
@@ -317,13 +317,6 @@ export default function DashboardBoard() {
       </div>
 
       {/* ═══ GRID YA WANAOKUJA MKOA WAKO (title moja iko juu — cards tu hapa) ═══ */}
-      {candidates.length === 0 && !loading && (
-        <div className="card py-12 text-center text-brand-grey-500">
-          <div className="text-5xl mb-3">🔎</div>
-          <p className="text-sm">{t('board.no_candidates')}</p>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {candidates.map((c: any) => (
           <BoardCard key={c.user_id} c={c} online={!!c.online} now={now} lang={lang} mySubjects={mySubjects} />
