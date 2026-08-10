@@ -46,13 +46,14 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
     if (seen.current.size > 200) seen.current.clear();
   }, [requests.length]);
 
-  // Seed initial feed with recently registered users
+  // Seed initial feed with recently registered users (idara yangu tu)
   useEffect(() => {
     (async () => {
       try {
-        const d = await getRecentUsers(limit);
+        const d = await getRecentUsers(limit * 3);
         const items = d.users
           .filter((u) => u.user_id !== user?.user_id)
+          .filter((u) => !user?.category || u.category === user.category)
           .slice(0, limit)
           .map((u) => ({ ...u, received_at: new Date(u.created_at || Date.now()).getTime() }));
         items.forEach((i) => seen.current.add(i.user_id));
@@ -60,7 +61,7 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
       } catch {}
     })();
     // eslint-disable-next-line
-  }, [limit]);
+  }, [limit, user?.category, user?.user_id]);
 
   // Live: new registration → prepend request card (Uber ping!)
   useEffect(() => {
@@ -69,6 +70,8 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
     if (!latest || latest.topic !== 'user.registered') return;
     const p = latest.payload || {};
     const uid = p.user_id;
+    // Idara yangu tu — usichanganye walimu na afya kwenye feed
+    if (user?.category && p.category !== user.category) return;
     if (!uid || uid === user.user_id || seen.current.has(uid)) return;
     seen.current.add(uid);
     const card: Request = {

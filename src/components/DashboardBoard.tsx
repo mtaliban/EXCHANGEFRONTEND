@@ -16,6 +16,8 @@ export default function DashboardBoard() {
   const { user } = useAuth();
   const myStation = (user?.current_station || {}) as any;
   const dests = (user?.desired_destinations || []) as any[];
+  const myCategory = user?.category;
+  const isEdu = myCategory === 'education';
   // Default source: mkoa anayotaka kwenda (k.m. Dar) — hii ndiyo "Wanaokuja mkoa wako wanaotokea Dar"
   const defaultSource = dests[0]?.region_id as number | undefined;
 
@@ -116,7 +118,10 @@ export default function DashboardBoard() {
               <span className="w-2.5 h-2.5 rounded-full bg-brand-orange inline-block animate-pulse" />
               {t('board.title')} <span className="text-brand-orange">({myStation.region_name || ''})</span>
             </h2>
-            <p className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5">
+            <p className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isEdu ? 'bg-brand-orange-50 text-brand-orange' : 'bg-brand-blue-50 text-brand-blue'}`}>
+                {isEdu ? '👩🏫' : '🏥'} {isEdu ? t('label.category_education') : t('label.category_health')}
+              </span>
               {scope === 'incoming' ? t('board.incoming_desc') : t('board.all_desc')} • {t('board.subtitle')}
             </p>
           </div>
