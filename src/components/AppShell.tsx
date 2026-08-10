@@ -6,7 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
-import { getUnreadCount, getRegions, getFollowedRegions, updateFollowedRegions, type Region } from '@/lib/api';
+import { getUnreadCount, getRegions, updateFollowedRegions, type Region } from '@/lib/api';
+import { useFollowStore } from '@/lib/followStore';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { useTheme, applyTheme } from '@/lib/theme';
@@ -69,7 +70,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <WsStatus dark={isAdmin} />
               <div className="flex items-center gap-0.5">
                 <Megaphone dark={isAdmin} />
-                <FollowRegionsButton dark={isAdmin} />
                 <NotificationsBell isAdmin={isAdmin} />
                 <ThemeToggle dark={isAdmin} />
                 <LangToggle dark={isAdmin} />
@@ -101,6 +101,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
+
+          {/* Fuata Mikoa — kubwa, inayoonekana kwenye nav */}
+          <div className="p-2 pt-0">
+            <FollowRegionsButton dark={isAdmin} />
+          </div>
 
           <div className={clsx('p-3 border-t hidden md:block mt-auto',
             isAdmin ? 'border-brand-grey-700' : 'border-brand-grey-100')}>
@@ -181,21 +186,22 @@ function LangToggle({ dark }: { dark?: boolean }) {
   );
 }
 
-/** Fuata Mikoa — dropdown kwenye nav: chagua mikoa ya chanzo ya live notifications. */
+/** Fuata Mikoa — item kubwa ya nav: chagua mikoa ya chanzo ya live notifications. */
 function FollowRegionsButton({ dark }: { dark?: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const [regions, setRegions] = useState<Region[]>([]);
-  const [followed, setFollowed] = useState<number[]>([]);
+  const followed = useFollowStore((s) => s.region_ids);
+  const loadFollow = useFollowStore((s) => s.load);
+  const setFollow = useFollowStore((s) => s.set);
   const [saved, setSaved] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Load regions + followed each time the dropdown opens
+  // Load regions + followed (shared store) on mount + each time the dropdown opens
   useEffect(() => {
-    if (!open) return;
+    loadFollow();
     getRegions().then(setRegions).catch(() => {});
-    getFollowedRegions().then((r) => setFollowed(r.region_ids)).catch(() => {});
-  }, [open]);
+  }, [loadFollow]);
 
   // Close on outside click
   useEffect(() => {
@@ -209,7 +215,7 @@ function FollowRegionsButton({ dark }: { dark?: boolean }) {
 
   async function toggle(rid: number) {
     const next = followed.includes(rid) ? followed.filter((x) => x !== rid) : [...followed, rid];
-    setFollowed(next);
+    setFollow(next);
     setSaved(true);
     try { await updateFollowedRegions(next); } finally {
       setTimeout(() => setSaved(false), 2000);
@@ -220,18 +226,23 @@ function FollowRegionsButton({ dark }: { dark?: boolean }) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className={clsx('relative p-1.5 rounded-md transition',
-          dark ? 'hover:bg-brand-grey-800 text-white' : 'hover:bg-brand-grey-100 text-brand-grey-700')}
+        className={clsx('w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition',
+          open
+            ? isAdminDark(dark)
+            : dark ? 'text-brand-grey-300 hover:bg-brand-grey-800' : 'text-brand-grey-700 hover:bg-brand-grey-50')}
         title={t('board.follow_btn_title')}
         aria-label="Fuata mikoa"
       >
-        <Radio size={18} strokeWidth={2.2} />
+        <Radio size={18} strokeWidth={2.2} className="flex-shrink-0" />
+        <span className="hidden md:inline flex-1 text-left">{t('board.follow')}</span>
         {followed.length > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-brand-orange" />
+          <span className="hidden md:inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-orange text-white">
+            {followed.length}
+          </span>
         )}
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-72 max-w-[calc(100vw-2rem)] max-h-80 overflow-y-auto rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-50 p-3">
+        <div className="absolute left-0 top-full mt-1 w-72 max-w-[calc(100vw-2rem)] max-h-80 overflow-y-auto rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-50 p-3">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-bold text-brand-grey-900 dark:text-white">🔔 {t('board.follow')}</span>
             {saved && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_saved')}</span>}
@@ -252,6 +263,10 @@ function FollowRegionsButton({ dark }: { dark?: boolean }) {
       )}
     </div>
   );
+}
+
+function isAdminDark(dark?: boolean) {
+  return dark ? 'bg-brand-grey-800 text-white' : 'bg-brand-blue-50 text-brand-blue';
 }
 
 /** Live notifications bell with unread badge. */

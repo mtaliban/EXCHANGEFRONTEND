@@ -11,6 +11,7 @@ import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useI18n, useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 import { timeAgo } from '@/lib/timeAgo';
+import { useFollowStore } from '@/lib/followStore';
 
 const FRESH_MS = 3 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya dakika 3
 
@@ -23,7 +24,8 @@ export default function DashboardBoard() {
   const myCategory = user?.category;
   const isEdu = myCategory === 'education';
 
-  // Mikoa anayotaka kwenda (k.m. Dar + Mwanza) — option "Mikoa yangu" kwenye filter.
+  // Mikoa anayotaka kwenda (k.m. Dar + Pwani) + mikoa aliyoifuata (k.m. Tanga)
+  // — hizi ndizo "Mikoa yote" ya mtumiaji (sio mikoa yote 26 ya Tanzania).
   const destRegionIds = useMemo(
     () => Array.from(new Set(dests.map((d) => d.region_id).filter((x): x is number => typeof x === 'number'))),
     [dests]
@@ -32,15 +34,32 @@ export default function DashboardBoard() {
     () => Array.from(new Set(dests.map((d) => d.region_name).filter(Boolean))),
     [dests]
   );
+  const followedIds = useFollowStore((s) => s.region_ids);
+  const loadFollow = useFollowStore((s) => s.load);
+  const [regions, setRegions] = useState<Region[]>([]);
 
-  // Chanzo: default = '__dests__' (Mikoa yangu — wale waliopo kwenye mikoa
-  // unayotaka kwenda, k.m. Dar+Pwani wanaokuja Dodoma). Badilisha → Mikoa
-  // yote, mkoa mmoja, wilaya, kituo.
-  const [regionSel, setRegionSel] = useState<string>(destRegionIds.length > 0 ? '__dests__' : '');
+  // Mikoa YOTE anayojali = destinations + followed (nav inabadilisha mara moja)
+  const watchedIds = useMemo(() => {
+    const s = new Set<number>(destRegionIds);
+    (followedIds || []).forEach((id) => s.add(id));
+    return Array.from(s);
+  }, [destRegionIds, followedIds]);
+
+  const watchedNames = useMemo(() => {
+    const s = new Set<string>(destRegionNames);
+    (followedIds || []).forEach((id) => {
+      const r = regions.find((x) => x.id === id);
+      if (r) s.add(r.name);
+    });
+    return Array.from(s);
+  }, [destRegionNames, followedIds, regions]);
+
+  // Chanzo: default = '__all__' (Mikoa yote = mikoa yangu yote pamoja,
+  // k.m. Dar+Pwani wanaokuja Dodoma). Chagua mkoa mmoja → wilaya → kituo.
+  const [regionSel, setRegionSel] = useState<string>(destRegionIds.length > 0 ? '__all__' : '');
   const [districtId, setDistrictId] = useState<number | undefined>();
   const [facilityId, setFacilityId] = useState<string | undefined>();
   const [board, setBoard] = useState<any>(null);
-  const [regions, setRegions] = useState<Region[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,19 +72,20 @@ export default function DashboardBoard() {
     return () => clearInterval(id);
   }, []);
 
-  // Mkoa mmoja halisi uliochaguliwa (kwa cascading wilaya/vituo)
+  // Mkoa mmoja halisi uliochaguliwa (kwa cascading wilaya/vituo).
+  // '__all__' yenye mkoa MMOJA tu pia inafanya wilaya zifanye kazi mara moja.
   const singleRegion = useMemo(() => {
-    if (regionSel === '__dests__') return destRegionIds.length === 1 ? destRegionIds[0] : undefined;
+    if (regionSel === '__all__') return watchedIds.length === 1 ? watchedIds[0] : undefined;
     if (regionSel === '') return undefined;
     const n = Number(regionSel);
     return Number.isNaN(n) ? undefined : n;
-  }, [regionSel, destRegionIds]);
+  }, [regionSel, watchedIds]);
 
   const effectiveRegionIds = useMemo(() => {
-    if (regionSel === '__dests__') return destRegionIds;
+    if (regionSel === '__all__') return watchedIds;
     if (singleRegion !== undefined) return [singleRegion];
     return [];
-  }, [regionSel, destRegionIds, singleRegion]);
+  }, [regionSel, watchedIds, singleRegion]);
 
   const loadBoard = useCallback(async () => {
     setLoading(true);
@@ -81,10 +101,16 @@ export default function DashboardBoard() {
     }
   }, [effectiveRegionIds, districtId, facilityId]);
 
-  // Load regions kwa dropdown ya chanzo
+  // Load regions kwa dropdown ya chanzo + followed regions (store ya pamoja na nav)
   useEffect(() => {
     getRegions().then(setRegions).catch(() => {});
-  }, []);
+    loadFollow();
+  }, [loadFollow]);
+
+  // Sync: mtu asiye na destinations lakini akafuata mikoa → '__all__' bado ifanye kazi
+  useEffect(() => {
+    if (regionSel === '' && watchedIds.length > 0) setRegionSel('__all__');
+  }, [regionSel, watchedIds]);
 
   // Cascading: wilaya za mkoa mmoja uliochagua
   useEffect(() => {
@@ -122,7 +148,7 @@ export default function DashboardBoard() {
   }, [messages.length]);
 
   const clearFilters = () => {
-    setRegionSel(destRegionIds.length > 0 ? '__dests__' : '');
+    setRegionSel(watchedIds.length > 0 ? '__all__' : '');
     setDistrictId(undefined);
     setFacilityId(undefined);
   };
@@ -149,11 +175,11 @@ export default function DashboardBoard() {
       ? chips.list.find((c: any) => c.district_id === districtId)?.district_name
       : currentRegionName
         ? currentRegionName
-        : regionSel === '__dests__' && destRegionNames.length
-          ? destRegionNames.join(', ')
+        : regionSel === '__all__' && watchedNames.length
+          ? watchedNames.join(', ')
           : null;
 
-  const hasFilter = effectiveRegionIds.length > 0 || districtId !== undefined || facilityId !== undefined;
+  const hasFilter = regionSel !== '__all__' || districtId !== undefined || facilityId !== undefined;
 
   // Masomo yangu (kwa highlight ya masomo yanayolingana kwenye cards)
   const mySubjects = useMemo(() => (user?.subjects || []) as string[], [user?.subjects]);
@@ -174,10 +200,17 @@ export default function DashboardBoard() {
       {/* ═══ AD-BOARD: Wanaokuja Mkoa Wako ═══ */}
       <div className="card overflow-hidden">
         <div className="p-4 md:p-5 border-b border-brand-grey-100 dark:border-brand-grey-200">
-          <h2 className="font-bold text-lg text-brand-grey-900 dark:text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-brand-orange inline-block animate-pulse" />
-            {t('board.title')} <span className="text-brand-orange">{myStation.region_name || ''}</span>
-          </h2>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <h2 className="font-bold text-lg text-brand-grey-900 dark:text-white flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-brand-orange inline-block animate-pulse" />
+              {t('board.title')} <span className="text-brand-orange">{myStation.region_name || ''}</span>
+            </h2>
+            {!loading && (
+              <span className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">
+                {board?.total ?? 0} {t('board.total_people')}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
             <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isEdu ? 'bg-brand-orange-50 text-brand-orange' : 'bg-brand-blue-50 text-brand-blue'}`}>
               {isEdu ? '👩🏫' : '🏥'} {isEdu ? t('label.category_education') : t('label.category_health')}
@@ -192,11 +225,17 @@ export default function DashboardBoard() {
           <div className="flex flex-wrap gap-2 mt-1.5">
             <select className="input flex-1 min-w-[160px]" value={regionSel}
               onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); }}>
-              <option value="">{t('board.all_regions')}</option>
-              {destRegionIds.length > 0 && (
-                <option value="__dests__">{t('board.my_regions')} ({destRegionNames.join(', ')})</option>
+              {watchedIds.length > 0 && (
+                <option value="__all__">
+                  {watchedNames.length ? `${t('board.all_regions')} (${watchedNames.join(', ')})` : t('board.all_regions')}
+                </option>
               )}
-              {regions.map((r) => (
+              {watchedIds.map((rid) => {
+                const r = regions.find((x) => x.id === rid);
+                return r ? <option key={r.id} value={String(r.id)}>{r.name}</option> : null;
+              })}
+              {/* Fallback: mtu asiye na destinations yoyote — mikoa yote ya Tanzania */}
+              {watchedIds.length === 0 && regions.map((r) => (
                 <option key={r.id} value={String(r.id)}>{r.name}</option>
               ))}
             </select>
@@ -225,9 +264,7 @@ export default function DashboardBoard() {
           </div>
           <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
             <span className="text-xs text-brand-blue">
-              📍 {activeFilterLabel || (regionSel === '__dests__' && destRegionNames.length
-                ? `${t('board.my_regions')}: ${destRegionNames.join(', ')}`
-                : t('board.all_regions'))}
+              📍 {activeFilterLabel || t('board.all_regions')}
             </span>
             {hasFilter && (
               <button type="button" onClick={clearFilters} className="text-xs text-brand-red hover:underline">
@@ -279,28 +316,18 @@ export default function DashboardBoard() {
         </div>
       </div>
 
-      {/* ═══ GRID YA WANAOKUJA MKOA WAKO ═══ */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-bold text-brand-grey-900 dark:text-white">
-            {t('board.title')} {myStation.region_name && <span className="text-brand-orange">{myStation.region_name}</span>}
-            {activeFilterLabel && <span className="text-brand-orange"> — {activeFilterLabel}</span>}
-          </h3>
-          <span className="text-xs text-brand-grey-500 dark:text-brand-grey-400">{board?.total ?? 0} {t('board.total_people')}</span>
+      {/* ═══ GRID YA WANAOKUJA MKOA WAKO (title moja iko juu — cards tu hapa) ═══ */}
+      {candidates.length === 0 && !loading && (
+        <div className="card py-12 text-center text-brand-grey-500">
+          <div className="text-5xl mb-3">🔎</div>
+          <p className="text-sm">{t('board.no_candidates')}</p>
         </div>
+      )}
 
-        {candidates.length === 0 && !loading && (
-          <div className="card py-12 text-center text-brand-grey-500">
-            <div className="text-5xl mb-3">🔎</div>
-            <p className="text-sm">{t('board.no_candidates')}</p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {candidates.map((c: any) => (
-            <BoardCard key={c.user_id} c={c} online={!!c.online} now={now} lang={lang} mySubjects={mySubjects} />
-          ))}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        {candidates.map((c: any) => (
+          <BoardCard key={c.user_id} c={c} online={!!c.online} now={now} lang={lang} mySubjects={mySubjects} />
+        ))}
       </div>
     </div>
   );
