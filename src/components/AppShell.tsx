@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
-import { getUnreadCount } from '@/lib/api';
+import { getUnreadCount, getRegions, getFollowedRegions, updateFollowedRegions, type Region } from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { useTheme, applyTheme } from '@/lib/theme';
@@ -15,7 +15,7 @@ import Megaphone from '@/components/Megaphone';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import {
   BarChart3, Bell, Contact, Crown, Heart, Languages, LayoutDashboard,
-  LogOut, Megaphone as MegaphoneIcon, MessageSquare, User, Users, Wallet, Zap,
+  LogOut, Megaphone as MegaphoneIcon, MessageSquare, Radio, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -69,6 +69,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <WsStatus dark={isAdmin} />
               <div className="flex items-center gap-0.5">
                 <Megaphone dark={isAdmin} />
+                <FollowRegionsButton dark={isAdmin} />
                 <NotificationsBell isAdmin={isAdmin} />
                 <ThemeToggle dark={isAdmin} />
                 <LangToggle dark={isAdmin} />
@@ -177,6 +178,79 @@ function LangToggle({ dark }: { dark?: boolean }) {
       <Languages size={15} strokeWidth={2.2} />
       {currentLang.toUpperCase()}
     </button>
+  );
+}
+
+/** Fuata Mikoa — dropdown kwenye nav: chagua mikoa ya chanzo ya live notifications. */
+function FollowRegionsButton({ dark }: { dark?: boolean }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [followed, setFollowed] = useState<number[]>([]);
+  const [saved, setSaved] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Load regions + followed each time the dropdown opens
+  useEffect(() => {
+    if (!open) return;
+    getRegions().then(setRegions).catch(() => {});
+    getFollowedRegions().then((r) => setFollowed(r.region_ids)).catch(() => {});
+  }, [open]);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  async function toggle(rid: number) {
+    const next = followed.includes(rid) ? followed.filter((x) => x !== rid) : [...followed, rid];
+    setFollowed(next);
+    setSaved(true);
+    try { await updateFollowedRegions(next); } finally {
+      setTimeout(() => setSaved(false), 2000);
+    }
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={clsx('relative p-1.5 rounded-md transition',
+          dark ? 'hover:bg-brand-grey-800 text-white' : 'hover:bg-brand-grey-100 text-brand-grey-700')}
+        title={t('board.follow_btn_title')}
+        aria-label="Fuata mikoa"
+      >
+        <Radio size={18} strokeWidth={2.2} />
+        {followed.length > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-brand-orange" />
+        )}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-72 max-w-[calc(100vw-2rem)] max-h-80 overflow-y-auto rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-50 p-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-brand-grey-900 dark:text-white">🔔 {t('board.follow')}</span>
+            {saved && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_saved')}</span>}
+          </div>
+          <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('board.follow_hint')}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {regions.map((r) => {
+              const on = followed.includes(r.id);
+              return (
+                <button key={r.id} type="button" onClick={() => toggle(r.id)}
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-medium border transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue'}`}>
+                  {on ? '✓ ' : '+ '}{r.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

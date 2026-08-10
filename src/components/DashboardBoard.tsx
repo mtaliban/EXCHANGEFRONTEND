@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import {
-  getBoard, getRegions, getDistricts, getFacilities,
-  getFollowedRegions, updateFollowedRegions, logCall,
+  getBoard, getRegions, getDistricts, getFacilities, logCall,
   type Region, type District, type Facility,
 } from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
@@ -43,8 +42,6 @@ export default function DashboardBoard() {
   const [regions, setRegions] = useState<Region[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [followed, setFollowed] = useState<number[]>([]);
-  const [followSaved, setFollowSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
   const { messages } = useLiveEvents(['match.found', 'user.registered']);
@@ -83,10 +80,9 @@ export default function DashboardBoard() {
     }
   }, [effectiveRegionIds, districtId, facilityId]);
 
-  // Load regions + followed on mount
+  // Load regions kwa dropdown ya chanzo
   useEffect(() => {
     getRegions().then(setRegions).catch(() => {});
-    getFollowedRegions().then((r) => setFollowed(r.region_ids)).catch(() => {});
   }, []);
 
   // Cascading: wilaya za mkoa mmoja uliochagua
@@ -123,15 +119,6 @@ export default function DashboardBoard() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length]);
-
-  const toggleFollow = async (rid: number) => {
-    const next = followed.includes(rid) ? followed.filter((x) => x !== rid) : [...followed, rid];
-    setFollowed(next);
-    setFollowSaved(true);
-    try { await updateFollowedRegions(next); } finally {
-      setTimeout(() => setFollowSaved(false), 2000);
-    }
-  };
 
   const clearFilters = () => {
     setRegionSel('');
@@ -185,7 +172,7 @@ export default function DashboardBoard() {
         <div className="p-4 md:p-5 border-b border-brand-grey-100 dark:border-brand-grey-200">
           <h2 className="font-bold text-lg text-brand-grey-900 dark:text-white flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-brand-orange inline-block animate-pulse" />
-            {t('board.title')} <span className="text-brand-orange">({myStation.region_name || ''})</span>
+            {t('board.title')} <span className="text-brand-orange">{myStation.region_name || ''}</span>
           </h2>
           <p className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
             <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isEdu ? 'bg-brand-orange-50 text-brand-orange' : 'bg-brand-blue-50 text-brand-blue'}`}>
@@ -198,8 +185,8 @@ export default function DashboardBoard() {
         {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
         <div className="px-4 md:px-5 pt-4">
           <label className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{t('board.filter_source')}</label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1.5">
-            <select className="input" value={regionSel}
+          <div className="flex flex-wrap gap-2 mt-1.5">
+            <select className="input flex-1 min-w-[160px]" value={regionSel}
               onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); }}>
               <option value="">{t('board.all_regions')}</option>
               {destRegionIds.length > 0 && (
@@ -210,7 +197,7 @@ export default function DashboardBoard() {
               ))}
             </select>
 
-            <select className="input" value={districtId ?? ''}
+            <select className="input flex-1 min-w-[160px]" value={districtId ?? ''}
               onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : undefined)}
               disabled={singleRegion === undefined}
               title={t('board.filter_district_select')}>
@@ -220,7 +207,7 @@ export default function DashboardBoard() {
               ))}
             </select>
 
-            <select className="input" value={facilityId ?? ''}
+            <select className="input flex-1 min-w-[160px]" value={facilityId ?? ''}
               onChange={(e) => setFacilityId(e.target.value || undefined)}
               disabled={districtId === undefined}
               title={t('board.filter_facility_select')}>
@@ -288,33 +275,11 @@ export default function DashboardBoard() {
         </div>
       </div>
 
-      {/* ═══ FUATA MIKOA — compact kama nav ═══ */}
-      <div className="card px-4 py-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-brand-grey-900 dark:text-white flex items-center gap-1">
-            🔔 {t('board.follow')}
-          </span>
-          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
-            {regions.map((r) => {
-              const on = followed.includes(r.id);
-              return (
-                <button key={r.id} type="button" onClick={() => toggleFollow(r.id)}
-                  className={`px-2 py-0.5 rounded-full text-[11px] font-medium border transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue'}`}>
-                  {on ? '✓ ' : '+ '}{r.name}
-                </button>
-              );
-            })}
-          </div>
-          {followSaved && <span className="text-[10px] font-semibold text-green-600 flex-shrink-0">{t('board.follow_saved')}</span>}
-        </div>
-        <p className="text-[11px] text-brand-grey-400 dark:text-brand-grey-500 mt-1.5">{t('board.follow_hint')}</p>
-      </div>
-
       {/* ═══ GRID YA WANAOKUJA MKOA WAKO ═══ */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-bold text-brand-grey-900 dark:text-white">
-            {t('board.title')} {myStation.region_name && <span className="text-brand-orange">({myStation.region_name})</span>}
+            {t('board.title')} {myStation.region_name && <span className="text-brand-orange">{myStation.region_name}</span>}
             {activeFilterLabel && <span className="text-brand-orange"> — {activeFilterLabel}</span>}
           </h3>
           <span className="text-xs text-brand-grey-500 dark:text-brand-grey-400">{board?.total ?? 0} {t('board.total_people')}</span>
@@ -354,7 +319,10 @@ function BoardCard({ c, online, now, lang }: { c: any; online: boolean; now: num
   }
 
   return (
-    <div className={`card p-4 flex flex-col gap-2.5 hover:shadow-md transition group ${fresh ? 'border-brand-orange ring-2 ring-brand-orange/30 animate-[requestPing_1.5s_ease-in-out]' : ''}`}>
+    <div className={`card p-4 flex flex-col gap-2.5 hover:shadow-md transition group ${
+      fresh ? 'border-brand-orange ring-2 ring-brand-orange/30 animate-[requestPing_1.5s_ease-in-out]'
+      : online ? 'border-green-300 bg-green-50/60 dark:bg-green-900/10 dark:border-green-700/50'
+      : ''}`}>
       <div className="flex items-center gap-3">
         <div className="relative flex-shrink-0">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-lg">

@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuth } from '@/lib/auth';
-import OnlineNowWidget from '@/components/OnlineNowWidget';
 import DashboardBoard from '@/components/DashboardBoard';
 import { useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
@@ -43,11 +42,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ═══ BOARD MOJA: Wanaokuja Mkoa Wako (live mpya juu, kijani=online) ═══ */}
+      {/* ═══ BOARD MOJA: Wanaokuja {mkoa} (live mpya juu, kijani=online) ═══ */}
       <DashboardBoard />
-
-      {/* ═══ Online Sasa ═══ */}
-      <OnlineNowWidget />
     </div>
   );
 }

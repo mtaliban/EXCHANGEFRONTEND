@@ -271,7 +271,7 @@ const dict: Record<Lang, Record<string, string>> = {
     /* ── Dashboard ── */
     'dash.welcome': 'Karibu', 'dash.chat': 'Chat', 'dash.call': 'Piga',
     /* ── Dashboard Board (ad-board juu) ── */
-    'board.title': 'Wanaokuja Mkoa Wako',
+    'board.title': 'Wanaokuja',
     'board.subtitle': 'Wanaotaka kuja kwako — mpya zinaonekana JUU na aliyepo online ana alama ya kijani. Badilisha chanzo (mkoa/wilaya/kituo) unapotaka.',
     'board.all_regions': 'Mikoa yote',
     'board.my_regions': 'Mikoa yangu',
@@ -285,6 +285,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'board.total_people': 'Jumla ya watu',
     'board.clear_filter': '✕ Futa kichujio',
     'board.follow': 'Fuata Mikoa',
+    'board.follow_btn_title': 'Fuata Mikoa — pata live notifications za wanaokuja mkoa wako kutoka mikoa unayofuata',
     'board.follow_hint': 'Chagua mikoa mingine ya chanzo — utapata notifications za wanaotaka kuja mkoa wako kutoka mikoa hiyo.',
     'board.follow_saved': 'Imehifadhiwa ✓',
     'board.no_candidates': 'Hakuna watu wanaofanana na kichujio hiki bado.',
@@ -602,7 +603,7 @@ const dict: Record<Lang, Record<string, string>> = {
     /* ── Dashboard ── */
     'dash.welcome': 'Welcome', 'dash.chat': 'Chat', 'dash.call': 'Call',
     /* ── Dashboard Board (ad-board juu) ── */
-    'board.title': 'Coming to Your Region',
+    'board.title': 'Coming to',
     'board.subtitle': 'People who want to come to you — new ones appear at the TOP, and anyone online shows a green dot. Change the source (region/district/facility) as you wish.',
     'board.all_regions': 'All regions',
     'board.my_regions': 'My regions',
@@ -616,6 +617,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'board.total_people': 'Total people',
     'board.clear_filter': '✕ Clear filter',
     'board.follow': 'Follow Regions',
+    'board.follow_btn_title': 'Follow Regions — get live notifications of people coming to your region from regions you follow',
     'board.follow_hint': 'Pick more source regions — you will get notifications about people wanting to come to your region from those regions.',
     'board.follow_saved': 'Saved ✓',
     'board.no_candidates': 'No one matches this filter yet.',
