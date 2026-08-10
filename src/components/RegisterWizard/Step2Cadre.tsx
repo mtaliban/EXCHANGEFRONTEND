@@ -25,13 +25,16 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   }, [category]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentCadre = cadres.find((c) => c.code === cadre_code);
+  const isEdu = category === 'education';
   const needsSubjects = currentCadre?.requires_subjects;
+  // Elimu Msingi NA Sekondari wote wachague masomo (msingi = hiari, sekondari = lazima)
+  const showSubjects = !!currentCadre && (isEdu || !!needsSubjects);
 
   useEffect(() => {
-    if (needsSubjects && subjects.length === 0) {
+    if (showSubjects && subjects.length === 0) {
       getSubjects().then(setSubjects).catch(() => setError(t('step2.err_load_subjects')));
     }
-  }, [needsSubjects, subjects.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSubjects, subjects.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSubject(code: string) {
     setSelectedSubjects((prev) =>
@@ -45,7 +48,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
     if (needsSubjects && selectedSubjects.length === 0) {
       setError(t('step2.err_subject')); return;
     }
-    onNext({ category, cadre_code, subjects: needsSubjects ? selectedSubjects : [] });
+    onNext({ category, cadre_code, subjects: selectedSubjects });
   }
 
   return (
@@ -88,9 +91,12 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
         </div>
       )}
 
-      {needsSubjects && (
+      {showSubjects && (
         <div>
           <label className="label">{t('step2.subject')}</label>
+          {!needsSubjects && (
+            <p className="text-xs text-brand-grey-400 mb-1">{t('step2.subject_optional')}</p>
+          )}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {subjects.map((s) => (
               <button key={s.code} type="button" onClick={() => toggleSubject(s.code)}
