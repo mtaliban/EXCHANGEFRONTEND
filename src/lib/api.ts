@@ -11,6 +11,22 @@ const ADMIN = API;
 
 const client = axios.create({ timeout: 20000 });
 
+/* GET cache ndogo (sekunde 15) — kurudi kwenye pages kufanya kazi PAPO HAPO
+   (SPA feel: hakuna blank flash au kusubiri tena data sawa).
+   Mutations (POST/PUT/PATCH/DELETE) hazihifadhiwi; WS events bado zinarefresh live. */
+const _getCache = new Map<string, { at: number; data: any }>();
+const _GET_TTL = 15_000;
+const _origGet = client.get.bind(client);
+(client.get as any) = (url: string, config?: any) => {
+  const key = url + '|' + JSON.stringify(config?.params || {});
+  const hit = _getCache.get(key);
+  if (hit && Date.now() - hit.at < _GET_TTL) return Promise.resolve(hit.data);
+  return _origGet(url, config).then((res: any) => {
+    _getCache.set(key, { at: Date.now(), data: res });
+    return res;
+  });
+};
+
 client.interceptors.request.use((cfg) => {
   if (typeof window !== 'undefined') {
     const raw = localStorage.getItem('kv_auth');
