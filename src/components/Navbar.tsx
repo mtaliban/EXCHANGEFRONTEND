@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
-import { useAuth } from '@/lib/auth';
+import { useAuth, isTokenExpired } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Home, Info, Stethoscope, FolderKanban, PhoneCall, Languages, LogOut } from 'lucide-react';
@@ -36,7 +36,7 @@ export default function Navbar() {
     return null;
   }
 
-  const isAuthed = mounted && !!token;
+  const isAuthed = mounted && !!token && !isTokenExpired(token);
 
   return (
     <nav className="sticky top-0 z-40 bg-white border-b border-brand-grey-100 shadow-sm">

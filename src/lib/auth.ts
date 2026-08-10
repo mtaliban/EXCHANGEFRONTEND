@@ -24,6 +24,26 @@ interface AuthState {
   logout: () => void;
 }
 
+/**
+ * Checks whether a JWT token has expired (decodes the `exp` claim client-side).
+ * Treats malformed/missing tokens as expired so the UI never shows a
+ * logged-in state for a session the backend would reject.
+ */
+export function isTokenExpired(token: string | null | undefined): boolean {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+    );
+    if (!payload || typeof payload.exp !== 'number') return true;
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
 export const useAuth = create<AuthState>()(
   persist(
     (set) => ({
@@ -33,6 +53,15 @@ export const useAuth = create<AuthState>()(
       setUser: (user) => set({ user }),
       logout: () => set({ token: null, user: null }),
     }),
-    { name: 'kv_auth' }
+    {
+      name: 'kv_auth',
+      // On app load, wipe stale/expired sessions so a dead token never leaves
+      // the navbar showing "Fungua Dashibodi" for a session that is over.
+      onRehydrateStorage: () => (state) => {
+        if (state?.token && isTokenExpired(state.token)) {
+          state.logout();
+        }
+      },
+    }
   )
 );
