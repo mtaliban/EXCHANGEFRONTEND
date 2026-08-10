@@ -66,7 +66,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             </Link>
             {/* Toolbar: WS status + notifications + theme/language toggles */}
-            <div className="mt-3 flex items-center justify-between gap-2">
+            <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
               <WsStatus dark={isAdmin} />
               <div className="flex items-center gap-0.5">
                 <Megaphone dark={isAdmin} />
@@ -107,7 +107,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <FollowRegionsButton dark={isAdmin} />
           </div>
 
-          <div className={clsx('p-3 border-t hidden md:block mt-auto',
+          <div className={clsx('p-3 border-t mt-auto',
             isAdmin ? 'border-brand-grey-700' : 'border-brand-grey-100')}>
             {user && (
               <>
