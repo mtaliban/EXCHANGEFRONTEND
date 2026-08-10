@@ -32,7 +32,7 @@ export default function OnlineNowWidget() {
   }, []);
 
   return (
-    <div className="card">
+    <div className="card h-full">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-bold text-brand-grey-900 flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-400'}`}></span>

@@ -144,9 +144,8 @@ export default function RequestFeed({ limit = 12 }: { limit?: number }) {
             </p>
           </div>
         </div>
-        <div className="card p-6 text-center">
-          <div className="text-2xl mb-2">🎯</div>
-          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400">{t('dash.request_feed_empty')}</p>
+        <div className="card p-4 text-center">
+          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400">🎯 {t('dash.request_feed_empty')}</p>
         </div>
       </div>
     );
