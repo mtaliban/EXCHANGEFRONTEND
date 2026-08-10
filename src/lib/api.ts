@@ -107,6 +107,27 @@ export const confirmEmailVerification = (email: string, code: string) =>
   client.post<{ ok: boolean; email_verified: boolean; message: string }>(`${AUTH}/auth/email/verify`, { email, code })
     .then((r) => r.data);
 
+export interface BoardStats {
+  scope: 'incoming' | 'all';
+  total: number;
+  candidates: any[];
+  by_region: { region_id: number; region_name: string; count: number }[];
+  by_district: { district_id: number; district_name: string; region_name: string; count: number }[];
+  by_facility: { facility_id: string; facility_name: string; district_name: string; district_id: number; count: number }[];
+}
+export const getBoard = (params?: {
+  scope?: 'incoming' | 'all';
+  region_id?: number;
+  district_id?: number;
+  facility_id?: string;
+  limit?: number;
+}) => client.get<BoardStats>(`${MATCH}/matches/board`, { params }).then((r) => r.data);
+
+export const getFollowedRegions = () =>
+  client.get<{ region_ids: number[] }>(`${USER}/users/me/followed-regions`).then((r) => r.data);
+export const updateFollowedRegions = (region_ids: number[]) =>
+  client.put<{ region_ids: number[] }>(`${USER}/users/me/followed-regions`, { region_ids }).then((r) => r.data);
+
 export const getMe = () => client.get(`${AUTH}/auth/me`).then((r) => r.data);
 export const checkPhone = (phone: string) =>
   client.get<{ available: boolean; phone_normalized?: string; reason?: string }>(
