@@ -12,6 +12,7 @@ export interface AuthUser {
   cadre_display?: string;
   current_station?: any;
   desired_destinations?: any[];
+  subjects?: string[];
   email?: string | null;
   email_verified?: boolean;
 }

@@ -292,6 +292,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'board.from': 'Anatoka', 'board.wants_go': 'Anataka kwenda',
     'board.score': 'mechi', 'board.live': 'Live',
     'board.new_badge': 'Mpya',
+    'board.subjects': 'Masomo', 'board.subject_match': 'Somo linalofanana na lako ✓',
     /* ── Megaphone ── */
     'mega.title': '📢 Matangazo', 'mega.view_all': 'Ona yote', 'mega.empty': 'Hakuna matangazo sasa',
     'mega.dismiss': 'Futa tangazo hili', 'mega.announcements': 'Matangazo',
@@ -624,6 +625,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'board.from': 'From', 'board.wants_go': 'Wants to go',
     'board.score': 'match', 'board.live': 'Live',
     'board.new_badge': 'New',
+    'board.subjects': 'Subjects', 'board.subject_match': 'Matches your subject ✓',
     /* ── Megaphone ── */
     'mega.title': '📢 Announcements', 'mega.view_all': 'View all', 'mega.empty': 'No announcements right now',
     'mega.dismiss': 'Dismiss this announcement', 'mega.announcements': 'Announcements',

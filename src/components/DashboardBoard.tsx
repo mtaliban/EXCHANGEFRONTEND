@@ -33,9 +33,10 @@ export default function DashboardBoard() {
     [dests]
   );
 
-  // Chanzo: default = '' (Mikoa yote) → wote wanaokuja mkoa wako.
-  // '__dests__' = Mikoa yangu, '123' = mkoa mmoja.
-  const [regionSel, setRegionSel] = useState<string>('');
+  // Chanzo: default = '__dests__' (Mikoa yangu — wale waliopo kwenye mikoa
+  // unayotaka kwenda, k.m. Dar+Pwani wanaokuja Dodoma). Badilisha → Mikoa
+  // yote, mkoa mmoja, wilaya, kituo.
+  const [regionSel, setRegionSel] = useState<string>(destRegionIds.length > 0 ? '__dests__' : '');
   const [districtId, setDistrictId] = useState<number | undefined>();
   const [facilityId, setFacilityId] = useState<string | undefined>();
   const [board, setBoard] = useState<any>(null);
@@ -121,7 +122,7 @@ export default function DashboardBoard() {
   }, [messages.length]);
 
   const clearFilters = () => {
-    setRegionSel('');
+    setRegionSel(destRegionIds.length > 0 ? '__dests__' : '');
     setDistrictId(undefined);
     setFacilityId(undefined);
   };
@@ -153,6 +154,9 @@ export default function DashboardBoard() {
           : null;
 
   const hasFilter = effectiveRegionIds.length > 0 || districtId !== undefined || facilityId !== undefined;
+
+  // Masomo yangu (kwa highlight ya masomo yanayolingana kwenye cards)
+  const mySubjects = useMemo(() => (user?.subjects || []) as string[], [user?.subjects]);
 
   // Candidates: MPYA JUU (sorted newest first) — live event ikija inaonekana juu!
   const candidates = useMemo(() => {
@@ -294,7 +298,7 @@ export default function DashboardBoard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {candidates.map((c: any) => (
-            <BoardCard key={c.user_id} c={c} online={!!c.online} now={now} lang={lang} />
+            <BoardCard key={c.user_id} c={c} online={!!c.online} now={now} lang={lang} mySubjects={mySubjects} />
           ))}
         </div>
       </div>
@@ -302,7 +306,7 @@ export default function DashboardBoard() {
   );
 }
 
-function BoardCard({ c, online, now, lang }: { c: any; online: boolean; now: number; lang: 'sw' | 'en' }) {
+function BoardCard({ c, online, now, lang, mySubjects }: { c: any; online: boolean; now: number; lang: 'sw' | 'en'; mySubjects: string[] }) {
   const t = useT();
   const initial = getInitial(c.full_name);
   const from = c.current_station;
@@ -353,6 +357,21 @@ function BoardCard({ c, online, now, lang }: { c: any; online: boolean; now: num
           {to && (
             <div className="text-brand-orange"><b>{t('board.wants_go')}:</b> {to.district_name || to.region_name} ({to.region_name})</div>
           )}
+        </div>
+      )}
+
+      {c.subjects?.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1 text-[11px]">
+          <span className="text-brand-grey-500 font-semibold">{t('board.subjects')}:</span>
+          {c.subjects.map((s: string) => {
+            const matched = mySubjects.includes(s);
+            return (
+              <span key={s} title={matched ? t('board.subject_match') : undefined}
+                className={`px-1.5 py-0.5 rounded-full font-semibold ${matched ? 'bg-brand-gold text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
+                {s}{matched ? ' ✓' : ''}
+              </span>
+            );
+          })}
         </div>
       )}
 
