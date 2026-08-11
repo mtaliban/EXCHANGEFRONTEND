@@ -15,6 +15,7 @@ export interface AuthUser {
   subjects?: string[];
   email?: string | null;
   email_verified?: boolean;
+  is_admin?: boolean;
 }
 
 interface AuthState {

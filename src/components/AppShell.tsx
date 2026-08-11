@@ -14,6 +14,7 @@ import { useTheme, applyTheme } from '@/lib/theme';
 import ThemeToggle from '@/components/ThemeToggle';
 import Megaphone from '@/components/Megaphone';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import { getInitial } from '@/lib/initials';
 import {
   BarChart3, Bell, Contact, Crown, Heart, Languages, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, MessageSquare, Radio, User, Users, Wallet, Zap,
@@ -49,11 +50,39 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         { href: '/donate', label: t('nav.donate'), icon: Heart },
       ];
 
+  function doLogout() {
+    logout();
+    router.replace('/login');
+  }
+
   return (
     <div className="min-h-screen bg-brand-grey-50">
+      {/* ═══ MOBILE TOP BAR (md:hidden) — compact, sticky ═══ */}
+      <div className="md:hidden sticky top-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm">
+        <div className="flex items-center justify-between gap-1 px-3 h-14">
+          <Link href={isAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-xs">
+              KV
+            </div>
+            <span className="font-bold text-sm text-brand-grey-900 dark:text-white truncate">
+              {isAdmin ? 'Admin' : 'Kubadilishana'}
+            </span>
+          </Link>
+          <div className="flex items-center gap-0.5">
+            <FollowRegionsButton compact dark={isAdmin} />
+            <Megaphone dark={isAdmin} />
+            <NotificationsBell isAdmin={isAdmin} />
+            <ThemeToggle dark={isAdmin} />
+            <LangToggle dark={isAdmin} />
+            <AvatarMenu name={user?.full_name} onLogout={doLogout} dark={isAdmin} />
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row">
+        {/* ═══ DESKTOP SIDEBAR (hidden kwenye simu) ═══ */}
         <aside className={clsx(
-          'md:w-64 md:min-h-screen md:sticky md:top-0 bg-white border-r border-brand-grey-100',
+          'hidden md:block md:w-64 md:min-h-screen md:sticky md:top-0 bg-white border-r border-brand-grey-100',
           isAdmin && 'bg-brand-grey-950 text-white'
         )}>
           <div className={clsx('p-4 border-b', isAdmin ? 'border-brand-grey-700' : 'border-brand-grey-100')}>
@@ -96,7 +125,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   )}
                 >
                   <l.icon size={18} strokeWidth={2.2} className="flex-shrink-0" />
-                  <span className="hidden md:inline">{l.label}</span>
+                  <span>{l.label}</span>
                 </Link>
               );
             })}
@@ -121,7 +150,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <div className="text-xs text-brand-blue mt-1 truncate">{user.cadre_display}</div>
                 )}
                 <button
-                  onClick={() => { logout(); router.replace('/login'); }}
+                  onClick={doLogout}
                   className="mt-3 w-full flex items-center justify-center gap-2 text-xs border rounded-lg px-2 py-1.5 border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition"
                   title={t('nav.logout')}
                 >
@@ -133,12 +162,124 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 pb-20 md:pb-0">
           {/* Matangazo juu kabisa — yanaonekana bila kufungua */}
           <AnnouncementBanner />
           {children}
         </main>
       </div>
+
+      {/* ═══ MOBILE BOTTOM NAV (md:hidden) — kama app ya simu ═══ */}
+      <MobileBottomNav pathname={pathname} isAdmin={isAdmin} />
+    </div>
+  );
+}
+
+/** Bottom navigation — mobile app style: icons + labels, safe-area aware. */
+function MobileBottomNav({ pathname, isAdmin }: {
+  pathname: string | null;
+  isAdmin?: boolean;
+}) {
+  const t = useT();
+  // Chagua tabs muhimu zaidi (5 max) kwa simu — sidebar ina zote kwa desktop
+  const mobileLinks = isAdmin
+    ? [
+        { href: '/admin', label: t('nav.admin'), icon: Crown },
+        { href: '/admin/users', label: t('nav.users'), icon: Users },
+        { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
+        { href: '/admin/events', label: t('nav.events'), icon: Zap },
+        { href: '/profile', label: t('nav.profile'), icon: User },
+      ]
+    : [
+        { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+        { href: '/chats', label: t('nav.chats'), icon: MessageSquare },
+        { href: '/contacts', label: t('nav.contacts'), icon: Contact },
+        { href: '/donate', label: t('nav.donate'), icon: Heart },
+        { href: '/profile', label: t('nav.profile'), icon: User },
+      ];
+
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-brand-grey-950 border-t border-brand-grey-100 dark:border-brand-grey-700 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      aria-label="Mobile navigation"
+    >
+      <div className="flex items-stretch justify-around">
+        {mobileLinks.map((l) => {
+          const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={clsx(
+                'flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] transition',
+                active
+                  ? 'text-brand-blue'
+                  : isAdmin
+                    ? 'text-brand-grey-400 dark:text-brand-grey-500'
+                    : 'text-brand-grey-500 dark:text-brand-grey-400'
+              )}
+            >
+              <l.icon size={22} strokeWidth={active ? 2.4 : 2} />
+              <span className={clsx('text-[10px] font-semibold leading-none', active && 'font-bold')}>{l.label}</span>
+              {active && <span className="w-4 h-0.5 rounded-full bg-brand-blue mt-0.5" />}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+/** Avatar + menu ya user (mobile) — jina, simu, kada, logout. */
+function AvatarMenu({ name, onLogout, dark }: { name?: string; onLogout: () => void; dark?: boolean }) {
+  const t = useT();
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  const initial = getInitial(name);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={clsx('flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm transition',
+          dark ? 'bg-brand-grey-800 text-white' : 'bg-brand-blue-50 text-brand-blue hover:bg-brand-blue-100')}
+        aria-label="Menu ya akaunti"
+      >
+        {initial}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-64 rounded-xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-900 shadow-xl z-50 p-3 space-y-1">
+          <div className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">
+            {user?.full_name || name}
+          </div>
+          <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">{user?.phone_primary}</div>
+          {!dark && user?.cadre_display && (
+            <div className="text-xs text-brand-blue truncate">{user.cadre_display}</div>
+          )}
+          <div className="border-t border-brand-grey-100 dark:border-brand-grey-700 pt-1 mt-1 space-y-0.5">
+            <Link href="/profile" onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition">
+              <User size={16} /> {t('nav.profile')}
+            </Link>
+            <button onClick={() => { setOpen(false); onLogout(); }}
+              className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-brand-red hover:bg-brand-red-50 dark:hover:bg-brand-red-900/20 transition">
+              <LogOut size={16} /> {t('nav.logout')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -186,8 +327,9 @@ function LangToggle({ dark }: { dark?: boolean }) {
   );
 }
 
-/** Fuata Mikoa — item kubwa ya nav: chagua mikoa ya chanzo ya live notifications. */
-function FollowRegionsButton({ dark }: { dark?: boolean }) {
+/** Fuata Mikoa — chagua mikoa ya chanzo ya live notifications.
+ *  `compact` = icon tu (kwa mobile top bar); dropdown inajipanga kulia. */
+function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const [regions, setRegions] = useState<Region[]>([]);
@@ -226,23 +368,36 @@ function FollowRegionsButton({ dark }: { dark?: boolean }) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className={clsx('w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition',
-          open
-            ? isAdminDark(dark)
-            : dark ? 'text-brand-grey-300 hover:bg-brand-grey-800' : 'text-brand-grey-700 hover:bg-brand-grey-50')}
+        className={clsx(
+          compact
+            ? clsx('p-1.5 rounded-md transition', dark ? 'hover:bg-brand-grey-800 text-white' : 'hover:bg-brand-grey-100 text-brand-grey-700')
+            : clsx('w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition',
+                open
+                  ? isAdminDark(dark)
+                  : dark ? 'text-brand-grey-300 hover:bg-brand-grey-800' : 'text-brand-grey-700 hover:bg-brand-grey-50'),
+          open && !compact && isAdminDark(dark)
+        )}
         title={t('board.follow_btn_title')}
         aria-label="Fuata mikoa"
       >
-        <Radio size={18} strokeWidth={2.2} className="flex-shrink-0" />
-        <span className="hidden md:inline flex-1 text-left">{t('board.follow')}</span>
-        {followed.length > 0 && (
-          <span className="hidden md:inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-orange text-white">
+        <Radio size={compact ? 18 : 18} strokeWidth={2.2} className="flex-shrink-0" />
+        {!compact && <span className="flex-1 text-left">{t('board.follow')}</span>}
+        {!compact && followed.length > 0 && (
+          <span className="inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-orange text-white">
             {followed.length}
+          </span>
+        )}
+        {compact && followed.length > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-brand-orange text-white text-[8px] font-bold flex items-center justify-center">
+            {followed.length > 9 ? '9+' : followed.length}
           </span>
         )}
       </button>
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-72 max-w-[calc(100vw-2rem)] max-h-80 overflow-y-auto rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-50 p-3">
+        <div className={clsx(
+          'absolute top-full mt-1 w-72 max-w-[calc(100vw-1rem)] max-h-80 overflow-y-auto rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-50 p-3',
+          compact ? 'right-0' : 'left-0'
+        )}>
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-bold text-brand-grey-900 dark:text-white">🔔 {t('board.follow')}</span>
             {saved && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_saved')}</span>}
@@ -253,7 +408,7 @@ function FollowRegionsButton({ dark }: { dark?: boolean }) {
               const on = followed.includes(r.id);
               return (
                 <button key={r.id} type="button" onClick={() => toggle(r.id)}
-                  className={`px-2 py-0.5 rounded-full text-[11px] font-medium border transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue'}`}>
+                  className={`px-2 py-1 rounded-full text-[11px] font-medium border transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue'}`}>
                   {on ? '✓ ' : '+ '}{r.name}
                 </button>
               );

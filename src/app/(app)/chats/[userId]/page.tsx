@@ -122,7 +122,7 @@ export default function ChatViewPage() {
   const initial = getInitial(other?.full_name);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen bg-brand-grey-50">
+    <div className="flex flex-col h-[calc(100dvh-8.5rem)] md:h-screen bg-brand-grey-50">
       {/* WhatsApp-style header */}
       <div className="bg-brand-blue text-white p-3 flex items-center gap-3 sticky top-0 z-10 shadow-md">
         <button onClick={() => router.back()} className="p-2 hover:bg-white/10 rounded-full">←</button>

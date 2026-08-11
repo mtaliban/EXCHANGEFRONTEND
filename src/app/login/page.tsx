@@ -37,7 +37,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Email verification flow (kwa admin — kwanza thibitisha email)
+  // Email verification flow — inaonekana tu INAPOHAJITIKA (admin anapoingia
+  // na email haijathibitishwa) — sio mara kwa mara kwenye login page.
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState('');
   const [verifyPhone, setVerifyPhone] = useState('');
@@ -60,13 +61,22 @@ export default function LoginPage() {
         user_id: res.user_id,
         full_name: res.full_name,
         phone_primary: res.phone_primary || identifier.trim(),
-        category: res.category as any,
+        category: (res.category as 'health' | 'education') || undefined,
         cadre_code: res.cadre_code,
+        is_admin: res.is_admin,
       });
-      router.push(isEmail ? '/admin' : '/dashboard');
+      router.push(res.is_admin ? '/admin' : '/dashboard');
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
-      setError(typeof detail === 'string' ? detail : (isEmail ? t('login.error_admin') : t('login.error_user')));
+      const msg = typeof detail === 'string' ? detail : (isEmail ? t('login.error_admin') : t('login.error_user'));
+      // Email haijathibitishwa? → onyesha verification form kiotomatiki
+      if (isEmail && /thibitish|verif/i.test(msg)) {
+        setVerifyEmail(identifier.trim());
+        setVerifyOpen(true);
+        setVerifyMode(false);
+        setVerifyCode('');
+      }
+      setError(msg);
     } finally { setLoading(false); }
   }
 
@@ -90,6 +100,8 @@ export default function LoginPage() {
       setSuccess(res.message || t('login.email_verified'));
       setVerifyCode('');
       setVerifyMode(false);
+      setVerifyOpen(false); // maliza — rudi kwenye login
+      setError(null);
     } catch (err: any) {
       setError(err?.response?.data?.detail || t('msg.error'));
     } finally { setLoading(false); }

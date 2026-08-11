@@ -385,18 +385,18 @@ export default function DashboardBoard() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-1">
+            <div className="flex items-center justify-center gap-3 pt-1">
               <button type="button" disabled={safePage <= 1}
                 onClick={() => setPage(safePage - 1)}
-                className="px-3 py-1.5 rounded-lg border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+                className="min-w-[44px] min-h-[44px] px-3 rounded-xl border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition active:scale-95">
                 ← {t('board.prev')}
               </button>
-              <span className="text-xs font-semibold text-brand-grey-500 px-2">
+              <span className="text-sm font-bold text-brand-grey-500 px-2">
                 {safePage} / {totalPages}
               </span>
               <button type="button" disabled={safePage >= totalPages}
                 onClick={() => setPage(safePage + 1)}
-                className="px-3 py-1.5 rounded-lg border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+                className="min-w-[44px] min-h-[44px] px-3 rounded-xl border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition active:scale-95">
                 {t('board.next')} →
               </button>
             </div>

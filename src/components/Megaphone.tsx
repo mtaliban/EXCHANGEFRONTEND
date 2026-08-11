@@ -59,7 +59,7 @@ export default function Megaphone({ dark }: { dark?: boolean }) {
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-xl border z-40 overflow-hidden bg-white dark:bg-brand-grey-950 border-brand-grey-100 dark:border-brand-grey-700">
+          <div className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] max-w-80 rounded-xl shadow-xl border z-40 overflow-hidden bg-white dark:bg-brand-grey-950 border-brand-grey-100 dark:border-brand-grey-700">
             <div className="flex items-center justify-between px-3 py-2 border-b border-brand-grey-100 dark:border-brand-grey-700">
               <span className="font-semibold text-sm text-brand-grey-900 dark:text-white">{t('mega.title')}</span>
               <Link href="/announcements" onClick={() => setOpen(false)}

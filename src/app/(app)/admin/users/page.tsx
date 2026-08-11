@@ -49,10 +49,10 @@ export default function AdminUsersPage() {
 
       {message && <div className="bg-brand-blue-50 text-brand-blue text-sm rounded-lg p-3">{message}</div>}
 
-      <div className="flex gap-2 flex-wrap">
-        <input className="input flex-1 min-w-[200px]" placeholder={t('admin.search_ph')}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input className="input flex-1 min-w-0" placeholder={t('admin.search_ph')}
           value={q} onChange={(e) => setQ(e.target.value)} />
-        <select className="input w-auto" value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select className="input sm:w-auto" value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">{t('admin.all_depts')}</option>
           <option value="health">{t('admin.health')}</option>
           <option value="education">{t('admin.education')}</option>

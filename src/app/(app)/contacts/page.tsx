@@ -130,12 +130,12 @@ export default function ContactsPage() {
 
                   <div className="flex flex-col gap-2 flex-shrink-0">
                     <Link href={`/chats/${c.user_id}`}
-                      className="px-3 py-2 rounded-lg bg-brand-blue text-white text-sm font-semibold hover:bg-brand-blue-700 transition"
+                      className="min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg bg-brand-blue text-white text-sm font-semibold hover:bg-brand-blue-700 transition active:scale-95 flex items-center justify-center"
                       title={t('chats.title')}>
                       💬 {t('contacts.chat')}
                     </Link>
                     <button onClick={() => call(c)}
-                      className="px-3 py-2 rounded-lg bg-brand-orange text-white text-sm font-semibold hover:bg-brand-orange-600 transition"
+                      className="min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg bg-brand-orange text-white text-sm font-semibold hover:bg-brand-orange-600 transition active:scale-95 flex items-center justify-center"
                       title={t('contacts.call')}>
                       📞 {t('contacts.call')}
                     </button>

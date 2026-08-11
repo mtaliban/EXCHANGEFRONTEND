@@ -118,6 +118,8 @@ export interface AuthResponse {
   phone_primary?: string;
   category?: string;
   cadre_code?: string;
+  cadre_display?: string;
+  is_admin?: boolean;
   access_token: string;
   token_type: string;
 }
