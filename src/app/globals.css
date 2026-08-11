@@ -85,6 +85,46 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: var(--brand-grey-50);
   color: var(--brand-grey-900);
+  /* ── Mobile guards ─────────────────────────────────────────────── */
+  /* Hakuna horizontal scroll kwenye device yoyote — content ina-constrain */
+  overflow-x: clip;
+  /* iOS haizoomi inputs automatically (font >= 16px kwenye focus) */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Touch: ondoa tap-highlight ya bluu kwenye Android + tap-delay */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  scroll-behavior: smooth;
+}
+
+/* Vipengee vyote vya interactive — hakuna 300ms tap-delay (mobile browsers) */
+button,
+a,
+select,
+input,
+textarea,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+/* iOS: inazuia auto-zoom inapofocus input ndogo */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+@media (min-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: revert;
+  }
+}
+
+/* Focus ring inayoonekana kwa keyboard users pekee (mobile haijaathiriwa) */
+:focus-visible {
+  outline: 2px solid rgb(var(--brand-blue));
+  outline-offset: 2px;
 }
 
 /* White card surfaces turn dark in dark mode (bg-white used for cards/bubbles) */
