@@ -127,7 +127,7 @@ export default function Navbar() {
         </div>
 
         {open && (
-          <div className="md:hidden py-3 space-y-1 border-t border-brand-grey-100">
+          <div className="md:hidden py-3 space-y-1 border-t border-brand-grey-100 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
             {publicLinks.map((l) => (
               <Link
                 key={l.href}
@@ -143,8 +143,7 @@ export default function Navbar() {
                 <l.icon size={17} strokeWidth={2.2} className="flex-shrink-0" />
                 {t(l.label)}
               </Link>
-            ))}
-            <div className="flex gap-2 pt-3 border-t border-brand-grey-100 mt-3">
+            ))}              <div className="flex gap-2 pt-3 border-t border-brand-grey-100 mt-3 sticky bottom-0 bg-white pb-1">
               {isAuthed ? (
                 <>
                   <Link href="/dashboard" onClick={() => setOpen(false)} className="btn-primary flex-1 text-sm py-2">

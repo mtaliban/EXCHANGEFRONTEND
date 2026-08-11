@@ -109,9 +109,9 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="card">
+      <div className="card p-4 sm:p-6">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-brand-grey-900">{t('login.welcome')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-brand-grey-900">{t('login.welcome')}</h1>
           <p className="text-brand-grey-500 mt-2">{t('login.subtitle')}</p>
         </div>
 

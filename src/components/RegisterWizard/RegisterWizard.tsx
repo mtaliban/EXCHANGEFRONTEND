@@ -74,13 +74,13 @@ export default function RegisterWizard({ onComplete }: Props) {
   return (
     <div>
       {/* Progress bar */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
         {STEPS.map((s, i) => (
-          <div key={s.n} className="flex-1 flex items-center">
-            <div className="flex flex-col items-center flex-1">
+          <div key={s.n} className="flex-1 flex items-center min-w-0">
+            <div className="flex flex-col items-center flex-1 min-w-0">
               <div
                 className={clsx(
-                  'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition',
+                  'w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition flex-shrink-0',
                   step > s.n
                     ? 'bg-brand-blue text-white border-brand-blue'
                     : step === s.n
@@ -91,7 +91,7 @@ export default function RegisterWizard({ onComplete }: Props) {
                 {step > s.n ? '✓' : s.n}
               </div>
               <span className={clsx(
-                'text-xs mt-1 text-center hidden sm:block',
+                'text-[10px] sm:text-xs mt-1 text-center truncate w-full px-1 hidden min-[380px]:block',
                 step >= s.n ? 'text-brand-grey-900 font-semibold' : 'text-brand-grey-500'
               )}>
                 {s.title}
@@ -99,7 +99,7 @@ export default function RegisterWizard({ onComplete }: Props) {
             </div>
             {i < STEPS.length - 1 && (
               <div className={clsx(
-                'h-1 flex-1 mx-1 rounded transition',
+                'h-1 flex-1 mx-1 rounded transition min-w-0',
                 step > s.n ? 'bg-brand-blue' : 'bg-brand-grey-200'
               )} />
             )}
@@ -113,7 +113,7 @@ export default function RegisterWizard({ onComplete }: Props) {
         </div>
       )}
 
-      <div className="card">
+      <div className="card p-4 sm:p-6">
         {step === 1 && <Step1Identity initial={data} onNext={next} />}
         {step === 2 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
         {step === 3 && <Step3Station initial={data} onBack={back} onNext={next} />}

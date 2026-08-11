@@ -114,9 +114,9 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
       {error && <p className="text-brand-red text-sm">{error}</p>}
 
-      <div className="flex justify-between pt-4">
-        <button type="button" onClick={onBack} className="btn-outline">{t('wizard.back')}</button>
-        <button type="submit" className="btn-primary">{t('wizard.next')}</button>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-3 pt-4">
+        <button type="button" onClick={onBack} className="btn-outline w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.next')}</button>
       </div>
     </form>
   );

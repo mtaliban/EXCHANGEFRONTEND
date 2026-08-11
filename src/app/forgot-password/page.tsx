@@ -28,8 +28,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-12">
-      <div className="card">
-        <h1 className="text-2xl font-bold text-brand-grey-900 mb-2">{t('forgot.title')}</h1>
+      <div className="card p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-brand-grey-900 mb-2">{t('forgot.title')}</h1>
         <p className="text-brand-grey-500 text-sm mb-6">
           {t('forgot.subtitle')}
         </p>

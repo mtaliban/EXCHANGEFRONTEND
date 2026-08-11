@@ -22,17 +22,17 @@ export default function HomePage() {
                   {t('landing.live_badge')}
                 </span>
               </div>
-              <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6">
                 {t('landing.title1')} <span className="text-brand-orange">{t('landing.title2')}</span>
               </h1>
-              <p className="text-lg sm:text-xl text-brand-blue-100 mb-8">
+              <p className="text-base sm:text-lg lg:text-xl text-brand-blue-100 mb-8">
                 {t('landing.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/register" className="btn-accent text-lg px-8 py-3 text-center">
+                <Link href="/register" className="btn-accent text-base sm:text-lg px-6 sm:px-8 py-3 text-center w-full sm:w-auto">
                   {t('landing.cta')}
                 </Link>
-                <Link href="/services" className="inline-flex items-center justify-center rounded-lg border-2 border-white/40 px-8 py-3 text-white font-medium hover:bg-white/10 transition">
+                <Link href="/services" className="inline-flex items-center justify-center rounded-lg border-2 border-white/40 px-6 sm:px-8 py-3 text-white font-medium hover:bg-white/10 transition w-full sm:w-auto">
                   {t('landing.services')}
                 </Link>
               </div>
@@ -51,11 +51,11 @@ export default function HomePage() {
                   unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-blue-900/80 via-transparent to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-                  <span className="text-[11px] font-semibold bg-white/95 text-brand-blue px-3 py-1.5 rounded-full shadow">
+                <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
+                  <span className="text-[11px] font-semibold bg-white/95 text-brand-blue px-3 py-1.5 rounded-full shadow whitespace-nowrap">
                     🏥 Hospitali 14,000+
                   </span>
-                  <span className="text-[11px] font-semibold bg-white/95 text-brand-orange px-3 py-1.5 rounded-full shadow">
+                  <span className="text-[11px] font-semibold bg-white/95 text-brand-orange px-3 py-1.5 rounded-full shadow whitespace-nowrap">
                     🏫 Shule 25,000+
                   </span>
                 </div>
@@ -75,18 +75,18 @@ export default function HomePage() {
             { num: '14,000+', label: t('landing.stat_facilities') },
           ].map((s) => (
             <div key={s.label} className="card text-center">
-              <div className="text-3xl font-bold text-brand-blue">{s.num}</div>
-              <div className="text-sm text-brand-grey-500 mt-1">{s.label}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-brand-blue">{s.num}</div>
+              <div className="text-xs sm:text-sm text-brand-grey-500 mt-1">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* How it works */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-brand-grey-900 dark:text-white mb-3">{t('landing.how_title')}</h2>
-          <p className="text-brand-grey-500 dark:text-brand-grey-400">{t('landing.how_sub')}</p>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-brand-grey-900 dark:text-white mb-3">{t('landing.how_title')}</h2>
+          <p className="text-sm sm:text-base text-brand-grey-500 dark:text-brand-grey-400">{t('landing.how_sub')}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -109,12 +109,12 @@ export default function HomePage() {
 
       {/* CTA */}
       <section className="bg-gradient-to-r from-brand-orange to-brand-red text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 text-center">
-          <h2 className="text-3xl font-bold mb-3">{t('landing.cta_title')}</h2>
-          <p className="text-white/90 mb-6 max-w-2xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3">{t('landing.cta_title')}</h2>
+          <p className="text-sm sm:text-base text-white/90 mb-6 max-w-2xl mx-auto">
             {t('landing.cta_body')}
           </p>
-          <Link href="/register" className="inline-flex items-center justify-center rounded-lg bg-white px-8 py-3 text-brand-red font-bold shadow-lg hover:bg-brand-gold-100 transition">
+          <Link href="/register" className="inline-flex items-center justify-center rounded-lg bg-white px-6 sm:px-8 py-3 text-brand-red font-bold shadow-lg hover:bg-brand-gold-100 transition w-full sm:w-auto">
             {t('landing.register_now')}
           </Link>
         </div>

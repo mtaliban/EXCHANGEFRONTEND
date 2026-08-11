@@ -8,7 +8,7 @@ export default function ContactPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-10">
         <span className="badge-gold mb-3">{t('contact.badge')}</span>
-        <h1 className="text-4xl font-bold text-brand-grey-900">{t('contact.title')}</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-brand-grey-900">{t('contact.title')}</h1>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">

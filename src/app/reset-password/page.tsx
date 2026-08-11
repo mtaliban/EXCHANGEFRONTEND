@@ -40,8 +40,8 @@ function ResetPasswordInner() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-12">
-      <div className="card">
-        <h1 className="text-2xl font-bold text-brand-grey-900 mb-2">{t('reset.title')}</h1>
+      <div className="card p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-brand-grey-900 mb-2">{t('reset.title')}</h1>
         <p className="text-brand-grey-500 text-sm mb-6">{t('reset.subtitle')}</p>
 
         <form onSubmit={onSubmit} className="space-y-4">
@@ -55,7 +55,7 @@ function ResetPasswordInner() {
             <input type="text" inputMode="numeric" maxLength={6} className="input text-center text-2xl tracking-widest font-mono"
               placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} required />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">{t('reset.new_password')}</label>
               <input type="password" className="input" placeholder={t('reset.min6')}

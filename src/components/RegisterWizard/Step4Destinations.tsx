@@ -127,9 +127,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
 
       {error && <p className="text-brand-red text-sm">{error}</p>}
 
-      <div className="flex justify-between pt-4">
-        <button type="button" onClick={onBack} disabled={submitting} className="btn-outline">{t('wizard.back')}</button>
-        <button type="submit" disabled={submitting} className="btn-accent">
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-3 pt-4">
+        <button type="button" onClick={onBack} disabled={submitting} className="btn-outline w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.back')}</button>
+        <button type="submit" disabled={submitting} className="btn-accent w-full sm:w-auto flex-1 sm:flex-none">
           {submitting ? t('step4.submitting') : t('step4.submit')}
         </button>
       </div>
