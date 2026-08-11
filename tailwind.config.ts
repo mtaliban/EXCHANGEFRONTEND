@@ -27,11 +27,11 @@ const config: Config = {
       },
       /* ── FLUID TYPOGRAPHY FORMULA ────────────────────────────────────────
        * Kila class ya text-* sasa inatumia clamp(min, fluid, max):
-       * text inapanda/pungua SMOOTHLY kati ya simu ndogo (320px) na desktop (1440px)
-       * badala ya kuruka ghafla kwenye breakpoints. Hii ndiyo formula ya
-       * kuhakikisha font inafaa kwenye KILA device bila overflow wala micro-text.
-       * Values: clamp(min, calc(min + slope * 1vw), max)
-       *   slope = (max - min) * 100 / (1440 - 320)
+       * text inapanda/pungua SMOOTHLY kati ya simu ndogo (320px) na karibia
+       * tablet/desktop (~1024px) badala ya kuruka ghafla kwenye breakpoints.
+       * Hii ndiyo formula ya kuhakikisha font inafaa kwenye KILA device bila
+       * overflow wala micro-text. Sizes juu ya max (desktop) zinakaa sawa.
+       * 8xl/9xl zimebaki kama za default kwa ajili ya future usage.
        */
       fontSize: {
         xs: ['clamp(0.6875rem, 0.66rem + 0.14vw, 0.75rem)', { lineHeight: '1rem' }],
@@ -45,6 +45,8 @@ const config: Config = {
         '5xl': ['clamp(2rem, 1.55rem + 2.25vw, 2.75rem)', { lineHeight: '1' }],
         '6xl': ['clamp(2.25rem, 1.7rem + 2.75vw, 3.25rem)', { lineHeight: '1' }],
         '7xl': ['clamp(2.5rem, 1.9rem + 3vw, 4rem)', { lineHeight: '1' }],
+        '8xl': ['6rem', { lineHeight: '1' }],
+        '9xl': ['8rem', { lineHeight: '1' }],
       },
     },
   },

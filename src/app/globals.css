@@ -91,9 +91,9 @@ body {
   /* iOS haizoomi inputs automatically (font >= 16px kwenye focus) */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Touch: ondoa tap-highlight ya bluu kwenye Android + tap-delay */
+  /* Touch: ondoa tap-highlight ya bluu kwenye Android (user-select inabaki
+   * kwa maandishi — tusizuie long-press ya picha/mahusiano kwenye iOS) */
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
   scroll-behavior: smooth;
 }
 
