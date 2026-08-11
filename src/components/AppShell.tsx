@@ -261,7 +261,7 @@ function AvatarMenu({ name, onLogout, dark }: { name?: string; onLogout: () => v
         {initial}
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-64 rounded-xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-900 shadow-xl z-50 p-3 space-y-1">
+        <div className="absolute right-0 top-full mt-1 w-64 max-w-[calc(100vw-1rem)] rounded-xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-900 shadow-xl z-50 p-3 space-y-1">
           <div className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">
             {user?.full_name || name}
           </div>
@@ -395,27 +395,33 @@ function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: bool
         )}
       </button>
       {open && (
-        <div className={clsx(
-          'absolute top-full mt-1 w-72 max-w-[calc(100vw-1rem)] max-h-80 overflow-y-auto rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-50 p-3',
-          compact ? 'right-0' : 'left-0'
-        )}>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-bold text-brand-grey-900 dark:text-white">🔔 {t('board.follow')}</span>
-            {saved && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_saved')}</span>}
+        <>
+          {/* Backdrop — bila hii, dropdown inaonekana kama 'imevunjika' inapofunguka juu ya form (screenshots 02-04) */}
+          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+          <div className={clsx(
+            // Kwenye simu: dropdown inachukua karibu upana wote (haijitokezi nje ya skrini);
+            // kwenye desktop: dropdown ya kawaida chini ya button.
+            'absolute top-full mt-1 w-[min(20rem,calc(100vw-1rem))] max-h-80 overflow-y-auto rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-40 p-3',
+            compact ? 'right-0' : 'left-0'
+          )}>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-brand-grey-900 dark:text-white">🔔 {t('board.follow')}</span>
+              {saved && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_saved')}</span>}
+            </div>
+            <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('board.follow_hint')}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {regions.map((r) => {
+                const on = followed.includes(r.id);
+                return (
+                  <button key={r.id} type="button" onClick={() => toggle(r.id)}
+                    className={`px-2 py-1 rounded-full text-[11px] font-medium border transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue'}`}>
+                    {on ? '✓ ' : '+ '}{r.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('board.follow_hint')}</p>
-          <div className="flex flex-wrap gap-1.5">
-            {regions.map((r) => {
-              const on = followed.includes(r.id);
-              return (
-                <button key={r.id} type="button" onClick={() => toggle(r.id)}
-                  className={`px-2 py-1 rounded-full text-[11px] font-medium border transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue'}`}>
-                  {on ? '✓ ' : '+ '}{r.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
