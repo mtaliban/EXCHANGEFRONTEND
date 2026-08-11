@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { adminAllDonations, adminApproveDonation, adminRejectDonation } from '@/lib/api';
+import { parseServerDate } from '@/lib/dates';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 
@@ -113,7 +114,7 @@ export default function AdminPaymentsPage() {
                       </span>
                     </div>
                     <div className="text-xs text-brand-grey-500 mt-0.5">
-                      {new Date(p.created_at).toLocaleString('sw-TZ')} · <span className="font-mono">{p.order_id}</span>
+                      {(parseServerDate(p.created_at) || new Date()).toLocaleString('sw-TZ')} · <span className="font-mono">{p.order_id}</span>
                       {p.note && <span className="text-brand-red-500 ml-2">{t('adminpay.note')} {p.note}</span>}
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { formatDistanceToNow } from 'date-fns';
+import { parseServerDate } from '@/lib/dates';
 
 /** Shared expandable contact-stat card — watu + namba + mara ngapi. */
 export default function ContactStatCard({ icon, title, count, people, open, onToggle }: {
@@ -31,7 +32,7 @@ export default function ContactStatCard({ icon, title, count, people, open, onTo
               </div>
               <div className="flex flex-col items-end flex-shrink-0">
                 <span className="badge-gold">{p.count}×</span>
-                {p.last_at && <span className="text-[9px] text-brand-grey-400 mt-0.5">{formatDistanceToNow(new Date(p.last_at), { addSuffix: true })}</span>}
+                {p.last_at && <span className="text-[9px] text-brand-grey-400 mt-0.5">{formatDistanceToNow(parseServerDate(p.last_at) || new Date(), { addSuffix: true })}</span>}
               </div>
             </div>
           ))}

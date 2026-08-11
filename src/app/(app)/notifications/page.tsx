@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { getNotifications, getUnreadCount, markAllNotificationsRead, markNotificationRead, bustGetCache, type AppNotification } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useUnreadStore } from '@/lib/unreadStore';
+import { parseServerDate } from '@/lib/dates';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
 import { useT } from '@/lib/i18n';
@@ -25,14 +27,17 @@ export default function NotificationsPage() {
   const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [total, setTotal] = useState(0);
   const [unread, setUnread] = useState(0);
+  const unreadStoreSet = useUnreadStore((s) => s.set);
+  const unreadStoreRefresh = useUnreadStore((s) => s.refresh);
   const { messages } = useLiveEvents(user ? ['notification'] : []);
 
   async function load() {
     try {
-      const [data, count] = await Promise.all([getNotifications(100), getUnreadCount()]);
+      const [data, count] = await Promise.all([getNotifications(100), getUnreadCount(true)]);
       setNotifs(data.notifications);
       setTotal(data.total);
       setUnread(count.unread);
+      unreadStoreSet(count.unread); // kengele juu iwe sahihi PAPO HAPO
     } catch {}
   }
 
@@ -48,6 +53,7 @@ export default function NotificationsPage() {
     if (!n.read) {
       await markNotificationRead(n.notification_id).catch(() => {});
       setUnread((u) => Math.max(0, u - 1));
+      unreadStoreRefresh(); // kengele juu ipungue mara moja
     }
     router.push(notificationRoute(n.type, n.data, isAdmin));
   }
@@ -55,6 +61,7 @@ export default function NotificationsPage() {
   async function readAll() {
     await markAllNotificationsRead().catch(() => {});
     setUnread(0);
+    unreadStoreSet(0); // kengele juu isifanye "9+" tena
     setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
   }
 
@@ -105,7 +112,7 @@ export default function NotificationsPage() {
                 </div>
                 <div className="text-xs text-brand-grey-500 mt-0.5 line-clamp-2">{n.body}</div>
                 <div className="text-[10px] text-brand-grey-400 mt-1">
-                  {formatDistanceToNowStrict(new Date(n.created_at), { addSuffix: true })}
+                  {formatDistanceToNowStrict(parseServerDate(n.created_at) || new Date(), { addSuffix: true })}
                 </div>
               </div>
             </button>

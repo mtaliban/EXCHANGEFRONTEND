@@ -11,6 +11,7 @@ import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useI18n, useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 import { timeAgo } from '@/lib/timeAgo';
+import { parseServerDate, formatClock } from '@/lib/dates';
 import { useFollowStore } from '@/lib/followStore';
 import { playArrivalSound } from '@/lib/sound';
 
@@ -211,8 +212,8 @@ export default function DashboardBoard() {
   const candidates = useMemo(() => {
     const list = [...((board?.candidates as any[]) || [])];
     list.sort((a, b) => {
-      const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+      const ta = a.created_at ? (parseServerDate(a.created_at)?.getTime() ?? 0) : 0;
+      const tb = b.created_at ? (parseServerDate(b.created_at)?.getTime() ?? 0) : 0;
       return tb - ta;
     });
     return list;
@@ -413,8 +414,9 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
   const from = c.current_station;
   const to = c.desired_destinations?.[0];
   const scorePct = c.score != null ? Math.round(c.score * 100) : null;
-  const createdTs = c.created_at ? new Date(c.created_at).getTime() : now;
-  const ago = timeAgo(isNaN(createdTs) ? now : createdTs, lang);
+  const createdTs = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? now) : now;
+  const ago = timeAgo(createdTs, lang);
+  const stamp = formatClock(createdTs, lang); // SAA HALISI — "10:45 AM" (sio tu "3hr")
   const fresh = now - createdTs < FRESH_MS;
   const isEdu = c.category === 'education';
 
@@ -489,7 +491,9 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
         </a>
       )}
 
-      <div className="text-[11px] font-medium text-brand-grey-400">🕐 {ago}</div>
+      <div className="text-[11px] font-medium text-brand-grey-400" title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
+        🕐 {ago}{stamp ? ` · ${stamp}` : ''}
+      </div>
 
       <div className="flex gap-2 mt-auto pt-1">
         <Link href={`/chats/${c.user_id}`} className="btn-primary text-xs px-3 py-1.5 flex-1 text-center">💬 {t('dash.chat')}</Link>

@@ -25,6 +25,27 @@ function audioCtx(): AudioContext | null {
   }
 }
 
+// Autoplay policy ya browsers: AudioContext inafunguliwa TU baada ya mtumiaji
+// kugusa/bofya. WS event (mtu mpya anafika) siyo gesture → bila hii, sauti
+// haipigi kabisa. Tunafunga context kwenye GESTURE YA KWANZA yoyote.
+if (typeof window !== 'undefined') {
+  const unlock = () => { audioCtx(); };
+  const opts = { once: true, passive: true } as AddEventListenerOptions;
+  window.addEventListener('pointerdown', unlock, opts);
+  window.addEventListener('keydown', unlock, opts);
+  window.addEventListener('touchstart', unlock, opts);
+}
+
+/** Je sauti imewashwa? (hifadhi kwenye localStorage — toggle ya dashboard 🔊/🔇) */
+export function isSoundEnabled(): boolean {
+  if (typeof window === 'undefined') return true;
+  try {
+    return window.localStorage.getItem('kv_sound') !== 'off';
+  } catch {
+    return true;
+  }
+}
+
 /** Piga sauti ya "mtu mpya amefika" (request feed live). */
 export function playArrivalSound(): void {
   const ctx = audioCtx();

@@ -7,6 +7,7 @@ import { listContacts, getContactStats, logCall } from '@/lib/api';
 import ContactStatCard from '@/components/ContactStatCard';
 import { useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
+import { parseServerDate } from '@/lib/dates';
 
 export default function ContactsPage() {
   const t = useT();
@@ -120,10 +121,10 @@ export default function ContactsPage() {
 
                     <div className="text-[11px] text-brand-grey-400 mt-1 flex flex-wrap gap-3">
                       {c.last_message_at && (
-                        <span>💬 {t('contacts.chat_time')} {formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true })}</span>
+                        <span>💬 {t('contacts.chat_time')} {formatDistanceToNow(parseServerDate(c.last_message_at) || new Date(), { addSuffix: true })}</span>
                       )}
                       {c.last_call_at && (
-                        <span>📞 {t('contacts.call_time')} {formatDistanceToNow(new Date(c.last_call_at), { addSuffix: true })}</span>
+                        <span>📞 {t('contacts.call_time')} {formatDistanceToNow(parseServerDate(c.last_call_at) || new Date(), { addSuffix: true })}</span>
                       )}
                     </div>
                   </div>

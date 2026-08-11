@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { adminEvents } from '@/lib/api';
 import { useT } from '@/lib/i18n';
+import { parseServerDate } from '@/lib/dates';
 
 export default function AdminEventsPage() {
   const t = useT();
@@ -24,7 +25,7 @@ export default function AdminEventsPage() {
             <div className="flex gap-2 items-center">
               <span className="badge-gold">{e.event_type}</span>
               <span className="text-brand-grey-500 flex-1 truncate">{e.topic}</span>
-              <span className="text-brand-grey-400">{new Date(e.occurred_at).toLocaleString('sw-TZ')}</span>
+              <span className="text-brand-grey-400">{(parseServerDate(e.occurred_at) || new Date()).toLocaleString('sw-TZ')}</span>
             </div>
             <div className="text-brand-grey-500 font-mono truncate mt-1">{JSON.stringify(e.payload)}</div>
           </div>

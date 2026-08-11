@@ -7,7 +7,8 @@ import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
-import { playPingSound } from '@/lib/sound';
+import { playPingSound, isSoundEnabled } from '@/lib/sound';
+import { parseServerDate } from '@/lib/dates';
 import { Handshake, MessageCircle, Phone, Bell } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -48,7 +49,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     });
     const unsub2 = subscribe('message.sent', (p) => {
       if (p.to_user_id !== user.user_id) return;
-      playPingSound();
+      if (isSoundEnabled()) playPingSound();
       showToast({
         icon: MessageCircle,
         color: 'orange',
@@ -60,7 +61,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     });
     const unsub3 = subscribe('call.initiated', (p) => {
       if (p.to_user_id !== user.user_id) return;
-      playPingSound();
+      if (isSoundEnabled()) playPingSound();
       showToast({
         icon: Phone,
         color: 'red',
@@ -71,10 +72,12 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       });
     });
     // Notifications center (payments, profile updates, registrations…)
-    // NOTE: match.found / message.sent / call.initiated have dedicated richer
-    // toasts above — skip them here to avoid duplicate toasts.
+    // NOTE: match.found / user.registered / message.sent / call.initiated have
+    // dedicated handling (toasts + sauti ya dashboard) — skip duplicate here.
     const unsub4 = subscribe('notification', (p) => {
-      if (p.type === 'match.found' || p.type === 'message.sent' || p.type === 'call.initiated') return;
+      if (p.type === 'match.found' || p.type === 'user.registered'
+        || p.type === 'message.sent' || p.type === 'call.initiated') return;
+      if (isSoundEnabled()) playPingSound(); // 📣 arifa mpya → ipige sauti!
       const meta = NOTIFICATION_TYPE_META[p.type] || { icon: DEFAULT_NOTIFICATION_ICON, color: 'blue' };
       showToast({
         icon: meta.icon || Bell,
@@ -106,7 +109,7 @@ function showToast(opts: {
   const container = ensureToastContainer();
   const el = document.createElement('div');
   const ago = opts.ago
-    ? formatDistanceToNowStrict(new Date(opts.ago), { addSuffix: true })
+    ? formatDistanceToNowStrict(parseServerDate(opts.ago) || new Date(), { addSuffix: true })
     : 'sasa hivi';
 
   el.className = `pointer-events-auto cursor-pointer w-full sm:w-80 rounded-xl shadow-lg border-l-4 border-brand-${opts.color} bg-white p-3 flex items-start gap-3 animate-slide-in transition hover:shadow-xl`;

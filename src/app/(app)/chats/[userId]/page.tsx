@@ -7,7 +7,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { chatHistory, sendMessage, logCall, markRead, getUserById, type ChatMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
-import { dayChipLabel, messageTime } from '@/lib/dates';
+import { dayChipLabel, messageTime, parseServerDate, isSameServerDay } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 
@@ -118,7 +118,7 @@ export default function ChatViewPage() {
 
   // Genuine online = present in the live WS set OR fresh profile flag
   const online = onlineUserIds.has(otherUserId) || other?.online;
-  const lastSeen = other?.last_seen_at ? formatDistanceToNowStrict(new Date(other.last_seen_at), { addSuffix: true }) : null;
+  const lastSeen = other?.last_seen_at ? formatDistanceToNowStrict(parseServerDate(other.last_seen_at) || new Date(), { addSuffix: true }) : null;
   const initial = getInitial(other?.full_name);
 
   return (
@@ -166,7 +166,7 @@ export default function ChatViewPage() {
           const prev = messages[idx - 1];
           const showAvatar = !prev || prev.from_user_id !== m.from_user_id;
           // WhatsApp-style day separator chip: Leo / Jana / tarehe
-          const newDay = !prev || new Date(m.created_at).toDateString() !== new Date(prev.created_at).toDateString();
+          const newDay = !prev || !isSameServerDay(m.created_at, prev.created_at);
           const read = m.is_read || !!m.read_at;
           const delivered = !!m.delivered_at;
           return (

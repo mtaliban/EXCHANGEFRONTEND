@@ -6,8 +6,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
-import { getUnreadCount, getRegions, updateFollowedRegions, bustGetCache, type Region } from '@/lib/api';
+import { getRegions, updateFollowedRegions, bustGetCache, type Region } from '@/lib/api';
 import { useFollowStore } from '@/lib/followStore';
+import { useUnreadStore } from '@/lib/unreadStore';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { useTheme, applyTheme } from '@/lib/theme';
@@ -427,22 +428,34 @@ function isAdminDark(dark?: boolean) {
 /** Live notifications bell with unread badge. */
 function NotificationsBell({ isAdmin }: { isAdmin?: boolean }) {
   const { user } = useAuth();
-  const [unread, setUnread] = useState(0);
+  const pathname = usePathname();
+  const unread = useUnreadStore((s) => s.count);
+  const refresh = useUnreadStore((s) => s.refresh);
   const { messages } = useLiveEvents(user ? ['notification'] : []);
 
-  // No HTTP polling — initial load + live MQTT events refresh the badge.
+  // Initial load + kila ROUTE inabadilika (kurudi kutoka /notifications baada ya
+  // kusoma) → kengele inaonyesha hesabu halisi, siyo ile ya zamani.
   useEffect(() => {
-    let cancelled = false;
-    getUnreadCount().then((d) => { if (!cancelled) setUnread(d.unread); }).catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
+    refresh();
+  }, [refresh, pathname]);
 
-  // Live: any new notification event bumps the badge immediately (FRESH data)
+  // Live: any new notification event refreshes the badge immediately (FRESH data)
   useEffect(() => {
     if (!messages.length) return;
     bustGetCache(); // FUSHA cache — badge inaonyesha hesabu halisi sasa
-    getUnreadCount(true).then((d) => setUnread(d.unread)).catch(() => {});
-  }, [messages.length]);
+    refresh();
+  }, [messages.length, refresh]);
+
+  // Focus / kurudi kwenye tab → refresh (arifa zinaweza kuwa zimesomwa kwingine)
+  useEffect(() => {
+    const onShow = () => refresh();
+    window.addEventListener('focus', onShow);
+    document.addEventListener('visibilitychange', onShow);
+    return () => {
+      window.removeEventListener('focus', onShow);
+      document.removeEventListener('visibilitychange', onShow);
+    };
+  }, [refresh]);
 
   return (
     <Link

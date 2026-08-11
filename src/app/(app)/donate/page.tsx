@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { getDonationInfo, submitDonation, myDonations } from '@/lib/api';
+import { parseServerDate } from '@/lib/dates';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
@@ -221,7 +222,7 @@ function HistoryList({ history }: { history: any[] }) {
             <div>
               <div className="font-medium text-brand-grey-900 dark:text-white">{p.amount?.toLocaleString()} TZS</div>
               <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400">
-                {new Date(p.created_at).toLocaleString('sw-TZ')}
+                {(parseServerDate(p.created_at) || new Date()).toLocaleString('sw-TZ')}
                 {' · '}<span className="font-mono">{p.order_id}</span>
               </div>
             </div>

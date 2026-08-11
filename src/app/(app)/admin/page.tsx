@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { adminStats, adminUsers, adminMatches, adminEvents } from '@/lib/api';
 import { useT } from '@/lib/i18n';
+import { parseServerDate } from '@/lib/dates';
 
 type Tab = 'overview' | 'users' | 'matches' | 'events';
 
@@ -184,7 +185,7 @@ function MatchesTab() {
                 <td className="px-3 py-2 font-bold">{Math.round(m.score * 100)}%</td>
                 <td className="px-3 py-2">{m.user_a?.full_name} <span className="text-xs text-brand-grey-500">({m.user_a?.region}, {m.user_a?.cadre})</span></td>
                 <td className="px-3 py-2">{m.user_b?.full_name} <span className="text-xs text-brand-grey-500">({m.user_b?.region}, {m.user_b?.cadre})</span></td>
-                <td className="px-3 py-2 text-xs">{m.matched_at ? formatDistanceToNow(new Date(m.matched_at), { addSuffix: true }) : ''}</td>
+                <td className="px-3 py-2 text-xs">{m.matched_at ? formatDistanceToNow(parseServerDate(m.matched_at) || new Date(), { addSuffix: true }) : ''}</td>
               </tr>
             ))}
           </tbody>
@@ -217,7 +218,7 @@ function EventsTab() {
             <div className="flex items-center gap-2 mb-1">
               <span className="badge-gold">{e.event_type}</span>
               <span className="text-brand-grey-500">{e.topic}</span>
-              <span className="ml-auto text-brand-grey-400">{new Date(e.occurred_at).toLocaleString('sw-TZ')}</span>
+              <span className="ml-auto text-brand-grey-400">{(parseServerDate(e.occurred_at) || new Date()).toLocaleString('sw-TZ')}</span>
             </div>
             <div className="text-brand-grey-500 font-mono truncate">{JSON.stringify(e.payload)}</div>
           </div>
