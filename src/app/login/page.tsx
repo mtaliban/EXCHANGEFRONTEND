@@ -146,15 +146,10 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Admin: thibitisha email (kwanza) */}
+        {/* Admin: thibitisha email — inaonekana TU inapohitajika (ikijaribu kuingia kwa email ambayo haijathibitishwa, form inafunguka kiotomatiki). Sio mara kwa mara. */}
+        {verifyOpen && (
         <div className="mt-5 border-t border-brand-grey-100 pt-4">
-          <button type="button" onClick={() => setVerifyOpen(!verifyOpen)}
-            className="w-full text-left text-sm text-brand-grey-500 hover:text-brand-grey-700 flex items-center justify-between">
-            <span className="font-semibold">🔐 {t('login.verify_prompt')} <span className="text-brand-orange">{t('login.verify_span')}</span></span>
-            <span className="text-xs">{verifyOpen ? '▲' : '▼'}</span>
-          </button>
-
-          {verifyOpen && !verifyMode && (
+          {!verifyMode && (
             <form onSubmit={onRequestCode} className="space-y-3 mt-3">
               <p className="text-xs text-brand-grey-500">{t('login.verify_prompt2')}</p>
               <input type="email" className="input" placeholder="admin@kubadilishana.go.tz"
@@ -171,7 +166,7 @@ export default function LoginPage() {
             </form>
           )}
 
-          {verifyOpen && verifyMode && (
+          {verifyMode && (
             <form onSubmit={onConfirmCode} className="space-y-3 mt-3">
               <p className="text-xs text-brand-grey-500">
                 {t('login.enter_code')} <span className="font-semibold">{verifyEmail}</span>.
@@ -188,6 +183,7 @@ export default function LoginPage() {
             </form>
           )}
         </div>
+        )}
 
         <p className="text-center text-sm text-brand-grey-500 mt-3">
           <Link href="/forgot-password" className="text-brand-blue hover:underline">{t('login.forgot')}</Link>

@@ -125,12 +125,10 @@ export interface AuthResponse {
 }
 export const register = (body: RegisterPayload) =>
   client.post<AuthResponse>(`${AUTH}/auth/register`, body).then((r) => r.data);
-export const login = (phone: string, password: string) =>
-  client.post<AuthResponse>(`${AUTH}/auth/login`, { phone, password }).then((r) => r.data);
+export const login = (identifier: string, password: string) =>
+  client.post<AuthResponse>(`${AUTH}/auth/login`, { phone: identifier, password }).then((r) => r.data);
 
-/* ── Admin email login + verification ─────────────── */
-export const adminLogin = (email: string, password: string) =>
-  client.post<AuthResponse>(`${AUTH}/auth/admin/login`, { email, password }).then((r) => r.data);
+/* ── Admin email verification (kwenye login — auto-detect email) ────────── */
 export const requestEmailVerification = (email: string, password: string, phone?: string) =>
   client.post<{ ok: boolean; message: string }>(`${AUTH}/auth/email/verify-request`, { email, password, phone })
     .then((r) => r.data);
