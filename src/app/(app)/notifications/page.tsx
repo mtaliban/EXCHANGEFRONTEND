@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNowStrict } from 'date-fns';
-import { getNotifications, getUnreadCount, markAllNotificationsRead, markNotificationRead, type AppNotification } from '@/lib/api';
+import { getNotifications, getUnreadCount, markAllNotificationsRead, markNotificationRead, bustGetCache, type AppNotification } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
@@ -37,7 +37,12 @@ export default function NotificationsPage() {
   }
 
   useEffect(() => { load(); }, []);
-  useEffect(() => { if (messages.length) load(); /* eslint-disable-next-line */ }, [messages.length]);
+  useEffect(() => {
+    if (!messages.length) return;
+    bustGetCache(); // data FRESH — usirudishe arifa za kale
+    load();
+    /* eslint-disable-next-line */
+  }, [messages.length]);
 
   async function open(n: AppNotification) {
     if (!n.read) {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { useLiveEvents } from '@/lib/useLiveEvents';
-import { getActiveAnnouncements, dismissAnnouncement, type Announcement } from '@/lib/api';
+import { getActiveAnnouncements, dismissAnnouncement, bustGetCache, type Announcement } from '@/lib/api';
 
 /**
  * Matangazo yaonekana pale juu kabisa (banner) — sio lazima mtu afungue
@@ -23,7 +23,11 @@ export default function AnnouncementBanner() {
   }
 
   useEffect(() => { reload(); }, []);
-  useEffect(() => { if (messages.length) reload(); }, [messages.length]);
+  useEffect(() => {
+    if (!messages.length) return;
+    bustGetCache(); // tangazo jipya lijitokeze FRESH
+    reload();
+  }, [messages.length]);
 
   if (!items.length) return null;
 

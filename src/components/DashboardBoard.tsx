@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import {
-  getBoard, getRegions, getDistricts, getFacilities, logCall,
+  getBoard, getRegions, getDistricts, getFacilities, logCall, bustGetCache,
   type Region, type District, type Facility,
 } from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
@@ -12,8 +12,10 @@ import { useI18n, useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 import { timeAgo } from '@/lib/timeAgo';
 import { useFollowStore } from '@/lib/followStore';
+import { playArrivalSound } from '@/lib/sound';
 
 const FRESH_MS = 3 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya dakika 3
+const PAGE_SIZE = 10; // Wageni 10 wa kwanza kwenye grid — zilizobaki pagination
 
 export default function DashboardBoard() {
   const t = useT();
@@ -25,7 +27,6 @@ export default function DashboardBoard() {
   const isEdu = myCategory === 'education';
 
   // Mikoa anayotaka kwenda (k.m. Dar + Pwani) + mikoa aliyoifuata (k.m. Tanga)
-  // — hizi ndizo "Mikoa yote" ya mtumiaji (sio mikoa yote 26 ya Tanzania).
   const destRegionIds = useMemo(
     () => Array.from(new Set(dests.map((d) => d.region_id).filter((x): x is number => typeof x === 'number'))),
     [dests]
@@ -38,7 +39,7 @@ export default function DashboardBoard() {
   const loadFollow = useFollowStore((s) => s.load);
   const [regions, setRegions] = useState<Region[]>([]);
 
-  // Mikoa YOTE anayojali = destinations + followed (nav inabadilisha mara moja)
+  // Mikoa YOTE anayojali = destinations + followed
   const watchedIds = useMemo(() => {
     const s = new Set<number>(destRegionIds);
     (followedIds || []).forEach((id) => s.add(id));
@@ -54,8 +55,6 @@ export default function DashboardBoard() {
     return Array.from(s);
   }, [destRegionNames, followedIds, regions]);
 
-  // Chanzo: default = '__all__' (Mikoa yote = mikoa yangu yote pamoja,
-  // k.m. Dar+Pwani wanaokuja Dodoma). Chagua mkoa mmoja → wilaya → kituo.
   const [regionSel, setRegionSel] = useState<string>(destRegionIds.length > 0 ? '__all__' : '');
   const [districtId, setDistrictId] = useState<number | undefined>();
   const [facilityId, setFacilityId] = useState<string | undefined>();
@@ -64,7 +63,25 @@ export default function DashboardBoard() {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
-  const { messages } = useLiveEvents(['match.found', 'user.registered']);
+  const [page, setPage] = useState(1);
+  const [lastArrivalKey, setLastArrivalKey] = useState<string | null>(null);
+  // Sauti inaweza kuzimwa na mtumiaji (toggle juu kwenye LIVE panel) —
+  // inahifadhiwa kwenye localStorage ili isiimike tena kila mtu akiingia.
+  const [soundOn, setSoundOn] = useState(true);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('kv_sound');
+      if (saved !== null) setSoundOn(saved !== 'off');
+    } catch {}
+  }, []);
+  const toggleSound = () => {
+    setSoundOn((prev) => {
+      const next = !prev;
+      try { window.localStorage.setItem('kv_sound', next ? 'on' : 'off'); } catch {}
+      return next;
+    });
+  };
+  const { messages, connected } = useLiveEvents(['match.found', 'user.registered']);
 
   // Re-render "muda uliopita" kila sekunde 30
   useEffect(() => {
@@ -72,8 +89,7 @@ export default function DashboardBoard() {
     return () => clearInterval(id);
   }, []);
 
-  // Mkoa mmoja halisi uliochaguliwa (kwa cascading wilaya/vituo).
-  // '__all__' yenye mkoa MMOJA tu pia inafanya wilaya zifanye kazi mara moja.
+  // Mkoa mmoja halisi uliochaguliwa (kwa cascading wilaya/vituo)
   const singleRegion = useMemo(() => {
     if (regionSel === '__all__') return watchedIds.length === 1 ? watchedIds[0] : undefined;
     if (regionSel === '') return undefined;
@@ -87,14 +103,14 @@ export default function DashboardBoard() {
     return [];
   }, [regionSel, watchedIds, singleRegion]);
 
-  const loadBoard = useCallback(async () => {
+  const loadBoard = useCallback(async (forceFresh = false) => {
     setLoading(true);
     try {
       const params: any = { scope: 'incoming' };
       if (effectiveRegionIds.length) params.region_ids = effectiveRegionIds.join(',');
       if (districtId !== undefined) params.district_id = districtId;
       if (facilityId !== undefined) params.facility_id = facilityId;
-      const b = await getBoard(params);
+      const b = await getBoard(params, forceFresh);
       setBoard(b);
     } finally {
       setLoading(false);
@@ -136,16 +152,23 @@ export default function DashboardBoard() {
 
   useEffect(() => { loadBoard(); }, [loadBoard]);
 
-  // Auto-refresh on live events (user.registered / match.found)
+  // Auto-refresh on live events — FRESH data (bust cache) + sauti + kurudi page 1
   useEffect(() => {
     if (!messages.length) return;
     const latest = messages[messages.length - 1];
     if (latest.topic === 'match.found' || latest.topic === 'user.registered') {
-      const tId = setTimeout(() => loadBoard(), 500);
+      const key = `${latest.topic}:${latest.payload?.user_id || latest.payload?.candidate?.user_id || latest.at}`;
+      if (key !== lastArrivalKey) {
+        setLastArrivalKey(key);
+        if (soundOn) playArrivalSound(); // 📣 mtu mpya amefika — ipige sauti!
+      }
+      bustGetCache(); // FUSHA cache ya kale — board lazima ionyeshe data mpya SASA
+      setPage(1);
+      const tId = setTimeout(() => loadBoard(true), 400);
       return () => clearTimeout(tId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages.length]);
+  }, [messages.length, soundOn]);
 
   const clearFilters = () => {
     setRegionSel(watchedIds.length > 0 ? '__all__' : '');
@@ -195,21 +218,48 @@ export default function DashboardBoard() {
     return list;
   }, [board]);
 
+  // Pagination: data 10 za mwanzo (wageni) — zilizobaki kupitia pagination
+  const totalPages = Math.max(1, Math.ceil(candidates.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = useMemo(
+    () => candidates.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [candidates, safePage]
+  );
+
+  // Walio online kwenye grid yako — wana rangi ya kijani (tofauti na notification)
+  const onlineCount = candidates.filter((c) => c.online).length;
+
+  const hasData = (board?.total ?? 0) > 0;
+
   return (
     <div className="space-y-4">
-      {/* ═══ AD-BOARD: Wanaokuja Mkoa Wako ═══ */}
+      {/* ═══ LIVE PANEL: Wageni + Online (rangi tofauti) ═══ */}
       <div className="card overflow-hidden">
         <div className="p-4 md:p-5 border-b border-brand-grey-100 dark:border-brand-grey-200">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <h2 className="font-bold text-lg text-brand-grey-900 dark:text-white flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-brand-orange inline-block animate-pulse" />
-              {t('board.title')} <span className="text-brand-orange">{myStation.region_name || ''}</span>
+              <span className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse`} />
+              {t('board.live_title')} <span className="text-brand-orange">{myStation.region_name || ''}</span>
             </h2>
-            {!loading && (
-              <span className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">
-                {board?.total ?? 0} {t('board.total_people')}
-              </span>
-            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              {onlineCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  {onlineCount} {t('board.online_now')}
+                </span>
+              )}
+              {!loading && (
+                <span className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">
+                  {board?.total ?? 0} {t('board.total_people')}
+                </span>
+              )}
+              <button type="button" onClick={toggleSound}
+                title={soundOn ? t('board.sound_on') : t('board.sound_off')}
+                className={`text-xs px-2 py-1 rounded-full border transition ${soundOn ? 'border-brand-orange text-brand-orange hover:bg-brand-orange-50' : 'border-brand-grey-300 text-brand-grey-500 hover:bg-brand-grey-50'}`}
+                aria-label={soundOn ? t('board.sound_on') : t('board.sound_off')}>
+                {soundOn ? '🔊' : '🔇'}
+              </button>
+            </div>
           </div>
           <p className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
             <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isEdu ? 'bg-brand-orange-50 text-brand-orange' : 'bg-brand-blue-50 text-brand-blue'}`}>
@@ -224,7 +274,7 @@ export default function DashboardBoard() {
           <label className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{t('board.filter_source')}</label>
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mt-1.5">
             <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={regionSel}
-              onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); }}>
+              onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); setPage(1); }}>
               {watchedIds.length > 0 && (
                 <option value="__all__">
                   {watchedNames.length ? `${t('board.all_regions')} (${watchedNames.join(', ')})` : t('board.all_regions')}
@@ -234,14 +284,13 @@ export default function DashboardBoard() {
                 const r = regions.find((x) => x.id === rid);
                 return r ? <option key={r.id} value={String(r.id)}>{r.name}</option> : null;
               })}
-              {/* Fallback: mtu asiye na destinations yoyote — mikoa yote ya Tanzania */}
               {watchedIds.length === 0 && regions.map((r) => (
                 <option key={r.id} value={String(r.id)}>{r.name}</option>
               ))}
             </select>
 
             <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={districtId ?? ''}
-              onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) => { setDistrictId(e.target.value ? Number(e.target.value) : undefined); setPage(1); }}
               disabled={singleRegion === undefined}
               title={t('board.filter_district_select')}>
               <option value="">{singleRegion !== undefined ? t('board.any_district') : t('board.choose_district')}</option>
@@ -251,7 +300,7 @@ export default function DashboardBoard() {
             </select>
 
             <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={facilityId ?? ''}
-              onChange={(e) => setFacilityId(e.target.value || undefined)}
+              onChange={(e) => { setFacilityId(e.target.value || undefined); setPage(1); }}
               disabled={districtId === undefined}
               title={t('board.filter_facility_select')}>
               <option value="">{districtId !== undefined ? t('board.any_facility') : t('board.choose_facility')}</option>
@@ -274,12 +323,14 @@ export default function DashboardBoard() {
           </div>
         </div>
 
-        {/* Stats chips (kiwango cha sasa) */}
+        {/* Stats chips (kiwango cha sasa) — HAKUNA "no data" kama data zipo! */}
         <div className="px-4 md:px-5 pt-3 pb-4">
           {loading ? (
             <div className="text-xs text-brand-grey-400 py-2">{t('action.loading')}</div>
           ) : chips.list.length === 0 ? (
-            <div className="text-xs text-brand-grey-400 py-2">{t('msg.no_data')}</div>
+            <div className="text-xs text-brand-grey-400 py-2">
+              {hasData ? t('board.stats_hint') : t('msg.no_data')}
+            </div>
           ) : (
             <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
               {chips.list.map((c: any) => {
@@ -304,6 +355,7 @@ export default function DashboardBoard() {
                         setDistrictId(undefined);
                         setFacilityId(undefined);
                       }
+                      setPage(1);
                     }}
                     className={`px-3 py-1.5 rounded-full border text-xs font-medium transition ${isActive ? color + ' ring-2' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-grey-400'}`}
                   >
@@ -316,17 +368,46 @@ export default function DashboardBoard() {
         </div>
       </div>
 
-      {/* ═══ GRID YA WANAOKUJA MKOA WAKO (title moja iko juu — cards tu hapa) ═══ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        {candidates.map((c: any) => (
-          <BoardCard key={c.user_id} c={c} online={!!c.online} now={now} lang={lang} mySubjects={mySubjects} />
-        ))}
-      </div>
+      {/* ═══ GRID YA WANAOKUJA MKOA WAKO — 10 kwa ukurasa + pagination ═══ */}
+      {loading && candidates.length === 0 ? (
+        <div className="text-sm text-brand-grey-400 py-6 text-center">{t('action.loading')}</div>
+      ) : pageItems.length === 0 ? (
+        <div className="card text-center py-12">
+          <div className="text-4xl mb-2">{isEdu ? '👩🏫' : '🏥'}</div>
+          <p className="text-brand-grey-500">{t('board.no_candidates')}</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {pageItems.map((c: any) => (
+              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-1">
+              <button type="button" disabled={safePage <= 1}
+                onClick={() => setPage(safePage - 1)}
+                className="px-3 py-1.5 rounded-lg border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+                ← {t('board.prev')}
+              </button>
+              <span className="text-xs font-semibold text-brand-grey-500 px-2">
+                {safePage} / {totalPages}
+              </span>
+              <button type="button" disabled={safePage >= totalPages}
+                onClick={() => setPage(safePage + 1)}
+                className="px-3 py-1.5 rounded-lg border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+                {t('board.next')} →
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
-function BoardCard({ c, online, now, lang, mySubjects }: { c: any; online: boolean; now: number; lang: 'sw' | 'en'; mySubjects: string[] }) {
+function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[] }) {
   const t = useT();
   const initial = getInitial(c.full_name);
   const from = c.current_station;
@@ -335,6 +416,7 @@ function BoardCard({ c, online, now, lang, mySubjects }: { c: any; online: boole
   const createdTs = c.created_at ? new Date(c.created_at).getTime() : now;
   const ago = timeAgo(isNaN(createdTs) ? now : createdTs, lang);
   const fresh = now - createdTs < FRESH_MS;
+  const isEdu = c.category === 'education';
 
   async function onCall() {
     if (!c.phone_primary) return;
@@ -345,14 +427,14 @@ function BoardCard({ c, online, now, lang, mySubjects }: { c: any; online: boole
   return (
     <div className={`card p-4 flex flex-col gap-2.5 hover:shadow-md transition group ${
       fresh ? 'border-brand-orange ring-2 ring-brand-orange/30 animate-[requestPing_1.5s_ease-in-out]'
-      : online ? 'border-green-300 bg-green-50/60 dark:bg-green-900/10 dark:border-green-700/50'
+      : c.online ? 'border-green-300 bg-green-50/60 dark:bg-green-900/10 dark:border-green-700/50'
       : ''}`}>
       <div className="flex items-center gap-3">
         <div className="relative flex-shrink-0">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-lg">
             {initial}
           </div>
-          {online && (
+          {c.online && (
             <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-400 border-2 border-white dark:border-brand-grey-100" />
           )}
         </div>
@@ -362,11 +444,17 @@ function BoardCard({ c, online, now, lang, mySubjects }: { c: any; online: boole
             {fresh && (
               <span className="text-[10px] font-bold text-brand-orange bg-brand-orange-50 px-1.5 py-0.5 rounded-full">🆕 {t('board.new_badge')}</span>
             )}
-            {online && <span className="text-[10px] font-bold text-green-500">● {t('board.live')}</span>}
+            {c.online && <span className="text-[10px] font-bold text-green-500">● {t('board.live')}</span>}
           </div>
-          <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">
-            {c.cadre_display || c.cadre_code}
-            {scorePct != null && <span className="ml-1 badge-gold">{scorePct}% {t('board.score')}</span>}
+          {/* Idara husika: Afya / Elimu + kada */}
+          <div className="flex items-center gap-1 flex-wrap mt-0.5">
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isEdu ? 'bg-brand-orange-50 text-brand-orange' : 'bg-brand-blue-50 text-brand-blue'}`}>
+              {isEdu ? '👩🏫' : '🏥'} {isEdu ? t('label.category_education') : t('label.category_health')}
+            </span>
+            <span className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">
+              {c.cadre_display || c.cadre_code}
+            </span>
+            {scorePct != null && <span className="ml-auto badge-gold">{scorePct}% {t('board.score')}</span>}
           </div>
         </div>
       </div>

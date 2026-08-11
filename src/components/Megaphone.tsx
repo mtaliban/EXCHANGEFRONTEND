@@ -5,7 +5,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 import { useLiveEvents } from '@/lib/useLiveEvents';
-import { getAnnouncementUnread, getActiveAnnouncements, dismissAnnouncement, type Announcement } from '@/lib/api';
+import { getAnnouncementUnread, getActiveAnnouncements, dismissAnnouncement, bustGetCache, type Announcement } from '@/lib/api';
 import { Megaphone as MegaphoneIcon } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 
@@ -27,9 +27,11 @@ export default function Megaphone({ dark }: { dark?: boolean }) {
   }
 
   useEffect(() => { reload(); }, []);
-  // Live: tangazo jipya linapofika bump badge + list papo hapo
+  // Live: tangazo jipya linapofika bump badge + list papo hapo (FRESH data)
   useEffect(() => {
-    if (messages.length) reload();
+    if (!messages.length) return;
+    bustGetCache();
+    reload();
   }, [messages.length]);
 
   async function dismiss(id: string) {

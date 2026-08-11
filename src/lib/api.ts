@@ -13,19 +13,32 @@ const client = axios.create({ timeout: 20000 });
 
 /* GET cache ndogo (sekunde 15) — kurudi kwenye pages kufanya kazi PAPO HAPO
    (SPA feel: hakuna blank flash au kusubiri tena data sawa).
-   Mutations (POST/PUT/PATCH/DELETE) hazihifadhiwi; WS events bado zinarefresh live. */
+   Mutations (POST/PUT/PATCH/DELETE) hazihifadhiwi; WS events bado zinarefresh live.
+
+   TAHADHARI: data ya LIVE (board, unread, notifications, conversations) lazima
+   iwe FRESH — cache ya kale ndiyo ilikuwa sababu ya "notification inaonekana
+   lakini board inasema no data". Tumia bustGetCache() kabla ya reload kutokana
+   na WS event, au config.bypassCache kwa call moja tu. */
 const _getCache = new Map<string, { at: number; data: any }>();
 const _GET_TTL = 15_000;
 const _origGet = client.get.bind(client);
 (client.get as any) = (url: string, config?: any) => {
   const key = url + '|' + JSON.stringify(config?.params || {});
-  const hit = _getCache.get(key);
-  if (hit && Date.now() - hit.at < _GET_TTL) return Promise.resolve(hit.data);
+  if (!config?.bypassCache) {
+    const hit = _getCache.get(key);
+    if (hit && Date.now() - hit.at < _GET_TTL) return Promise.resolve(hit.data);
+  }
   return _origGet(url, config).then((res: any) => {
     _getCache.set(key, { at: Date.now(), data: res });
     return res;
   });
 };
+
+/** Futa cache yote ya GET — piga kabla ya reload inayoendeshwa na WS live event
+    (board, unread, notifications, announcements, chats). */
+export function bustGetCache() {
+  _getCache.clear();
+}
 
 client.interceptors.request.use((cfg) => {
   if (typeof window !== 'undefined') {
@@ -138,7 +151,8 @@ export const getBoard = (params?: {
   district_id?: number;
   facility_id?: string;
   limit?: number;
-}) => client.get<BoardStats>(`${MATCH}/matches/board`, { params }).then((r) => r.data);
+}, bypassCache = false) =>
+  client.get<BoardStats>(`${MATCH}/matches/board`, { params, bypassCache } as any).then((r) => r.data);
 
 export const getFollowedRegions = () =>
   client.get<{ region_ids: number[] }>(`${USER}/users/me/followed-regions`).then((r) => r.data);
@@ -209,8 +223,8 @@ export interface ChatMessage {
   delivered_at?: string | null;
   read_at?: string | null;
 }
-export const listConversations = () =>
-  client.get<Conversation[]>(`${MSG}/messages/conversations`).then((r) => r.data);
+export const listConversations = (bypassCache = false) =>
+  client.get<Conversation[]>(`${MSG}/messages/conversations`, { bypassCache } as any).then((r) => r.data);
 export const chatHistory = (otherUserId: string) =>
   client.get<{ conversation_id: string; messages: ChatMessage[] }>(`${MSG}/messages/with/${otherUserId}`).then((r) => r.data);
 export const sendMessage = (to_user_id: string, text: string) =>
@@ -225,8 +239,8 @@ export const listContacts = () =>
   client.get(`${MSG}/messages/contacts`).then((r) => r.data);
 export const getContactStats = () =>
   client.get(`${MSG}/messages/contact-stats`).then((r) => r.data);
-export const getPresence = () =>
-  client.get<{ online_user_ids: string[]; count: number }>(`${MSG}/messages/presence`).then((r) => r.data);
+export const getPresence = (bypassCache = false) =>
+  client.get<{ online_user_ids: string[]; count: number }>(`${MSG}/messages/presence`, { bypassCache } as any).then((r) => r.data);
 
 /* ── Admin ────────────────────────────────────────── */
 export const adminStats = () => client.get(`${ADMIN}/admin/stats`).then((r) => r.data);
@@ -277,10 +291,10 @@ export interface AppNotification {
   read: boolean;
   created_at: string;
 }
-export const getNotifications = (limit = 50) =>
-  client.get<{ total: number; notifications: AppNotification[] }>(`${API}/notifications`, { params: { limit } }).then((r) => r.data);
-export const getUnreadCount = () =>
-  client.get<{ unread: number }>(`${API}/notifications/unread-count`).then((r) => r.data);
+export const getNotifications = (limit = 50, bypassCache = false) =>
+  client.get<{ total: number; notifications: AppNotification[] }>(`${API}/notifications`, { params: { limit }, bypassCache } as any).then((r) => r.data);
+export const getUnreadCount = (bypassCache = false) =>
+  client.get<{ unread: number }>(`${API}/notifications/unread-count`, { bypassCache } as any).then((r) => r.data);
 export const markAllNotificationsRead = () =>
   client.post(`${API}/notifications/read-all`).then((r) => r.data);
 export const markNotificationRead = (notification_id: string) =>
@@ -299,10 +313,10 @@ export interface Announcement {
 }
 export const sendAnnouncement = (body: { title: string; message: string; audience: string; target_user_id?: string }) =>
   client.post(`${API}/admin/announcements`, body).then((r) => r.data);
-export const getActiveAnnouncements = () =>
-  client.get<{ count: number; announcements: Announcement[] }>(`${API}/announcements/active`).then((r) => r.data);
-export const getAnnouncementUnread = () =>
-  client.get<{ unread: number }>(`${API}/announcements/unread-count`).then((r) => r.data);
+export const getActiveAnnouncements = (bypassCache = false) =>
+  client.get<{ count: number; announcements: Announcement[] }>(`${API}/announcements/active`, { bypassCache } as any).then((r) => r.data);
+export const getAnnouncementUnread = (bypassCache = false) =>
+  client.get<{ unread: number }>(`${API}/announcements/unread-count`, { bypassCache } as any).then((r) => r.data);
 export const dismissAnnouncement = (announcement_id: string) =>
   client.post(`${API}/announcements/${announcement_id}/dismiss`).then((r) => r.data);
 export const adminListAnnouncements = () =>

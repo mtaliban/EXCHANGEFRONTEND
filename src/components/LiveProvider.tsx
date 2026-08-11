@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
+import { playPingSound } from '@/lib/sound';
 import { Handshake, MessageCircle, Phone, Bell } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -34,6 +35,8 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     if (!user) return;
     const unsub1 = subscribe('match.found', (p) => {
       const c = p.candidate || {};
+      // NOTE: sauti ya ARRIVAL inapigwa na DashboardBoard (live feed) — hatupigi
+      // hapa ili tusipige mara MBILI kwenye dashboard (chime moja tu).
       showToast({
         icon: Handshake,
         color: 'blue',
@@ -45,6 +48,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     });
     const unsub2 = subscribe('message.sent', (p) => {
       if (p.to_user_id !== user.user_id) return;
+      playPingSound();
       showToast({
         icon: MessageCircle,
         color: 'orange',
@@ -56,6 +60,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     });
     const unsub3 = subscribe('call.initiated', (p) => {
       if (p.to_user_id !== user.user_id) return;
+      playPingSound();
       showToast({
         icon: Phone,
         color: 'red',
@@ -104,7 +109,7 @@ function showToast(opts: {
     ? formatDistanceToNowStrict(new Date(opts.ago), { addSuffix: true })
     : 'sasa hivi';
 
-  el.className = `pointer-events-auto cursor-pointer w-80 rounded-xl shadow-lg border-l-4 border-brand-${opts.color} bg-white p-3 flex items-start gap-3 animate-slide-in transition hover:shadow-xl`;
+  el.className = `pointer-events-auto cursor-pointer w-full sm:w-80 rounded-xl shadow-lg border-l-4 border-brand-${opts.color} bg-white p-3 flex items-start gap-3 animate-slide-in transition hover:shadow-xl`;
   const iconEl = document.createElement('div');
   iconEl.className = `w-10 h-10 rounded-full ${TOAST_ICON_BG[opts.color] || 'bg-brand-blue text-white'} flex items-center justify-center flex-shrink-0`;
   const iconRoot = createRoot(iconEl);
@@ -133,14 +138,6 @@ function showToast(opts: {
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); close(); });
   if (opts.onClick) el.addEventListener('click', () => { opts.onClick!(); close(); });
   container.appendChild(el);
-  // audio ping (best effort)
-  try {
-    const audio = new AudioContext();
-    const o = audio.createOscillator(); const g = audio.createGain();
-    o.connect(g); g.connect(audio.destination);
-    o.frequency.value = 880; g.gain.value = 0.02;
-    o.start(); setTimeout(() => { o.stop(); audio.close(); }, 100);
-  } catch {}
   setTimeout(close, 8000);
 }
 
@@ -149,7 +146,7 @@ function ensureToastContainer(): HTMLElement {
   if (!c) {
     c = document.createElement('div');
     c.id = 'kv-toasts';
-    c.className = 'fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none';
+    c.className = 'fixed top-3 right-3 left-3 sm:left-auto sm:right-4 z-[100] flex flex-col gap-2 pointer-events-none';
     document.body.appendChild(c);
   }
   return c;

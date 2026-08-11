@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
-import { getUnreadCount, getRegions, updateFollowedRegions, type Region } from '@/lib/api';
+import { getUnreadCount, getRegions, updateFollowedRegions, bustGetCache, type Region } from '@/lib/api';
 import { useFollowStore } from '@/lib/followStore';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
@@ -282,10 +282,11 @@ function NotificationsBell({ isAdmin }: { isAdmin?: boolean }) {
     return () => { cancelled = true; };
   }, []);
 
-  // Live: any new notification event bumps the badge immediately
+  // Live: any new notification event bumps the badge immediately (FRESH data)
   useEffect(() => {
     if (!messages.length) return;
-    getUnreadCount().then((d) => setUnread(d.unread)).catch(() => {});
+    bustGetCache(); // FUSHA cache — badge inaonyesha hesabu halisi sasa
+    getUnreadCount(true).then((d) => setUnread(d.unread)).catch(() => {});
   }, [messages.length]);
 
   return (

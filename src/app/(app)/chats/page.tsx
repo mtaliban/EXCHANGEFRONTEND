@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { listConversations, getPresence, type Conversation } from '@/lib/api';
+import { listConversations, getPresence, bustGetCache, type Conversation } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
@@ -28,12 +28,17 @@ export default function ChatsPage() {
 
   // Seed the online set with current presence so dots show before any live event
   useEffect(() => {
-    getPresence().then((p) => {
+    getPresence(true).then((p) => {
       p.online_user_ids.forEach((id) => useLive.getState().setOnline(id, true));
     }).catch(() => {});
   }, []);
   useEffect(() => { reload(); }, []);
-  useEffect(() => { if (messages.length) reload(); /* eslint-disable-next-line */ }, [messages.length]);
+  useEffect(() => {
+    if (!messages.length) return;
+    bustGetCache(); // FRESH — mazungumzo mapya yajitokeze papo hapo
+    reload();
+    /* eslint-disable-next-line */
+  }, [messages.length]);
 
   return (
     <div className="p-4 md:p-6">
