@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getActiveAnnouncements, getNotifications, dismissAnnouncement, type Announcement } from '@/lib/api';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
+import Spinner from '@/components/Spinner';
 
 export default function AnnouncementsPage() {
   const t = useT();
@@ -38,7 +39,7 @@ export default function AnnouncementsPage() {
         </p>
       </div>
 
-      {loading && <div className="text-brand-grey-500 text-sm">{t('msg.loading')}</div>}
+      {loading && <div className="py-8"><Spinner label={t('msg.loading')} /></div>}
 
       {/* Active announcements */}
       <h2 className="font-semibold text-brand-grey-700 text-sm mb-2 mt-4">

@@ -14,6 +14,7 @@ import { timeAgo } from '@/lib/timeAgo';
 import { parseServerDate, formatClock } from '@/lib/dates';
 import { useFollowStore } from '@/lib/followStore';
 import { playArrivalSound } from '@/lib/sound';
+import Spinner from '@/components/Spinner';
 
 const FRESH_MS = 3 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya dakika 3
 const PAGE_SIZE = 10; // Wageni 10 wa kwanza kwenye grid — zilizobaki pagination
@@ -59,6 +60,9 @@ export default function DashboardBoard() {
   const [regionSel, setRegionSel] = useState<string>(destRegionIds.length > 0 ? '__all__' : '');
   const [districtId, setDistrictId] = useState<number | undefined>();
   const [facilityId, setFacilityId] = useState<string | undefined>();
+  // Toggle ya masomo: default OFF → mtu anaona idara yake WOTE hata kama masomo
+  // hayakufanana. Akiweka ON → waonekana tu wenye masomo yanayolingana naye.
+  const [subjectMatch, setSubjectMatch] = useState(false);
   const [board, setBoard] = useState<any>(null);
   const [districts, setDistricts] = useState<District[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -111,12 +115,13 @@ export default function DashboardBoard() {
       if (effectiveRegionIds.length) params.region_ids = effectiveRegionIds.join(',');
       if (districtId !== undefined) params.district_id = districtId;
       if (facilityId !== undefined) params.facility_id = facilityId;
+      if (subjectMatch) params.subject_match = true;
       const b = await getBoard(params, forceFresh);
       setBoard(b);
     } finally {
       setLoading(false);
     }
-  }, [effectiveRegionIds, districtId, facilityId]);
+  }, [effectiveRegionIds, districtId, facilityId, subjectMatch]);
 
   // Load regions kwa dropdown ya chanzo + followed regions (store ya pamoja na nav)
   useEffect(() => {
@@ -175,6 +180,7 @@ export default function DashboardBoard() {
     setRegionSel(watchedIds.length > 0 ? '__all__' : '');
     setDistrictId(undefined);
     setFacilityId(undefined);
+    setSubjectMatch(false);
   };
 
   const currentRegionName = useMemo(() => {
@@ -322,12 +328,34 @@ export default function DashboardBoard() {
               </button>
             )}
           </div>
+
+          {/* Toggle ya masomo — mtu anaona idara yake wote; ON = wenye masomo yanayofanana tu */}
+          {isEdu && (
+            <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => { setSubjectMatch((v) => !v); setPage(1); }}
+                aria-pressed={subjectMatch}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold transition ${
+                  subjectMatch
+                    ? 'border-brand-gold bg-brand-gold-100 text-brand-gold-600'
+                    : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-gold'
+                }`}
+              >
+                <span className={`w-7 h-4 rounded-full relative transition ${subjectMatch ? 'bg-brand-gold' : 'bg-brand-grey-300'}`}>
+                  <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${subjectMatch ? 'left-3.5' : 'left-0.5'}`} />
+                </span>
+                {subjectMatch ? t('board.subject_match_on') : t('board.subject_match_off')}
+              </button>
+              <span className="text-[11px] text-brand-grey-400">{t('board.subject_match_hint')}</span>
+            </div>
+          )}
         </div>
 
         {/* Stats chips (kiwango cha sasa) — HAKUNA "no data" kama data zipo! */}
         <div className="px-4 md:px-5 pt-3 pb-4">
           {loading ? (
-            <div className="text-xs text-brand-grey-400 py-2">{t('action.loading')}</div>
+            <Spinner label={t('action.loading')} className="py-2" />
           ) : chips.list.length === 0 ? (
             <div className="text-xs text-brand-grey-400 py-2">
               {hasData ? t('board.stats_hint') : t('msg.no_data')}
@@ -371,7 +399,7 @@ export default function DashboardBoard() {
 
       {/* ═══ GRID YA WANAOKUJA MKOA WAKO — 10 kwa ukurasa + pagination ═══ */}
       {loading && candidates.length === 0 ? (
-        <div className="text-sm text-brand-grey-400 py-6 text-center">{t('action.loading')}</div>
+        <div className="py-8"><Spinner label={t('action.loading')} /></div>
       ) : pageItems.length === 0 ? (
         <div className="card text-center py-12">
           <div className="text-4xl mb-2">{isEdu ? '👩🏫' : '🏥'}</div>

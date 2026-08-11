@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL as API } from '@/lib/config';
 import { useT } from '@/lib/i18n';
+import Spinner from '@/components/Spinner';
 
 export default function ReportsPage() {
   const t = useT();
@@ -16,7 +17,7 @@ export default function ReportsPage() {
       .then((r) => setData(r.data));
   }, [days]);
 
-  if (!data) return <div className="p-6 text-brand-grey-500">{t('adminrep.loading')}</div>;
+  if (!data) return <div className="p-10"><Spinner label={t('adminrep.loading')} /></div>;
 
   const maxUsers = Math.max(...(data.users_per_day || []).map((d: any) => d.count), 1);
   const maxMatches = Math.max(...(data.matches_per_day || []).map((d: any) => d.count), 1);

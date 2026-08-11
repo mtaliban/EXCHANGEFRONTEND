@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 import { adminEvents } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
+import Spinner from '@/components/Spinner';
 
 export default function AdminEventsPage() {
   const t = useT();
   const [data, setData] = useState<any>(null);
   const [type, setType] = useState('');
   useEffect(() => { adminEvents(type || undefined, 200).then(setData); }, [type]);
-  if (!data) return <div className="p-6">{t('adminevents.loading')}</div>;
+  if (!data) return <div className="p-10"><Spinner label={t('adminevents.loading')} /></div>;
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">

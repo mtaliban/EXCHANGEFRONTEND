@@ -9,6 +9,7 @@ import { useLive } from '@/lib/liveSocket';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
+import Spinner from '@/components/Spinner';
 
 export default function ChatsPage() {
   const t = useT();
@@ -49,7 +50,7 @@ export default function ChatsPage() {
         </p>
       </div>
 
-      {loading && <div className="text-brand-grey-500 text-sm">{t('msg.loading')}</div>}
+      {loading && <div className="py-8"><Spinner label={t('msg.loading')} /></div>}
       {!loading && convs.length === 0 && (
         <div className="card text-center py-16">
           <div className="text-5xl mb-3">💬</div>

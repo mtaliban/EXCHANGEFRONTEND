@@ -5,6 +5,7 @@ import { adminAllDonations, adminApproveDonation, adminRejectDonation } from '@/
 import { parseServerDate } from '@/lib/dates';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
+import Spinner from '@/components/Spinner';
 
 type Status = '' | 'verifying' | 'approved' | 'rejected';
 
@@ -58,7 +59,7 @@ export default function AdminPaymentsPage() {
     setBusy('');
   }
 
-  if (!data) return <div className="p-6">{t('msg.loading')}</div>;
+  if (!data) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
   const counts: Record<string, number> = { verifying: 0, approved: 0, rejected: 0 };
   data.payments.forEach((p: any) => {

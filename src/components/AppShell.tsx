@@ -13,8 +13,6 @@ import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { useTheme, applyTheme } from '@/lib/theme';
 import ThemeToggle from '@/components/ThemeToggle';
-import Megaphone from '@/components/Megaphone';
-import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { getInitial } from '@/lib/initials';
 import {
   BarChart3, Bell, Contact, Crown, Heart, Languages, LayoutDashboard,
@@ -71,7 +69,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <div className="flex items-center gap-0.5 flex-shrink-0">
             <FollowRegionsButton compact dark={isAdmin} />
-            <Megaphone dark={isAdmin} />
             <NotificationsBell isAdmin={isAdmin} />
             <ThemeToggle dark={isAdmin} />
             <LangToggle dark={isAdmin} compact />
@@ -99,7 +96,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
               <WsStatus dark={isAdmin} />
               <div className="flex items-center gap-0.5">
-                <Megaphone dark={isAdmin} />
                 <NotificationsBell isAdmin={isAdmin} />
                 <ThemeToggle dark={isAdmin} />
                 <LangToggle dark={isAdmin} />
@@ -164,8 +160,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         <main className="flex-1 min-w-0 pb-20 md:pb-0">
-          {/* Matangazo juu kabisa — yanaonekana bila kufungua */}
-          <AnnouncementBanner />
           {children}
         </main>
       </div>

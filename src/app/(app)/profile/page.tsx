@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getMyProfile, updateDestinations, updateStation, getRegions, getDistricts, getSubjects, type Region, type District, type Subject } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import axios from 'axios';
+import Spinner from '@/components/Spinner';
 import { API_URL as API } from '@/lib/config';
 
 export default function ProfilePage() {
@@ -14,7 +15,7 @@ export default function ProfilePage() {
 
   useEffect(() => { getMyProfile().then(setProfile).catch(() => {}); }, []);
 
-  if (!profile) return <div className="p-6 text-brand-grey-500">{t('msg.loading')}</div>;
+  if (!profile) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-3xl">

@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/lib/auth';
 import DashboardBoard from '@/components/DashboardBoard';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 
@@ -13,6 +14,9 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
+      {/* ═══ MATANGAZO — juu ya dashboard pekee; mtu aamue kuyafungua ═══ */}
+      <AnnouncementBanner />
+
       {/* ═══ HERO — Karibu (mobile-first, hakuna OFFLINE/simu) ═══ */}
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-blue via-brand-blue-700 to-brand-blue-900 text-white p-4 md:p-6 shadow-lg">
         <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-brand-orange/25 blur-3xl" />

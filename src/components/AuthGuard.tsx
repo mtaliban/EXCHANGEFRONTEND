@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getMe } from '@/lib/api';
 import { useT } from '@/lib/i18n';
+import Spinner from '@/components/Spinner';
 
 /**
  * Optimistic auth: if we have token+user in the store, render children immediately.
@@ -40,7 +41,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-brand-grey-500 text-sm">{t('msg.loading')}</div>
+        <Spinner label={t('msg.loading')} />
       </div>
     );
   }

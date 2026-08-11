@@ -22,13 +22,19 @@ export const DEFAULT_NOTIFICATION_ICON: LucideIcon = Bell;
 
 export function notificationRoute(type: string, data: any, isAdmin?: boolean): string {
   switch (type) {
-    case 'match.found': return '/dashboard';
+    // Mgeni mpya / match → dashboard juu (mgENI anaonekana kwenye grid ya LIVE)
+    case 'match.found':
+    case 'user.registered': return '/dashboard';
+    // SMS / ujumbe → chat na mtu huyo (kuendelea kuandika)
     case 'message.sent': return data?.from_user_id ? `/chats/${data.from_user_id}` : '/chats';
-    case 'call.initiated': return '/contacts';
+    // Simu → MPPIGIE MOJA KWA MOJA (tel:) ikiwa namba iko kwenye notification;
+    // vinginevyo nenda kwenye chat ya mtu huyo (kitufe cha kupigia kipo pale juu).
+    case 'call.initiated':
+      if (data?.from_phone) return `tel:${data.from_phone}`;
+      return data?.from_user_id ? `/chats/${data.from_user_id}` : '/contacts';
     case 'payment.submitted': return isAdmin ? '/admin/payments' : '/donate';
     case 'payment.approved':
     case 'payment.rejected': return '/donate';
-    case 'user.registered': return isAdmin ? '/admin/users' : '/notifications';
     case 'user.profile_updated': return '/profile';
     case 'announcement': return '/announcements';
     default: return '/dashboard';

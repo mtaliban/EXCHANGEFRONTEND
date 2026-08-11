@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { listContacts, getContactStats, logCall } from '@/lib/api';
 import ContactStatCard from '@/components/ContactStatCard';
+import Spinner from '@/components/Spinner';
 import { useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 import { parseServerDate } from '@/lib/dates';
@@ -73,7 +74,7 @@ export default function ContactsPage() {
         onChange={(e) => setQ(e.target.value)}
       />
 
-      {loading && <div className="text-brand-grey-500 text-sm">{t('msg.loading')}</div>}
+      {loading && <div className="py-8"><Spinner label={t('msg.loading')} /></div>}
       {!loading && contacts.length === 0 && (
         <div className="card text-center py-16">
           <div className="text-5xl mb-3">📇</div>

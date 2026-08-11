@@ -51,11 +51,19 @@ export default function NotificationsPage() {
 
   async function open(n: AppNotification) {
     if (!n.read) {
+      // Soma PAPO HAPO (hakuna haja ya kubofya "Nimesoma zote") + UI inabadilika
       await markNotificationRead(n.notification_id).catch(() => {});
+      setNotifs((prev) => prev.map((x) => (x.notification_id === n.notification_id ? { ...x, read: true } : x)));
       setUnread((u) => Math.max(0, u - 1));
       unreadStoreRefresh(); // kengele juu ipungue mara moja
     }
-    router.push(notificationRoute(n.type, n.data, isAdmin));
+    const dest = notificationRoute(n.type, n.data, isAdmin);
+    if (dest.startsWith('tel:')) {
+      // Call notification → mpigie moja kwa moja (simu ya mfumo inafunguka)
+      window.location.href = dest;
+      return;
+    }
+    router.push(dest);
   }
 
   async function readAll() {

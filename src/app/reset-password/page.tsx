@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { resetPassword } from '@/lib/api';
 import { useT } from '@/lib/i18n';
+import Spinner from '@/components/Spinner';
 
 function ResetPasswordInner() {
   const t = useT();
@@ -87,7 +88,7 @@ function ResetPasswordInner() {
 export default function ResetPasswordPage() {
   const t = useT();
   return (
-    <Suspense fallback={<div className="p-8 text-center text-brand-grey-500">{t('reset.loading')}</div>}>
+    <Suspense fallback={<div className="p-10"><Spinner label={t('reset.loading')} /></div>}>
       <ResetPasswordInner />
     </Suspense>
   );

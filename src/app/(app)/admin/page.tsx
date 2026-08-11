@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { adminStats, adminUsers, adminMatches, adminEvents } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
+import Spinner from '@/components/Spinner';
 
 type Tab = 'overview' | 'users' | 'matches' | 'events';
 
@@ -20,7 +21,7 @@ export default function AdminPage() {
       .catch((e) => { setError(e?.response?.data?.detail || t('admin.no_permission')); setLoading(false); });
   }, []);
 
-  if (loading) return <div className="p-6 text-brand-grey-500">{t('msg.loading')}</div>;
+  if (loading) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
   if (error) {
     return (
       <div className="p-6 max-w-md mx-auto">
