@@ -151,7 +151,7 @@ function EditProfile({ profile, onSaved }: any) {
         {profile.category === 'education' && profile.cadre_code === 'TEACHER_SECONDARY' && (
           <div>
             <label className="label">{t('label.subjects')}</label>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
               {availSubjects.map((s) => (
                 <button key={s.code} type="button"
                   onClick={() => setSubjects((prev) => prev.includes(s.code) ? prev.filter((c) => c !== s.code) : [...prev, s.code])}

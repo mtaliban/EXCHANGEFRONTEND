@@ -61,20 +61,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* ═══ MOBILE TOP BAR (md:hidden) — compact, sticky ═══ */}
       <div className="md:hidden sticky top-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm">
         <div className="flex items-center justify-between gap-1 px-3 h-14">
-          <Link href={isAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-xs">
+          <Link href={isAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-2 flex-shrink-0 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
               KV
             </div>
-            <span className="font-bold text-sm text-brand-grey-900 dark:text-white truncate">
+            <span className="font-bold text-sm text-brand-grey-900 dark:text-white truncate hidden min-[360px]:inline">
               {isAdmin ? 'Admin' : 'Kubadilishana'}
             </span>
           </Link>
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5 flex-shrink-0">
             <FollowRegionsButton compact dark={isAdmin} />
             <Megaphone dark={isAdmin} />
             <NotificationsBell isAdmin={isAdmin} />
             <ThemeToggle dark={isAdmin} />
-            <LangToggle dark={isAdmin} />
+            <LangToggle dark={isAdmin} compact />
             <AvatarMenu name={user?.full_name} onLogout={doLogout} dark={isAdmin} />
           </div>
         </div>
@@ -205,7 +205,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label="Mobile navigation"
     >
-      <div className="flex items-stretch justify-around">
+          <div className="flex items-stretch justify-around">
         {mobileLinks.map((l) => {
           const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
           return (
@@ -213,7 +213,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
               key={l.href}
               href={l.href}
               className={clsx(
-                'flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] transition',
+                'flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[56px] px-0.5 transition min-w-0',
                 active
                   ? 'text-brand-blue'
                   : isAdmin
@@ -221,8 +221,8 @@ function MobileBottomNav({ pathname, isAdmin }: {
                     : 'text-brand-grey-500 dark:text-brand-grey-400'
               )}
             >
-              <l.icon size={22} strokeWidth={active ? 2.4 : 2} />
-              <span className={clsx('text-[10px] font-semibold leading-none', active && 'font-bold')}>{l.label}</span>
+              <l.icon size={21} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0" />
+              <span className={clsx('text-[10px] font-semibold leading-tight text-center truncate w-full max-w-full px-0.5', active && 'font-bold')}>{l.label}</span>
               {active && <span className="w-4 h-0.5 rounded-full bg-brand-blue mt-0.5" />}
             </Link>
           );
@@ -308,22 +308,22 @@ function WsStatus({ dark }: { dark?: boolean }) {
   );
 }
 
-/** Language toggle — official icon + code. */
-function LangToggle({ dark }: { dark?: boolean }) {
+/** Language toggle — official icon + code (compact huficha text kwenye simu ndogo sana). */
+function LangToggle({ dark, compact }: { dark?: boolean; compact?: boolean }) {
   const currentLang = useI18n((s) => s.lang);
   const toggleLang = useI18n((s) => s.toggle);
   return (
     <button
       onClick={toggleLang}
       className={clsx(
-        'flex items-center gap-1 p-1.5 rounded-md text-[11px] font-bold transition',
+        'flex items-center gap-1 p-1.5 rounded-md text-[11px] font-bold transition flex-shrink-0',
         dark ? 'hover:bg-brand-grey-800 text-white' : 'hover:bg-brand-grey-100 text-brand-grey-700'
       )}
       title="Badilisha lugha / Toggle language"
       aria-label="Toggle language"
     >
       <Languages size={15} strokeWidth={2.2} />
-      {currentLang.toUpperCase()}
+      <span className={compact ? 'hidden min-[380px]:inline' : undefined}>{currentLang.toUpperCase()}</span>
     </button>
   );
 }

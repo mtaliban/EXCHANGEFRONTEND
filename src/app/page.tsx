@@ -15,8 +15,8 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="badge-gold">{t('landing.badge')}</span>
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <span className="badge-gold whitespace-nowrap">{t('landing.badge')}</span>
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full bg-green-500/20 border border-green-400/40 text-green-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                   {t('landing.live_badge')}

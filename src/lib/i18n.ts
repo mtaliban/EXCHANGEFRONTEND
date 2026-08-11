@@ -14,8 +14,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'nav.login': 'Ingia', 'nav.register': 'Jisajili', 'nav.open_dashboard': 'Fungua Dashibodi',
     'nav.logout': 'Toka', 'lang.toggle': 'EN', 'lang.toggle_title': 'Badilisha Lugha',
     /* ── Navbar (app) ── */
-    'nav.dashboard': 'Dashibodi', 'nav.chats': 'Niliochart Nao',
-    'nav.contacts': 'Niliowasiliana Nao', 'nav.profile': 'Wasifu',
+    'nav.dashboard': 'Dashibodi', 'nav.chats': 'Mazungumzo',
+    'nav.contacts': 'Mawasiliano', 'nav.profile': 'Wasifu',
     'nav.donate': 'Changia', 'nav.admin': 'Admin',
     'nav.users': 'Watumiaji', 'nav.payments': 'Malipo', 'nav.events': 'Events',
     'nav.reports': 'Ripoti', 'nav.announcements': 'Matangazo',
@@ -250,7 +250,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'annuser.active': 'Mpya', 'annuser.empty': 'Hakuna matangazo mpya.',
     'annuser.past': 'Zilizopita', 'annuser.dismiss': 'Futa ✕', 'annuser.by': 'Admin',
     /* ── Chats ── */
-    'chats.title': 'Niliochart Nao', 'chats.subtitle': 'Mazungumzo yako yote hapa — bofya moja kuendelea.',
+    'chats.title': 'Mazungumzo', 'chats.subtitle': 'Mazungumzo yako yote hapa — bofya moja kuendelea.',
     'chats.empty': 'Bado hujaanza mazungumzo yoyote.',
     'chats.find': 'Tafuta Mtu wa Kubadilishana', 'chats.count': 'mazungumzo',
     'chats.you': 'Wewe:', 'chats.typing': 'anaandika...', 'chats.online': 'online',
@@ -259,7 +259,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'chats.waiting_phone': 'Inasubiri phone...', 'chats.call': 'Piga:',
     'chats.sending': '…', 'chats.send': '➤',
     /* ── Contacts ── */
-    'contacts.title': 'Niliowasiliana Nao',
+    'contacts.title': 'Mawasiliano',
     'contacts.subtitle': 'Watu wote uliochart nao au kupigiana simu — pamoja na namba zao zote.',
     'contacts.incoming_calls': 'Waliokupigia', 'contacts.incoming_messages': 'WalioKutumia Message',
     'contacts.outgoing_calls': 'Uliwapigia', 'contacts.outgoing_messages': 'Uliwatumia Message',

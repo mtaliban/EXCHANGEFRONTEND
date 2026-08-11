@@ -112,7 +112,7 @@ function showToast(opts: {
     ? formatDistanceToNowStrict(parseServerDate(opts.ago) || new Date(), { addSuffix: true })
     : 'sasa hivi';
 
-  el.className = `pointer-events-auto cursor-pointer w-full sm:w-80 rounded-xl shadow-lg border-l-4 border-brand-${opts.color} bg-white p-3 flex items-start gap-3 animate-slide-in transition hover:shadow-xl`;
+  el.className = `pointer-events-auto cursor-pointer w-full sm:w-80 rounded-xl shadow-lg border-l-4 border-brand-${opts.color} bg-white p-3 flex items-start gap-3 animate-slide-in transition hover:shadow-xl max-w-full`;
   const iconEl = document.createElement('div');
   iconEl.className = `w-10 h-10 rounded-full ${TOAST_ICON_BG[opts.color] || 'bg-brand-blue text-white'} flex items-center justify-center flex-shrink-0`;
   const iconRoot = createRoot(iconEl);
@@ -148,8 +148,10 @@ function ensureToastContainer(): HTMLElement {
   let c = document.getElementById('kv-toasts');
   if (!c) {
     c = document.createElement('div');
+    // Mobile: toasts ziko CHINI (juu ya bottom nav) — hazifuniki header/sticky bar.
+    // Desktop: juu kulia kama kawaida.
     c.id = 'kv-toasts';
-    c.className = 'fixed top-3 right-3 left-3 sm:left-auto sm:right-4 z-[100] flex flex-col gap-2 pointer-events-none';
+    c.className = 'fixed bottom-24 left-3 right-3 sm:left-auto sm:right-4 sm:top-3 sm:bottom-auto z-[100] flex flex-col gap-2 pointer-events-none';
     document.body.appendChild(c);
   }
   return c;
