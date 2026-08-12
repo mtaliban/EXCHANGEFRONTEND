@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { API_URL as API } from '@/lib/config';
-import { adminReportsExport } from '@/lib/api';
+import { adminReports, adminReportsExport, exportErrorText } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 
@@ -48,11 +46,11 @@ export default function ReportsPage() {
   const [data, setData] = useState<any>(null);
   const [days, setDays] = useState(30);
   const [exporting, setExporting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = JSON.parse(localStorage.getItem('kv_auth') || '{}')?.state?.token;
-    axios.get(`${API}/admin/reports?days=${days}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => setData(r.data));
+    setErr(null);
+    adminReports(days).then(setData).catch(() => setErr('Imeshindikana kupakia ripoti — jaribu tena.'));
   }, [days]);
 
   async function doExport(fmt: 'csv' | 'xlsx') {
@@ -60,10 +58,14 @@ export default function ReportsPage() {
     try {
       const res = await adminReportsExport(fmt);
       downloadBlob(res.data as Blob, `ripoti_na_hesabu_${new Date().toISOString().slice(0, 10)}.${fmt}`);
-    } catch { /* ignore */ }
+      setErr(null);
+    } catch (e: any) {
+      setErr(`Export imeshindikana: ${await exportErrorText(e)}`);
+    }
     finally { setExporting(false); }
   }
 
+  if (err && !data) return <div className="p-6 max-w-md mx-auto"><div className="card bg-brand-red-50 text-brand-red text-sm">{err}</div></div>;
   if (!data) return <div className="p-10"><Spinner label={t('adminrep.loading')} /></div>;
 
   const totalUsers = data.users_by_region?.reduce((s: number, r: any) => s + r.count, 0) || 0;
@@ -79,10 +81,16 @@ export default function ReportsPage() {
             <option value={90}>{t('adminrep.days90')}</option>
             <option value={365}>{t('adminrep.year')}</option>
           </select>
-          <button onClick={() => doExport('csv')} disabled={exporting} className="btn-primary text-xs">⬇ CSV</button>
-          <button onClick={() => doExport('xlsx')} disabled={exporting} className="btn-outline text-xs">⬇ Excel</button>
+          <button onClick={() => doExport('csv')} disabled={exporting} className="btn-primary text-xs min-h-[36px]">
+            {exporting ? 'Inapakua...' : '⬇ CSV'}
+          </button>
+          <button onClick={() => doExport('xlsx')} disabled={exporting} className="btn-outline text-xs min-h-[36px]">
+            {exporting ? 'Inapakua...' : '⬇ Excel'}
+          </button>
         </div>
       </div>
+
+      {err && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{err}</div>}
 
       {/* Big numbers */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

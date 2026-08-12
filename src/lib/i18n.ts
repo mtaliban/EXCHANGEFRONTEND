@@ -246,6 +246,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'adminevents.all_types': 'Aina zote', 'adminevents.empty': 'Hakuna events — mfumo bado haujarekodi tukio lolote.',
     'adminevents.clear': 'Futa Logs', 'adminevents.clear_confirm': 'Uhakika unataka kufuta event log zote? (Data ya watumiaji haigusiwi)',
     'adminevents.cleared': 'Event log zimefutwa ✓',
+    'adminevents.details': 'Maelezo', 'adminevents.time': 'Saa', 'adminevents.show': 'Ona', 'adminevents.hide': 'Ficha',
     /* ── Admin reports ── */
     'adminrep.title': 'Ripoti', 'adminrep.week': 'Wiki iliyopita', 'adminrep.days30': 'Siku 30',
     'adminrep.days90': 'Siku 90', 'adminrep.year': 'Mwaka',
@@ -632,6 +633,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'adminevents.all_types': 'All types', 'adminevents.empty': 'No events — nothing logged yet.',
     'adminevents.clear': 'Clear Logs', 'adminevents.clear_confirm': 'Are you sure you want to clear all event logs? (User data is untouched)',
     'adminevents.cleared': 'Event logs cleared ✓',
+    'adminevents.details': 'Details', 'adminevents.time': 'Time', 'adminevents.show': 'Show', 'adminevents.hide': 'Hide',
     /* ── Admin reports ── */
     'adminrep.title': 'Reports', 'adminrep.week': 'Last week', 'adminrep.days30': '30 days',
     'adminrep.days90': '90 days', 'adminrep.year': 'Year',

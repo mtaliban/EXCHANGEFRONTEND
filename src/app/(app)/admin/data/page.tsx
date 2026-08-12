@@ -62,7 +62,8 @@ function SubjectsTab({ flash }: { flash: (m: string) => void }) {
   const [editing, setEditing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  async function load() { setData(await adminListSubjects(level || undefined)); }
+  // bypass wakati level imechaguliwa — dropdown ibadilike mara moja (fresh).
+  async function load() { setData(await adminListSubjects(level || undefined, !!level)); }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [level]);
 
   if (!data) return <div className="p-6"><Spinner /></div>;
@@ -303,7 +304,8 @@ function DistrictsTab({ flash }: { flash: (m: string) => void }) {
   const [editing, setEditing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  async function load() { setData(await adminListDistricts(regionFilter || undefined)); }
+  // bypass wakati mkoa umechaguliwa — dropdown ibadilike mara moja (fresh).
+  async function load() { setData(await adminListDistricts(regionFilter || undefined, !!regionFilter)); }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [regionFilter]);
   useEffect(() => { adminListRegions().then(setRegions); }, []);
 

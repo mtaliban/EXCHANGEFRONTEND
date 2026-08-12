@@ -26,8 +26,10 @@ export default function AdminPaymentsPage() {
 
   const { subscribe } = useLive();
 
+  // bypass=true wakati status imechaguliwa — dropdown ibadilike mara moja
+  // (cache isiache data ya zamani ionekane).
   async function load() {
-    try { setData(await adminAllDonations(status || undefined)); } catch {}
+    try { setData(await adminAllDonations(status || undefined, !!status)); } catch {}
   }
 
   useEffect(() => { load(); }, [status]);
@@ -112,7 +114,8 @@ export default function AdminPaymentsPage() {
                       <span className="font-bold text-brand-grey-900">{p.user_name || p.user_id?.slice(-6)}</span>
                       <span className="text-sm text-brand-grey-500">{p.phone}</span>
                       <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-semibold ${BADGE[p.status] || 'bg-brand-grey-100 text-brand-grey-700'}`}>
-                        {p.status === 'verifying' && <SpringSpinner size={12} />}
+                        {/* Spinna ya spring ni kwa WATUMIAJI (donate page) — admin anaona
+                            status safi bila animation ya kuendelea kila mstari. */}
                         {p.status === 'verifying' ? t('adminpay.status_verifying') : p.status === 'approved' ? t('adminpay.status_approved') : t('adminpay.status_rejected')}
                       </span>
                     </div>

@@ -22,26 +22,60 @@ const client = axios.create({ timeout: 20000 });
 const _getCache = new Map<string, { at: number; data: any }>();
 const _GET_TTL = 15_000;                    // data ya LIVE-ish (board, chats, arifa)
 const _STATIC_TTL = 24 * 60 * 60 * 1000;    // data ya kijiografia — haibadiliki kamwe
+// Static data (mikoa/wilaya/vituo/kada/masomo) inaishi kwenye localStorage PIA —
+// ukifetch mara ya kwanza, inakaa kwenye browser; refresh ya page au kurudi
+// kwenye page HAKUPIGI API tena — inajitokeza INSTANT. Cache inafutwa tu
+// admin anapobadilisha data hizi (mutation).
+const _LS_PREFIX = 'kv_static_cache:';
+
+function _lsRead(key: string): { at: number; payload: any } | null {
+  try {
+    const raw = localStorage.getItem(_LS_PREFIX + key);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function _lsWrite(key: string, val: { at: number; payload: any }) {
+  try { localStorage.setItem(_LS_PREFIX + key, JSON.stringify(val)); } catch { /* quota — puuza */ }
+}
+
 const _origGet = client.get.bind(client);
 (client.get as any) = (url: string, config?: any) => {
   const key = url + '|' + JSON.stringify(config?.params || {});
   // config.ttl hufanya data tuli (mikoa/wilaya/vituo) ihifadhiwe siku nzima —
   // kurudi kwenye pages hakupigi API tena; pages zinajitokeza INSTANT.
   const ttl = config?.ttl ?? _GET_TTL;
+  const isStatic = ttl === _STATIC_TTL;
   if (!config?.bypassCache) {
     const hit = _getCache.get(key);
     if (hit && Date.now() - hit.at < ttl) return Promise.resolve(hit.data);
+    if (isStatic) {
+      // First fetch ipo kwenye localStorage? Tuma mara moja (hakuna spinner!).
+      const saved = _lsRead(key);
+      if (saved && Date.now() - saved.at < ttl) {
+        const restored = { data: saved.payload };
+        _getCache.set(key, { at: saved.at, data: restored });
+        return Promise.resolve(restored);
+      }
+    }
   }
   return _origGet(url, config).then((res: any) => {
     _getCache.set(key, { at: Date.now(), data: res });
+    if (isStatic) _lsWrite(key, { at: Date.now(), payload: res.data });
     return res;
   });
 };
 
 /** Futa cache yote ya GET — piga kabla ya reload inayoendeshwa na WS live event
-    (board, unread, notifications, announcements, chats). */
+    (board, unread, notifications, announcements, chats). Static data ya
+    localStorage pia inafutwa — admin akibadilisha mikoa/masomo, lazima data
+    ipate kufetch upya (isiolewe ya zamani). */
 export function bustGetCache() {
   _getCache.clear();
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(_LS_PREFIX))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {}
 }
 
 /* Mutations (POST/PUT/PATCH/DELETE) zinapaswa kufusha cache ya GET — vinginevyo
@@ -51,9 +85,26 @@ export function bustGetCache() {
 for (const m of ['post', 'put', 'patch', 'delete'] as const) {
   const orig = client[m].bind(client) as (...a: any[]) => any;
   (client as any)[m] = (...args: any[]) => {
-    _getCache.clear();
+    // bustGetCache (siyo tu _getCache.clear) — inafuta PIA static data ya
+    // localStorage. Vinginevyo admin akibadilisha mikoa/masomo, data ya kale
+    // ingeonekana hadi siku nzima kwenye wizard ya usajili. Mutations zote
+    // (k.m. admin CRUD, destinations) lazima zifanye data FRESH.
+    bustGetCache();
     return orig(...args);
   };
+}
+
+export async function exportErrorText(e: any): Promise<string> {
+  try {
+    const d = e?.response?.data;
+    if (d instanceof Blob) {
+      const text = await d.text();
+      try { return JSON.parse(text)?.detail || text.slice(0, 200); } catch { return text.slice(0, 200); }
+    }
+    return e?.response?.data?.detail || 'jaribu tena baadaye';
+  } catch {
+    return 'jaribu tena baadaye';
+  }
 }
 
 client.interceptors.request.use((cfg) => {
@@ -266,13 +317,16 @@ export const getPresence = (bypassCache = false) =>
 // TTL ndefu kidogo (20s) kwa admin data — kurudi kwenye admin pages hukusubirisha
 // kila mara; WS events + mutations bado zinabust cache (bustGetCache).
 const _ADMIN_TTL = 20_000;
-export const adminStats = () => client.get(`${ADMIN}/admin/stats`, { ttl: _ADMIN_TTL } as any).then((r) => r.data);
-export const adminUsers = (params?: any) =>
-  client.get(`${ADMIN}/admin/users`, { params, ttl: _ADMIN_TTL } as any).then((r) => r.data);
+export const adminStats = (bypass = false) =>
+  client.get(`${ADMIN}/admin/stats`, { ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
+export const adminUsers = (params?: any, bypass = false) =>
+  client.get(`${ADMIN}/admin/users`, { params, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminMatches = (limit = 100) =>
   client.get(`${ADMIN}/admin/matches`, { params: { limit }, ttl: _ADMIN_TTL } as any).then((r) => r.data);
-export const adminEvents = (event_type?: string, limit = 100, skip = 0) =>
-  client.get(`${ADMIN}/admin/events`, { params: { event_type, limit, skip }, ttl: _ADMIN_TTL } as any).then((r) => r.data);
+// bypass=true wakati kichujio (event_type) kinatumika — kila mabadiliko ya
+// dropdown yafetch FRESH (cache isiingilie data mpya).
+export const adminEvents = (event_type?: string, limit = 100, skip = 0, bypass = false) =>
+  client.get(`${ADMIN}/admin/events`, { params: { event_type, limit, skip }, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminGrant = (user_id: string) =>
   client.post(`${ADMIN}/admin/users/${user_id}/grant-admin`).then((r) => r.data);
 export const adminRevoke = (user_id: string) =>
@@ -283,8 +337,8 @@ export const adminDeleteUser = (user_id: string) =>
   client.delete(`${ADMIN}/admin/users/${user_id}`).then((r) => r.data);
 
 /* ── Admin: data management (masomo/kada/mikoa/wilaya) ── */
-export const adminListSubjects = (level?: string) =>
-  client.get(`${ADMIN}/admin/data/subjects`, { params: level ? { level } : {} }).then((r) => r.data);
+export const adminListSubjects = (level?: string, bypass = false) =>
+  client.get(`${ADMIN}/admin/data/subjects`, { params: level ? { level } : {}, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddSubject = (body: { code: string; name: string; level: string }) =>
   client.post(`${ADMIN}/admin/data/subjects`, body).then((r) => r.data);
 export const adminUpdateSubject = (code: string, body: { code: string; name: string; level: string }) =>
@@ -307,8 +361,8 @@ export const adminUpdateRegion = (id: number, body: { id: number; name: string }
   client.patch(`${ADMIN}/admin/data/regions/${id}`, body).then((r) => r.data);
 export const adminDeleteRegion = (id: number) =>
   client.delete(`${ADMIN}/admin/data/regions/${id}`).then((r) => r.data);
-export const adminListDistricts = (region_id?: number) =>
-  client.get(`${ADMIN}/admin/data/districts`, { params: region_id ? { region_id } : {} }).then((r) => r.data);
+export const adminListDistricts = (region_id?: number, bypass = false) =>
+  client.get(`${ADMIN}/admin/data/districts`, { params: region_id ? { region_id } : {}, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddDistrict = (body: { id: number; region_id: number; name: string }) =>
   client.post(`${ADMIN}/admin/data/districts`, body).then((r) => r.data);
 export const adminUpdateDistrict = (id: number, body: { id: number; region_id: number; name: string }) =>
@@ -319,6 +373,8 @@ export const adminDeleteDistrict = (id: number) =>
 /* ── Admin: exports + cleanup ── */
 export const adminEventsExport = (event_type?: string, fmt: 'csv' | 'xlsx' = 'csv') =>
   client.get(`${ADMIN}/admin/events/export`, { params: { event_type, fmt }, responseType: 'blob', bypassCache: true } as any);
+export const adminReports = (days = 30) =>
+  client.get(`${ADMIN}/admin/reports`, { params: { days }, ttl: 30_000 } as any).then((r) => r.data);
 export const adminReportsExport = (fmt: 'csv' | 'xlsx' = 'csv') =>
   client.get(`${ADMIN}/admin/reports/export`, { params: { fmt }, responseType: 'blob', bypassCache: true } as any);
 export const adminClearEvents = () =>
@@ -341,8 +397,9 @@ export const getDonationStatus = (order_id: string) =>
   client.get(`${API}/payments/status/${order_id}`).then((r) => r.data);
 export const myDonations = () =>
   client.get(`${API}/payments/my-history`).then((r) => r.data);
-export const adminAllDonations = (status?: string) =>
-  client.get(`${API}/payments/admin/all`, { params: status ? { status } : {} }).then((r) => r.data);
+// bypass wakati status imechaguliwa — dropdown ibadilike mara moja (fresh data).
+export const adminAllDonations = (status?: string, bypass = false) =>
+  client.get(`${API}/payments/admin/all`, { params: status ? { status } : {}, bypassCache: bypass } as any).then((r) => r.data);
 export const adminApproveDonation = (order_id: string, note?: string) =>
   client.post(`${API}/payments/admin/${order_id}/approve`, { note }).then((r) => r.data);
 export const adminRejectDonation = (order_id: string, note?: string) =>
