@@ -82,42 +82,53 @@ function Overview({ stats }: { stats: any }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="card">
-        <h3 className="font-bold text-brand-grey-900 mb-3">{t('admin.by_cadre')}</h3>
-        <div className="space-y-1.5">
-          {stats.by_cadre?.slice(0, 12).map((c: any, i: number) => (
-            <BarRow key={i} label={`${c.cadre} (${c.category})`} value={c.count} max={stats.by_cadre[0].count} color={c.category === 'health' ? 'blue' : 'orange'} />
-          ))}
-        </div>
+        <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.by_cadre')}</h3>
+        <NumberTable rows={stats.by_cadre?.slice(0, 12).map((c: any) => ({ label: `${c.cadre} (${c.category})`, count: c.count }))} />
       </div>
       <div className="card">
-        <h3 className="font-bold text-brand-grey-900 mb-3">{t('admin.by_region')}</h3>
-        <div className="space-y-1.5 max-h-96 overflow-y-auto">
-          {stats.by_region?.map((r: any, i: number) => (
-            <BarRow key={i} label={r.region} value={r.count} max={stats.by_region[0].count} color="red" />
-          ))}
-        </div>
+        <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.by_region')}</h3>
+        <NumberTable rows={stats.by_region?.map((r: any) => ({ label: r.region, count: r.count }))} maxH />
       </div>
       <div className="card md:col-span-2">
-        <h3 className="font-bold text-brand-grey-900 mb-3">{t('admin.events_by_type')}</h3>
-        <div className="space-y-1.5">
-          {stats.events_by_type?.map((e: any, i: number) => (
-            <BarRow key={i} label={e.event_type} value={e.count} max={stats.events_by_type[0].count} color="gold" />
-          ))}
-        </div>
+        <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.events_by_type')}</h3>
+        <NumberTable rows={stats.events_by_type?.map((e: any) => ({ label: e.event_type, count: e.count }))} />
       </div>
     </div>
   );
 }
 
-function BarRow({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
-  const pct = max ? (value / max) * 100 : 0;
+/** Jedwali safi la NAMBA — hakuna graphs/bars. # | Jina | % | Idadi. */
+function NumberTable({ rows, maxH = false }: { rows?: { label: string; count: number }[]; maxH?: boolean }) {
+  const t = useT();
+  if (!rows || rows.length === 0) {
+    return <div className="py-4 text-sm text-brand-grey-400 dark:text-brand-grey-500">{t('msg.no_data')}</div>;
+  }
+  const total = rows.reduce((s, r) => s + r.count, 0) || 1;
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <div className="w-40 truncate text-brand-grey-700">{label}</div>
-      <div className="flex-1 bg-brand-grey-100 rounded-full h-4 relative overflow-hidden">
-        <div className={`h-full bg-brand-${color} rounded-full`} style={{ width: `${pct}%` }} />
+    <div className={maxH ? 'max-h-96 overflow-y-auto' : ''}>
+      <div className="flex items-center gap-3 py-1.5 text-[10px] uppercase tracking-wider font-bold text-brand-grey-400 border-b border-brand-grey-100 dark:border-brand-grey-200">
+        <span className="w-6 text-center">#</span>
+        <span className="flex-1 min-w-0">{t('admin.col_name')}</span>
+        <span className="w-10 text-right">%</span>
+        <span className="w-12 text-right">{t('adminrep.count')}</span>
       </div>
-      <div className="w-12 text-right font-mono text-xs text-brand-grey-900">{value}</div>
+      <div className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
+        {rows.map((r, i) => {
+          const pct = Math.round((r.count / total) * 100);
+          return (
+            <div key={i} className="flex items-center gap-3 py-2">
+              <span className="w-6 text-center text-xs font-bold text-brand-grey-400 dark:text-brand-grey-500">{i + 1}</span>
+              <span className="flex-1 min-w-0 truncate text-sm text-brand-grey-700 dark:text-brand-grey-300">{r.label}</span>
+              <span className="w-10 text-right text-xs text-brand-grey-400 dark:text-brand-grey-500">{pct}%</span>
+              <span className="w-12 text-right text-lg font-bold text-brand-blue dark:text-brand-blue-500 tabular-nums">{r.count.toLocaleString()}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center justify-between pt-2 mt-1 border-t border-brand-grey-100 dark:border-brand-grey-200 text-xs text-brand-grey-500 dark:text-brand-grey-400">
+        <span>{t('admin.total')}</span>
+        <span className="font-bold text-brand-grey-900 dark:text-white tabular-nums">{total.toLocaleString()}</span>
+      </div>
     </div>
   );
 }

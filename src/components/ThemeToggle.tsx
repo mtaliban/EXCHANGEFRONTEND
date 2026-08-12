@@ -4,16 +4,14 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 
 /** Dark/Light toggle — sun/moon icon button. */
-export default function ThemeToggle({ dark }: { dark?: boolean }) {
+export default function ThemeToggle() {
   const theme = useTheme((s) => s.theme);
   const toggle = useTheme((s) => s.toggle);
   const isDark = theme === 'dark';
   return (
     <button
       onClick={toggle}
-      className={`p-1.5 rounded-md text-base leading-none transition ${
-        dark ? 'hover:bg-brand-grey-800' : 'hover:bg-brand-grey-100'
-      }`}
+      className="p-1.5 rounded-md text-base leading-none transition hover:bg-brand-grey-100 dark:hover:bg-brand-grey-200/60"
       title={isDark ? 'Badilisha kuwa Light mode' : 'Badilisha kuwa Dark mode'}
       aria-label="Toggle dark mode"
     >
