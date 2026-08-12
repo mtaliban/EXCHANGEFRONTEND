@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { login, requestEmailVerification, confirmEmailVerification } from '@/lib/api';
-import { useAuth } from '@/lib/auth';
+import { useAuth, isTokenExpired } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -31,6 +31,15 @@ export default function LoginPage() {
   const t = useT();
   const router = useRouter();
   const setAuth = useAuth((s) => s.setAuth);
+  const { token, user } = useAuth();
+
+  // Tayari ameingia? Rudi dashibodi moja kwa moja (login ni ya wageni)
+  useEffect(() => {
+    if (token && !isTokenExpired(token)) {
+      router.replace((user as any)?.is_admin ? '/admin' : '/dashboard');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   // Form moja — namba ya simu AU email (admin inatambuliwa kiotomatiki)
   const [identifier, setIdentifier] = useState('');

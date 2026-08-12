@@ -219,8 +219,9 @@ export default function ChatViewPage() {
         )}
       </div>
 
-      {/* Composer */}
-      <div className="bg-white border-t border-brand-grey-100 p-2 flex gap-2 sticky bottom-0">
+      {/* Composer — SIYO sticky (flex layout inamweka chini kwa uthabiti);
+          interactive-widget viewport inahakikisha anakaa juu ya keyboard */}
+      <div className="bg-white border-t border-brand-grey-100 p-2 flex gap-2">
         <input
           className="flex-1 rounded-full border border-brand-grey-200 px-4 py-2.5 focus:outline-none focus:border-brand-blue"
           placeholder={t('chats.placeholder')}

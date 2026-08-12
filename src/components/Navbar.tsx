@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth, isTokenExpired } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
 import { APP_ROUTES } from '@/lib/config';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Home, Info, Stethoscope, FolderKanban, PhoneCall, Languages, LogOut } from 'lucide-react';
+import { Home, Info, Stethoscope, FolderKanban, PhoneCall, Languages } from 'lucide-react';
 
 const publicLinks = [
   { href: '/', label: 'nav.home', icon: Home },
@@ -23,8 +23,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const { token, user, logout } = useAuth();
+  const { token } = useAuth();
   const t = useT();
   const toggleLang = useI18n((s) => s.toggle);
   const currentLang = useI18n((s) => s.lang);
@@ -79,26 +78,11 @@ export default function Navbar() {
               <Languages size={14} />
               {currentLang.toUpperCase()}
             </button>
-            {isAuthed ? (
-              <>
-                <Link href="/dashboard" className="btn-primary text-sm py-2">
-                  {t('nav.open_dashboard')}
-                </Link>
-                <button
-                  onClick={() => { logout(); router.push('/'); }}
-                  className="flex items-center gap-1.5 text-sm text-brand-red hover:underline px-2"
-                  title={t('nav.logout')}
-                >
-                  <LogOut size={14} />
-                  {t('nav.logout')}
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="btn-outline text-sm py-2">{t('nav.login')}</Link>
-                <Link href="/register" className="btn-accent text-sm py-2">{t('nav.register')}</Link>
-              </>
-            )}
+            {/* Public pages: Register/Login tu — hakuna buttons za dashibodi/logout.
+                Mtu aliyeshaingia anarudi dashibodi kwa kubofya logo (au /login ina
+                redirect automatic kwa authed users). */}
+            <Link href="/login" className="btn-outline text-sm py-2">{t('nav.login')}</Link>
+            <Link href="/register" className="btn-accent text-sm py-2">{t('nav.register')}</Link>
           </div>
 
           <div className="md:hidden flex items-center gap-1">
@@ -143,31 +127,15 @@ export default function Navbar() {
                 <l.icon size={17} strokeWidth={2.2} className="flex-shrink-0" />
                 {t(l.label)}
               </Link>
-            ))}              <div className="flex gap-2 pt-3 border-t border-brand-grey-100 mt-3 sticky bottom-0 bg-white pb-1">
-              {isAuthed ? (
-                <>
-                  <Link href="/dashboard" onClick={() => setOpen(false)} className="btn-primary flex-1 text-sm py-2">
-                    {t('nav.open_dashboard')}
-                  </Link>
-                  <button
-                    onClick={() => { logout(); setOpen(false); router.push('/'); }}
-                    className="btn-outline flex-1 text-sm py-2 text-brand-red border-brand-red flex items-center justify-center gap-1.5"
-                  >
-                    <LogOut size={14} />
-                    {t('nav.logout')}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link href="/login" onClick={() => setOpen(false)} className="btn-outline flex-1 text-sm py-2">
-                    {t('nav.login')}
-                  </Link>
-                  <Link href="/register" onClick={() => setOpen(false)} className="btn-accent flex-1 text-sm py-2">
-                    {t('nav.register')}
-                  </Link>
-                </>
-              )}
-            </div>
+            ))}
+            <div className="flex gap-2 pt-3 border-t border-brand-grey-100 mt-3 sticky bottom-0 bg-white pb-1">
+                <Link href="/login" onClick={() => setOpen(false)} className="btn-outline flex-1 text-sm py-2">
+                  {t('nav.login')}
+                </Link>
+                <Link href="/register" onClick={() => setOpen(false)} className="btn-accent flex-1 text-sm py-2">
+                  {t('nav.register')}
+                </Link>
+              </div>
           </div>
         )}
       </div>

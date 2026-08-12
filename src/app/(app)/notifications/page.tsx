@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNowStrict } from 'date-fns';
-import { getNotifications, getUnreadCount, markAllNotificationsRead, markNotificationRead, bustGetCache, type AppNotification } from '@/lib/api';
+import { getNotifications, markAllNotificationsRead, markNotificationRead, bustGetCache, type AppNotification } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useUnreadStore } from '@/lib/unreadStore';
 import { parseServerDate } from '@/lib/dates';
@@ -33,19 +33,37 @@ export default function NotificationsPage() {
 
   async function load() {
     try {
-      const [data, count] = await Promise.all([getNotifications(100), getUnreadCount(true)]);
+      const data = await getNotifications(100);
       setNotifs(data.notifications);
       setTotal(data.total);
-      setUnread(count.unread);
-      unreadStoreSet(count.unread); // kengele juu iwe sahihi PAPO HAPO
+      // NOTE: page hii inasoma arifa zote kiotomatiki → unread ni 0 kila wakati.
+      // (Kusoma count hapa kungepiga race na markAllNotificationsRead.)
+      setUnread(0);
+      unreadStoreSet(0);
     } catch {}
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    // Fungua page = arifa ZOTE zinasomwa kiotomatiki (hakuna haja ya kubofya
+    // "Soma zote") — badge juu inatoweka papo hapo. Hii ndiyo uliyoiomba!
+    markAllNotificationsRead().then(() => {
+      setUnread(0);
+      unreadStoreSet(0);
+      unreadStoreRefresh();
+      // Arifa zote kwenye orodha ziwe 'read' (blue dots zinatoweka pia)
+      setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+    }).catch(() => {});
+  }, []);
   useEffect(() => {
     if (!messages.length) return;
     bustGetCache(); // data FRESH — usirudishe arifa za kale
     load();
+    // Arifa mpya inapofika ukiwa kwenye page → inasomwa pia (badge haina mabaki)
+    markAllNotificationsRead().then(() => {
+      setUnread(0); unreadStoreSet(0); unreadStoreRefresh();
+      setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+    }).catch(() => {});
     /* eslint-disable-next-line */
   }, [messages.length]);
 

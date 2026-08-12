@@ -44,6 +44,18 @@ export function bustGetCache() {
   _getCache.clear();
 }
 
+/* Mutations (POST/PUT/PATCH/DELETE) zinapaswa kufusha cache ya GET — vinginevyo
+   baada ya kubadilisha followed regions / destinations / wasifu, kurudi kwenye
+   page kunaweza kurudisha data ya KALE ("imeshafanyika lakini bado inaonekana
+   ya zamani"). Sasa kila mutation inafuta cache mara moja. */
+for (const m of ['post', 'put', 'patch', 'delete'] as const) {
+  const orig = client[m].bind(client) as (...a: any[]) => any;
+  (client as any)[m] = (...args: any[]) => {
+    _getCache.clear();
+    return orig(...args);
+  };
+}
+
 client.interceptors.request.use((cfg) => {
   if (typeof window !== 'undefined') {
     const raw = localStorage.getItem('kv_auth');
@@ -156,7 +168,9 @@ export const getBoard = (params?: {
   facility_id?: string;
   limit?: number;
 }, bypassCache = false) =>
-  client.get<BoardStats>(`${MATCH}/matches/board`, { params, bypassCache } as any).then((r) => r.data);
+  // TTL ndefu (45s): kurudi kwenye dashboard hakufetch DB kila mara — WS events
+  // zinabust cache na kufetch fresh PAPO HAPO (data ya live haichemki).
+  client.get<BoardStats>(`${MATCH}/matches/board`, { params, bypassCache, ttl: 45_000 } as any).then((r) => r.data);
 
 export const getFollowedRegions = () =>
   client.get<{ region_ids: number[] }>(`${USER}/users/me/followed-regions`).then((r) => r.data);

@@ -450,6 +450,8 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
   const stamp = formatClock(createdTs, lang); // SAA HALISI — "10:45 AM" (sio tu "3hr")
   const fresh = now - createdTs < FRESH_MS;
   const isEdu = c.category === 'education';
+  // SOMO MOJA likifanana → mtu huyu ni "match" wa masomo — chips zote dhahabu
+  const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
 
   async function onCall() {
     if (!c.phone_primary) return;
@@ -473,7 +475,7 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-brand-grey-900 dark:text-white truncate">{c.full_name}</span>
+            <span className="font-semibold text-brand-grey-900 dark:text-white break-words min-w-0 leading-snug">{c.full_name}</span>
             {fresh && (
               <span className="text-[10px] font-bold text-brand-orange bg-brand-orange-50 px-1.5 py-0.5 rounded-full">🆕 {t('board.new_badge')}</span>
             )}
@@ -493,22 +495,26 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
       </div>
 
       {from && (
-        <div className="text-xs bg-brand-grey-50 dark:bg-brand-grey-100 rounded-lg px-2.5 py-1.5">
-          <div className="text-brand-grey-500"><b>{t('board.from')}:</b> {from.district_name || ''} {from.region_name}</div>
+        <div className="text-xs bg-brand-grey-50 dark:bg-brand-grey-100 rounded-lg px-2.5 py-1.5 space-y-0.5">
+          <div className="text-brand-grey-500 break-words"><b>{t('board.from')}:</b> {from.district_name || ''} {from.region_name}</div>
           {to && (
-            <div className="text-brand-orange"><b>{t('board.wants_go')}:</b> {to.district_name || to.region_name} ({to.region_name})</div>
+            <div className="text-brand-orange break-words"><b>{t('board.wants_go')}:</b> {to.district_name || to.region_name} ({to.region_name})</div>
           )}
+          <div className="text-green-600 font-bold">↓ {t('board.coming_to_you')}</div>
         </div>
       )}
 
       {c.subjects?.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
           <span className="text-brand-grey-500 font-semibold">{t('board.subjects')}:</span>
+          {anySubjectMatch && (
+            <span className="px-1.5 py-0.5 rounded-full bg-brand-gold text-white font-bold">🎯 {t('board.subjects_match')}</span>
+          )}
           {c.subjects.map((s: string) => {
             const matched = mySubjects.includes(s);
             return (
               <span key={s} title={matched ? t('board.subject_match') : undefined}
-                className={`px-1.5 py-0.5 rounded-full font-semibold ${matched ? 'bg-brand-gold text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
+                className={`px-1.5 py-0.5 rounded-full font-semibold ${anySubjectMatch ? 'bg-brand-gold text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
                 {s}{matched ? ' ✓' : ''}
               </span>
             );

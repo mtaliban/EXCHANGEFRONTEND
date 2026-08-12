@@ -327,13 +327,24 @@ function LangToggle({ dark, compact }: { dark?: boolean; compact?: boolean }) {
  *  `!compact` = sidebar ya desktop → dropdown panel pana la grid ya mikoa. */
 function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: boolean }) {
   const t = useT();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [regions, setRegions] = useState<Region[]>([]);
   const followed = useFollowStore((s) => s.region_ids);
   const loadFollow = useFollowStore((s) => s.load);
   const setFollow = useFollowStore((s) => s.set);
-  const [saved, setSaved] = useState(false);
+  const [savedMsg, setSavedMsg] = useState<'added' | 'removed' | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Mikoa ya KUHAMIA (desired_destinations) tayari inafuatiliwa kiotomatiki —
+  // haionekani tena kwenye "Fuata Mikoa" (usiweze kuiweka mara mbili).
+  const destRegionIds = new Set<number>(
+    ((user as any)?.desired_destinations || []).map((d: any) => d.region_id).filter((x: any) => typeof x === 'number')
+  );
+  const followable = regions.filter((r) => !destRegionIds.has(r.id));
+  const excludedNames = regions.filter((r) => destRegionIds.has(r.id)).map((r) => r.name);
+  // Hesabu ya "imefuata" — usihesabu mikoa ya kuhamia (isiyoonekana hapa)
+  const shownFollowed = followed.filter((id) => followable.some((r) => r.id === id));
 
   // Load regions + followed (shared store) on mount
   useEffect(() => {
@@ -359,23 +370,26 @@ function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: bool
   }, [open, compact]);
 
   async function save(next: number[]) {
+    // Feedback halisi: unapoongeza → "Imechaguliwa"; unapoondoa → "Imeondolewa"
+    const adding = next.length > followed.length;
     setFollow(next);
-    setSaved(true);
+    setSavedMsg(adding ? 'added' : 'removed');
     try { await updateFollowedRegions(next); } finally {
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => setSavedMsg(null), 2000);
     }
   }
 
   const toggle = (rid: number) =>
     save(followed.includes(rid) ? followed.filter((x) => x !== rid) : [...followed, rid]);
 
-  const allIds = regions.map((r) => r.id);
+  const allIds = followable.map((r) => r.id);
 
   const content = (
     <FollowRegionsContent
-      regions={regions}
-      followed={followed}
-      saved={saved}
+      regions={followable}
+      excludedNames={excludedNames}
+      followed={shownFollowed}
+      saved={savedMsg}
       onToggle={toggle}
       onSelectAll={() => save(allIds)}
       onClearAll={() => save([])}
@@ -444,8 +458,9 @@ function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: bool
 }
 
 /** Content ya pamoja (bottom sheet + dropdown) — quick actions + grid ya mikoa. */
-function FollowRegionsContent({ regions, followed, saved, onToggle, onSelectAll, onClearAll }: {
-  regions: Region[]; followed: number[]; saved: boolean;
+function FollowRegionsContent({ regions, excludedNames, followed, saved, onToggle, onSelectAll, onClearAll }: {
+  regions: Region[]; excludedNames: string[]; followed: number[];
+  saved: 'added' | 'removed' | null;
   onToggle: (id: number) => void; onSelectAll: () => void; onClearAll: () => void;
 }) {
   const t = useT();
@@ -455,9 +470,15 @@ function FollowRegionsContent({ regions, followed, saved, onToggle, onSelectAll,
         <span className="text-xs font-bold text-brand-grey-500 dark:text-brand-grey-400">
           {followed.length} / {regions.length}
         </span>
-        {saved && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_saved')}</span>}
+        {saved === 'added' && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_added')}</span>}
+        {saved === 'removed' && <span className="text-[10px] font-semibold text-brand-orange">{t('board.follow_removed')}</span>}
       </div>
       <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mb-2 leading-relaxed">{t('board.follow_hint')}</p>
+      {excludedNames.length > 0 && (
+        <div className="mb-2.5 text-[10px] text-brand-grey-500 dark:text-brand-grey-400 bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2.5 py-1.5 leading-relaxed">
+          ✅ {t('board.follow_already')} <b className="text-brand-grey-700 dark:text-brand-grey-200">{excludedNames.join(', ')}</b>
+        </div>
+      )}
       <div className="flex items-center gap-1.5 mb-2.5">
         <button type="button" onClick={onSelectAll}
           className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-brand-blue text-brand-blue hover:bg-brand-blue-50 transition">
