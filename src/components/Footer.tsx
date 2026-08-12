@@ -1,11 +1,18 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useT } from '@/lib/i18n';
+import { APP_ROUTES } from '@/lib/config';
 import { Home, Info, Stethoscope, FolderKanban, UserPlus, LogIn, PhoneCall, Phone } from 'lucide-react';
 
 export default function Footer() {
   const t = useT();
+  const pathname = usePathname();
+
+  // Baada ya login (app pages) footer ya public HAITOKE kabisa — AppShell ina
+  // muundo wake (sidebar/bottom nav). Footer hii ni ya public pages pekee.
+  if (APP_ROUTES.some((r) => pathname?.startsWith(r))) return null;
   return (
     <footer className="bg-brand-grey-950 text-brand-grey-100 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

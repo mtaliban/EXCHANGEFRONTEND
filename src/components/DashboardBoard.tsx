@@ -83,6 +83,7 @@ export default function DashboardBoard() {
     setSoundOn((prev) => {
       const next = !prev;
       try { window.localStorage.setItem('kv_sound', next ? 'on' : 'off'); } catch {}
+      if (next) playArrivalSound(); // 🎵 Test sauti PAPO HAPO anapowasha — uthibitisho wa haraka
       return next;
     });
   };
@@ -407,7 +408,9 @@ export default function DashboardBoard() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {/* Grid: 2-col KWENYE SIMU (siyo data moja kubwa inayosababisha scroll nyingi),
+              3-col kwenye desktop. Cards ni compact kwenye simu (BoardCard). */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-3">
             {pageItems.map((c: any) => (
               <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} />
             ))}
@@ -455,13 +458,13 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
   }
 
   return (
-    <div className={`card p-4 flex flex-col gap-2.5 hover:shadow-md transition group ${
+    <div className={`card p-3 md:p-4 flex flex-col gap-2.5 hover:shadow-md transition group ${
       fresh ? 'border-brand-orange ring-2 ring-brand-orange/30 animate-[requestPing_1.5s_ease-in-out]'
       : c.online ? 'border-green-300 bg-green-50/60 dark:bg-green-900/10 dark:border-green-700/50'
       : ''}`}>
       <div className="flex items-center gap-3">
         <div className="relative flex-shrink-0">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-lg">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-base md:text-lg">
             {initial}
           </div>
           {c.online && (
@@ -514,7 +517,7 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
       )}
 
       {c.phone_primary && (
-        <a href={`tel:${c.phone_primary}`} className="text-sm text-brand-blue font-semibold hover:underline inline-flex items-center gap-1">
+        <a href={`tel:${c.phone_primary}`} className="text-xs sm:text-sm text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
           📞 {c.phone_primary}
         </a>
       )}
@@ -523,9 +526,13 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
         🕐 {ago}{stamp ? ` · ${stamp}` : ''}
       </div>
 
-      <div className="flex gap-2 mt-auto pt-1">
-        <Link href={`/chats/${c.user_id}`} className="btn-primary text-xs px-3 py-1.5 flex-1 text-center">💬 {t('dash.chat')}</Link>
-        <button onClick={onCall} disabled={!c.phone_primary} className="btn-accent text-xs px-3 py-1.5 flex-1 disabled:opacity-40">📞 {t('dash.call')}</button>
+      <div className="flex gap-1.5 mt-auto pt-1">
+        <Link href={`/chats/${c.user_id}`} className="btn-primary text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 text-center min-w-0">
+          💬 <span className="hidden min-[360px]:inline">{t('dash.chat')}</span>
+        </Link>
+        <button onClick={onCall} disabled={!c.phone_primary} className="btn-accent text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0">
+          📞 <span className="hidden min-[360px]:inline">{t('dash.call')}</span>
+        </button>
       </div>
     </div>
   );

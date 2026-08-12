@@ -2,12 +2,12 @@
 
 import { useEffect, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
-import { playPingSound, isSoundEnabled } from '@/lib/sound';
+import { playPingSound, playArrivalSound, isSoundEnabled } from '@/lib/sound';
 import { parseServerDate } from '@/lib/dates';
 import { Handshake, MessageCircle, Phone, Bell } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -22,6 +22,7 @@ import type { LucideIcon } from 'lucide-react';
  */
 export default function LiveProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { token, user } = useAuth();
   const { connect, disconnect, subscribe } = useLive();
 
@@ -36,8 +37,11 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     if (!user) return;
     const unsub1 = subscribe('match.found', (p) => {
       const c = p.candidate || {};
-      // NOTE: sauti ya ARRIVAL inapigwa na DashboardBoard (live feed) — hatupigi
-      // hapa ili tusipige mara MBILI kwenye dashboard (chime moja tu).
+      // Sauti ya ARRIVAL: DashboardBoard inaipiga kwenye /dashboard; kwenye pages
+      // NYINGINE inapigwa hapa (ila tupige moja tu — siyo mara mbili kwenye
+      // dashboard wakati board iko wazi). HESHEMU MUTE: ikiwa mtumiaji amezima
+      // sauti (🔇) asipate sauti hapa pia — sambamba na handlers wengine.
+      if (isSoundEnabled() && !pathname?.startsWith('/dashboard')) playArrivalSound();
       showToast({
         icon: Handshake,
         color: 'blue',
@@ -89,7 +93,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       });
     });
     return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
-  }, [user, subscribe, router]);
+  }, [user, subscribe, router, pathname]);
 
   return <>{children}</>;
 }

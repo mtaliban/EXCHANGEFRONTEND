@@ -323,7 +323,8 @@ function LangToggle({ dark, compact }: { dark?: boolean; compact?: boolean }) {
 }
 
 /** Fuata Mikoa — chagua mikoa ya chanzo ya live notifications.
- *  `compact` = icon tu (kwa mobile top bar); dropdown inajipanga kulia. */
+ *  `compact` = mobile top bar → fungua BOTTOM SHEET (mfumo wa kisasa wa simu);
+ *  `!compact` = sidebar ya desktop → dropdown panel pana la grid ya mikoa. */
 function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -334,30 +335,52 @@ function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: bool
   const [saved, setSaved] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Load regions + followed (shared store) on mount + each time the dropdown opens
+  // Load regions + followed (shared store) on mount
   useEffect(() => {
     loadFollow();
     getRegions().then(setRegions).catch(() => {});
   }, [loadFollow]);
 
-  // Close on outside click
+  // Close on outside click (desktop) — bottom sheet inafunga kwa backdrop yake
   useEffect(() => {
-    if (!open) return;
+    if (!open || compact) return;
     const onDoc = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
-  }, [open]);
+  }, [open, compact]);
 
-  async function toggle(rid: number) {
-    const next = followed.includes(rid) ? followed.filter((x) => x !== rid) : [...followed, rid];
+  // Bottom sheet: funga scroll ya ukurasa nyuma (mradi sheet iko wazi)
+  useEffect(() => {
+    if (!open || !compact) return;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [open, compact]);
+
+  async function save(next: number[]) {
     setFollow(next);
     setSaved(true);
     try { await updateFollowedRegions(next); } finally {
       setTimeout(() => setSaved(false), 2000);
     }
   }
+
+  const toggle = (rid: number) =>
+    save(followed.includes(rid) ? followed.filter((x) => x !== rid) : [...followed, rid]);
+
+  const allIds = regions.map((r) => r.id);
+
+  const content = (
+    <FollowRegionsContent
+      regions={regions}
+      followed={followed}
+      saved={saved}
+      onToggle={toggle}
+      onSelectAll={() => save(allIds)}
+      onClearAll={() => save([])}
+    />
+  );
 
   return (
     <div className="relative" ref={ref}>
@@ -375,7 +398,7 @@ function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: bool
         title={t('board.follow_btn_title')}
         aria-label="Fuata mikoa"
       >
-        <Radio size={compact ? 18 : 18} strokeWidth={2.2} className="flex-shrink-0" />
+        <Radio size={18} strokeWidth={2.2} className="flex-shrink-0" />
         {!compact && <span className="flex-1 text-left">{t('board.follow')}</span>}
         {!compact && followed.length > 0 && (
           <span className="inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-orange text-white">
@@ -388,36 +411,83 @@ function FollowRegionsButton({ dark, compact }: { dark?: boolean; compact?: bool
           </span>
         )}
       </button>
-      {open && (
+
+      {open && compact ? (
         <>
-          {/* Backdrop — bila hii, dropdown inaonekana kama 'imevunjika' inapofunguka juu ya form (screenshots 02-04) */}
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className={clsx(
-            // Kwenye simu: dropdown inachukua karibu upana wote (haijitokezi nje ya skrini);
-            // kwenye desktop: dropdown ya kawaida chini ya button.
-            'absolute top-full mt-1 w-[min(20rem,calc(100vw-1rem))] max-h-80 overflow-y-auto rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-40 p-3',
-            compact ? 'right-0' : 'left-0'
-          )}>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-bold text-brand-grey-900 dark:text-white">🔔 {t('board.follow')}</span>
-              {saved && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_saved')}</span>}
+          {/* ═══ BOTTOM SHEET (simu) — inainuka kutoka chini, safe-area aware ═══ */}
+          {/* z-[110]/z-[120]: juu ya toasts (z-[100]) na bottom nav (z-40) */}
+          <div className="fixed inset-0 z-[110] bg-black/50" onClick={() => setOpen(false)} aria-hidden />
+          <div className="fixed inset-x-0 bottom-0 z-[120] rounded-t-2xl bg-white dark:bg-brand-grey-900 shadow-2xl max-h-[75dvh] overflow-y-auto overscroll-contain p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-bold text-brand-grey-900 dark:text-white flex items-center gap-1.5">
+                <Radio size={16} className="text-brand-orange" /> {t('board.follow')}
+              </span>
+              <button onClick={() => setOpen(false)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-grey-200 text-brand-grey-600 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition flex-shrink-0">
+                ✕ {t('action.close')}
+              </button>
             </div>
-            <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('board.follow_hint')}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {regions.map((r) => {
-                const on = followed.includes(r.id);
-                return (
-                  <button key={r.id} type="button" onClick={() => toggle(r.id)}
-                    className={`px-2 py-1 rounded-full text-[11px] font-medium border transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue'}`}>
-                    {on ? '✓ ' : '+ '}{r.name}
-                  </button>
-                );
-              })}
-            </div>
+            {content}
           </div>
         </>
-      )}
+      ) : open ? (
+        <>
+          {/* Backdrop + dropdown panel (desktop) */}
+          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+          <div className="absolute top-full mt-1 left-0 w-[min(24rem,calc(100vw-1rem))] max-h-[70dvh] overflow-y-auto overscroll-contain rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-40 p-3">
+            {content}
+          </div>
+        </>
+      ) : null}
     </div>
+  );
+}
+
+/** Content ya pamoja (bottom sheet + dropdown) — quick actions + grid ya mikoa. */
+function FollowRegionsContent({ regions, followed, saved, onToggle, onSelectAll, onClearAll }: {
+  regions: Region[]; followed: number[]; saved: boolean;
+  onToggle: (id: number) => void; onSelectAll: () => void; onClearAll: () => void;
+}) {
+  const t = useT();
+  return (
+    <>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs font-bold text-brand-grey-500 dark:text-brand-grey-400">
+          {followed.length} / {regions.length}
+        </span>
+        {saved && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_saved')}</span>}
+      </div>
+      <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mb-2 leading-relaxed">{t('board.follow_hint')}</p>
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <button type="button" onClick={onSelectAll}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-brand-blue text-brand-blue hover:bg-brand-blue-50 transition">
+          {t('board.follow_all')}
+        </button>
+        <button type="button" onClick={onClearAll}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-brand-grey-300 text-brand-grey-500 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition">
+          {t('board.follow_none')}
+        </button>
+      </div>
+      {/* 2-col tangu mwanzo — sheet/dropdown ni pana, chips zinakata kwa truncate */}
+      <div className="grid grid-cols-2 gap-1.5">
+        {regions.map((r) => {
+          const on = followed.includes(r.id);
+          return (
+            <button key={r.id} type="button" onClick={() => onToggle(r.id)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border text-left transition min-w-0 ${
+                on
+                  ? 'bg-brand-blue text-white border-brand-blue shadow-sm'
+                  : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue hover:text-brand-blue dark:border-brand-grey-700 dark:text-brand-grey-300'
+              }`}>
+              <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${on ? 'bg-white border-white' : 'border-brand-grey-300'}`}>
+                {on && <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />}
+              </span>
+              <span className="truncate">{r.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </>
   );
 }
 

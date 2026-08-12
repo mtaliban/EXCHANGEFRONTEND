@@ -47,3 +47,14 @@ export const WS_URL: string = (() => {
   const base = isLocalHost() ? localApi(baked) : baked;
   return `${base.replace(/^http/, 'ws')}/ws`;
 })();
+
+/**
+ * App (authed) routes — pages hizi zina AppShell yao (sidebar/topbar + bottom
+ * nav kwenye simu), kwa hiyo Navbar na Footer za PUBLIC (home/about/services)
+ * zinapaswa KUTOWA kabisa kwenye hizi. Hili ndilo tatizo la "header/footer ya
+ * home inaonekana baada ya login" — sasa zote zinasoma list moja hii.
+ */
+export const APP_ROUTES = [
+  '/dashboard', '/chats', '/contacts', '/profile', '/donate', '/admin',
+  '/notifications', '/announcements',
+];

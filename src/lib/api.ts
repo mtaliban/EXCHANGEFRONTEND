@@ -20,13 +20,17 @@ const client = axios.create({ timeout: 20000 });
    lakini board inasema no data". Tumia bustGetCache() kabla ya reload kutokana
    na WS event, au config.bypassCache kwa call moja tu. */
 const _getCache = new Map<string, { at: number; data: any }>();
-const _GET_TTL = 15_000;
+const _GET_TTL = 15_000;                    // data ya LIVE-ish (board, chats, arifa)
+const _STATIC_TTL = 24 * 60 * 60 * 1000;    // data ya kijiografia — haibadiliki kamwe
 const _origGet = client.get.bind(client);
 (client.get as any) = (url: string, config?: any) => {
   const key = url + '|' + JSON.stringify(config?.params || {});
+  // config.ttl hufanya data tuli (mikoa/wilaya/vituo) ihifadhiwe siku nzima —
+  // kurudi kwenye pages hakupigi API tena; pages zinajitokeza INSTANT.
+  const ttl = config?.ttl ?? _GET_TTL;
   if (!config?.bypassCache) {
     const hit = _getCache.get(key);
-    if (hit && Date.now() - hit.at < _GET_TTL) return Promise.resolve(hit.data);
+    if (hit && Date.now() - hit.at < ttl) return Promise.resolve(hit.data);
   }
   return _origGet(url, config).then((res: any) => {
     _getCache.set(key, { at: Date.now(), data: res });
@@ -69,9 +73,9 @@ export interface Cadre {
 export interface Subject { code: string; name: string; level: string; }
 
 export const getRegions = () =>
-  client.get<Region[]>(`${LOC}/locations/regions`).then((r) => r.data);
+  client.get<Region[]>(`${LOC}/locations/regions`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
 export const getDistricts = (regionId: number) =>
-  client.get<District[]>(`${LOC}/locations/regions/${regionId}/districts`).then((r) => r.data);
+  client.get<District[]>(`${LOC}/locations/regions/${regionId}/districts`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
 export const getFacilities = (
   districtId: number,
   category: 'health' | 'education',
@@ -81,12 +85,12 @@ export const getFacilities = (
   const params: any = { category };
   if (level) params.level = level;
   if (q) params.q = q;
-  return client.get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params }).then((r) => r.data);
+  return client.get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
 };
 export const getCadres = (category?: 'health' | 'education') =>
-  client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined }).then((r) => r.data);
+  client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined, ttl: _STATIC_TTL } as any).then((r) => r.data);
 export const getSubjects = () =>
-  client.get<Subject[]>(`${LOC}/cadres/subjects`).then((r) => r.data);
+  client.get<Subject[]>(`${LOC}/cadres/subjects`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
 
 /* ── Auth ─────────────────────────────────────────── */
 export interface Station {

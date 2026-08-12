@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth, isTokenExpired } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
+import { APP_ROUTES } from '@/lib/config';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Home, Info, Stethoscope, FolderKanban, PhoneCall, Languages, LogOut } from 'lucide-react';
 
@@ -17,7 +18,6 @@ const publicLinks = [
   { href: '/contact', label: 'nav.contact', icon: PhoneCall },
 ];
 
-const APP_ROUTES = ['/dashboard', '/chats', '/contacts', '/profile', '/donate', '/admin'];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);

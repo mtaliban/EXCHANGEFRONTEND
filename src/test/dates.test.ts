@@ -35,9 +35,12 @@ describe('parseServerDate (naive-UTC fix)', () => {
 
 describe('formatClock (saa halisi)', () => {
   it('formats a known timestamp into a clock string', () => {
-    const ts = new Date('2026-08-11T10:37:30Z').getTime();
+    // Tumia LEO (saa 10:37 asubuhi ya leo) — formatClock inarudisha saa tu kwa
+    // siku ya leo; tarehe ngumu (k.m. 2026-08-11) inageuka "jana" siku nyingine
+    // na formatClock inaongeza tarehe mbele (huo si mwenendo tunaotaka kujaribu).
+    const ts = new Date(new Date().setHours(10, 37, 30, 0)).getTime();
     const out = formatClock(ts, 'en');
-    expect(out).toMatch(/^\d{1,2}:\d{2}/); // e.g. "1:37 PM" / "13:37"
+    expect(out).toMatch(/^\d{1,2}:\d{2}/); // e.g. "10:37 AM" / "10:37"
   });
 });
 
