@@ -6,12 +6,13 @@ import { parseServerDate } from '@/lib/dates';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
+import SpringSpinner from '@/components/SpringSpinner';
 
 type Status = '' | 'verifying' | 'approved' | 'rejected';
 
 const BADGE: Record<string, string> = {
   verifying: 'bg-brand-gold-100 text-brand-gold-600',
-  approved: 'bg-brand-blue-100 text-brand-blue',
+  approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
   rejected: 'bg-brand-red-100 text-brand-red',
 };
 
@@ -110,7 +111,8 @@ export default function AdminPaymentsPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-bold text-brand-grey-900">{p.user_name || p.user_id?.slice(-6)}</span>
                       <span className="text-sm text-brand-grey-500">{p.phone}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${BADGE[p.status] || 'bg-brand-grey-100 text-brand-grey-700'}`}>
+                      <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-semibold ${BADGE[p.status] || 'bg-brand-grey-100 text-brand-grey-700'}`}>
+                        {p.status === 'verifying' && <SpringSpinner size={12} />}
                         {p.status === 'verifying' ? t('adminpay.status_verifying') : p.status === 'approved' ? t('adminpay.status_approved') : t('adminpay.status_rejected')}
                       </span>
                     </div>
@@ -141,7 +143,7 @@ export default function AdminPaymentsPage() {
                       disabled={busy === p.order_id}
                       className="btn-primary text-sm flex-1"
                     >
-                      {busy === p.order_id ? t('adminpay.processing') : t('adminpay.confirm_btn')}
+                      {busy === p.order_id ? <SpringSpinner size={15} label={t('adminpay.processing')} /> : t('adminpay.confirm_btn')}
                     </button>
                     <button
                       onClick={() => act(p.order_id, false)}

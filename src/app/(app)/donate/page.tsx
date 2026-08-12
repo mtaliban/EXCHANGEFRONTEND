@@ -7,16 +7,17 @@ import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 import { Check, Copy, Heart } from 'lucide-react';
+import SpringSpinner from '@/components/SpringSpinner';
 
 const STATUS_STYLES: Record<string, string> = {
   verifying: 'bg-brand-gold-100 text-brand-gold-600',
-  approved: 'bg-brand-blue-100 text-brand-blue',
+  approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
   rejected: 'bg-brand-red-100 text-brand-red',
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  verifying: 'Inathibitishwa...',
-  approved: 'Imekubaliwa',
+  verifying: 'Inasindikwa...',
+  approved: 'Imethibitishwa ✓',
   rejected: 'Imekataliwa',
 };
 
@@ -125,12 +126,16 @@ export default function DonatePage() {
 
       {/* Processing / Confirmed / Rejected status */}
       {status === 'processing' && (
-        <div className="card text-center border-brand-gold">
-          <div className="w-14 h-14 mx-auto rounded-full bg-brand-gold-100 flex items-center justify-center text-2xl mb-3 animate-pulse">⏳</div>
+        <div className="card text-center border-2 border-brand-gold dark:border-brand-gold-400/40">
+          <SpringSpinner size={56} className="mx-auto mb-4 text-brand-gold-500" />
           <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.processing_title')}</h2>
-          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-2">
+          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-3">
             {t('donate.processing_body')}
           </p>
+          <div className="inline-flex items-center gap-2 rounded-full bg-brand-gold-100 text-brand-gold-600 dark:bg-brand-gold-100/20 dark:text-brand-gold-500 px-4 py-1.5 text-sm font-semibold mb-3">
+            <span className="inline-block w-2 h-2 rounded-full bg-brand-gold-500 animate-pulse" />
+            {t('donate.processing_pill')}
+          </div>
           {order && (
             <div className="bg-brand-grey-50 dark:bg-brand-grey-100 rounded-xl p-3 text-sm text-brand-grey-700 dark:text-brand-grey-300 mx-auto max-w-xs">
               <div className="flex justify-between"><span className="text-brand-grey-500">{t('donate.amount')}:</span><span className="font-semibold">{currency} {order.amount?.toLocaleString()}</span></div>
@@ -141,10 +146,11 @@ export default function DonatePage() {
       )}
 
       {status === 'confirmed' && (
-        <div className="card text-center">
-          <div className="w-14 h-14 mx-auto rounded-full bg-brand-blue-100 text-brand-blue flex items-center justify-center text-2xl mb-3"><Check size={26} /></div>
+        <div className="card text-center border-2 border-emerald-200 dark:border-emerald-500/30">
+          <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center text-2xl mb-3"><Check size={26} /></div>
           <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.confirmed_title')}</h2>
           <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('donate.confirmed_body')}</p>
+          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-4 py-1.5 text-sm font-semibold mb-2">{t('donate.verified_pill')}</div>
           {order && <p className="text-sm text-brand-grey-700 dark:text-brand-grey-300 font-semibold">{currency} {order.amount?.toLocaleString()}</p>}
           <button onClick={reset} className="btn-primary w-full mt-4">{t('donate.donate_again')}</button>
         </div>

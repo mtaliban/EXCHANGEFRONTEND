@@ -107,6 +107,35 @@ textarea,
   touch-action: manipulation;
 }
 
+/* ── Spring spinner (payment processing) ──────────────────────────────
+ * Spinna inayozunguka kama spring: arc moja inakuja-inatoka huku nzima
+ * ikizunguka. Inatumika kwenye malipo (processing) na buttons zenye wait.
+ */
+@keyframes spring-rotate {
+  to { transform: rotate(360deg); }
+}
+@keyframes spring-dash {
+  0%   { stroke-dasharray: 1 150; stroke-dashoffset: 0; }
+  50%  { stroke-dasharray: 45 150; stroke-dashoffset: -18; }
+  100% { stroke-dasharray: 45 150; stroke-dashoffset: -63; }
+}
+.spring-spinner {
+  display: inline-block;
+  animation: spring-rotate 1.1s linear infinite;
+}
+.spring-spinner circle.track {
+  stroke: currentColor;
+  opacity: 0.18;
+  fill: none;
+  stroke-linecap: round;
+}
+.spring-spinner circle.arc {
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  animation: spring-dash 1.4s ease-in-out infinite;
+}
+
 /* iOS: inazuia auto-zoom inapofocus input ndogo */
 input,
 select,
