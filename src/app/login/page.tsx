@@ -119,11 +119,10 @@ export default function LoginPage() {
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label className="label">{t('login.phone_label')}</label>
-            <input type="text" className="input" placeholder="0712345678 au admin@email.com"
+            {/* Form rahisi: namba ya simu + password. Admin anajua mwenyewe kuwa
+                anaingia kwa email (backend ina-detect kiotomatiki) — hatangazi. */}
+            <input type="text" className="input" placeholder="0712345678"
               value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoComplete="username" />
-            <p className="text-[11px] text-brand-grey-400 mt-1">
-              {isEmail ? t('login.admin_detected') : t('login.user_phone_hint')}
-            </p>
           </div>
           <div>
             <label className="label">{t('login.password_label')}</label>

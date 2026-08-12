@@ -64,7 +64,7 @@ const dict: Record<Lang, Record<string, string>> = {
     /* ── Login ── */
     'login.welcome': 'Karibu Tena', 'login.subtitle': 'Ingia kwenye akaunti yako.',
     'login.tab_users': 'Watumiaji', 'login.tab_admin': 'Admin (Email)',
-    'login.phone_label': 'Namba ya Simu au Email', 'login.password_label': 'Password',
+    'login.phone_label': 'Namba ya Simu', 'login.password_label': 'Password',
     'login.logging_in': 'Inaingia...', 'login.submit': 'Ingia',
     'login.admin_email_label': 'Email ya Admin', 'login.admin_login': 'Ingia kama Admin',
     'login.error_user': 'Ingia imeshindikana. Kagua namba na password.',
@@ -408,7 +408,7 @@ const dict: Record<Lang, Record<string, string>> = {
     /* ── Login ── */
     'login.welcome': 'Welcome Back', 'login.subtitle': 'Sign in to your account.',
     'login.tab_users': 'Users', 'login.tab_admin': 'Admin (Email)',
-    'login.phone_label': 'Phone Number or Email', 'login.password_label': 'Password',
+    'login.phone_label': 'Phone Number', 'login.password_label': 'Password',
     'login.logging_in': 'Signing in...', 'login.submit': 'Sign In',
     'login.admin_email_label': 'Admin Email', 'login.admin_login': 'Sign in as Admin',
     'login.error_user': 'Login failed. Check your number and password.',
