@@ -6,16 +6,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
-import { getRegions, updateFollowedRegions, bustGetCache, type Region } from '@/lib/api';
+import { getRegions, updateFollowedRegions, type Region } from '@/lib/api';
 import { useFollowStore } from '@/lib/followStore';
-import { useUnreadStore } from '@/lib/unreadStore';
-import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
 import { useTheme, applyTheme } from '@/lib/theme';
 import ThemeToggle from '@/components/ThemeToggle';
 import { getInitial } from '@/lib/initials';
 import {
-  BarChart3, Bell, Contact, Crown, Database, Heart, Languages, LayoutDashboard,
+  BarChart3, Contact, Crown, Database, Heart, Languages, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, MessageSquare, Radio, Settings, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
@@ -72,7 +70,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-0.5 flex-shrink-0">
             {/* Fuata Mikoa ni kwa WATUMIAJI tu — admin hana haja (anaona wote) */}
             {!isAdmin && <FollowRegionsButton compact />}
-            <NotificationsBell />
             <ThemeToggle />
             <LangToggle compact />
             <AvatarMenu name={user?.full_name} onLogout={doLogout} />
@@ -96,7 +93,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
               <WsStatus />
               <div className="flex items-center gap-0.5">
-                <NotificationsBell />
                 <ThemeToggle />
                 <LangToggle />
               </div>
@@ -499,50 +495,4 @@ function FollowRegionsContent({ regions, excludedNames, followed, saved, onToggl
   );
 }
 
-/** Live notifications bell with unread badge. */
-function NotificationsBell() {
-  const { user } = useAuth();
-  const pathname = usePathname();
-  const unread = useUnreadStore((s) => s.count);
-  const refresh = useUnreadStore((s) => s.refresh);
-  const { messages } = useLiveEvents(user ? ['notification'] : []);
 
-  // Initial load + kila ROUTE inabadilika (kurudi kutoka /notifications baada ya
-  // kusoma) → kengele inaonyesha hesabu halisi, siyo ile ya zamani.
-  useEffect(() => {
-    refresh();
-  }, [refresh, pathname]);
-
-  // Live: any new notification event refreshes the badge immediately (FRESH data)
-  useEffect(() => {
-    if (!messages.length) return;
-    bustGetCache(); // FUSHA cache — badge inaonyesha hesabu halisi sasa
-    refresh();
-  }, [messages.length, refresh]);
-
-  // Focus / kurudi kwenye tab → refresh (arifa zinaweza kuwa zimesomwa kwingine)
-  useEffect(() => {
-    const onShow = () => refresh();
-    window.addEventListener('focus', onShow);
-    document.addEventListener('visibilitychange', onShow);
-    return () => {
-      window.removeEventListener('focus', onShow);
-      document.removeEventListener('visibilitychange', onShow);
-    };
-  }, [refresh]);
-
-  return (
-    <Link
-      href="/notifications"
-      className="relative p-1.5 rounded-md transition hover:bg-brand-grey-100 text-brand-grey-700 dark:hover:bg-brand-grey-200/60 dark:text-brand-grey-300"
-      title="Arifa zako"
-    >
-      <Bell size={18} strokeWidth={2.2} />
-      {unread > 0 && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-red text-white text-[10px] font-bold flex items-center justify-center">
-          {unread > 9 ? '9+' : unread}
-        </span>
-      )}
-    </Link>
-  );
-}

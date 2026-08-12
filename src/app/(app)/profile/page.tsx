@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getMyProfile, updateDestinations, updateStation, getRegions, getDistricts, getSubjects, type Region, type District, type Subject } from '@/lib/api';
+import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, bustGetCache, type Region, type District, type Subject, type Facility, type Station, type Destination } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import axios from 'axios';
 import Spinner from '@/components/Spinner';
-import { API_URL as API } from '@/lib/config';
 
 export default function ProfilePage() {
   const t = useT();
@@ -95,9 +93,8 @@ function EditAdminProfile({ profile, onSaved }: any) {
   async function save() {
     setSaving(true); setError(null);
     try {
-      await axios.patch(`${API}/users/me`, { full_name, phone_alt: phone_alt || null }, {
-        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('kv_auth') || '{}')?.state?.token}` },
-      });
+      await updateProfile({ full_name, phone_alt: phone_alt || null });
+      bustGetCache(); // lazima — vinginevyo getMyProfile inarudisha cache ya kale!
       const fresh = await getMyProfile();
       onSaved(fresh);
     } catch (e: any) {
@@ -166,44 +163,86 @@ function ViewProfile({ profile }: any) {
 function EditProfile({ profile, onSaved }: any) {
   const t = useT();
   const [full_name, setName] = useState(profile.full_name);
+  const [phone_primary, setPhonePrimary] = useState(profile.phone_primary || '');
   const [phone_alt, setPhoneAlt] = useState(profile.phone_alt || '');
   const [subjects, setSubjects] = useState<string[]>(profile.subjects || []);
   const [availSubjects, setAvailSubjects] = useState<Subject[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [region_id, setRegionId] = useState<number>(profile.current_station?.region_id);
   const [district_id, setDistrictId] = useState<number>(profile.current_station?.district_id);
+  const [facility_id, setFacilityId] = useState<string>(profile.current_station?.facility_id || '');
   const [destinations, setDestinations] = useState<any[]>(profile.desired_destinations || []);
+  const [destDistricts, setDestDistricts] = useState<Record<number, District[]>>({});
+  const [curPassword, setCurPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pwdMsg, setPwdMsg] = useState<string | null>(null);
+
+  const category = profile.category as 'health' | 'education';
+  const cadre = profile.cadre_code || '';
+  // Walimu wote wa ELIMU wanaweza kuchagua masomo (Msingi kwa kada za
+  // TEACHER_PRIMARY/TEACHER_SPECIAL, Sekondari kwa TEACHER_SECONDARY).
+  const subjectLevel: 'Primary' | 'Secondary' | undefined =
+    category !== 'education' ? undefined
+      : cadre === 'TEACHER_SECONDARY' ? 'Secondary'
+        : cadre === 'TEACHER_PRIMARY' || cadre === 'TEACHER_SPECIAL' ? 'Primary'
+          : undefined;
 
   useEffect(() => {
     getRegions().then(setRegions);
-    if (profile.category === 'education') {
-      const level = profile.cadre_code === 'TEACHER_PRIMARY' ? 'Primary' : 'Secondary';
-      getSubjects(level as any).then(setAvailSubjects);
+    if (category === 'education' && subjectLevel) {
+      getSubjects(subjectLevel).then(setAvailSubjects);
     }
-  }, [profile.category, profile.cadre_code]);
+  }, [category, cadre, subjectLevel]);
   useEffect(() => { if (region_id) getDistricts(region_id).then(setDistricts); }, [region_id]);
+  useEffect(() => { if (district_id) getFacilities(district_id, category, subjectLevel).then(setFacilities).catch(() => setFacilities([])); }, [district_id, category, subjectLevel]);
+  useEffect(() => {
+    (destinations || []).forEach((d: any) => {
+      if (d.region_id && !destDistricts[d.region_id]) {
+        getDistricts(d.region_id).then((list) => setDestDistricts((m) => ({ ...m, [d.region_id]: list })));
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destinations]);
 
   async function saveProfile() {
     setSaving(true); setError(null);
     try {
-      // profile bits
-      await axios.patch(`${API}/users/me`, { full_name, phone_alt: phone_alt || null, subjects }, {
-        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('kv_auth') || '{}')?.state?.token}` },
+      const region = regions.find((r) => r.id === region_id);
+      const district = districts.find((d) => d.id === district_id);
+      const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
+      const station: Station | undefined =
+        region && district
+          ? {
+              region_id: region.id, region_name: region.name,
+              district_id: district.id, district_name: district.name,
+              facility_id: facility ? String(facility.id || facility.code) : profile.current_station?.facility_id ?? null,
+              facility_name: facility?.name || profile.current_station?.facility_name || null,
+              facility_type: (facility as any)?.type || profile.current_station?.facility_type || null,
+            }
+          : undefined;
+      const dests: Destination[] = destinations.map((d: any) => {
+        const dd = d.district_id ? (destDistricts[d.region_id] || []).find((x) => x.id === d.district_id) : null;
+        return {
+          region_id: d.region_id, region_name: d.region_name,
+          district_id: dd?.id ?? d.district_id ?? null, district_name: dd?.name ?? d.district_name ?? null,
+          facility_id: d.facility_id ?? null, facility_name: d.facility_name ?? null,
+          notes: d.notes ?? null,
+        };
       });
-      // station
-      const region = regions.find((r) => r.id === region_id)!;
-      const district = districts.find((d) => d.id === district_id)!;
-      if (region && district) {
-        await updateStation({
-          region_id: region.id, region_name: region.name,
-          district_id: district.id, district_name: district.name,
-        });
-      }
-      // destinations
-      if (destinations.length) await updateDestinations(destinations);
+      // UPDATE KAMILI kwenye hatua moja — jina, simu, masomo, kituo, destinations
+      await updateProfile({
+        full_name,
+        phone_primary: phone_primary || undefined,
+        phone_alt: phone_alt || null,
+        subjects: subjects.length ? subjects : [],
+        current_station: station as any,
+        desired_destinations: dests.length ? dests : undefined,
+      });
+      bustGetCache(); // lazima — vinginevyo getMyProfile inarudisha cache ya kale!
       const fresh = await getMyProfile();
       onSaved(fresh);
     } catch (e: any) {
@@ -211,15 +250,30 @@ function EditProfile({ profile, onSaved }: any) {
     } finally { setSaving(false); }
   }
 
-  function addDest() {
-    setDestinations([...destinations, { region_id: 0, region_name: '' }]);
+  async function savePassword() {
+    setError(null); setPwdMsg(null);
+    try {
+      const r = await changeMyPassword(curPassword, newPassword);
+      setPwdMsg(r.message || t('profile.pwd_changed'));
+      setCurPassword(''); setNewPassword('');
+      setTimeout(() => setPwdMsg(null), 4000);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || 'Password imeshindikana kubadilika');
+    }
   }
-  function updateDest(i: number, region_id: number) {
-    const r = regions.find((rr) => rr.id === region_id);
-    if (!r) return;
-    const copy = [...destinations];
-    copy[i] = { region_id: r.id, region_name: r.name };
+
+  function addDest() {
+    setDestinations([...destinations, { region_id: 0, region_name: '', district_id: null }]);
+  }
+  function updateDest(i: number, patch: any) {
+    const copy = destinations.map((d, idx) => (idx === i ? { ...d, ...patch } : d));
     setDestinations(copy);
+    if (patch.region_id) {
+      const r = regions.find((rr) => rr.id === patch.region_id);
+      if (r && !destDistricts[r.id]) {
+        getDistricts(r.id).then((list) => setDestDistricts((m) => ({ ...m, [r.id]: list })));
+      }
+    }
   }
   function delDest(i: number) {
     setDestinations(destinations.filter((_, idx) => idx !== i));
@@ -232,16 +286,17 @@ function EditProfile({ profile, onSaved }: any) {
       <div className="card space-y-3">
         <h3 className="font-bold">{t('profile.identity')}</h3>
         <div><label className="label">{t('label.name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
+        <div><label className="label">{t('label.phone')}</label><input className="input" value={phone_primary} onChange={(e) => setPhonePrimary(e.target.value)} inputMode="tel" /></div>
         <div><label className="label">{t('profile.alt_phone')}</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder={t('msg.optional')} /></div>
-        {profile.category === 'education' && (profile.cadre_code === 'TEACHER_SECONDARY' || profile.cadre_code === 'TEACHER_PRIMARY') && (
+        {category === 'education' && subjectLevel && (
           <div>
-            <label className="label">{t('label.subjects')}</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+            <label className="label">{t('label.subjects')} ({subjectLevel === 'Primary' ? t('step2.primary') : t('step2.secondary')})</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-44 overflow-y-auto">
               {availSubjects.map((s) => (
                 <button key={s.code} type="button"
                   onClick={() => setSubjects((prev) => prev.includes(s.code) ? prev.filter((c) => c !== s.code) : [...prev, s.code])}
-                  className={`px-2 py-1 rounded text-xs border ${subjects.includes(s.code) ? 'bg-brand-gold text-white border-brand-gold' : 'border-brand-grey-300'}`}>
-                  {s.code}
+                  className={`px-2 py-1.5 rounded text-xs border transition ${subjects.includes(s.code) ? 'bg-brand-gold text-white border-brand-gold' : 'border-brand-grey-300 hover:border-brand-gold'}`}>
+                  {s.name}
                 </button>
               ))}
             </div>
@@ -252,13 +307,21 @@ function EditProfile({ profile, onSaved }: any) {
       <div className="card space-y-3">
         <h3 className="font-bold">{t('profile.station')}</h3>
         <div><label className="label">{t('step3.region')}</label>
-          <select className="input" value={region_id} onChange={(e) => setRegionId(Number(e.target.value))}>
+          <select className="input" value={region_id} onChange={(e) => { setRegionId(Number(e.target.value)); setDistrictId(0 as any); setFacilityId(''); }}>
             {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </div>
         <div><label className="label">{t('step3.district')}</label>
-          <select className="input" value={district_id} onChange={(e) => setDistrictId(Number(e.target.value))}>
+          <select className="input" value={district_id} onChange={(e) => { setDistrictId(Number(e.target.value)); setFacilityId(''); }}>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+        </div>
+        <div><label className="label">{category === 'health' ? t('step3.facility_health') : t('step3.facility_school')} ({t('msg.optional')})</label>
+          <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)} disabled={!district_id}>
+            <option value="">{t('step3.facility_none')}</option>
+            {facilities.map((f: any) => (
+              <option key={f.id || f.code} value={String(f.id || f.code)}>{f.name}{f.type ? ` (${f.type})` : ''}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -269,14 +332,34 @@ function EditProfile({ profile, onSaved }: any) {
           <button onClick={addDest} className="text-brand-blue text-sm">{t('profile.add_dest')}</button>
         </div>
         {destinations.map((d, i) => (
-          <div key={i} className="flex gap-2 items-center">
-            <select className="input flex-1" value={d.region_id} onChange={(e) => updateDest(i, Number(e.target.value))}>
-              <option value={0}>{t('profile.choose')}</option>
-              {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-            </select>
-            <button onClick={() => delDest(i)} className="text-brand-red text-sm px-2">🗑</button>
+          <div key={i} className="space-y-2 p-3 rounded-xl bg-brand-grey-50 dark:bg-brand-grey-100">
+            <div className="flex gap-2 items-center">
+              <select className="input flex-1" value={d.region_id || 0}
+                onChange={(e) => updateDest(i, { region_id: Number(e.target.value), region_name: regions.find((r) => r.id === Number(e.target.value))?.name || '', district_id: null })}>
+                <option value={0}>{t('profile.choose')}</option>
+                {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+              <button onClick={() => delDest(i)} className="text-brand-red text-sm px-2">🗑</button>
+            </div>
+            {d.region_id ? (
+              <select className="input w-full" value={d.district_id || ''}
+                onChange={(e) => updateDest(i, { district_id: e.target.value ? Number(e.target.value) : null, district_name: (destDistricts[d.region_id] || []).find((x) => x.id === Number(e.target.value))?.name || null })}>
+                <option value="">{t('step4.any_district')}</option>
+                {(destDistricts[d.region_id] || []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+              </select>
+            ) : null}
           </div>
         ))}
+      </div>
+
+      <div className="card space-y-3">
+        <h3 className="font-bold">🔑 {t('profile.change_pwd')}</h3>
+        {pwdMsg && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{pwdMsg}</div>}
+        <div><label className="label">{t('profile.cur_pwd')}</label><input type="password" className="input" value={curPassword} onChange={(e) => setCurPassword(e.target.value)} autoComplete="current-password" /></div>
+        <div><label className="label">{t('profile.new_pwd')}</label><input type="password" className="input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" /></div>
+        <button onClick={savePassword} disabled={!curPassword || newPassword.length < 6} className="btn-outline w-full">
+          {t('profile.change_pwd_btn')}
+        </button>
       </div>
 
       <button onClick={saveProfile} disabled={saving} className="btn-primary w-full">

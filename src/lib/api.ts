@@ -242,6 +242,17 @@ export const resetPassword = (phone: string, code: string, new_password: string)
 
 /* ── Profile ──────────────────────────────────────── */
 export const getMyProfile = () => client.get(`${USER}/users/me`).then((r) => r.data);
+export const updateProfile = (body: {
+  full_name?: string;
+  phone_primary?: string;
+  phone_alt?: string | null;
+  subjects?: string[];
+  current_station?: Station;
+  desired_destinations?: Destination[];
+}) =>
+  client.patch(`${USER}/users/me`, body).then((r) => r.data);
+export const changeMyPassword = (current_password: string, new_password: string) =>
+  client.post<{ ok: boolean; message: string }>(`${USER}/users/me/password`, { current_password, new_password }).then((r) => r.data);
 export const getUserById = (userId: string) => client.get(`${USER}/users/${userId}`).then((r) => r.data);
 export const listOnlineUsers = () => client.get(`${USER}/users/online`).then((r) => r.data);
 export const getRecentUsers = (limit = 15) =>
@@ -379,8 +390,8 @@ export const adminReportsExport = (fmt: 'csv' | 'xlsx' = 'csv') =>
   client.get(`${ADMIN}/admin/reports/export`, { params: { fmt }, responseType: 'blob', bypassCache: true } as any);
 export const adminClearEvents = () =>
   client.post(`${ADMIN}/admin/events/clear`).then((r) => r.data);
-export const adminCleanupTestData = () =>
-  client.post(`${ADMIN}/admin/cleanup-test-data`).then((r) => r.data);
+export const adminCleanupTestData = (wipeAll = false) =>
+  client.post(`${ADMIN}/admin/cleanup-test-data`, null, { params: wipeAll ? { wipe_all: true } : {} }).then((r) => r.data);
 
 /* ── Admin: email settings (SMTP/MailerSend — UI-configurable) ── */
 export interface EmailSettings {

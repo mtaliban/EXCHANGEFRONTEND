@@ -197,9 +197,6 @@ export default function LoginPage() {
               <p className="text-xs text-brand-grey-500 leading-relaxed">
                 {t('login.twofa_prompt')} <span className="font-semibold text-brand-grey-700">{twoFA.email}</span>.
                 {twoFA.message && <span className="block mt-1 text-brand-grey-400">{twoFA.message}</span>}
-                {/SMTP/.test(twoFA.message || '') && (
-                  <span className="block mt-1 text-brand-grey-400">{t('login.dev_hint')} <code className="bg-brand-grey-100 px-1 rounded">docker logs kv_backend</code></span>
-                )}
               </p>
               <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={twoFACode}

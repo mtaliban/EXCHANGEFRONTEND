@@ -47,6 +47,14 @@ export default function AdminUsersPage() {
     setTimeout(() => setMessage(null), 6000);
   }
 
+  async function wipeAllUsers() {
+    if (!confirm(t('admin.wipe_all_confirm'))) return;
+    const r = await adminCleanupTestData(true);
+    setMessage(`${t('admin.wipe_all_done')} ${r.deleted_users} ${t('admin.cleanup_users')}`);
+    load();
+    setTimeout(() => setMessage(null), 6000);
+  }
+
   async function del(u: any) {
     if (!confirm(t('admin.confirm_delete') + `\n\n${u.full_name} (${u.phone_primary})`)) return;
     await adminDeleteUser(u._id);
@@ -62,6 +70,9 @@ export default function AdminUsersPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={cleanFakeData} className="btn-outline text-xs text-brand-orange border-brand-orange">
             🧹 {t('admin.cleanup_btn')}
+          </button>
+          <button onClick={wipeAllUsers} className="btn-outline text-xs text-brand-red border-brand-red">
+            🗑 {t('admin.wipe_all_btn')}
           </button>
           <button onClick={() => setCreating(true)} className="btn-primary text-sm">
             + {t('admin.new_user')}

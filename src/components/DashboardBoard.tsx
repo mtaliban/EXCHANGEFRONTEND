@@ -16,8 +16,8 @@ import { useFollowStore } from '@/lib/followStore';
 import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
 
-const FRESH_MS = 3 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya dakika 3
-const PAGE_SIZE = 10; // Wageni 10 wa kwanza kwenye grid — zilizobaki pagination
+const FRESH_MS = 30 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya NUSU SAA (30min)
+const PAGE_SIZE = 5; // Wageni 5 wa kwanza pale juu — zilizobaki pagination (Next)
 
 export default function DashboardBoard() {
   const t = useT();
@@ -237,6 +237,14 @@ export default function DashboardBoard() {
   // Walio online kwenye grid yako — wana rangi ya kijani (tofauti na notification)
   const onlineCount = candidates.filter((c) => c.online).length;
 
+  // Hesabu ya WAPYA (ndani ya nusu saa) — inaoneshwa juu kwenye LIVE panel
+  const freshCount = useMemo(() => {
+    return candidates.filter((c) => {
+      const ts = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? 0) : 0;
+      return ts && now - ts < FRESH_MS;
+    }).length;
+  }, [candidates, now]);
+
   const hasData = (board?.total ?? 0) > 0;
 
   return (
@@ -250,6 +258,11 @@ export default function DashboardBoard() {
               {t('board.live_title')} <span className="text-brand-orange">{myStation.region_name || ''}</span>
             </h2>
             <div className="flex items-center gap-2 flex-wrap">
+              {freshCount > 0 && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-orange-50 text-brand-orange border border-brand-orange">
+                  🆕 {freshCount} {t('board.new_arrivals')}
+                </span>
+              )}
               {onlineCount > 0 && (
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -408,9 +421,9 @@ export default function DashboardBoard() {
         </div>
       ) : (
         <>
-          {/* Grid: 2-col KWENYE SIMU (siyo data moja kubwa inayosababisha scroll nyingi),
-              3-col kwenye desktop. Cards ni compact kwenye simu (BoardCard). */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-3">
+          {/* Grid ELASTIC: inajiweka yenyewe kwa kila kifaa — simu ndogo sana = 1-2 col,
+              simu ya kawaida = 2 col, desktop = 3 col. Hakuna kujibana tena! */}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(165px,1fr))] gap-2.5 md:gap-3">
             {pageItems.map((c: any) => (
               <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} />
             ))}
@@ -444,7 +457,6 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
   const initial = getInitial(c.full_name);
   const from = c.current_station;
   const to = c.desired_destinations?.[0];
-  const scorePct = c.score != null ? Math.round(c.score * 100) : null;
   const createdTs = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? now) : now;
   const ago = timeAgo(createdTs, lang);
   const stamp = formatClock(createdTs, lang); // SAA HALISI — "10:45 AM" (sio tu "3hr")
@@ -489,7 +501,6 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
             <span className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">
               {c.cadre_display || c.cadre_code}
             </span>
-            {scorePct != null && <span className="ml-auto badge-gold">{scorePct}% {t('board.score')}</span>}
           </div>
         </div>
       </div>
