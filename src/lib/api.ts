@@ -382,6 +382,20 @@ export const adminClearEvents = () =>
 export const adminCleanupTestData = () =>
   client.post(`${ADMIN}/admin/cleanup-test-data`).then((r) => r.data);
 
+/* ── Admin: email settings (SMTP/MailerSend — UI-configurable) ── */
+export interface EmailSettings {
+  configured: boolean;
+  smtp_host: string; smtp_port: number; smtp_username: string; smtp_password: string;
+  smtp_from: string; smtp_use_tls: boolean;
+  mailersend_api_key: string; mailersend_from: string; enabled: boolean;
+}
+export const getEmailSettings = () =>
+  client.get<EmailSettings>(`${ADMIN}/admin/settings/email`).then((r) => r.data);
+export const saveEmailSettings = (body: Partial<EmailSettings>) =>
+  client.post<{ ok: boolean; message: string }>(`${ADMIN}/admin/settings/email`, body).then((r) => r.data);
+export const testEmailSettings = () =>
+  client.post<{ ok: boolean; message: string }>(`${ADMIN}/admin/settings/email/test`).then((r) => r.data);
+
 /* ── Donations (manual SMS verification) ─────────── */
 export interface DonationSubmit {
   amount: number;
