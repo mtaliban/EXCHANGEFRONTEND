@@ -3,13 +3,51 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL as API } from '@/lib/config';
+import { adminReportsExport } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  a.remove(); URL.revokeObjectURL(url);
+}
+
+function NumberTable({ title, headers, rows }: { title: string; headers: string[]; rows: string[][] }) {
+  const t = useT();
+  return (
+    <div className="card overflow-hidden">
+      <h3 className="font-bold text-brand-grey-900 mb-2">{title}</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
+            <tr>{headers.map((h) => <th key={h} className="px-3 py-2 text-left">{h}</th>)}</tr>
+          </thead>
+          <tbody className="divide-y divide-brand-grey-100">
+            {rows.map((r, i) => (
+              <tr key={i} className="hover:bg-brand-grey-50">
+                {r.map((c, j) => (
+                  <td key={j} className={`px-3 py-1.5 ${j === 0 ? 'font-medium' : j === r.length - 1 ? 'font-mono text-right text-brand-blue font-bold' : ''}`}>{c}</td>
+                ))}
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={headers.length} className="px-3 py-4 text-center text-brand-grey-400 text-sm">{t('adminrep.no_data')}</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export default function ReportsPage() {
   const t = useT();
   const [data, setData] = useState<any>(null);
   const [days, setDays] = useState(30);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const token = JSON.parse(localStorage.getItem('kv_auth') || '{}')?.state?.token;
@@ -17,91 +55,107 @@ export default function ReportsPage() {
       .then((r) => setData(r.data));
   }, [days]);
 
+  async function doExport(fmt: 'csv' | 'xlsx') {
+    setExporting(true);
+    try {
+      const res = await adminReportsExport(fmt);
+      downloadBlob(res.data as Blob, `ripoti_na_hesabu_${new Date().toISOString().slice(0, 10)}.${fmt}`);
+    } catch { /* ignore */ }
+    finally { setExporting(false); }
+  }
+
   if (!data) return <div className="p-10"><Spinner label={t('adminrep.loading')} /></div>;
 
-  const maxUsers = Math.max(...(data.users_per_day || []).map((d: any) => d.count), 1);
-  const maxMatches = Math.max(...(data.matches_per_day || []).map((d: any) => d.count), 1);
+  const totalUsers = data.users_by_region?.reduce((s: number, r: any) => s + r.count, 0) || 0;
 
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold text-brand-grey-900">{t('adminrep.title')} — {data.period_days} {t('adminrep.days_unit')}</h1>
-        <select className="input w-auto" value={days} onChange={(e) => setDays(Number(e.target.value))}>
-          <option value={7}>{t('adminrep.week')}</option>
-          <option value={30}>{t('adminrep.days30')}</option>
-          <option value={90}>{t('adminrep.days90')}</option>
-          <option value={365}>{t('adminrep.year')}</option>
-        </select>
+        <h1 className="text-2xl font-bold text-brand-grey-900">📊 {t('adminrep.title')}</h1>
+        <div className="flex items-center gap-2 flex-wrap">
+          <select className="input w-auto" value={days} onChange={(e) => setDays(Number(e.target.value))}>
+            <option value={7}>{t('adminrep.week')}</option>
+            <option value={30}>{t('adminrep.days30')}</option>
+            <option value={90}>{t('adminrep.days90')}</option>
+            <option value={365}>{t('adminrep.year')}</option>
+          </select>
+          <button onClick={() => doExport('csv')} disabled={exporting} className="btn-primary text-xs">⬇ CSV</button>
+          <button onClick={() => doExport('xlsx')} disabled={exporting} className="btn-outline text-xs">⬇ Excel</button>
+        </div>
       </div>
 
-      {/* Revenue */}
+      {/* Big numbers */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label={t('admin.users')} value={totalUsers} color="text-brand-blue" />
+        <StatCard label={t('adminrep.revenue_total')} value={`TZS ${data.revenue.total_tzs?.toLocaleString()}`} color="text-brand-orange" />
+        <StatCard label={t('admin.matches')} value={data.matches_per_day?.reduce((s: number, r: any) => s + r.count, 0) || 0} color="text-brand-red" />
+        <StatCard label={t('adminrep.revenue_paid')} value={data.revenue.paid_count} color="text-brand-gold-600" />
+      </div>
+
+      {/* NAMBA: by region / district / cadre / status */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <NumberTable
+          title={`🌍 ${t('adminrep.by_region')} (${totalUsers})`}
+          headers={[t('adminrep.region'), t('adminrep.count')]}
+          rows={(data.users_by_region || []).map((r: any) => [r.region || '(bila mkoa)', String(r.count)])}
+        />
+        <NumberTable
+          title={`🏢 ${t('adminrep.by_district')}`}
+          headers={[t('adminrep.region'), t('adminrep.district'), t('adminrep.count')]}
+          rows={(data.users_by_district || []).map((r: any) => [r.region || '', r.district || '', String(r.count)])}
+        />
+        <NumberTable
+          title={`👨‍🏫 ${t('adminrep.by_cadre')}`}
+          headers={[t('adminrep.department'), t('adminrep.cadre'), t('adminrep.count')]}
+          rows={(data.users_by_cadre || []).map((r: any) => [r.category === 'health' ? t('admin.health') : t('admin.education'), r.cadre, String(r.count)])}
+        />
+        <NumberTable
+          title={`🚦 ${t('adminrep.by_status')}`}
+          headers={[t('adminrep.status'), t('adminrep.count')]}
+          rows={(data.users_by_status || []).map((r: any) => [r.status, String(r.count)])}
+        />
+      </div>
+
+      {/* Michango */}
       <div className="card">
-        <h3 className="font-bold mb-3">{t('adminrep.revenue')}</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div><div className="text-2xl font-bold text-brand-blue">TZS {data.revenue.total_tzs?.toLocaleString()}</div><div className="text-xs text-brand-grey-500">{t('adminrep.revenue_total')}</div></div>
-          <div><div className="text-2xl font-bold text-brand-orange">{data.revenue.paid_count}</div><div className="text-xs text-brand-grey-500">{t('adminrep.revenue_paid')}</div></div>
-          <div><div className="text-2xl font-bold text-brand-red">{data.revenue.per_purpose.length}</div><div className="text-xs text-brand-grey-500">{t('adminrep.revenue_types')}</div></div>
-        </div>
-        <div className="mt-3 space-y-1">
+        <h3 className="font-bold mb-3">💰 {t('adminrep.revenue')}</h3>
+        <div className="space-y-1">
           {data.revenue.per_purpose.map((m: any) => (
             <div key={m.purpose} className="flex items-center justify-between text-sm">
               <span className="badge-gold">{m.purpose}</span>
               <span>TZS {m.total?.toLocaleString()} ({m.count} {t('adminrep.donations')})</span>
             </div>
           ))}
+          {data.revenue.per_purpose.length === 0 && <div className="text-brand-grey-500 text-sm">{t('adminrep.no_data')}</div>}
         </div>
       </div>
 
-      {/* Users trend */}
+      {/* Wachanga wa hivi karibuni (registrations) — numbers tu */}
       <div className="card">
-        <h3 className="font-bold mb-3">{t('adminrep.users_new')}</h3>
-        {data.users_per_day.length === 0 && <div className="text-brand-grey-500 text-sm">{t('adminrep.no_data')}</div>}
-        <div className="space-y-1 text-xs">
-          {data.users_per_day.map((d: any) => (
-            <div key={d.date} className="flex items-center gap-2">
-              <span className="w-24 text-brand-grey-500">{d.date}</span>
-              <div className="flex-1 bg-brand-grey-100 h-4 rounded">
-                <div className="h-4 bg-brand-blue rounded" style={{ width: `${(d.count / maxUsers) * 100}%` }}></div>
-              </div>
-              <span className="w-8 text-right font-mono">{d.count}</span>
-            </div>
-          ))}
+        <h3 className="font-bold mb-3">👥 {t('adminrep.users_new')}</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-brand-grey-100">
+              {data.users_per_day.slice(-14).reverse().map((d: any) => (
+                <tr key={d.date}>
+                  <td className="py-1 text-brand-grey-500">{d.date}</td>
+                  <td className="py-1 text-right font-mono font-bold text-brand-blue">{d.count}</td>
+                </tr>
+              ))}
+              {data.users_per_day.length === 0 && <tr><td className="py-4 text-center text-brand-grey-400 text-sm">{t('adminrep.no_data')}</td></tr>}
+            </tbody>
+          </table>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Matches trend */}
-      <div className="card">
-        <h3 className="font-bold mb-3">{t('adminrep.matches_new')}</h3>
-        {data.matches_per_day.length === 0 && <div className="text-brand-grey-500 text-sm">{t('adminrep.no_data')}</div>}
-        <div className="space-y-1 text-xs">
-          {data.matches_per_day.map((d: any) => (
-            <div key={d.date} className="flex items-center gap-2">
-              <span className="w-24 text-brand-grey-500">{d.date}</span>
-              <div className="flex-1 bg-brand-grey-100 h-4 rounded">
-                <div className="h-4 bg-brand-orange rounded" style={{ width: `${(d.count / maxMatches) * 100}%` }}></div>
-              </div>
-              <span className="w-8 text-right font-mono">{d.count}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Top pages */}
-      <div className="card">
-        <h3 className="font-bold mb-3">{t('adminrep.top_pages')}</h3>
-        {data.top_pages.length === 0 && <div className="text-brand-grey-500 text-sm">{t('adminrep.no_pages')}</div>}
-        <table className="w-full text-sm">
-          <tbody className="divide-y divide-brand-grey-100">
-            {data.top_pages.map((p: any) => (
-              <tr key={p.path}>
-                <td className="py-1">{p.path}</td>
-                <td className="py-1 text-right"><span className="badge-gold">{p.views}</span></td>
-                <td className="py-1 text-right text-xs text-brand-grey-500">{p.unique_users} {t('adminrep.users')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
+  return (
+    <div className="card">
+      <div className={`text-2xl font-bold ${color}`}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
+      <div className="text-xs text-brand-grey-500 mt-1">{label}</div>
     </div>
   );
 }

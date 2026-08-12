@@ -15,7 +15,7 @@ import { useTheme, applyTheme } from '@/lib/theme';
 import ThemeToggle from '@/components/ThemeToggle';
 import { getInitial } from '@/lib/initials';
 import {
-  BarChart3, Bell, Contact, Crown, Heart, Languages, LayoutDashboard,
+  BarChart3, Bell, Contact, Crown, Database, Heart, Languages, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, MessageSquare, Radio, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
@@ -35,6 +35,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     ? [
         { href: '/admin', label: t('nav.admin'), icon: Crown },
         { href: '/admin/users', label: t('nav.users'), icon: Users },
+        { href: '/admin/data', label: t('nav.data'), icon: Database },
         { href: '/admin/announcements', label: t('nav.announcements'), icon: MegaphoneIcon },
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
         { href: '/admin/events', label: t('nav.events'), icon: Zap },
@@ -68,7 +69,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
           <div className="flex items-center gap-0.5 flex-shrink-0">
-            <FollowRegionsButton compact dark={isAdmin} />
+            {/* Fuata Mikoa ni kwa WATUMIAJI tu — admin hana haja (anaona wote) */}
+            {!isAdmin && <FollowRegionsButton compact dark={isAdmin} />}
             <NotificationsBell isAdmin={isAdmin} />
             <ThemeToggle dark={isAdmin} />
             <LangToggle dark={isAdmin} compact />
@@ -114,10 +116,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition',
                     active
                       ? isAdmin
-                        ? 'bg-brand-blue text-white'
+                        ? 'bg-brand-blue text-white shadow-md'
                         : 'bg-brand-blue-50 text-brand-blue'
                       : isAdmin
-                        ? 'text-brand-grey-300 hover:bg-brand-grey-800'
+                        ? 'text-brand-grey-200 hover:bg-brand-grey-800 hover:text-white'
                         : 'text-brand-grey-700 hover:bg-brand-grey-50'
                   )}
                 >
@@ -128,10 +130,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          {/* Fuata Mikoa — kubwa, inayoonekana kwenye nav */}
-          <div className="p-2 pt-0">
-            <FollowRegionsButton dark={isAdmin} />
-          </div>
+          {/* Fuata Mikoa — kwa WATUMIAJI tu (admin anaona data zote) */}
+          {!isAdmin && (
+            <div className="p-2 pt-0">
+              <FollowRegionsButton dark={isAdmin} />
+            </div>
+          )}
 
           <div className={clsx('p-3 border-t mt-auto',
             isAdmin ? 'border-brand-grey-700' : 'border-brand-grey-100')}>
@@ -181,7 +185,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
     ? [
         { href: '/admin', label: t('nav.admin'), icon: Crown },
         { href: '/admin/users', label: t('nav.users'), icon: Users },
-        { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
+        { href: '/admin/data', label: t('nav.data'), icon: Database },
         { href: '/admin/events', label: t('nav.events'), icon: Zap },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ]

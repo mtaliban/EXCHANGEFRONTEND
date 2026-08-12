@@ -101,8 +101,8 @@ export const getFacilities = (
 };
 export const getCadres = (category?: 'health' | 'education') =>
   client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined, ttl: _STATIC_TTL } as any).then((r) => r.data);
-export const getSubjects = () =>
-  client.get<Subject[]>(`${LOC}/cadres/subjects`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
+export const getSubjects = (level?: 'Primary' | 'Secondary') =>
+  client.get<Subject[]>(`${LOC}/cadres/subjects`, { params: level ? { level } : undefined, ttl: _STATIC_TTL } as any).then((r) => r.data);
 
 /* ── Auth ─────────────────────────────────────────── */
 export interface Station {
@@ -143,6 +143,8 @@ export const register = (body: RegisterPayload) =>
   client.post<AuthResponse>(`${AUTH}/auth/register`, body).then((r) => r.data);
 export const login = (identifier: string, password: string) =>
   client.post<AuthResponse>(`${AUTH}/auth/login`, { phone: identifier, password }).then((r) => r.data);
+export const login2FA = (email: string, code: string) =>
+  client.post<AuthResponse>(`${AUTH}/auth/login/2fa`, { email, code }).then((r) => r.data);
 
 /* ── Admin email verification (kwenye login — auto-detect email) ────────── */
 export const requestEmailVerification = (email: string, password: string, phone?: string) =>
@@ -261,13 +263,16 @@ export const getPresence = (bypassCache = false) =>
   client.get<{ online_user_ids: string[]; count: number }>(`${MSG}/messages/presence`, { bypassCache } as any).then((r) => r.data);
 
 /* ── Admin ────────────────────────────────────────── */
-export const adminStats = () => client.get(`${ADMIN}/admin/stats`).then((r) => r.data);
+// TTL ndefu kidogo (20s) kwa admin data — kurudi kwenye admin pages hukusubirisha
+// kila mara; WS events + mutations bado zinabust cache (bustGetCache).
+const _ADMIN_TTL = 20_000;
+export const adminStats = () => client.get(`${ADMIN}/admin/stats`, { ttl: _ADMIN_TTL } as any).then((r) => r.data);
 export const adminUsers = (params?: any) =>
-  client.get(`${ADMIN}/admin/users`, { params }).then((r) => r.data);
+  client.get(`${ADMIN}/admin/users`, { params, ttl: _ADMIN_TTL } as any).then((r) => r.data);
 export const adminMatches = (limit = 100) =>
-  client.get(`${ADMIN}/admin/matches`, { params: { limit } }).then((r) => r.data);
-export const adminEvents = (event_type?: string, limit = 100) =>
-  client.get(`${ADMIN}/admin/events`, { params: { event_type, limit } }).then((r) => r.data);
+  client.get(`${ADMIN}/admin/matches`, { params: { limit }, ttl: _ADMIN_TTL } as any).then((r) => r.data);
+export const adminEvents = (event_type?: string, limit = 100, skip = 0) =>
+  client.get(`${ADMIN}/admin/events`, { params: { event_type, limit, skip }, ttl: _ADMIN_TTL } as any).then((r) => r.data);
 export const adminGrant = (user_id: string) =>
   client.post(`${ADMIN}/admin/users/${user_id}/grant-admin`).then((r) => r.data);
 export const adminRevoke = (user_id: string) =>
@@ -276,6 +281,50 @@ export const adminUpdateUser = (user_id: string, changes: any) =>
   client.patch(`${ADMIN}/admin/users/${user_id}`, changes).then((r) => r.data);
 export const adminDeleteUser = (user_id: string) =>
   client.delete(`${ADMIN}/admin/users/${user_id}`).then((r) => r.data);
+
+/* ── Admin: data management (masomo/kada/mikoa/wilaya) ── */
+export const adminListSubjects = (level?: string) =>
+  client.get(`${ADMIN}/admin/data/subjects`, { params: level ? { level } : {} }).then((r) => r.data);
+export const adminAddSubject = (body: { code: string; name: string; level: string }) =>
+  client.post(`${ADMIN}/admin/data/subjects`, body).then((r) => r.data);
+export const adminUpdateSubject = (code: string, body: { code: string; name: string; level: string }) =>
+  client.patch(`${ADMIN}/admin/data/subjects/${code}`, body).then((r) => r.data);
+export const adminDeleteSubject = (code: string) =>
+  client.delete(`${ADMIN}/admin/data/subjects/${code}`).then((r) => r.data);
+export const adminListCadres = (category?: string) =>
+  client.get(`${ADMIN}/admin/data/cadres`, { params: category ? { category } : {} }).then((r) => r.data);
+export const adminAddCadre = (body: any) =>
+  client.post(`${ADMIN}/admin/data/cadres`, body).then((r) => r.data);
+export const adminUpdateCadre = (code: string, body: any) =>
+  client.patch(`${ADMIN}/admin/data/cadres/${code}`, body).then((r) => r.data);
+export const adminDeleteCadre = (code: string) =>
+  client.delete(`${ADMIN}/admin/data/cadres/${code}`).then((r) => r.data);
+export const adminListRegions = () =>
+  client.get(`${ADMIN}/admin/data/regions`).then((r) => r.data);
+export const adminAddRegion = (body: { id: number; name: string }) =>
+  client.post(`${ADMIN}/admin/data/regions`, body).then((r) => r.data);
+export const adminUpdateRegion = (id: number, body: { id: number; name: string }) =>
+  client.patch(`${ADMIN}/admin/data/regions/${id}`, body).then((r) => r.data);
+export const adminDeleteRegion = (id: number) =>
+  client.delete(`${ADMIN}/admin/data/regions/${id}`).then((r) => r.data);
+export const adminListDistricts = (region_id?: number) =>
+  client.get(`${ADMIN}/admin/data/districts`, { params: region_id ? { region_id } : {} }).then((r) => r.data);
+export const adminAddDistrict = (body: { id: number; region_id: number; name: string }) =>
+  client.post(`${ADMIN}/admin/data/districts`, body).then((r) => r.data);
+export const adminUpdateDistrict = (id: number, body: { id: number; region_id: number; name: string }) =>
+  client.patch(`${ADMIN}/admin/data/districts/${id}`, body).then((r) => r.data);
+export const adminDeleteDistrict = (id: number) =>
+  client.delete(`${ADMIN}/admin/data/districts/${id}`).then((r) => r.data);
+
+/* ── Admin: exports + cleanup ── */
+export const adminEventsExport = (event_type?: string, fmt: 'csv' | 'xlsx' = 'csv') =>
+  client.get(`${ADMIN}/admin/events/export`, { params: { event_type, fmt }, responseType: 'blob', bypassCache: true } as any);
+export const adminReportsExport = (fmt: 'csv' | 'xlsx' = 'csv') =>
+  client.get(`${ADMIN}/admin/reports/export`, { params: { fmt }, responseType: 'blob', bypassCache: true } as any);
+export const adminClearEvents = () =>
+  client.post(`${ADMIN}/admin/events/clear`).then((r) => r.data);
+export const adminCleanupTestData = () =>
+  client.post(`${ADMIN}/admin/cleanup-test-data`).then((r) => r.data);
 
 /* ── Donations (manual SMS verification) ─────────── */
 export interface DonationSubmit {

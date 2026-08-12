@@ -29,12 +29,15 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const needsSubjects = currentCadre?.requires_subjects;
   // Elimu Msingi NA Sekondari wote wachague masomo (msingi = hiari, sekondari = lazima)
   const showSubjects = !!currentCadre && (isEdu || !!needsSubjects);
+  // Mwalimu wa Msingi anaona masomo ya Msingi; sekondari anaona ya sekondari.
+  const subjectLevel: 'Primary' | 'Secondary' | undefined =
+    currentCadre?.level === 'Primary' ? 'Primary' : currentCadre?.level === 'Secondary' ? 'Secondary' : undefined;
 
   useEffect(() => {
     if (showSubjects && subjects.length === 0) {
-      getSubjects().then(setSubjects).catch(() => setError(t('step2.err_load_subjects')));
+      getSubjects(subjectLevel).then(setSubjects).catch(() => setError(t('step2.err_load_subjects')));
     }
-  }, [showSubjects, subjects.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSubjects, subjects.length, subjectLevel]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSubject(code: string) {
     setSelectedSubjects((prev) =>

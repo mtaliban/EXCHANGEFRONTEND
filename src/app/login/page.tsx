@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { login, requestEmailVerification, confirmEmailVerification } from '@/lib/api';
+import { login, login2FA, requestEmailVerification, confirmEmailVerification } from '@/lib/api';
 import { useAuth, isTokenExpired } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 
@@ -54,6 +54,12 @@ export default function LoginPage() {
   const [verifyMode, setVerifyMode] = useState(false);
   const [verifyCode, setVerifyCode] = useState('');
 
+  // 2FA (two-factor auth): admin anapoingia kwa email+password sahihi, backend
+  // inatuma code ya tarakimu 6 kwa EMAIL yake — anaiweka hapa kukamilisha.
+  const [twoFA, setTwoFA] = useState<{ email: string; message?: string } | null>(null);
+  const [twoFACode, setTwoFACode] = useState('');
+  const [twoFALoading, setTwoFALoading] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -65,7 +71,13 @@ export default function LoginPage() {
     setError(null); setSuccess(null); setLoading(true);
     try {
       // Backend ina-detect: email → admin, namba → user (primary AU alt)
-      const res = await login(identifier.trim(), password);
+      const res: any = await login(identifier.trim(), password);
+      // 2FA inahitajika? → backend imetuma code kwa email — tuelekeze kwenye step ya code.
+      if (res.two_factor_required) {
+        setTwoFA({ email: res.email, message: res.message });
+        setTwoFACode('');
+        return;
+      }
       setAuth(res.access_token, {
         user_id: res.user_id,
         full_name: res.full_name,
@@ -87,6 +99,26 @@ export default function LoginPage() {
       }
       setError(msg);
     } finally { setLoading(false); }
+  }
+
+  // Hatua ya pili: weka code ya 2FA iliyotumwa kwa email
+  async function onTwoFASubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null); setSuccess(null); setTwoFALoading(true);
+    try {
+      const res = await login2FA(twoFA!.email, twoFACode);
+      setAuth(res.access_token, {
+        user_id: res.user_id,
+        full_name: res.full_name,
+        phone_primary: res.phone_primary || twoFA!.email,
+        category: (res.category as 'health' | 'education') || undefined,
+        cadre_code: res.cadre_code,
+        is_admin: res.is_admin,
+      });
+      router.push('/admin');
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || t('login.error_admin'));
+    } finally { setTwoFALoading(false); }
   }
 
   async function onRequestCode(e: React.FormEvent) {
@@ -153,6 +185,37 @@ export default function LoginPage() {
             {loading ? t('login.logging_in') : (isEmail ? t('login.admin_login') : t('login.submit'))}
           </button>
         </form>
+
+        {/* ═══ 2FA: code ya uthibitisho iliyotumwa kwa EMAIL ═══ */}
+        {twoFA && (
+          <div className="mt-5 border-t border-brand-grey-100 pt-4">
+            <form onSubmit={onTwoFASubmit} className="space-y-3 mt-3">
+              <div className="flex items-center gap-2 text-sm font-bold text-brand-grey-900">
+                <span className="w-8 h-8 rounded-full bg-brand-orange-50 text-brand-orange flex items-center justify-center text-base">🔐</span>
+                {t('login.twofa_title')}
+              </div>
+              <p className="text-xs text-brand-grey-500 leading-relaxed">
+                {t('login.twofa_prompt')} <span className="font-semibold text-brand-grey-700">{twoFA.email}</span>.
+                {twoFA.message && <span className="block mt-1 text-brand-grey-400">{twoFA.message}</span>}
+                {/SMTP/.test(twoFA.message || '') && (
+                  <span className="block mt-1 text-brand-grey-400">{t('login.dev_hint')} <code className="bg-brand-grey-100 px-1 rounded">docker logs kv_backend</code></span>
+                )}
+              </p>
+              <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
+                placeholder="000000" maxLength={6} value={twoFACode}
+                onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ''))} required autoFocus />
+              {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
+              {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
+              <button type="submit" disabled={twoFALoading} className="btn-primary w-full bg-brand-orange">
+                {twoFALoading ? t('login.verifying') : `${t('login.twofa_submit')} ✓`}
+              </button>
+              <button type="button" onClick={() => { setTwoFA(null); setError(null); }}
+                className="text-xs text-brand-grey-500 hover:underline w-full text-center">
+                {t('login.twofa_back')}
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Admin: thibitisha email — inaonekana TU inapohitajika (ikijaribu kuingia kwa email ambayo haijathibitishwa, form inafunguka kiotomatiki). Sio mara kwa mara. */}
         {verifyOpen && (

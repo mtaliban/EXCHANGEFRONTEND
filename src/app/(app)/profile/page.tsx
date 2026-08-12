@@ -17,10 +17,15 @@ export default function ProfilePage() {
 
   if (!profile) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
+  const isAdmin = !!profile.is_admin;
+
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-3xl">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold text-brand-grey-900">{t('profile.title')}</h1>
+        <h1 className="text-2xl font-bold text-brand-grey-900">
+          {isAdmin ? t('profile.admin_title') : t('profile.title')}
+          {isAdmin && <span className="ml-2 align-middle inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-brand-gold-100 text-brand-gold-600">👑 {t('admin.admin_role')}</span>}
+        </h1>
         {mode === 'view' ? (
           <button onClick={() => setMode('edit')} className="btn-primary text-sm">✎ {t('profile.edit_button')}</button>
         ) : (
@@ -31,15 +36,88 @@ export default function ProfilePage() {
       {message && <div className="bg-brand-blue-50 text-brand-blue text-sm rounded-lg p-3">{message}</div>}
 
       {mode === 'view' ? (
-        <ViewProfile profile={profile} />
+        isAdmin ? <ViewAdminProfile profile={profile} /> : <ViewProfile profile={profile} />
       ) : (
-        <EditProfile profile={profile} onSaved={(p: any) => {
-          setProfile(p);
-          setMode('view');
-          setMessage(t('msg.saved'));
-          setTimeout(() => setMessage(null), 3000);
-        }} />
+        isAdmin ? (
+          <EditAdminProfile profile={profile} onSaved={(p: any) => {
+            setProfile(p);
+            setMode('view');
+            setMessage(t('msg.saved'));
+            setTimeout(() => setMessage(null), 3000);
+          }} />
+        ) : (
+          <EditProfile profile={profile} onSaved={(p: any) => {
+            setProfile(p);
+            setMode('view');
+            setMessage(t('msg.saved'));
+            setTimeout(() => setMessage(null), 3000);
+          }} />
+        )
       )}
+    </div>
+  );
+}
+
+/** Wasifu wa ADMIN — taarifa za akaunti (email, status, usalama), SIYO za mwalimu. */
+function ViewAdminProfile({ profile }: any) {
+  const t = useT();
+  return (
+    <>
+      <div className="card border-brand-gold-200">
+        <h3 className="font-bold text-brand-grey-900 mb-3">👑 {t('profile.admin_identity')}</h3>
+        <div className="space-y-2 text-sm">
+          <Row label={t('label.name')} value={profile.full_name} />
+          <Row label={t('label.email')} value={profile.email} />
+          <Row label={t('profile.email_verified')} value={profile.email_verified ? `${t('msg.yes')} ✓` : t('msg.no')} />
+          <Row label={t('label.phone')} value={profile.phone_primary} />
+          <Row label={t('admin.role')} value="Administrator 👑" />
+        </div>
+      </div>
+      <div className="card">
+        <h3 className="font-bold text-brand-grey-900 mb-3">🛡️ {t('profile.security')}</h3>
+        <p className="text-sm text-brand-grey-500 leading-relaxed">{t('profile.security_hint')}</p>
+        <ul className="mt-2 space-y-1 text-xs text-brand-grey-500">
+          <li>• {t('profile.security_2fa')}</li>
+          <li>• {t('profile.security_email')}</li>
+        </ul>
+      </div>
+    </>
+  );
+}
+
+function EditAdminProfile({ profile, onSaved }: any) {
+  const t = useT();
+  const [full_name, setName] = useState(profile.full_name);
+  const [phone_alt, setPhoneAlt] = useState(profile.phone_alt || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    setSaving(true); setError(null);
+    try {
+      await axios.patch(`${API}/users/me`, { full_name, phone_alt: phone_alt || null }, {
+        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('kv_auth') || '{}')?.state?.token}` },
+      });
+      const fresh = await getMyProfile();
+      onSaved(fresh);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || 'Save failed');
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <div className="space-y-4">
+      {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
+      <div className="card space-y-3">
+        <h3 className="font-bold">👑 {t('profile.admin_identity')}</h3>
+        <div><label className="label">{t('label.name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
+        <div><label className="label">{t('profile.alt_phone')}</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder={t('msg.optional')} /></div>
+        <div><label className="label">{t('label.email')}</label><input className="input" value={profile.email || ''} disabled /></div>
+        <div className="text-xs text-brand-grey-500">{t('profile.email_change_hint')}</div>
+      </div>
+      <button onClick={save} disabled={saving} className="btn-primary w-full">
+        {saving ? '...' : t('profile.save')}
+      </button>
     </div>
   );
 }
@@ -99,7 +177,13 @@ function EditProfile({ profile, onSaved }: any) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { getRegions().then(setRegions); if (profile.category === 'education') getSubjects().then(setAvailSubjects); }, [profile.category]);
+  useEffect(() => {
+    getRegions().then(setRegions);
+    if (profile.category === 'education') {
+      const level = profile.cadre_code === 'TEACHER_PRIMARY' ? 'Primary' : 'Secondary';
+      getSubjects(level as any).then(setAvailSubjects);
+    }
+  }, [profile.category, profile.cadre_code]);
   useEffect(() => { if (region_id) getDistricts(region_id).then(setDistricts); }, [region_id]);
 
   async function saveProfile() {
@@ -149,7 +233,7 @@ function EditProfile({ profile, onSaved }: any) {
         <h3 className="font-bold">{t('profile.identity')}</h3>
         <div><label className="label">{t('label.name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
         <div><label className="label">{t('profile.alt_phone')}</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder={t('msg.optional')} /></div>
-        {profile.category === 'education' && profile.cadre_code === 'TEACHER_SECONDARY' && (
+        {profile.category === 'education' && (profile.cadre_code === 'TEACHER_SECONDARY' || profile.cadre_code === 'TEACHER_PRIMARY') && (
           <div>
             <label className="label">{t('label.subjects')}</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
