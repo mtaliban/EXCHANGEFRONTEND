@@ -56,7 +56,10 @@ export default function LoginPage() {
 
   // 2FA (two-factor auth): admin anapoingia kwa email+password sahihi, backend
   // inatuma code ya tarakimu 6 kwa EMAIL yake — anaiweka hapa kukamilisha.
-  const [twoFA, setTwoFA] = useState<{ email: string; message?: string } | null>(null);
+  // SMTP ikibidi isijasanidiwe, backend inarudisha `dev_code` (break-glass) —
+  // code hiyo inaonyeshwa kwenye skrini ili admin asifungiwe nje (inaondoka
+  // mara tu SMTP ikishasanidiwa; basi code inaenda email tu).
+  const [twoFA, setTwoFA] = useState<{ email: string; message?: string; devCode?: string } | null>(null);
   const [twoFACode, setTwoFACode] = useState('');
   const [twoFALoading, setTwoFALoading] = useState(false);
 
@@ -74,8 +77,8 @@ export default function LoginPage() {
       const res: any = await login(identifier.trim(), password);
       // 2FA inahitajika? → backend imetuma code kwa email — tuelekeze kwenye step ya code.
       if (res.two_factor_required) {
-        setTwoFA({ email: res.email, message: res.message });
-        setTwoFACode('');
+        setTwoFA({ email: res.email, message: res.message, devCode: res.dev_code });
+        setTwoFACode(res.dev_code || ''); // break-glass: code ikiwa kwenye response, jaza kiotomatiki
         return;
       }
       setAuth(res.access_token, {
@@ -198,6 +201,12 @@ export default function LoginPage() {
                 {t('login.twofa_prompt')} <span className="font-semibold text-brand-grey-700">{twoFA.email}</span>.
                 {twoFA.message && <span className="block mt-1 text-brand-grey-400">{twoFA.message}</span>}
               </p>
+              {twoFA.devCode && (
+                <div className="bg-brand-orange-50 border border-brand-orange-200 rounded-lg p-3 text-center">
+                  <div className="text-[11px] font-bold text-brand-orange uppercase tracking-wide">Code yako (SMTP haijasanidiwa — weka email kwenye Mipangilio)</div>
+                  <div className="text-3xl font-extrabold tracking-[0.4em] font-mono text-brand-grey-900 mt-1">{twoFA.devCode}</div>
+                </div>
+              )}
               <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={twoFACode}
                 onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ''))} required autoFocus />
