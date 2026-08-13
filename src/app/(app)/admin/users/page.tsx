@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { adminUsers, adminUpdateUser, adminDeleteUser, adminGrant, adminRevoke, register, adminCleanupTestData, getRegions, getDistricts, getFacilities, getCadres, getSubjects, type Region, type District, type Cadre, type Subject } from '@/lib/api';
+import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke, register, adminCleanupTestData, getRegions, getDistricts, getFacilities, getCadres, getSubjects, type Region, type District, type Cadre, type Subject } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 
 export default function AdminUsersPage() {
@@ -12,6 +12,8 @@ export default function AdminUsersPage() {
   const [editing, setEditing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   async function load() {
     const params: any = { limit: 200 };
@@ -21,6 +23,40 @@ export default function AdminUsersPage() {
   }
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, category]);
+  // Chaguzi huisha wakati filters zinabadilika — orodha yenyewe imebadilika.
+  useEffect(() => { setSelected(new Set()); }, [q, category]);
+
+  const visibleUsers = (data?.users || []) as any[];
+  const allVisibleSelected = visibleUsers.length > 0 && visibleUsers.every((u) => selected.has(u._id));
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected(allVisibleSelected ? new Set() : new Set(visibleUsers.map((u) => u._id)));
+  }
+
+  async function bulk(action: 'delete' | 'disable' | 'enable') {
+    const ids = Array.from(selected);
+    if (!ids.length) return;
+    const label = action === 'delete' ? t('admin.bulk_delete_confirm') : action === 'disable' ? t('admin.bulk_suspend_confirm') : t('admin.bulk_enable_confirm');
+    if (!confirm(`${label}\n\n${ids.length} ${t('admin.users')}`)) return;
+    setBulkBusy(true);
+    try {
+      const r = await adminBulkUsers(ids, action);
+      setMessage(`${action === 'delete' ? t('admin.deleted') : action === 'disable' ? t('admin.suspended') : t('admin.unsuspended')} ${r.processed} ${t('admin.users')}${r.skipped_admin ? ` — ${r.skipped_admin} ${t('admin.bulk_skipped_admin')}` : ''}`);
+      setSelected(new Set());
+      load();
+    } catch (e: any) {
+      setMessage(e?.response?.data?.detail || t('admin.failed'));
+    } finally { setBulkBusy(false); }
+    setTimeout(() => setMessage(null), 5000);
+  }
 
   async function toggleAdmin(u: any) {
     if (u.is_admin) await adminRevoke(u._id);
@@ -80,6 +116,29 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {/* ═══ Vitendo vya KUNDI (select-all + futa/funga/fungua wengi mara moja) ═══ */}
+      <div className="flex items-center gap-2 flex-wrap bg-brand-grey-50 dark:bg-brand-grey-100 rounded-xl px-3 py-2">
+        <label className="flex items-center gap-2 text-sm font-semibold text-brand-grey-700">
+          <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll}
+            className="w-4 h-4 accent-brand-blue" />
+          {t('admin.select_all')} ({selected.size})
+        </label>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => bulk('enable')} disabled={bulkBusy || selected.size === 0}
+            className="text-xs px-3 py-1.5 rounded-lg border border-green-500 text-green-600 hover:bg-green-50 disabled:opacity-40 transition">
+            ✓ {t('admin.bulk_enable')}
+          </button>
+          <button onClick={() => bulk('disable')} disabled={bulkBusy || selected.size === 0}
+            className="text-xs px-3 py-1.5 rounded-lg border border-brand-orange text-brand-orange hover:bg-brand-orange-50 disabled:opacity-40 transition">
+            🚫 {t('admin.bulk_suspend')}
+          </button>
+          <button onClick={() => bulk('delete')} disabled={bulkBusy || selected.size === 0}
+            className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red-50 disabled:opacity-40 transition">
+            🗑 {t('admin.bulk_delete')}
+          </button>
+        </div>
+      </div>
+
       {message && <div className="bg-brand-blue-50 text-brand-blue text-sm rounded-lg p-3">{message}</div>}
 
       <div className="flex flex-col sm:flex-row gap-2">
@@ -95,9 +154,13 @@ export default function AdminUsersPage() {
       <div className="text-xs text-brand-grey-500">{t('admin.total')} {data?.total ?? '...'}</div>
 
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[720px]">
+        <table className="w-full text-sm min-w-[760px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>
+              <th className="px-3 py-2 text-left w-10">
+                <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll}
+                  className="w-4 h-4 accent-brand-blue" aria-label={t('admin.select_all')} />
+              </th>
               <th className="px-3 py-2 text-left">{t('admin.col_name')}</th>
               <th className="px-3 py-2 text-left">{t('admin.col_phone')}</th>
               <th className="px-3 py-2 text-left">{t('admin.col_cadre')}</th>
@@ -110,6 +173,11 @@ export default function AdminUsersPage() {
           <tbody className="divide-y divide-brand-grey-100">
             {data?.users?.map((u: any) => (
               <tr key={u._id} className={`hover:bg-brand-grey-50 ${u.status === 'disabled' ? 'opacity-50' : ''}`}>
+                <td className="px-3 py-2">
+                  <input type="checkbox" checked={selected.has(u._id)}
+                    onChange={() => toggleOne(u._id)} disabled={u.is_admin}
+                    className="w-4 h-4 accent-brand-blue" aria-label={t('admin.col_name')} />
+                </td>
                 <td className="px-3 py-2 font-medium">{u.full_name} {u.is_admin && '👑'}</td>
                 <td className="px-3 py-2 text-brand-blue">{u.phone_primary}</td>
                 <td className="px-3 py-2 text-xs"><span className="badge-gold">{u.cadre_code}</span></td>

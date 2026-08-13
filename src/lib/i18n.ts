@@ -219,8 +219,14 @@ const dict: Record<Lang, Record<string, string>> = {
     'admin.wipe_all_btn': 'Futa Watumiaji Wote',
     'admin.wipe_all_confirm': '⚠️ Hii itafuta WATUMIAJI WOTE wasio-admin (data zote za uwongo: users, matches, messages, notifications) — admini tu watahifadhiwa. HAKUNA kurudi nyuma! Una uhakika?',
     'admin.wipe_all_done': '🧹 Wipe imekamilika — watumiaji',
+    'admin.select_all': 'Chagua Zote',
+    'admin.bulk_enable': 'Fungua', 'admin.bulk_suspend': 'Funga', 'admin.bulk_delete': 'Futa',
+    'admin.bulk_enable_confirm': 'Uhakika unataka KUFUNGUA akaunti hizi?',
+    'admin.bulk_suspend_confirm': 'Uhakika unataka KUFUNGIA akaunti hizi? Hawa hawataweza kuingia tena.',
+    'admin.bulk_delete_confirm': '⚠️ Uhakika unataka KUFUTA akaunti hizi? Data zao zote zitaondoka (matches, messages, notifications) — HAKUNA kurudi nyuma!',
+    'admin.bulk_skipped_admin': 'walioruka (admins haziguswi)',
     /* ── Admin data management ── */
-    'data.title': 'Usimamizi wa Data', 'data.subtitle': 'Ongeza, hariri na futa masomo, kada, mikoa na wilaya — data hizi hutumika kwa usajili na registration.',
+    'data.title': 'Usimamizi wa Data', 'data.live': 'LIVE — mabadiliko yanaonekana papo hapo', 'data.subtitle': 'Ongeza, hariri na futa masomo, kada, mikoa na wilaya — data hizi hutumika kwa usajili na registration.',
     'data.subjects': 'Masomo', 'data.cadres': 'Kada', 'data.regions': 'Mikoa', 'data.districts': 'Wilaya',
     'data.all_levels': 'Ngazi zote', 'data.add_subject': 'Ongeza Somo', 'data.edit_subject': 'Hariri Somo',
     'data.code': 'Code', 'data.name': 'Jina', 'data.level': 'Ngazi',
@@ -229,6 +235,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'data.all_regions': 'Mikoa yote', 'data.add_district': 'Ongeza Wilaya', 'data.edit_district': 'Hariri Wilaya',
     'data.region': 'Mkoa', 'data.confirm_delete': 'Uhakika unataka kufuta?',
     'data.deleted': 'Imefutwa', 'data.saved': 'Imehifadhiwa ✓',
+    'data.id_auto': 'ID itaongezwa MOJA KWA MOJA (inayofuata) — usiandike kwa mkono.',
     /* ── Admin payments ── */
     'adminpay.title': 'Michango — Uthibitisho wa Malipo',
     'adminpay.verifying': '🔄 Inasindikwa (Processing)', 'adminpay.approved': '✓ Imethibitishwa (Verified)',
@@ -254,6 +261,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'adminevents.clear': 'Futa Logs', 'adminevents.clear_confirm': 'Uhakika unataka kufuta event log zote? (Data ya watumiaji haigusiwi)',
     'adminevents.cleared': 'Event log zimefutwa ✓',
     'adminevents.details': 'Maelezo', 'adminevents.time': 'Saa', 'adminevents.show': 'Ona', 'adminevents.hide': 'Ficha',
+    'adminevents.live': 'LIVE — inajitokeza yenyewe',
     /* ── Admin reports ── */
     'adminrep.title': 'Ripoti', 'adminrep.week': 'Wiki iliyopita', 'adminrep.days30': 'Siku 30',
     'adminrep.days90': 'Siku 90', 'adminrep.year': 'Mwaka',
@@ -626,8 +634,14 @@ const dict: Record<Lang, Record<string, string>> = {
     'admin.wipe_all_btn': 'Delete ALL Users',
     'admin.wipe_all_confirm': '⚠️ This will delete ALL non-admin users (fake data: users, matches, messages, notifications) — only admins stay. THIS CANNOT BE UNDONE! Are you sure?',
     'admin.wipe_all_done': '🧹 Wipe complete — users',
+    'admin.select_all': 'Select All',
+    'admin.bulk_enable': 'Enable', 'admin.bulk_suspend': 'Suspend', 'admin.bulk_delete': 'Delete',
+    'admin.bulk_enable_confirm': 'Are you sure you want to ENABLE these accounts?',
+    'admin.bulk_suspend_confirm': 'Are you sure you want to SUSPEND these accounts? They will not be able to log in again.',
+    'admin.bulk_delete_confirm': '⚠️ Are you sure you want to DELETE these accounts? All their data (matches, messages, notifications) will be removed — THIS CANNOT BE UNDONE!',
+    'admin.bulk_skipped_admin': 'skipped (admins are never touched)',
     /* ── Admin data management ── */
-    'data.title': 'Data Management', 'data.subtitle': 'Add, edit and delete subjects, cadres, regions and districts — these power registration.',
+    'data.title': 'Data Management', 'data.live': 'LIVE — changes appear instantly', 'data.subtitle': 'Add, edit and delete subjects, cadres, regions and districts — these power registration.',
     'data.subjects': 'Subjects', 'data.cadres': 'Cadres', 'data.regions': 'Regions', 'data.districts': 'Districts',
     'data.all_levels': 'All levels', 'data.add_subject': 'Add Subject', 'data.edit_subject': 'Edit Subject',
     'data.code': 'Code', 'data.name': 'Name', 'data.level': 'Level',
@@ -636,6 +650,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'data.all_regions': 'All regions', 'data.add_district': 'Add District', 'data.edit_district': 'Edit District',
     'data.region': 'Region', 'data.confirm_delete': 'Are you sure you want to delete?',
     'data.deleted': 'Deleted', 'data.saved': 'Saved ✓',
+    'data.id_auto': 'ID is generated AUTOMATICALLY (next available) — no need to type it.',
     /* ── Admin payments ── */
     'adminpay.title': 'Donations — Payment Verification',
     'adminpay.verifying': '🔄 Processing', 'adminpay.approved': '✓ Verified',
@@ -661,6 +676,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'adminevents.clear': 'Clear Logs', 'adminevents.clear_confirm': 'Are you sure you want to clear all event logs? (User data is untouched)',
     'adminevents.cleared': 'Event logs cleared ✓',
     'adminevents.details': 'Details', 'adminevents.time': 'Time', 'adminevents.show': 'Show', 'adminevents.hide': 'Hide',
+    'adminevents.live': 'LIVE — updates itself',
     /* ── Admin reports ── */
     'adminrep.title': 'Reports', 'adminrep.week': 'Last week', 'adminrep.days30': '30 days',
     'adminrep.days90': '90 days', 'adminrep.year': 'Year',

@@ -1,7 +1,8 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { adminEvents, adminEventsExport, adminClearEvents, exportErrorText } from '@/lib/api';
+import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
 import Spinner from '@/components/Spinner';
@@ -11,6 +12,10 @@ const TYPES = [
   'user.prefs_updated', 'user.updated_by_admin', 'user.deleted', 'match.found', 'message.sent',
   'call.initiated', 'payment.paid', 'email.verification_requested', 'email.verified',
   'announcement.sent', 'page.viewed',
+  'data.subject_added', 'data.subject_updated', 'data.subject_deleted',
+  'data.cadre_added', 'data.cadre_updated', 'data.cadre_deleted',
+  'data.region_added', 'data.region_updated', 'data.region_deleted',
+  'data.district_added', 'data.district_updated', 'data.district_deleted',
 ];
 
 const TYPE_COLORS: Record<string, string> = {
@@ -29,6 +34,18 @@ const TYPE_COLORS: Record<string, string> = {
   'email.verified': 'bg-lime-100 text-lime-700',
   'announcement.sent': 'bg-pink-100 text-pink-700',
   'page.viewed': 'bg-grey-200 text-grey-600',
+  'data.subject_added': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.subject_updated': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.subject_deleted': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.cadre_added': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.cadre_updated': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.cadre_deleted': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.region_added': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.region_updated': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.region_deleted': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.district_added': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.district_updated': 'bg-fuchsia-100 text-fuchsia-700',
+  'data.district_deleted': 'bg-fuchsia-100 text-fuchsia-700',
 };
 
 function humanize(payload: any, type: string): string {
@@ -36,6 +53,7 @@ function humanize(payload: any, type: string): string {
   const name = payload.full_name || payload.user_name || payload.candidate?.full_name || '';
   const parts: string[] = [];
   if (name) parts.push(`👤 ${name}`);
+  if (payload.by_name) parts.push(`👤 ${payload.by_name}`);
   if (payload.cadre_display) parts.push(`· ${payload.cadre_display}`);
   if (payload.current_station?.region_name) parts.push(`· kutoka ${payload.current_station.district_name || ''} ${payload.current_station.region_name}`.replace(/\s+/g, ' '));
   const dest = payload.desired_destinations?.[0];
@@ -46,6 +64,13 @@ function humanize(payload: any, type: string): string {
   if (type === 'call.initiated') parts.push('· simu');
   if (type === 'payment.paid') parts.push(`· TZS ${payload.amount ?? ''}`);
   if (payload.email) parts.push(`· ${payload.email}`);
+  // Reference data CRUD (masomo/kada/mikoa/wilaya) — human-friendly summary
+  if (payload.kind && payload.item) {
+    const item = payload.item;
+    const label = item.name || item.code || item.id || '';
+    parts.push(`· ${payload.kind}: ${label} ${payload.action}`);
+    if (payload.kind === 'district' && item.region_id) parts.push(`(mkoa ${item.region_id})`);
+  }
   return parts.join(' ');
 }
 
@@ -57,6 +82,62 @@ function downloadBlob(blob: Blob, filename: string) {
   a.remove(); URL.revokeObjectURL(url);
 }
 
+/**
+ * Live SSE feed kutoka /admin/live-events — events mpya zinajitokeza PAPO HAPO
+ * (hakuna refresh). Inatumia fetch stream (sio EventSource) kwa sababu SSE
+ * inahitaji Authorization header (token ya admin). Ikiwa connection inapotea,
+ * inareconnect baada ya sekunde 3.
+ */
+function useLiveEventsFeed(onEvent: (ev: any) => void) {
+  useEffect(() => {
+    let aborter: AbortController | null = null;
+    let retryTimer: any = null;
+    let stopped = false;
+
+    async function connect() {
+      try {
+        const raw = sessionStorage.getItem('kv_auth');
+        let token: string | null = null;
+        try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
+        aborter = new AbortController();
+        const res = await fetch(`${API_URL}/admin/live-events`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          signal: aborter.signal,
+        });
+        if (!res.ok || !res.body) throw new Error('feed failed');
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (!stopped) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let idx;
+          while ((idx = buffer.indexOf('\n\n')) !== -1) {
+            const chunk = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 2);
+            const line = chunk.split('\n').find((l) => l.startsWith('data: '));
+            if (line) {
+              try { onEvent(JSON.parse(line.slice(6))); } catch { /* sio JSON — puuza */ }
+            }
+          }
+        }
+      } catch {
+        /* mtandao/abort — reconnect chini */
+      }
+      if (!stopped) retryTimer = setTimeout(connect, 3000);
+    }
+
+    connect();
+    return () => {
+      stopped = true;
+      aborter?.abort();
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
 export default function AdminEventsPage() {
   const t = useT();
   const [data, setData] = useState<any>(null);
@@ -65,6 +146,9 @@ export default function AdminEventsPage() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [exporting, setExporting] = useState<string | null>(null);
+  const [liveAt, setLiveAt] = useState<number | null>(null);
+  const typeRef = useRef(type);
+  typeRef.current = type;
   const PAGE_SIZE = 25;
 
   function flash(text: string, ok = true) {
@@ -77,6 +161,26 @@ export default function AdminEventsPage() {
   useEffect(() => {
     adminEvents(type || undefined, PAGE_SIZE, (page - 1) * PAGE_SIZE, !!type).then(setData);
   }, [type, page]);
+
+  // LIVE: events mpya zinaingia juu bila refresh (event-driven).
+  useLiveEventsFeed((ev) => {
+    setLiveAt(Date.now());
+    setData((prev: any) => {
+      if (!prev || !ev || !ev._id) return prev;
+      if (prev.events.some((e: any) => e._id === ev._id)) return prev;
+      const currentType = typeRef.current;
+      if (currentType && ev.event_type !== currentType) return prev; // kichujio — ondoa isiyohusika
+      const nextEvents = [ev, ...prev.events].slice(0, PAGE_SIZE * 8);
+      return { ...prev, events: nextEvents, total: currentType ? prev.total : prev.total + 1 };
+    });
+  });
+
+  // Dot ya LIVE inazimika kama hakuna data kwa sekunde 10 (kutengana kwa feed).
+  useEffect(() => {
+    if (!liveAt) return;
+    const id = setTimeout(() => setLiveAt((prev) => (prev && Date.now() - prev > 10000 ? null : prev)), 10000);
+    return () => clearTimeout(id);
+  }, [liveAt]);
 
   if (!data) return <div className="p-10"><Spinner label={t('adminevents.loading')} /></div>;
 
@@ -106,7 +210,14 @@ export default function AdminEventsPage() {
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold text-brand-grey-900">📜 Event Log ({data.total?.toLocaleString()})</h1>
+        <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
+          📜 Event Log ({data.total?.toLocaleString()})
+          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+            liveAt ? 'bg-green-50 text-green-600 border-green-300' : 'bg-brand-grey-50 text-brand-grey-400 border-brand-grey-200'}`}>
+            <span className={`w-2 h-2 rounded-full ${liveAt ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-300'}`} />
+            {t('adminevents.live')}
+          </span>
+        </h1>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => doExport('csv')} disabled={!!exporting} className="btn-outline text-xs min-h-[36px]">
             {exporting === 'csv' ? 'Inapakua...' : '⬇ CSV'}
@@ -151,7 +262,7 @@ export default function AdminEventsPage() {
                 <td colSpan={5} className="p-8 text-center text-sm text-brand-grey-500">{t('adminevents.empty')}</td>
               </tr>
             )}
-            {data.events.map((e: any, i: number) => {
+            {data.events.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((e: any, i: number) => {
               const isOpen = expanded.has(e._id);
               const color = TYPE_COLORS[e.event_type] || 'bg-brand-grey-100 text-brand-grey-600';
               const summary = humanize(e.payload, e.event_type);

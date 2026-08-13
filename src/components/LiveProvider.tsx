@@ -20,11 +20,41 @@ import type { LucideIcon } from 'lucide-react';
  *   - Toast on new message.sent
  *   - Toast on call.initiated
  */
+
+/** Baada ya muda huu wa kutokuwa ACTIVE (hakuna click/keyboard/scroll) →
+ *  mtumiaji anatolewa (logout) na kupelekwa LOGIN — security ya muda wa kukaa. */
+const IDLE_LOGOUT_MS = 30 * 60 * 1000; // dakika 30
+
+function useIdleLogout() {
+  const router = useRouter();
+  const logout = useAuth((s) => s.logout);
+  useEffect(() => {
+    let timer: any;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        logout();
+        router.replace('/login');
+      }, IDLE_LOGOUT_MS);
+    };
+    const evts = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+    evts.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      evts.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [logout, router]);
+}
+
 export default function LiveProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { token, user } = useAuth();
+  const { token, user, logout } = useAuth();
   const { connect, disconnect, subscribe } = useLive();
+
+  // Mtumiaji asipofanya kitu kwa dakika 30 → toa (logout) → login.
+  useIdleLogout();
 
   useEffect(() => {
     if (!token) return;

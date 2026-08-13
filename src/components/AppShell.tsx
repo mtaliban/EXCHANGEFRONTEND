@@ -14,7 +14,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { getInitial } from '@/lib/initials';
 import {
   BarChart3, Contact, Crown, Database, Heart, Languages, LayoutDashboard,
-  LogOut, Megaphone as MegaphoneIcon, MessageSquare, Radio, Settings, User, Users, Wallet, Zap,
+  LogOut, Megaphone as MegaphoneIcon, MessageSquare, Radio, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -38,7 +38,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
         { href: '/admin/events', label: t('nav.events'), icon: Zap },
         { href: '/admin/reports', label: t('nav.reports'), icon: BarChart3 },
-        { href: '/admin/settings', label: t('nav.settings'), icon: Settings },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ]
     : [
@@ -176,7 +175,6 @@ function MobileBottomNav({ pathname, isAdmin }: {
         { href: '/admin/users', label: t('nav.users'), icon: Users },
         { href: '/admin/data', label: t('nav.data'), icon: Database },
         { href: '/admin/events', label: t('nav.events'), icon: Zap },
-        { href: '/admin/settings', label: t('nav.settings'), icon: Settings },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ]
     : [

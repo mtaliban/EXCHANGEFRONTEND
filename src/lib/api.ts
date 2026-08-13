@@ -109,7 +109,8 @@ export async function exportErrorText(e: any): Promise<string> {
 
 client.interceptors.request.use((cfg) => {
   if (typeof window !== 'undefined') {
-    const raw = localStorage.getItem('kv_auth');
+    // sessionStorage — token inaishi kwenye tab hii tu (security: tab mpya → login).
+    const raw = sessionStorage.getItem('kv_auth');
     if (raw) {
       try {
         const token = JSON.parse(raw)?.state?.token;
@@ -346,6 +347,10 @@ export const adminUpdateUser = (user_id: string, changes: any) =>
   client.patch(`${ADMIN}/admin/users/${user_id}`, changes).then((r) => r.data);
 export const adminDeleteUser = (user_id: string) =>
   client.delete(`${ADMIN}/admin/users/${user_id}`).then((r) => r.data);
+export const adminBulkUsers = (user_ids: string[], action: 'delete' | 'disable' | 'enable') =>
+  client.post<{ ok: boolean; action: string; processed: number; skipped_admin: number }>(
+    `${ADMIN}/admin/users/bulk`, { user_ids, action }
+  ).then((r) => r.data);
 
 /* ── Admin: data management (masomo/kada/mikoa/wilaya) ── */
 export const adminListSubjects = (level?: string, bypass = false) =>
@@ -392,20 +397,6 @@ export const adminClearEvents = () =>
   client.post(`${ADMIN}/admin/events/clear`).then((r) => r.data);
 export const adminCleanupTestData = (wipeAll = false) =>
   client.post(`${ADMIN}/admin/cleanup-test-data`, null, { params: wipeAll ? { wipe_all: true } : {} }).then((r) => r.data);
-
-/* ── Admin: email settings (SMTP/MailerSend — UI-configurable) ── */
-export interface EmailSettings {
-  configured: boolean;
-  smtp_host: string; smtp_port: number; smtp_username: string; smtp_password: string;
-  smtp_from: string; smtp_use_tls: boolean;
-  mailersend_api_key: string; mailersend_from: string; enabled: boolean;
-}
-export const getEmailSettings = () =>
-  client.get<EmailSettings>(`${ADMIN}/admin/settings/email`).then((r) => r.data);
-export const saveEmailSettings = (body: Partial<EmailSettings>) =>
-  client.post<{ ok: boolean; message: string }>(`${ADMIN}/admin/settings/email`, body).then((r) => r.data);
-export const testEmailSettings = () =>
-  client.post<{ ok: boolean; message: string }>(`${ADMIN}/admin/settings/email/test`).then((r) => r.data);
 
 /* ── Donations (manual SMS verification) ─────────── */
 export interface DonationSubmit {
