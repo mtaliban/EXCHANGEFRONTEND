@@ -220,6 +220,9 @@ export const getBoard = (params?: {
   region_ids?: string;
   district_id?: number;
   facility_id?: string;
+  subject_match?: boolean;
+  subject_filter?: 'off' | 'any' | 'all' | 'none';
+  subject_q?: string;
   limit?: number;
 }, bypassCache = false) =>
   // TTL ndefu (45s): kurudi kwenye dashboard hakufetch DB kila mara — WS events
@@ -248,6 +251,7 @@ export const updateProfile = (body: {
   phone_primary?: string;
   phone_alt?: string | null;
   subjects?: string[];
+  cadre_code?: string;
   current_station?: Station;
   desired_destinations?: Destination[];
 }) =>

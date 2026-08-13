@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { listContacts, getContactStats, logCall } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import ContactStatCard from '@/components/ContactStatCard';
 import Spinner from '@/components/Spinner';
 import { useT } from '@/lib/i18n';
@@ -12,6 +13,7 @@ import { parseServerDate } from '@/lib/dates';
 
 export default function ContactsPage() {
   const t = useT();
+  const { user } = useAuth();
   const [contacts, setContacts] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [q, setQ] = useState('');
@@ -26,6 +28,28 @@ export default function ContactsPage() {
   async function call(c: any) {
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
+  }
+
+  // Ujumbe wa kutambulishana (SMS / WhatsApp) — taarifa za mwombaji.
+  function introMsg(c: any): string {
+    const myName = user?.full_name || '';
+    const myCadre = (user as any)?.cadre_display || (user as any)?.cadre_code || '';
+    const myRegion = (user as any)?.current_station?.region_name || '';
+    const theirSubjects = (c.subjects || []).join(', ');
+    const role = c.category === 'education' ? t('label.category_education') : t('label.category_health');
+    return `Habari ${c.full_name}, wewe ni ${role}${theirSubjects ? ` wa masomo ${theirSubjects}` : ''}. Mimi ni ${myName}${myCadre ? `, ${myCadre}` : ''}${myRegion ? `, niko ${myRegion}` : ''}. Naomba kujadili kubadilishana vituo.`;
+  }
+
+  function onSMS(c: any) {
+    if (!c.phone_primary) return;
+    window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg(c))}`;
+  }
+
+  function onWhatsApp(c: any) {
+    const num = c.phone_alt || c.phone_primary;
+    if (!num) return;
+    const digits = num.replace(/\D/g, '').replace(/^0/, '255');
+    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg(c))}`, '_blank');
   }
 
   const filtered = contacts.filter((c) =>
@@ -105,11 +129,20 @@ export default function ContactsPage() {
                       {c.full_name}
                     </div>
 
-                    {/* Namba ya simu — inaonekana wazi */}
-                    <a href={`tel:${c.phone_primary}`}
-                       className="inline-flex items-center gap-1 mt-1 text-brand-blue font-semibold hover:underline">
-                      📞 {c.phone_primary}
-                    </a>
+                    {/* Namba za simu — Normal + WhatsApp zinaonekana wazi */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                      <a href={`tel:${c.phone_primary}`}
+                         className="inline-flex items-center gap-1 text-brand-blue font-semibold hover:underline">
+                        📞 {t('contacts.normal_phone')}: {c.phone_primary}
+                      </a>
+                      {(c.phone_alt || c.phone_primary) && (
+                        <a href={`https://wa.me/${(c.phone_alt || c.phone_primary).replace(/\D/g, '').replace(/^0/, '255')}?text=${encodeURIComponent(introMsg(c))}`}
+                           target="_blank" rel="noreferrer"
+                           className="inline-flex items-center gap-1 text-green-600 font-semibold hover:underline">
+                          🟢 {t('contacts.whatsapp_phone')}: {c.phone_alt || c.phone_primary}
+                        </a>
+                      )}
+                    </div>
 
                     {c.cadre_display && (
                       <div className="text-xs text-brand-grey-500 mt-1">
@@ -136,6 +169,16 @@ export default function ContactsPage() {
                       title={t('chats.title')}>
                       💬 {t('contacts.chat')}
                     </Link>
+                    <button onClick={() => onSMS(c)}
+                      className="min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg bg-brand-grey-700 text-white text-sm font-semibold hover:bg-brand-grey-800 transition active:scale-95 flex items-center justify-center"
+                      title={t('contacts.sms')}>
+                      ✉️ {t('contacts.sms')}
+                    </button>
+                    <button onClick={() => onWhatsApp(c)}
+                      className="min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition active:scale-95 flex items-center justify-center"
+                      title={t('contacts.whatsapp')}>
+                      🟢 {t('contacts.whatsapp')}
+                    </button>
                     <button onClick={() => call(c)}
                       className="min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg bg-brand-orange text-white text-sm font-semibold hover:bg-brand-orange-600 transition active:scale-95 flex items-center justify-center"
                       title={t('contacts.call')}>

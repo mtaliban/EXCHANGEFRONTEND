@@ -87,6 +87,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'login.twofa_prompt': 'Code ya tarakimu 6 imetumwa kwa email yako ya admin',
     'login.twofa_submit': 'Thibitisha na Kuingia',
     'login.twofa_back': '← Rudi kwenye login',
+    'profile.phone_normal': 'Namba ya Simu (Normal)',
+    'profile.phone_whatsapp': 'Namba ya WhatsApp',
+    'profile.choose_cadre': '-- Chagua Kada --',
+    'label.cadre': 'Kada',
     /* ── Register ── */
     'reg.badge': 'Usajili', 'reg.title': 'Jaza Taarifa Zako',
     'reg.subtitle': 'Hatua 4 rahisi. Utamaliza chini ya dakika 3.',
@@ -101,6 +105,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'step1.title': 'Hatua 1: Utambulisho Wako',
     'step1.full_name': 'Jina Kamili', 'step1.phone': 'Namba ya Simu',
     'step1.phone_alt': 'Namba ya Simu ya Pili', 'step1.password': 'Password',
+    'step1.phone_normal': 'Namba ya Simu (Normal)', 'step1.phone_normal_hint': 'Namba hii inatumika kwa simu na SMS.',
+    'step1.phone_whatsapp': 'Namba ya WhatsApp', 'step1.phone_whatsapp_hint': 'Namba hii inatumika kwa WhatsApp — unaweza kuweka namba nyingine ikiwa unatumia WhatsApp kwa namba tofauti.',
     'step1.repeat_password': 'Rudia Password', 'step1.name_ph': 'Mfano: Kieffer Madyedye',
     'step1.err_name': 'Jina lazima liwe angalau herufi 3',
     'step1.err_phone': 'Namba ya simu si sahihi (mfano: 0712345678)',
@@ -172,7 +178,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'label.email': 'Barua Pepe', 'admin.role': 'Wajibu',
     'label.name': 'Jina Kamili', 'label.phone': 'Namba ya Simu',
     'label.phone_alt': 'Namba ya Pili', 'label.category': 'Idara',
-    'label.cadre': 'Kada', 'label.subjects': 'Masomo',
+    'label.subjects': 'Masomo',
     'label.station': 'Kituo cha Sasa', 'label.destinations': 'Nataka Kwenda',
     'label.category_health': 'Afya', 'label.category_education': 'Elimu',
     /* ── Admin ── */
@@ -333,6 +339,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'contacts.people': 'watu', 'contacts.filtered_from': 'imefiltershwa kutoka',
     'contacts.chat': 'Chat', 'contacts.call': 'Piga', 'contacts.chat_time': 'chat',
     'contacts.call_time': 'simu',
+    'contacts.sms': 'SMS', 'contacts.whatsapp': 'WhatsApp',
+    'contacts.normal_phone': 'Simu', 'contacts.whatsapp_phone': 'WhatsApp',
     /* ── Dashboard ── */
     'dash.welcome': 'Karibu', 'dash.chat': 'Chat', 'dash.call': 'Piga',
     /* ── Dashboard Board (ad-board juu) ── */
@@ -374,6 +382,11 @@ const dict: Record<Lang, Record<string, string>> = {
     'board.next': 'Inayofuata',
     'board.sound_on': 'Sauti imewashwa 🔊',
     'board.sound_off': 'Sauti imezimwa 🔇',
+    'board.subj_off': 'Wote', 'board.subj_all': 'Masomo yote mawili', 'board.subj_any': 'Somo moja', 'board.subj_none': 'Wasio match',
+    'board.subj_search_ph': 'Tafuta masomo (k.m. MATH, KISWAHILI)...',
+    'board.sms_btn': 'SMS', 'board.wa_btn': 'WhatsApp', 'board.whatsapp_num': 'WhatsApp:',
+    'board.follow_pinned': 'Mikoa ya kuhamia (imefungwa)',
+    'board.follow_pinned_hint': 'Hii ni mikoa uliyochagua kwenda kwenye profile yako — inafuatiliwa kiotomatiki. Inabadilika tu kwenye Profile (Destinations).',
     /* ── Megaphone ── */
     'mega.title': '📢 Matangazo', 'mega.view_all': 'Ona yote', 'mega.empty': 'Hakuna matangazo sasa',
     'mega.dismiss': 'Futa tangazo hili', 'mega.announcements': 'Matangazo',
@@ -502,6 +515,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'login.twofa_prompt': 'A 6-digit code was sent to your admin email',
     'login.twofa_submit': 'Verify & Sign In',
     'login.twofa_back': '← Back to login',
+    'profile.phone_normal': 'Phone Number (Normal)',
+    'profile.phone_whatsapp': 'WhatsApp Number',
+    'profile.choose_cadre': '-- Choose Cadre --',
+    'label.cadre': 'Cadre',
     /* ── Register ── */
     'reg.badge': 'Registration', 'reg.title': 'Fill in Your Details',
     'reg.subtitle': '4 easy steps. Done in under 3 minutes.',
@@ -516,6 +533,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'step1.title': 'Step 1: Your Identity',
     'step1.full_name': 'Full Name', 'step1.phone': 'Phone Number',
     'step1.phone_alt': 'Second Phone Number', 'step1.password': 'Password',
+    'step1.phone_normal': 'Phone Number (Normal)', 'step1.phone_normal_hint': 'This number is used for calls and SMS.',
+    'step1.phone_whatsapp': 'WhatsApp Number', 'step1.phone_whatsapp_hint': 'This number is used for WhatsApp — you can add a different number if you use WhatsApp on another line.',
     'step1.repeat_password': 'Repeat Password', 'step1.name_ph': 'E.g. Kieffer Madyedye',
     'step1.err_name': 'Name must be at least 3 characters',
     'step1.err_phone': 'Invalid phone number (e.g. 0712345678)',
@@ -587,7 +606,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'label.email': 'Email', 'admin.role': 'Role',
     'label.name': 'Full Name', 'label.phone': 'Phone Number',
     'label.phone_alt': 'Alternate Phone', 'label.category': 'Department',
-    'label.cadre': 'Cadre', 'label.subjects': 'Subjects',
+    'label.subjects': 'Subjects',
     'label.station': 'Current Station', 'label.destinations': 'Desired Destinations',
     'label.category_health': 'Health', 'label.category_education': 'Education',
     /* ── Admin ── */
@@ -748,6 +767,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'contacts.people': 'people', 'contacts.filtered_from': 'filtered from',
     'contacts.chat': 'Chat', 'contacts.call': 'Call', 'contacts.chat_time': 'chat',
     'contacts.call_time': 'call',
+    'contacts.sms': 'SMS', 'contacts.whatsapp': 'WhatsApp',
+    'contacts.normal_phone': 'Phone', 'contacts.whatsapp_phone': 'WhatsApp',
     /* ── Dashboard ── */
     'dash.welcome': 'Welcome', 'dash.chat': 'Chat', 'dash.call': 'Call',
     /* ── Dashboard Board (ad-board juu) ── */
@@ -789,6 +810,11 @@ const dict: Record<Lang, Record<string, string>> = {
     'board.next': 'Next',
     'board.sound_on': 'Sound on 🔊',
     'board.sound_off': 'Sound off 🔇',
+    'board.subj_off': 'All', 'board.subj_all': 'All subjects match', 'board.subj_any': 'One subject', 'board.subj_none': 'No match',
+    'board.subj_search_ph': 'Search subjects (e.g. MATH, KISWAHILI)...',
+    'board.sms_btn': 'SMS', 'board.wa_btn': 'WhatsApp', 'board.whatsapp_num': 'WhatsApp:',
+    'board.follow_pinned': 'Destination regions (locked)',
+    'board.follow_pinned_hint': 'These are the regions you chose in your profile — they are watched automatically. They can only change in Profile (Destinations).',
     /* ── Megaphone ── */
     'mega.title': '📢 Announcements', 'mega.view_all': 'View all', 'mega.empty': 'No announcements right now',
     'mega.dismiss': 'Dismiss this announcement', 'mega.announcements': 'Announcements',

@@ -320,15 +320,14 @@ function FollowRegionsButton({ compact }: { compact?: boolean }) {
   const [savedMsg, setSavedMsg] = useState<'added' | 'removed' | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Mikoa ya KUHAMIA (desired_destinations) tayari inafuatiliwa kiotomatiki —
-  // haionekani tena kwenye "Fuata Mikoa" (usiweze kuiweka mara mbili).
+  // Mikoa ya KUHAMIA (desired_destinations) imefungwa (PINNED) — inafuatiliwa
+  // kiotomatiki na HAIWEZI kuondolewa hapa; inaondolewa tu kwa kubadilisha
+  // profile (desired_destinations). Mikoa mingine ni ya hiari (toggle).
   const destRegionIds = new Set<number>(
     ((user as any)?.desired_destinations || []).map((d: any) => d.region_id).filter((x: any) => typeof x === 'number')
   );
-  const followable = regions.filter((r) => !destRegionIds.has(r.id));
-  const excludedNames = regions.filter((r) => destRegionIds.has(r.id)).map((r) => r.name);
-  // Hesabu ya "imefuata" — usihesabu mikoa ya kuhamia (isiyoonekana hapa)
-  const shownFollowed = followed.filter((id) => followable.some((r) => r.id === id));
+  const pinnedIds = destRegionIds;
+  const shownFollowed = followed.filter((id) => regions.some((r) => r.id === id));
 
   // Load regions + followed (shared store) on mount
   useEffect(() => {
@@ -363,15 +362,18 @@ function FollowRegionsButton({ compact }: { compact?: boolean }) {
     }
   }
 
-  const toggle = (rid: number) =>
+  const toggle = (rid: number) => {
+    // Pinned (destinations) haziwezi kuondolewa hapa — mpaka profile
+    if (pinnedIds.has(rid)) return;
     save(followed.includes(rid) ? followed.filter((x) => x !== rid) : [...followed, rid]);
+  };
 
-  const allIds = followable.map((r) => r.id);
+  const allIds = regions.filter((r) => !pinnedIds.has(r.id)).map((r) => r.id);
 
   const content = (
     <FollowRegionsContent
-      regions={followable}
-      excludedNames={excludedNames}
+      regions={regions}
+      pinnedIds={pinnedIds}
       followed={shownFollowed}
       saved={savedMsg}
       onToggle={toggle}
@@ -438,13 +440,17 @@ function FollowRegionsButton({ compact }: { compact?: boolean }) {
   );
 }
 
-/** Content ya pamoja (bottom sheet + dropdown) — quick actions + grid ya mikoa. */
-function FollowRegionsContent({ regions, excludedNames, followed, saved, onToggle, onSelectAll, onClearAll }: {
-  regions: Region[]; excludedNames: string[]; followed: number[];
+/** Content ya pamoja (bottom sheet + dropdown) — quick actions + grid ya mikoa.
+ *  `pinnedIds` = mikoa ya kuhamia (desired_destinations) — IMEFUNGWA: inaonekana
+ *  highlighted (dhahabu) na haiondolewi hapa (inaondolewa kwa kubadilisha profile). */
+function FollowRegionsContent({ regions, pinnedIds, followed, saved, onToggle, onSelectAll, onClearAll }: {
+  regions: Region[]; pinnedIds: Set<number>; followed: number[];
   saved: 'added' | 'removed' | null;
   onToggle: (id: number) => void; onSelectAll: () => void; onClearAll: () => void;
 }) {
   const t = useT();
+  const pinnedNames = regions.filter((r) => pinnedIds.has(r.id)).map((r) => r.name);
+  const freeRegions = regions.filter((r) => !pinnedIds.has(r.id));
   return (
     <>
       <div className="flex items-center justify-between mb-1.5">
@@ -455,9 +461,18 @@ function FollowRegionsContent({ regions, excludedNames, followed, saved, onToggl
         {saved === 'removed' && <span className="text-[10px] font-semibold text-brand-orange">{t('board.follow_removed')}</span>}
       </div>
       <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mb-2 leading-relaxed">{t('board.follow_hint')}</p>
-      {excludedNames.length > 0 && (
-        <div className="mb-2.5 text-[10px] text-brand-grey-500 dark:text-brand-grey-400 bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2.5 py-1.5 leading-relaxed">
-          ✅ {t('board.follow_already')} <b className="text-brand-grey-700 dark:text-brand-grey-200">{excludedNames.join(', ')}</b>
+      {pinnedNames.length > 0 && (
+        <div className="mb-2.5">
+          <div className="text-[10px] font-bold text-brand-gold-600 dark:text-brand-gold-400 mb-1.5">📌 {t('board.follow_pinned')}</div>
+          <div className="flex flex-wrap gap-1.5">
+            {pinnedNames.map((n) => (
+              <span key={n}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-gold-100 text-brand-gold-600 border border-brand-gold-300 dark:bg-brand-gold-900/40 dark:border-brand-gold-700">
+                📌 {n} <span className="font-medium opacity-70">🔒</span>
+              </span>
+            ))}
+          </div>
+          <p className="text-[10px] text-brand-grey-400 dark:text-brand-grey-500 mt-1">{t('board.follow_pinned_hint')}</p>
         </div>
       )}
       <div className="flex items-center gap-1.5 mb-2.5">
@@ -472,7 +487,7 @@ function FollowRegionsContent({ regions, excludedNames, followed, saved, onToggl
       </div>
       {/* 2-col tangu mwanzo — sheet/dropdown ni pana, chips zinakata kwa truncate */}
       <div className="grid grid-cols-2 gap-1.5">
-        {regions.map((r) => {
+        {freeRegions.map((r) => {
           const on = followed.includes(r.id);
           return (
             <button key={r.id} type="button" onClick={() => onToggle(r.id)}

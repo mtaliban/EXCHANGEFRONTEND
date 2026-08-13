@@ -60,9 +60,10 @@ export default function DashboardBoard() {
   const [regionSel, setRegionSel] = useState<string>(destRegionIds.length > 0 ? '__all__' : '');
   const [districtId, setDistrictId] = useState<number | undefined>();
   const [facilityId, setFacilityId] = useState<string | undefined>();
-  // Toggle ya masomo: default OFF → mtu anaona idara yake WOTE hata kama masomo
-  // hayakufanana. Akiweka ON → waonekana tu wenye masomo yanayolingana naye.
-  const [subjectMatch, setSubjectMatch] = useState(false);
+  // Kichujio cha masomo: off (wote) / any (somo moja linalofanana) / all (yote
+  // mawili yanafanana) / none (wasio na somo linalofanana) + search ya masomo.
+  const [subjectFilter, setSubjectFilter] = useState<'off' | 'any' | 'all' | 'none'>('off');
+  const [subjectQ, setSubjectQ] = useState('');
   const [board, setBoard] = useState<any>(null);
   const [districts, setDistricts] = useState<District[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -87,7 +88,7 @@ export default function DashboardBoard() {
       return next;
     });
   };
-  const { messages, connected } = useLiveEvents(['match.found', 'user.registered']);
+  const { messages, connected } = useLiveEvents(['match.found', 'user.registered', 'user.profile_updated']);
 
   // Re-render "muda uliopita" kila sekunde 30
   useEffect(() => {
@@ -116,13 +117,14 @@ export default function DashboardBoard() {
       if (effectiveRegionIds.length) params.region_ids = effectiveRegionIds.join(',');
       if (districtId !== undefined) params.district_id = districtId;
       if (facilityId !== undefined) params.facility_id = facilityId;
-      if (subjectMatch) params.subject_match = true;
+      if (subjectFilter !== 'off') params.subject_filter = subjectFilter;
+      if (subjectQ.trim()) params.subject_q = subjectQ.trim();
       const b = await getBoard(params, forceFresh);
       setBoard(b);
     } finally {
       setLoading(false);
     }
-  }, [effectiveRegionIds, districtId, facilityId, subjectMatch]);
+  }, [effectiveRegionIds, districtId, facilityId, subjectFilter, subjectQ]);
 
   // Load regions kwa dropdown ya chanzo + followed regions (store ya pamoja na nav)
   useEffect(() => {
@@ -174,6 +176,13 @@ export default function DashboardBoard() {
       const tId = setTimeout(() => loadBoard(true), 400);
       return () => clearTimeout(tId);
     }
+    // Profile ikibadilika (mkoa/masomo/kada ya mtumiaji) → board ijirefresh yenyewe
+    if (latest.topic === 'user.profile_updated') {
+      bustGetCache();
+      setPage(1);
+      const tId = setTimeout(() => loadBoard(true), 300);
+      return () => clearTimeout(tId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length, soundOn]);
 
@@ -181,7 +190,8 @@ export default function DashboardBoard() {
     setRegionSel(watchedIds.length > 0 ? '__all__' : '');
     setDistrictId(undefined);
     setFacilityId(undefined);
-    setSubjectMatch(false);
+    setSubjectFilter('off');
+    setSubjectQ('');
   };
 
   const currentRegionName = useMemo(() => {
@@ -343,25 +353,33 @@ export default function DashboardBoard() {
             )}
           </div>
 
-          {/* Toggle ya masomo — mtu anaona idara yake wote; ON = wenye masomo yanayofanana tu */}
+          {/* Kichujio cha masomo — wote / yote mawili / moja / wasio match + search */}
           {isEdu && (
-            <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => { setSubjectMatch((v) => !v); setPage(1); }}
-                aria-pressed={subjectMatch}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold transition ${
-                  subjectMatch
-                    ? 'border-brand-gold bg-brand-gold-100 text-brand-gold-600'
-                    : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-gold'
-                }`}
-              >
-                <span className={`w-7 h-4 rounded-full relative transition ${subjectMatch ? 'bg-brand-gold' : 'bg-brand-grey-300'}`}>
-                  <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${subjectMatch ? 'left-3.5' : 'left-0.5'}`} />
-                </span>
-                {subjectMatch ? t('board.subject_match_on') : t('board.subject_match_off')}
-              </button>
-              <span className="text-[11px] text-brand-grey-400">{t('board.subject_match_hint')}</span>
+            <div className="mt-2.5 space-y-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-semibold text-brand-grey-500 dark:text-brand-grey-400 mr-1">{t('board.subjects')}:</span>
+                {([['off', t('board.subj_off')], ['all', t('board.subj_all')], ['any', t('board.subj_any')], ['none', t('board.subj_none')]] as const).map(([val, label]) => (
+                  <button
+                    key={val} type="button"
+                    onClick={() => { setSubjectFilter(val); setPage(1); }}
+                    aria-pressed={subjectFilter === val}
+                    className={`px-2.5 py-1 rounded-full border text-[11px] font-semibold transition ${
+                      subjectFilter === val
+                        ? 'border-brand-gold bg-brand-gold text-white'
+                        : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-gold dark:border-brand-grey-600 dark:text-brand-grey-300'
+                    }`}
+                  >{label}</button>
+                ))}
+              </div>
+              <div className="flex items-center gap-1.5 max-w-sm">
+                <span className="text-brand-grey-400 text-sm">🔍</span>
+                <input
+                  className="input text-xs py-1.5"
+                  placeholder={t('board.subj_search_ph')}
+                  value={subjectQ}
+                  onChange={(e) => { setSubjectQ(e.target.value); setPage(1); }}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -425,7 +443,7 @@ export default function DashboardBoard() {
               simu ya kawaida = 2 col, desktop = 3 col. Hakuna kujibana tena! */}
           <div className="grid grid-cols-[repeat(auto-fit,minmax(165px,1fr))] gap-2.5 md:gap-3">
             {pageItems.map((c: any) => (
-              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} />
+              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} me={user as any} />
             ))}
           </div>
 
@@ -452,7 +470,7 @@ export default function DashboardBoard() {
   );
 }
 
-function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[] }) {
+function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any }) {
   const t = useT();
   const initial = getInitial(c.full_name);
   const from = c.current_station;
@@ -469,6 +487,27 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
     if (!c.phone_primary) return;
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
+  }
+
+  // Ujumbe wa SMS/WhatsApp ulioandaliwa — taarifa za kutambulishana.
+  const introMsg = useMemo(() => {
+    const myName = me?.full_name || '';
+    const myCadre = me?.cadre_display || me?.cadre_code || '';
+    const myRegion = me?.current_station?.region_name || '';
+    const theirSubjects = (c.subjects || []).join(', ');
+    const role = c.category === 'education' ? t('label.category_education') : t('label.category_health');
+    return `Habari ${c.full_name}, wewe ni ${role}${theirSubjects ? ` wa masomo ${theirSubjects}` : ''}. Mimi ni ${myName}${myCadre ? `, ${myCadre}` : ''}${myRegion ? `, niko ${myRegion}` : ''}. Naomba kujadili kubadilishana vituo.`;
+  }, [c, me, t]);
+
+  function onSMS() {
+    if (!c.phone_primary) return;
+    window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
+  }
+
+  function onWhatsApp() {
+    if (!c.phone_primary) return;
+    const digits = c.phone_primary.replace(/\D/g, '').replace(/^0/, '255');
+    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
 
   return (
@@ -538,6 +577,13 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
           📞 {c.phone_primary}
         </a>
       )}
+      {c.phone_alt && (
+        <a href={`https://wa.me/${c.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}?text=${encodeURIComponent(introMsg)}`}
+          target="_blank" rel="noreferrer"
+          className="text-xs sm:text-sm text-green-600 font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
+          🟢 {t('board.whatsapp_num')} {c.phone_alt}
+        </a>
+      )}
 
       <div className="text-[11px] font-medium text-brand-grey-400" title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
         🕐 {ago}{stamp ? ` · ${stamp}` : ''}
@@ -547,7 +593,16 @@ function BoardCard({ c, now, lang, mySubjects }: { c: any; now: number; lang: 's
         <Link href={`/chats/${c.user_id}`} className="btn-primary text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 text-center min-w-0">
           💬 <span className="hidden min-[360px]:inline">{t('dash.chat')}</span>
         </Link>
-        <button onClick={onCall} disabled={!c.phone_primary} className="btn-accent text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0">
+        <button onClick={onSMS} disabled={!c.phone_primary} className="btn-outline text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0"
+          title={t('board.sms_btn')}>
+          ✉️ <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
+        </button>
+        <button onClick={onWhatsApp} disabled={!c.phone_primary} className="btn-accent text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 bg-green-600 hover:bg-green-700"
+          title={t('board.wa_btn')}>
+          🟢 <span className="hidden min-[360px]:inline">{t('board.wa_btn')}</span>
+        </button>
+        <button onClick={onCall} disabled={!c.phone_primary} className="btn-accent text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0"
+          title={t('dash.call')}>
           📞 <span className="hidden min-[360px]:inline">{t('dash.call')}</span>
         </button>
       </div>

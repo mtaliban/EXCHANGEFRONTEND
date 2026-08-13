@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, bustGetCache, type Region, type District, type Subject, type Facility, type Station, type Destination } from '@/lib/api';
+import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, getCadres, bustGetCache, type Region, type District, type Subject, type Facility, type Cadre, type Station, type Destination } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 
@@ -130,7 +130,7 @@ function ViewProfile({ profile }: any) {
           <Row label={t('label.phone')} value={profile.phone_primary} />
           {profile.phone_alt && <Row label={t('profile.alt_phone')} value={profile.phone_alt} />}
           <Row label={t('label.category')} value={profile.category === 'health' ? t('label.category_health') : t('label.category_education')} />
-          <Row label={t('label.cadre')} value={profile.cadre_display} />
+          <Row label={t('label.cadre')} value={profile.cadre_display || profile.cadre_code} />
           {profile.subjects?.length > 0 && <Row label={t('label.subjects')} value={profile.subjects.join(', ')} />}
         </div>
       </div>
@@ -167,6 +167,8 @@ function EditProfile({ profile, onSaved }: any) {
   const [phone_alt, setPhoneAlt] = useState(profile.phone_alt || '');
   const [subjects, setSubjects] = useState<string[]>(profile.subjects || []);
   const [availSubjects, setAvailSubjects] = useState<Subject[]>([]);
+  const [cadre_code, setCadreCode] = useState<string>(profile.cadre_code || '');
+  const [availCadres, setAvailCadres] = useState<Cadre[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -182,21 +184,32 @@ function EditProfile({ profile, onSaved }: any) {
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
   const category = profile.category as 'health' | 'education';
-  const cadre = profile.cadre_code || '';
   // Walimu wote wa ELIMU wanaweza kuchagua masomo (Msingi kwa kada za
   // TEACHER_PRIMARY/TEACHER_SPECIAL, Sekondari kwa TEACHER_SECONDARY).
+  const currentCadre = availCadres.find((c) => c.code === cadre_code);
   const subjectLevel: 'Primary' | 'Secondary' | undefined =
     category !== 'education' ? undefined
-      : cadre === 'TEACHER_SECONDARY' ? 'Secondary'
-        : cadre === 'TEACHER_PRIMARY' || cadre === 'TEACHER_SPECIAL' ? 'Primary'
+      : currentCadre?.level === 'Secondary' ? 'Secondary'
+        : currentCadre?.level === 'Primary' ? 'Primary'
           : undefined;
 
   useEffect(() => {
     getRegions().then(setRegions);
+    getCadres(category).then((cs) => {
+      setAvailCadres(cs);
+      if (!cs.find((c) => c.code === cadre_code)) setCadreCode('');
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
+  useEffect(() => {
     if (category === 'education' && subjectLevel) {
       getSubjects(subjectLevel).then(setAvailSubjects);
+      // Kada/level ilibadilika → masomo ya level ya kale hayafai tena
+      setSubjects((prev) => prev); // weka; user atachagua upya kama anahitaji
+    } else {
+      setAvailSubjects([]);
     }
-  }, [category, cadre, subjectLevel]);
+  }, [category, cadre_code, subjectLevel]);
   useEffect(() => { if (region_id) getDistricts(region_id).then(setDistricts); }, [region_id]);
   useEffect(() => { if (district_id) getFacilities(district_id, category, subjectLevel).then(setFacilities).catch(() => setFacilities([])); }, [district_id, category, subjectLevel]);
   useEffect(() => {
@@ -239,6 +252,7 @@ function EditProfile({ profile, onSaved }: any) {
         phone_primary: phone_primary || undefined,
         phone_alt: phone_alt || null,
         subjects: subjects.length ? subjects : [],
+        cadre_code: cadre_code || undefined,
         current_station: station as any,
         desired_destinations: dests.length ? dests : undefined,
       });
@@ -286,8 +300,19 @@ function EditProfile({ profile, onSaved }: any) {
       <div className="card space-y-3">
         <h3 className="font-bold">{t('profile.identity')}</h3>
         <div><label className="label">{t('label.name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
-        <div><label className="label">{t('label.phone')}</label><input className="input" value={phone_primary} onChange={(e) => setPhonePrimary(e.target.value)} inputMode="tel" /></div>
-        <div><label className="label">{t('profile.alt_phone')}</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder={t('msg.optional')} /></div>
+        <div><label className="label">{t('profile.phone_normal')}</label><input className="input" value={phone_primary} onChange={(e) => setPhonePrimary(e.target.value)} inputMode="tel" /></div>
+        <div><label className="label">{t('profile.phone_whatsapp')}</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder={t('msg.optional')} /></div>
+        {category === 'education' && (
+          <div>
+            <label className="label">{t('label.cadre')}</label>
+            <select className="input" value={cadre_code} onChange={(e) => { setCadreCode(e.target.value); setSubjects([]); }}>
+              <option value="">{t('profile.choose_cadre')}</option>
+              {availCadres.map((c) => (
+                <option key={c.code} value={c.code}>{c.display_name}</option>
+              ))}
+            </select>
+          </div>
+        )}
         {category === 'education' && subjectLevel && (
           <div>
             <label className="label">{t('label.subjects')} ({subjectLevel === 'Primary' ? t('step2.primary') : t('step2.secondary')})</label>

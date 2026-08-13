@@ -76,14 +76,16 @@ export default function Step1Identity({ initial, onNext }: Props) {
       </div>
 
       <div>
-        <label className="label">{t('step1.phone')} *</label>
-        <input className="input" value={phone_primary} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" required />
+        <label className="label">📞 {t('step1.phone_normal')} *</label>
+        <input className="input" value={phone_primary} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" />
+        <p className="text-[11px] text-brand-grey-400 mt-0.5">{t('step1.phone_normal_hint')}</p>
         {errors.phone_primary && <p className="text-brand-red text-xs mt-1">{errors.phone_primary}</p>}
       </div>
 
       <div>
-        <label className="label">{t('step1.phone_alt')} ({t('msg.optional')})</label>
+        <label className="label">🟢 {t('step1.phone_whatsapp')} ({t('msg.optional')})</label>
         <input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" />
+        <p className="text-[11px] text-brand-grey-400 mt-0.5">{t('step1.phone_whatsapp_hint')}</p>
         {errors.phone_alt && <p className="text-brand-red text-xs mt-1">{errors.phone_alt}</p>}
       </div>
 

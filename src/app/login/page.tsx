@@ -185,22 +185,14 @@ export default function LoginPage() {
           {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
 
           <button type="submit" disabled={loading} className="btn-primary w-full">
-            {loading ? t('login.logging_in') : (isEmail ? t('login.admin_login') : t('login.submit'))}
+            {loading ? t('login.logging_in') : t('login.submit')}
           </button>
         </form>
 
-        {/* ═══ 2FA: code ya uthibitisho iliyotumwa kwa EMAIL ═══ */}
+        {/* ═══ 2FA: PIN pekee — hakuna maneno mengi, weka code tu ═══ */}
         {twoFA && (
           <div className="mt-5 border-t border-brand-grey-100 pt-4">
             <form onSubmit={onTwoFASubmit} className="space-y-3 mt-3">
-              <div className="flex items-center gap-2 text-sm font-bold text-brand-grey-900">
-                <span className="w-8 h-8 rounded-full bg-brand-orange-50 text-brand-orange flex items-center justify-center text-base">🔐</span>
-                {t('login.twofa_title')}
-              </div>
-              <p className="text-xs text-brand-grey-500 leading-relaxed">
-                {t('login.twofa_prompt')} <span className="font-semibold text-brand-grey-700">{twoFA.email}</span>.
-                {twoFA.message && <span className="block mt-1 text-brand-grey-400">{twoFA.message}</span>}
-              </p>
               {twoFA.devCode && (
                 <div className="bg-brand-orange-50 border border-brand-orange-200 rounded-lg p-3 text-center">
                   <div className="text-[11px] font-bold text-brand-orange uppercase tracking-wide">Code yako (SMTP haijasanidiwa — weka email kwenye Mipangilio)</div>
