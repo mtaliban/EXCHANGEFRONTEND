@@ -11,7 +11,9 @@ export default function AdminAnnouncementsPage() {
   const [message, setMessage] = useState('');
   const [audience, setAudience] = useState('all');
   const [targetUser, setTargetUser] = useState('');
+  const [targetUserId, setTargetUserId] = useState('');
   const [targetName, setTargetName] = useState('');
+  const [results, setResults] = useState<any[] | null>(null);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [list, setList] = useState<any[]>([]);
@@ -29,11 +31,18 @@ export default function AdminAnnouncementsPage() {
   async function findUser() {
     if (!targetUser.trim()) return;
     try {
-      const d = await adminUsers({ q: targetUser.trim(), limit: 5 });
-      const u = d.users?.[0];
-      if (u) { setTargetUser(u.phone_primary); setTargetName(`${u.full_name} (${u.phone_primary})`); }
-      else setTargetName(t('ann.not_found'));
+      const d = await adminUsers({ q: targetUser.trim(), limit: 10 });
+      const users = d.users || [];
+      setResults(users);
+      setTargetName(users.length === 0 ? t('ann.not_found') : '');
     } catch { setTargetName(t('ann.search_error')); }
+  }
+
+  function pickUser(u: any) {
+    // Hifadhi _id (ObjectId) — backend inahitaji hiyo, sio namba ya simu!
+    setTargetUserId(u._id);
+    setTargetName(`${u.full_name} (${u.phone_primary})`);
+    setResults(null);
   }
 
   async function submit() {
@@ -43,10 +52,10 @@ export default function AdminAnnouncementsPage() {
       const res = await sendAnnouncement({
         title: title.trim(), message: message.trim(),
         audience,
-        target_user_id: audience === 'user' ? targetUser : undefined,
+        target_user_id: audience === 'user' ? targetUserId : undefined,
       });
       setResult(`✅ ${t('ann.sent')} ${res.sent_to}`);
-      setTitle(''); setMessage(''); setTargetName('');
+      setTitle(''); setMessage(''); setTargetName(''); setTargetUserId(''); setResults(null);
       reload();
     } catch (e: any) {
       setResult(`❌ ${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
@@ -98,16 +107,30 @@ export default function AdminAnnouncementsPage() {
         </div>
 
         {audience === 'user' && (
-          <div className="flex gap-2">
-            <input className={`${inputCls} flex-1`}
-              value={targetUser} onChange={(e) => setTargetUser(e.target.value)} placeholder={t('ann.search_ph')} />
-            <button onClick={findUser}
-              className="px-4 py-2 rounded-lg border border-brand-grey-300 dark:border-brand-grey-700 text-brand-grey-700 dark:text-brand-grey-300 hover:border-brand-blue transition text-sm">
-              {t('ann.search')}
-            </button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input className={`${inputCls} flex-1`}
+                value={targetUser} onChange={(e) => { setTargetUser(e.target.value); setResults(null); }} placeholder={t('ann.search_ph')} />
+              <button onClick={findUser}
+                className="px-4 py-2 rounded-lg border border-brand-grey-300 dark:border-brand-grey-700 text-brand-grey-700 dark:text-brand-grey-300 hover:border-brand-blue transition text-sm">
+                {t('ann.search')}
+              </button>
+            </div>
+            {results && results.length > 0 && (
+              <div className="border border-brand-grey-200 dark:border-brand-grey-700 rounded-lg divide-y divide-brand-grey-100 dark:divide-brand-grey-700 overflow-hidden">
+                {results.map((u: any) => (
+                  <button key={u._id} onClick={() => pickUser(u)}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-brand-blue-50 dark:hover:bg-brand-grey-800 transition flex items-center justify-between gap-2">
+                    <span className="font-medium">{u.full_name}</span>
+                    <span className="text-xs text-brand-grey-500">{u.phone_primary} · {u.cadre_code}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {results && results.length === 0 && <div className="text-xs text-brand-orange">{t('ann.not_found')}</div>}
+            {targetName && !results && <div className="text-xs text-green-600">✓ {targetName}</div>}
           </div>
         )}
-        {targetName && <div className="text-xs text-brand-orange">{targetName}</div>}
 
         <div className="flex items-center gap-3">
           <button onClick={submit} disabled={sending || !title.trim() || !message.trim()}

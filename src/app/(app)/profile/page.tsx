@@ -75,14 +75,6 @@ function ViewAdminProfile({ profile }: any) {
           <Row label={t('admin.role')} value="Administrator 👑" />
         </div>
       </div>
-      <div className="card">
-        <h3 className="font-bold text-brand-grey-900 mb-3">🛡️ {t('profile.security')}</h3>
-        <p className="text-sm text-brand-grey-500 leading-relaxed">{t('profile.security_hint')}</p>
-        <ul className="mt-2 space-y-1 text-xs text-brand-grey-500">
-          <li>• {t('profile.security_2fa')}</li>
-          <li>• {t('profile.security_email')}</li>
-        </ul>
-      </div>
     </>
   );
 }

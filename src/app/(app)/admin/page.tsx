@@ -463,34 +463,112 @@ function MatchesTab() {
   );
 }
 
+// Mambo yanayojulikana kuhusu aina za events — kwa jedwali safi (sio JSON).
+function humanizeEvent(payload: any, type: string): string {
+  if (!payload) return '';
+  const name = payload.full_name || payload.user_name || payload.candidate?.full_name || '';
+  const parts: string[] = [];
+  if (name) parts.push(`👤 ${name}`);
+  if (payload.by_name) parts.push(`👤 ${payload.by_name}`);
+  if (payload.cadre_display) parts.push(`· ${payload.cadre_display}`);
+  if (payload.current_station?.region_name) parts.push(`· kutoka ${payload.current_station.district_name || ''} ${payload.current_station.region_name}`.replace(/\s+/g, ' '));
+  const dest = payload.desired_destinations?.[0];
+  if (dest) parts.push(`· kwenda ${dest.district_name || dest.region_name}`);
+  if (type === 'match.found') parts.push('· match ✓');
+  if (type === 'call.initiated') parts.push('· simu');
+  if (type === 'donation.approved' || type === 'payment.paid') parts.push(`· TZS ${payload.amount ?? ''}`);
+  if (payload.email) parts.push(`· ${payload.email}`);
+  if (payload.kind && payload.item) {
+    const item = payload.item;
+    parts.push(`· ${payload.kind}: ${item.name || item.code || item.id || ''} ${payload.action}`);
+  }
+  return parts.join(' ');
+}
+
 function EventsTab() {
   const t = useT();
   const [data, setData] = useState<any>(null);
   const [type, setType] = useState('');
-  useEffect(() => { adminEvents(type || undefined, 100).then(setData); }, [type]);
+  const [liveAt, setLiveAt] = useState<number | null>(null);
+  const typeRef = useRef(type);
+  typeRef.current = type;
+
+  // bypass=true wakati kichujio kimechaguliwa → dropdown ibadilike mara moja
+  // na data FRESH (usiache cache ya zamani ionekane).
+  useEffect(() => { adminEvents(type || undefined, 50, 0, !!type).then(setData); }, [type]);
+
+  // LIVE: events mpya zinaingia juu bila refresh (event-driven, kama WhatsApp).
+  useLiveStatsRefresh((ev) => {
+    setLiveAt(Date.now());
+    setData((prev: any) => {
+      if (!prev || !ev || !ev._id) return prev;
+      if (prev.events.some((e: any) => e._id === ev._id)) return prev;
+      if (typeRef.current && ev.event_type !== typeRef.current) return prev; // kichujio — ondoa isiyohusika
+      return { ...prev, events: [ev, ...prev.events].slice(0, 100), total: typeRef.current ? prev.total : prev.total + 1 };
+    });
+  });
+  useEffect(() => {
+    if (!liveAt) return;
+    const id = setTimeout(() => setLiveAt((prev) => (prev && Date.now() - prev > 10000 ? null : prev)), 10000);
+    return () => clearTimeout(id);
+  }, [liveAt]);
+
+  const EV_TYPES = [
+    'user.registered', 'user.profile_updated', 'user.station_changed', 'user.destination_changed',
+    'user.updated_by_admin', 'user.deleted', 'match.found', 'call.initiated', 'payment.paid',
+    'donation.approved', 'donation.rejected', 'announcement.sent',
+    'data.department_added', 'data.department_updated', 'data.department_deleted',
+    'data.subject_added', 'data.subject_updated', 'data.subject_deleted',
+    'data.cadre_added', 'data.cadre_updated', 'data.cadre_deleted',
+    'data.region_added', 'data.region_updated', 'data.region_deleted',
+    'data.district_added', 'data.district_updated', 'data.district_deleted',
+    'data.facility_added', 'data.facility_updated', 'data.facility_deleted',
+  ];
+
   return (
     <div className="space-y-3">
-      <select className="input" value={type} onChange={(e) => setType(e.target.value)}>
-        <option value="">{t('admin.all_events')}</option>
-        <option value="user.registered">user.registered</option>
-        <option value="user.profile_updated">user.profile_updated</option>
-        <option value="user.destination_changed">user.destination_changed</option>
-        <option value="match.found">match.found</option>
-        <option value="donation.approved">donation.approved</option>
-        <option value="call.initiated">call.initiated</option>
-      </select>
+      <div className="flex items-center gap-2 flex-wrap">
+        <select className="input w-auto" value={type} onChange={(e) => setType(e.target.value)}>
+          <option value="">{t('admin.all_events')}</option>
+          {EV_TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
+        </select>
+        <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${liveAt ? 'bg-green-50 text-green-600 border-green-300' : 'bg-brand-grey-50 text-brand-grey-400 border-brand-grey-200'}`}>
+          <span className={`w-2 h-2 rounded-full ${liveAt ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-300'}`} />
+          {t('adminevents.live')}
+        </span>
+      </div>
       <div className="text-xs text-brand-grey-500">{t('admin.total')} {data?.total ?? '...'}</div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden">
-        {data?.events?.map((e: any) => (
-          <div key={e._id} className="p-3 border-b border-brand-grey-100 text-xs">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="badge-gold">{e.event_type}</span>
-              <span className="text-brand-grey-500">{e.topic}</span>
-              <span className="ml-auto text-brand-grey-400">{(parseServerDate(e.occurred_at) || new Date()).toLocaleString('sw-TZ')}</span>
-            </div>
-            <div className="text-brand-grey-500 font-mono truncate">{JSON.stringify(e.payload)}</div>
-          </div>
-        ))}
+      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
+          <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
+            <tr>
+              <th className="px-3 py-2 text-left">{t('adminevents.type')}</th>
+              <th className="px-3 py-2 text-left">{t('adminevents.details')}</th>
+              <th className="px-3 py-2 text-left">{t('adminevents.time')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-brand-grey-100">
+            {data?.events?.length === 0 && (
+              <tr><td colSpan={3} className="p-6 text-center text-sm text-brand-grey-500">{t('adminevents.empty')}</td></tr>
+            )}
+            {data?.events?.map((e: any) => (
+              <tr key={e._id} className="hover:bg-brand-grey-50 align-top">
+                <td className="px-3 py-2 whitespace-nowrap">
+                  <span className="inline-block text-[10px] font-bold px-2 py-1 rounded-full bg-brand-gold-100 text-brand-gold-600">{e.event_type}</span>
+                </td>
+                <td className="px-3 py-2 min-w-0 max-w-[360px]">
+                  <span className="block text-sm text-brand-grey-800 truncate" title={humanizeEvent(e.payload, e.event_type)}>
+                    {humanizeEvent(e.payload, e.event_type) || (e.topic || '')}
+                  </span>
+                  <span className="block text-[11px] text-brand-grey-400 mt-0.5 truncate">{e.topic}</span>
+                </td>
+                <td className="px-3 py-2 text-xs text-brand-grey-500 whitespace-nowrap">
+                  {(parseServerDate(e.occurred_at) || new Date()).toLocaleString('sw-TZ')}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
