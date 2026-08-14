@@ -25,12 +25,12 @@ export default function ContactPage() {
         <div className="card">
           <div className="w-12 h-12 rounded-xl bg-brand-red-100 text-brand-red flex items-center justify-center text-2xl mb-4">📧</div>
           <h3 className="font-bold text-brand-grey-900 mb-1">{t('contact.email')}</h3>
-          <p className="text-brand-grey-700">info@kubadilishanavituo.tz</p>
+          <a href="mailto:Hamisiselemani039@gmail.com" className="text-brand-blue hover:underline break-all">Hamisiselemani039@gmail.com</a>
         </div>
         <div className="card">
           <div className="w-12 h-12 rounded-xl bg-brand-gold-100 text-brand-gold-600 flex items-center justify-center text-2xl mb-4">📍</div>
           <h3 className="font-bold text-brand-grey-900 mb-1">{t('contact.office')}</h3>
-          <p className="text-brand-grey-700">Dar es Salaam, Tanzania</p>
+          <p className="text-brand-grey-700">Dodoma, Ng&apos;ong&apos;onha — UDOM</p>
         </div>
       </div>
     </div>

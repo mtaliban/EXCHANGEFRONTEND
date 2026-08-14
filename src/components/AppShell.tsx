@@ -264,26 +264,33 @@ function WsStatus() {
   );
 }
 
-/** Language switcher — MANENO YA WAZI: mtu anapoingia anaona kabisa kwamba
- *  hapa anabadilisha LUGHA (sio icon pekee). */
+/** Language switcher — BUTTONS MBILI WAZI: "Kiswahili" na "English".
+ *  Kila moja inaweka lugha yake MOJA KWA MOJA (setLang) — hakuna toggle
+ *  inayoweza kuchanganya. Inayotumika sasa inaonekana wazi (rangi). */
 function LangToggle() {
   const currentLang = useI18n((s) => s.lang);
-  const toggleLang = useI18n((s) => s.toggle);
+  const setLang = useI18n((s) => s.setLang);
   return (
-    <button
-      onClick={toggleLang}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 hover:bg-brand-blue-50 text-brand-blue dark:hover:bg-brand-blue-100/40 border border-brand-blue/30"
-      title="Badilisha lugha / Switch language"
-      aria-label="Badilisha lugha"
-    >
-      <Languages size={15} strokeWidth={2.2} />
-      <span className="hidden min-[380px]:inline">
-        {currentLang === 'sw' ? 'Badilisha Lugha · English' : 'Switch Language · Kiswahili'}
-      </span>
-      <span className="min-[380px]:hidden">
-        {currentLang === 'sw' ? 'EN' : 'SW'}
-      </span>
-    </button>
+    <div className="flex items-center gap-1 rounded-lg border border-brand-blue/30 p-0.5 flex-shrink-0" title="Badilisha lugha / Switch language">
+      <button
+        onClick={() => setLang('sw')}
+        aria-pressed={currentLang === 'sw'}
+        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold transition ${
+          currentLang === 'sw' ? 'bg-brand-blue text-white' : 'text-brand-blue hover:bg-brand-blue-50'
+        }`}
+      >
+        🇹🇿 Kiswahili
+      </button>
+      <button
+        onClick={() => setLang('en')}
+        aria-pressed={currentLang === 'en'}
+        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold transition ${
+          currentLang === 'en' ? 'bg-brand-blue text-white' : 'text-brand-blue hover:bg-brand-blue-50'
+        }`}
+      >
+        🇬🇧 English
+      </button>
+    </div>
   );
 }
 

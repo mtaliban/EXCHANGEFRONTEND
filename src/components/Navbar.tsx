@@ -24,7 +24,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const { token } = useAuth();
   const t = useT();
-  const toggleLang = useI18n((s) => s.toggle);
+  const setLang = useI18n((s) => s.setLang);
   const currentLang = useI18n((s) => s.lang);
 
   useEffect(() => { setMounted(true); }, []);
@@ -68,14 +68,22 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <button
-              onClick={toggleLang}
-              className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-md border border-brand-grey-200 hover:bg-brand-grey-50 text-brand-grey-700 transition"
-              title={t('lang.toggle_title')}
-            >
-              <Languages size={14} />
-              {currentLang === 'sw' ? 'Badilisha Lugha · English' : 'Switch Language · Kiswahili'}
-            </button>
+            <div className="flex items-center gap-1 rounded-lg border border-brand-grey-200 p-0.5" title={t('lang.toggle_title')}>
+              <button
+                onClick={() => setLang('sw')}
+                aria-pressed={currentLang === 'sw'}
+                className={`px-2 py-1 rounded-md text-[11px] font-bold transition ${currentLang === 'sw' ? 'bg-brand-blue text-white' : 'text-brand-grey-700 hover:bg-brand-grey-50'}`}
+              >
+                🇹🇿 Kiswahili
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                aria-pressed={currentLang === 'en'}
+                className={`px-2 py-1 rounded-md text-[11px] font-bold transition ${currentLang === 'en' ? 'bg-brand-blue text-white' : 'text-brand-grey-700 hover:bg-brand-grey-50'}`}
+              >
+                🇬🇧 English
+              </button>
+            </div>
             {/* Public pages: Register/Login tu — hakuna buttons za dashibodi/logout.
                 Mtu aliyeshaingia anarudi dashibodi kwa kubofya logo (au /login ina
                 redirect automatic kwa authed users). */}
@@ -84,14 +92,22 @@ export default function Navbar() {
           </div>
 
           <div className="md:hidden flex items-center gap-1">
-            <button
-              onClick={toggleLang}
-              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md border border-brand-grey-200 text-brand-grey-700"
-              title={t('lang.toggle_title')}
-            >
-              <Languages size={15} />
-              {currentLang === 'sw' ? 'Lugha · EN' : 'Lang · SW'}
-            </button>
+            <div className="flex items-center gap-1 rounded-md border border-brand-grey-200 p-0.5" title={t('lang.toggle_title')}>
+              <button
+                onClick={() => setLang('sw')}
+                aria-pressed={currentLang === 'sw'}
+                className={`px-1.5 py-1 rounded text-[10px] font-bold transition ${currentLang === 'sw' ? 'bg-brand-blue text-white' : 'text-brand-grey-700'}`}
+              >
+                SW
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                aria-pressed={currentLang === 'en'}
+                className={`px-1.5 py-1 rounded text-[10px] font-bold transition ${currentLang === 'en' ? 'bg-brand-blue text-white' : 'text-brand-grey-700'}`}
+              >
+                EN
+              </button>
+            </div>
           </div>
           <button
             className="md:hidden p-2 text-brand-grey-700"
