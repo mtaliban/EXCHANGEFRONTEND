@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getCadres, getSubjects, type Cadre, type Subject } from '@/lib/api';
+import { getCadres, getDepartments, getSubjects, type Cadre, type Department, type Subject } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 
 interface Props {
@@ -12,12 +12,31 @@ interface Props {
 
 export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const t = useT();
-  const [category, setCategory] = useState<'health' | 'education' | ''>(initial.category || '');
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [category, setCategory] = useState<string>('');
   const [cadres, setCadres] = useState<Cadre[]>([]);
   const [cadre_code, setCadreCode] = useState<string>(initial.cadre_code || '');
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initial.subjects || []);
   const [error, setError] = useState<string | null>(null);
+
+  // Idara zinapakuliwa KUTOKA server (dynamic) — admin akiongeza idara mpya
+  // inaonekana hapa papo hapo bila kurekebisha code.
+  useEffect(() => {
+    getDepartments()
+      .then((list) => {
+        const active = list.filter((d) => d.status !== 'disabled');
+        setDepartments(active);
+        // Kama idara iliyochaguliwa awali bado ipo, ihifadhi.
+        if (initial.category && active.some((d) => d.code === initial.category)) {
+          setCategory(initial.category);
+        } else if (!category && active.length > 0) {
+          setCategory(active[0].code);
+        }
+      })
+      .catch(() => setError(t('step2.err_load_cadres')));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!category) { setCadres([]); return; }
@@ -25,13 +44,12 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   }, [category]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentCadre = cadres.find((c) => c.code === cadre_code);
-  const isEdu = category === 'education';
   const needsSubjects = currentCadre?.requires_subjects;
-  // Elimu Msingi NA Sekondari wote wachague masomo (msingi = hiari, sekondari = lazima)
-  const showSubjects = !!currentCadre && (isEdu || !!needsSubjects);
-  // Mwalimu wa Msingi anaona masomo ya Msingi; sekondari anaona ya sekondari.
+  // Kada yenye kiwango (Primary/Secondary) = ya elimu — inahitaji masomo.
   const subjectLevel: 'Primary' | 'Secondary' | undefined =
     currentCadre?.level === 'Primary' ? 'Primary' : currentCadre?.level === 'Secondary' ? 'Secondary' : undefined;
+  // Elimu Msingi NA Sekondari wote wachague masomo (msingi = hiari, sekondari = lazima)
+  const showSubjects = !!currentCadre && (!!subjectLevel || !!needsSubjects);
 
   // Masomo lazima yalingane na kiwango cha kada: mwalimu wa SEKONDARI anaona
   // masomo ya Sekondari; wa MSINGI anaona masomo ya Msingi. Kada ikiingia
@@ -76,24 +94,17 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       <div>
         <label className="label">{t('step2.department')} *</label>
         <div className="grid grid-cols-2 gap-3">
-          <button type="button"
-            onClick={() => { setCategory('health'); setCadreCode(''); }}
-            className={`p-4 rounded-xl border-2 font-semibold transition ${
-              category === 'health'
-                ? 'border-brand-blue bg-brand-blue-50 text-brand-blue'
-                : 'border-brand-grey-200 bg-white text-brand-grey-700 hover:border-brand-blue'
-            }`}>
-            {t('step2.health')}
-          </button>
-          <button type="button"
-            onClick={() => { setCategory('education'); setCadreCode(''); }}
-            className={`p-4 rounded-xl border-2 font-semibold transition ${
-              category === 'education'
-                ? 'border-brand-orange bg-brand-orange-50 text-brand-orange'
-                : 'border-brand-grey-200 bg-white text-brand-grey-700 hover:border-brand-orange'
-            }`}>
-            {t('step2.education')}
-          </button>
+          {departments.map((d) => (
+            <button key={d.code} type="button"
+              onClick={() => { setCategory(d.code); setCadreCode(''); }}
+              className={`p-4 rounded-xl border-2 font-semibold transition ${
+                category === d.code
+                  ? 'border-brand-blue bg-brand-blue-50 text-brand-blue'
+                  : 'border-brand-grey-200 bg-white text-brand-grey-700 hover:border-brand-blue'
+              }`}>
+              {d.icon ? `${d.icon} ` : ''}{d.name}
+            </button>
+          ))}
         </div>
       </div>
 

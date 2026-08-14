@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
+  adminListDepartments, adminAddDepartment, adminUpdateDepartment, adminDeleteDepartment,
   adminListSubjects, adminAddSubject, adminUpdateSubject, adminDeleteSubject,
   adminListCadres, adminAddCadre, adminUpdateCadre, adminDeleteCadre,
   adminListRegions, adminAddRegion, adminUpdateRegion, adminDeleteRegion,
@@ -12,7 +13,7 @@ import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 
-type Tab = 'subjects' | 'cadres' | 'regions' | 'districts' | 'facilities';
+type Tab = 'departments' | 'subjects' | 'cadres' | 'regions' | 'districts' | 'facilities';
 
 /** Pata ujumbe wa kosa la API (ikiwa lipo) — modal isiwe "inabaki inaload". */
 async function errText(e: any): Promise<string> {
@@ -125,14 +126,15 @@ export default function AdminDataPage() {
       )}
 
       <div className="flex gap-2 border-b border-brand-grey-200 flex-wrap">
-        {(['subjects', 'cadres', 'regions', 'districts', 'facilities'] as Tab[]).map((tb) => (
+        {(['departments', 'subjects', 'cadres', 'regions', 'districts', 'facilities'] as Tab[]).map((tb) => (
           <button key={tb} onClick={() => setTab(tb)}
             className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${tab === tb ? 'border-brand-blue text-brand-blue' : 'border-transparent text-brand-grey-500 hover:text-brand-grey-900'}`}>
-            {tb === 'subjects' ? t('data.subjects') : tb === 'cadres' ? t('data.cadres') : tb === 'regions' ? t('data.regions') : tb === 'districts' ? t('data.districts') : t('data.facilities')}
+            {tb === 'departments' ? t('data.departments') : tb === 'subjects' ? t('data.subjects') : tb === 'cadres' ? t('data.cadres') : tb === 'regions' ? t('data.regions') : tb === 'districts' ? t('data.districts') : t('data.facilities')}
           </button>
         ))}
       </div>
 
+      {tab === 'departments' && <DepartmentsTab flash={flash} tick={tick} markOwnAction={markOwnAction} />}
       {tab === 'subjects' && <SubjectsTab flash={flash} tick={tick} markOwnAction={markOwnAction} />}
       {tab === 'cadres' && <CadresTab flash={flash} tick={tick} markOwnAction={markOwnAction} />}
       {tab === 'regions' && <RegionsTab flash={flash} tick={tick} markOwnAction={markOwnAction} />}
@@ -174,6 +176,115 @@ function ModalShell({ title, children, onClose, onSave, saveLabel, busy, canSave
         </div>
       </div>
     </div>
+  );
+}
+
+/* ═══ IDARA ═══ */
+function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boolean) => void; tick: number; markOwnAction: () => void }) {
+  const t = useT();
+  const [data, setData] = useState<any[] | null>(null);
+  const [editing, setEditing] = useState<any>(null);
+  const [creating, setCreating] = useState(false);
+
+  async function load() {
+    try { setData(await adminListDepartments(true)); } catch (e) { flash(await errText(e), false); }
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [tick]);
+
+  if (!data) return <div className="p-6"><Spinner /></div>;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2 items-center">
+        <p className="text-xs text-brand-grey-500">{t('data.departments_hint')}</p>
+        <button onClick={() => setCreating(true)} className="btn-primary text-sm">+ {t('data.add_department')}</button>
+      </div>
+      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+        <table className="w-full text-sm min-w-[520px]">
+          <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
+            <tr>
+              <th className="px-3 py-2 text-left">{t('data.code')}</th>
+              <th className="px-3 py-2 text-left">{t('data.name')}</th>
+              <th className="px-3 py-2 text-left">{t('admin.status')}</th>
+              <th className="px-3 py-2 text-left">{t('admin.col_cadre')}</th>
+              <th className="px-3 py-2 text-left">{t('admin.col_users')}</th>
+              <th className="px-3 py-2 text-right">{t('admin.col_actions')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-brand-grey-100">
+            {data.map((d: any) => (
+              <tr key={d.code} className={`hover:bg-brand-grey-50 ${d.status === 'disabled' ? 'opacity-50' : ''}`}>
+                <td className="px-3 py-2 font-mono text-xs">{d.icon ? `${d.icon} ` : ''}{d.code}</td>
+                <td className="px-3 py-2 font-medium">{d.name}</td>
+                <td className="px-3 py-2">
+                  {d.status === 'disabled'
+                    ? <span className="text-xs px-2 py-0.5 rounded bg-brand-red-50 text-brand-red font-semibold">🚫 {t('admin.status_disabled')}</span>
+                    : <span className="text-xs px-2 py-0.5 rounded bg-green-50 text-green-600 font-semibold">● {t('admin.status_active')}</span>}
+                </td>
+                <td className="px-3 py-2 text-xs">—</td>
+                <td className="px-3 py-2 text-xs">—</td>
+                <td className="px-3 py-2 text-right whitespace-nowrap">
+                  <button onClick={() => setEditing(d)} className="text-brand-blue text-xs px-2 hover:underline">✎</button>
+                  {d.code !== 'health' && d.code !== 'education' && (
+                    <button onClick={async () => {
+                      if (!confirm(t('data.confirm_delete'))) return;
+                      try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); load(); }
+                      catch (e: any) { flash(e?.response?.data?.detail || await errText(e), false); }
+                    }} className="text-brand-red text-xs px-2 hover:underline">🗑</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {(editing || creating) && (
+        <DepartmentModal
+          initial={editing || { code: '', name: '', status: 'active', icon: '' }}
+          onClose={() => { setEditing(null); setCreating(false); }}
+          onSaved={async (body) => {
+            try {
+              if (editing) await adminUpdateDepartment(editing.code, body);
+              else await adminAddDepartment(body);
+              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved')); load();
+            } catch (e) { throw e; }
+          }} />
+      )}
+    </div>
+  );
+}
+
+function DepartmentModal({ initial, onClose, onSaved }: { initial: any; onClose: () => void; onSaved: (b: any) => Promise<void> }) {
+  const t = useT();
+  const [code, setCode] = useState(initial.code);
+  const [name, setName] = useState(initial.name);
+  const [status, setStatus] = useState(initial.status || 'active');
+  const [icon, setIcon] = useState(initial.icon || '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <ModalShell
+      title={initial.code ? t('data.edit_department') : t('data.add_department')}
+      onClose={onClose}
+      busy={busy} canSave={!!code && !!name && !busy}
+      saveLabel={t('admin.save')} error={error}
+      onSave={async () => {
+        setBusy(true); setError(null);
+        try {
+          await onSaved({ code: code.trim().toLowerCase(), name, status, icon: icon || undefined });
+        } catch (e) { setError(await errText(e)); }
+        finally { setBusy(false); }
+      }}>
+      <div><label className="label">{t('data.code')}</label><input className="input font-mono lowercase" value={code} onChange={(e) => setCode(e.target.value)} disabled={busy} placeholder="health" /></div>
+      <div><label className="label">{t('data.name')}</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} disabled={busy} placeholder="Afya" /></div>
+      <div><label className="label">{t('data.icon')}</label><input className="input" value={icon} onChange={(e) => setIcon(e.target.value)} disabled={busy} placeholder="🏥" /></div>
+      <div><label className="label">{t('admin.status')}</label>
+        <select className="input" value={status} onChange={(e) => setStatus(e.target.value)} disabled={busy}>
+          <option value="active">{t('admin.status_active')}</option>
+          <option value="disabled">🚫 {t('admin.status_disabled')} ({t('data.department_suspend')})</option>
+        </select>
+      </div>
+    </ModalShell>
   );
 }
 
@@ -312,7 +423,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
               <tr key={c.code} className="hover:bg-brand-grey-50">
                 <td className="px-3 py-2 font-mono text-xs">{c.code}</td>
                 <td className="px-3 py-2 font-medium">{c.display_name}</td>
-                <td className="px-3 py-2 text-xs">{c.category === 'health' ? t('admin.health') : t('admin.education')}</td>
+                <td className="px-3 py-2 text-xs">{c.category === 'health' ? t('admin.health') : c.category === 'education' ? t('admin.education') : c.category}</td>
                 <td className="px-3 py-2 text-xs">{c.level || '-'}</td>
                 <td className="px-3 py-2 text-right">
                   <RowAction onEdit={() => setEditing(c)} onDelete={async () => {
@@ -344,6 +455,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
 
 function CadreModal({ initial, onClose, onSaved }: { initial: any; onClose: () => void; onSaved: (b: any) => Promise<void> }) {
   const t = useT();
+  const [departments, setDepartments] = useState<any[]>([]);
   const [code, setCode] = useState(initial.code);
   const [display_name, setName] = useState(initial.display_name);
   const [category, setCategory] = useState(initial.category);
@@ -351,16 +463,24 @@ function CadreModal({ initial, onClose, onSaved }: { initial: any; onClose: () =
   const [requires_subjects, setReq] = useState(!!initial.requires_subjects);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Idara zinapakuliwa dynamic — idara mpya inaonekana hapa papo hapo.
+  useEffect(() => {
+    adminListDepartments().then(setDepartments).catch(() => {});
+  }, []);
+  // Kada ni ya elimu (ina level Primary/Secondary) → inahitaji masomo.
+  const isEdu = level === 'Primary' || level === 'Secondary';
+
   return (
     <ModalShell
       title={initial.code ? t('data.edit_cadre') : t('data.add_cadre')}
       onClose={onClose}
-      busy={busy} canSave={!!code && !!display_name && !busy}
+      busy={busy} canSave={!!code && !!display_name && !!category && !busy}
       saveLabel={t('admin.save')} error={error}
       onSave={async () => {
         setBusy(true); setError(null);
         try {
-          await onSaved({ code: code.toUpperCase(), display_name, category, level: category === 'education' ? level : null, requires_subjects });
+          await onSaved({ code: code.toUpperCase(), display_name, category, level: isEdu ? level : null, requires_subjects });
         } catch (e) { setError(await errText(e)); }
         finally { setBusy(false); }
       }}>
@@ -368,17 +488,20 @@ function CadreModal({ initial, onClose, onSaved }: { initial: any; onClose: () =
       <div><label className="label">{t('data.name')}</label><input className="input" value={display_name} onChange={(e) => setName(e.target.value)} disabled={busy} /></div>
       <div><label className="label">{t('admin.department')}</label>
         <select className="input" value={category} onChange={(e) => setCategory(e.target.value)} disabled={busy}>
-          <option value="health">{t('admin.health')}</option><option value="education">{t('admin.education')}</option>
+          {departments.length === 0 && <option value="health">{t('admin.health')}</option>}
+          {departments.map((d) => (
+            <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
+          ))}
         </select>
       </div>
-      {category === 'education' && (
-        <div><label className="label">{t('data.level')}</label>
-          <select className="input" value={level} onChange={(e) => setLevel(e.target.value)} disabled={busy}>
-            <option value="Primary">Primary (Msingi)</option>
-            <option value="Secondary">Secondary (Sekondari)</option>
-          </select>
-        </div>
-      )}
+      <div><label className="label">{t('data.level')}</label>
+        <select className="input" value={level} onChange={(e) => setLevel(e.target.value)} disabled={busy}>
+          <option value="">— {t('data.no_level')} —</option>
+          <option value="Primary">Primary (Msingi)</option>
+          <option value="Secondary">Secondary (Sekondari)</option>
+        </select>
+        <p className="text-xs text-brand-grey-400 mt-1">{t('data.level_hint')}</p>
+      </div>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={requires_subjects} onChange={(e) => setReq(e.target.checked)} disabled={busy} /> {t('data.req_subjects')}</label>
     </ModalShell>
   );

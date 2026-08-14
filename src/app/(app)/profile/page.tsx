@@ -189,15 +189,13 @@ function EditProfile({ profile, onSaved }: any) {
   const [error, setError] = useState<string | null>(null);
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
-  const category = profile.category as 'health' | 'education';
-  // Walimu wote wa ELIMU wanaweza kuchagua masomo (Msingi kwa kada za
-  // TEACHER_PRIMARY/TEACHER_SPECIAL, Sekondari kwa TEACHER_SECONDARY).
+  const category = profile.category as string;
+  // Kada yenye level (Primary/Secondary) = ya ualimu → inaweza kuchagua masomo.
   const currentCadre = availCadres.find((c) => c.code === cadre_code);
   const subjectLevel: 'Primary' | 'Secondary' | undefined =
-    category !== 'education' ? undefined
-      : currentCadre?.level === 'Secondary' ? 'Secondary'
-        : currentCadre?.level === 'Primary' ? 'Primary'
-          : undefined;
+    currentCadre?.level === 'Secondary' ? 'Secondary'
+      : currentCadre?.level === 'Primary' ? 'Primary'
+        : undefined;
 
   useEffect(() => {
     getRegions().then(setRegions);
@@ -208,7 +206,7 @@ function EditProfile({ profile, onSaved }: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
   useEffect(() => {
-    if (category === 'education' && subjectLevel) {
+    if (subjectLevel) {
       getSubjects(subjectLevel).then(setAvailSubjects);
       // Kada/level ilibadilika → masomo ya level ya kale hayafai tena
       setSubjects((prev) => prev); // weka; user atachagua upya kama anahitaji
@@ -217,7 +215,7 @@ function EditProfile({ profile, onSaved }: any) {
     }
   }, [category, cadre_code, subjectLevel]);
   useEffect(() => { if (region_id) getDistricts(region_id).then(setDistricts); }, [region_id]);
-  useEffect(() => { if (district_id) getFacilities(district_id, category, subjectLevel).then(setFacilities).catch(() => setFacilities([])); }, [district_id, category, subjectLevel]);
+  useEffect(() => { if (district_id) getFacilities(district_id, (category as 'health' | 'education') || 'health', subjectLevel).then(setFacilities).catch(() => setFacilities([])); }, [district_id, category, subjectLevel]);
   useEffect(() => {
     (destinations || []).forEach((d: any) => {
       if (d.region_id && !destDistricts[d.region_id]) {
@@ -314,7 +312,7 @@ function EditProfile({ profile, onSaved }: any) {
         <div><label className="label">{t('label.name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
         <div><label className="label">{t('profile.phone_normal')}</label><input className="input" value={phone_primary} onChange={(e) => setPhonePrimary(e.target.value)} inputMode="tel" /></div>
         <div><label className="label">🟢 {t('profile.phone_whatsapp')} *</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" /></div>
-        {category === 'education' && (
+        {category && (
           <div>
             <label className="label">{t('label.cadre')}</label>
             <select className="input" value={cadre_code} onChange={(e) => { setCadreCode(e.target.value); setSubjects([]); }}>
@@ -325,7 +323,7 @@ function EditProfile({ profile, onSaved }: any) {
             </select>
           </div>
         )}
-        {category === 'education' && subjectLevel && (
+        {subjectLevel && (
           <div>
             <label className="label">{t('label.subjects')} ({subjectLevel === 'Primary' ? t('step2.primary') : t('step2.secondary')})</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-44 overflow-y-auto">

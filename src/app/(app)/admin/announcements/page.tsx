@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { sendAnnouncement, adminListAnnouncements, adminUsers } from '@/lib/api';
+import { sendAnnouncement, adminListAnnouncements, adminUsers, getDepartments } from '@/lib/api';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 
@@ -15,6 +15,11 @@ export default function AdminAnnouncementsPage() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [list, setList] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
+
+  // Idara zinapakuliwa dynamic — admin akiongeza idara mpya inaonekana hapa
+  // papo hapo (real-time, bila kurekebisha code).
+  useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
 
   async function reload() {
     try { const d = await adminListAnnouncements(); setList(d.announcements); } catch {}
@@ -77,8 +82,7 @@ export default function AdminAnnouncementsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[
               { v: 'all', label: t('ann.aud_all') },
-              { v: 'education', label: t('ann.aud_edu') },
-              { v: 'health', label: t('ann.aud_health') },
+              ...departments.map((d) => ({ v: d.code, label: `${d.icon ? `${d.icon} ` : ''}${d.name}` })),
               { v: 'user', label: t('ann.aud_user') },
             ].map((o) => (
               <button key={o.v} onClick={() => setAudience(o.v)}

@@ -138,6 +138,9 @@ export interface Subject { code: string; name: string; level: string; }
 
 export const getRegions = () =>
   client.get<Region[]>(`${LOC}/locations/regions`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
+export interface Department { code: string; name: string; status: string; icon?: string | null; }
+export const getDepartments = (bypassCache = false) =>
+  client.get<Department[]>(`${LOC}/locations/departments`, { ttl: _STATIC_TTL, bypassCache } as any).then((r) => r.data);
 export const getDistricts = (regionId: number) =>
   client.get<District[]>(`${LOC}/locations/regions/${regionId}/districts`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
 export const getFacilities = (
@@ -151,7 +154,7 @@ export const getFacilities = (
   if (q) params.q = q;
   return client.get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
 };
-export const getCadres = (category?: 'health' | 'education') =>
+export const getCadres = (category?: string) =>
   client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined, ttl: _STATIC_TTL } as any).then((r) => r.data);
 export const getSubjects = (level?: 'Primary' | 'Secondary') =>
   client.get<Subject[]>(`${LOC}/cadres/subjects`, { params: level ? { level } : undefined, ttl: _STATIC_TTL } as any).then((r) => r.data);
@@ -174,7 +177,7 @@ export interface RegisterPayload {
   phone_primary: string;
   phone_alt?: string;
   password: string;
-  category: 'health' | 'education';
+  category: string;
   cadre_code: string;
   subjects: string[];
   current_station: Station;
@@ -329,7 +332,7 @@ export const adminCreateUser = (body: {
   password: string;
   is_admin?: boolean;
   status?: string;
-  category?: 'health' | 'education';
+  category?: string;
   cadre_code?: string;
   subjects?: string[];
   current_station?: Station | null;
@@ -347,7 +350,15 @@ export const adminTrashPurge = (user_id: string) =>
 export const adminTrashPurgeBulk = (user_ids: string[]) =>
   client.delete(`${ADMIN}/admin/users/trash`, { params: { ids: user_ids } }).then((r) => r.data);
 
-/* ── Admin: data management (masomo/kada/mikoa/wilaya) ── */
+/* ── Admin: data management (idara/masomo/kada/mikoa/wilaya/vituo) ── */
+export const adminListDepartments = (bypass = false) =>
+  client.get(`${ADMIN}/admin/data/departments`, { bypassCache: bypass } as any).then((r) => r.data);
+export const adminAddDepartment = (body: { code: string; name: string; status: string; icon?: string }) =>
+  client.post(`${ADMIN}/admin/data/departments`, body).then((r) => r.data);
+export const adminUpdateDepartment = (code: string, body: { code: string; name: string; status: string; icon?: string }) =>
+  client.patch(`${ADMIN}/admin/data/departments/${code}`, body).then((r) => r.data);
+export const adminDeleteDepartment = (code: string) =>
+  client.delete(`${ADMIN}/admin/data/departments/${code}`).then((r) => r.data);
 export const adminListSubjects = (level?: string, bypass = false) =>
   client.get(`${ADMIN}/admin/data/subjects`, { params: level ? { level } : {}, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddSubject = (body: { code: string; name: string; level: string }) =>

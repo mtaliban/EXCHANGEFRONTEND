@@ -5,10 +5,16 @@ import Step2Cadre from '@/components/RegisterWizard/Step2Cadre';
 vi.mock('@/lib/api', () => ({
   getCadres: vi.fn(),
   getSubjects: vi.fn(),
+  getDepartments: vi.fn(),
 }));
 
-import { getCadres, getSubjects } from '@/lib/api';
-import type { Cadre, Subject } from '@/lib/api';
+import { getCadres, getSubjects, getDepartments } from '@/lib/api';
+import type { Cadre, Subject, Department } from '@/lib/api';
+
+const DEPARTMENTS: Department[] = [
+  { code: 'health', name: 'Afya', status: 'active', icon: '🏥' },
+  { code: 'education', name: 'Elimu', status: 'active', icon: '👩🏫' },
+];
 
 const HEALTH_CADRES: Cadre[] = [
   { code: 'CO', category: 'health', display_name: 'Clinical Officer', requires_subjects: false },
@@ -28,15 +34,17 @@ const SUBJECTS: Subject[] = [
 beforeEach(() => {
   vi.mocked(getCadres).mockReset();
   vi.mocked(getSubjects).mockReset();
+  vi.mocked(getDepartments).mockReset();
+  vi.mocked(getDepartments).mockResolvedValue(DEPARTMENTS);
 });
 
 describe('Step2Cadre', () => {
-  it('loads cadres when a department is selected', async () => {
+  it('loads departments from the server and cadres when one is selected', async () => {
     vi.mocked(getCadres).mockResolvedValue(HEALTH_CADRES);
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={() => {}} />);
 
-    fireEvent.click(screen.getByText(/Idara ya Afya/));
-
+    // Idara zinapakuliwa kutoka server (dynamic) — 'Afya' ndiyo ya kwanza, imechaguliwa moja kwa moja.
+    await waitFor(() => expect(getDepartments).toHaveBeenCalled());
     await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health'));
     const select = screen.getByRole('combobox');
     expect(select).toHaveTextContent('Clinical Officer');
@@ -48,7 +56,7 @@ describe('Step2Cadre', () => {
     const onNext = vi.fn();
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
-    fireEvent.click(screen.getByText(/Idara ya Afya/));
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health'));
     // The select is `required`, so native validation blocks a real browser submit.
     // Dispatch the submit event directly to exercise our own validation logic.
     const form = screen.getByText('Endelea →').closest('form')!;
@@ -63,7 +71,7 @@ describe('Step2Cadre', () => {
     const onNext = vi.fn();
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
-    fireEvent.click(screen.getByText(/Idara ya Afya/));
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health'));
     const select = await screen.findByRole('combobox');
     fireEvent.change(select, { target: { value: 'CO' } });
     fireEvent.click(screen.getByText('Endelea →'));
@@ -81,7 +89,8 @@ describe('Step2Cadre', () => {
     const onNext = vi.fn();
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
-    fireEvent.click(screen.getByText(/Idara ya Elimu/));
+    fireEvent.click(await screen.findByRole('button', { name: /Elimu/ }));
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
     const select = await screen.findByRole('combobox');
     fireEvent.change(select, { target: { value: 'TEACHER_SECONDARY' } });
 
@@ -109,7 +118,8 @@ describe('Step2Cadre', () => {
     const onNext = vi.fn();
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
-    fireEvent.click(screen.getByText(/Idara ya Elimu/));
+    fireEvent.click(await screen.findByRole('button', { name: /Elimu/ }));
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
     const select = await screen.findByRole('combobox');
     fireEvent.change(select, { target: { value: 'TEACHER_SECONDARY' } });
 

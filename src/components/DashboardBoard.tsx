@@ -25,7 +25,9 @@ export default function DashboardBoard() {
   const myStation = (user?.current_station || {}) as any;
   const dests = (user?.desired_destinations || []) as any[];
   const myCategory = user?.category;
-  const isEdu = myCategory === 'education';
+  // Idara zote isipokuwa 'health' zinachukuliwa kama zinaweza kuwa na masomo
+  // (elimu + idara nyingine zozote mpya).
+  const isEdu = myCategory !== 'health';
 
   // Mikoa anayotaka kwenda (k.m. Dar + Pwani) + mikoa aliyoifuata (k.m. Tanga)
   const destRegionIds = useMemo(
@@ -477,7 +479,7 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
   const createdTs = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? now) : now;
   const ago = timeAgo(createdTs, lang); // Muda wa JUUI: "dakika 2 zilizopita", "jana" — sio saa halisi
   const fresh = now - createdTs < FRESH_MS;
-  const isEdu = c.category === 'education';
+  const isEdu = c.category !== 'health';
   // SOMO MOJA likifanana → mtu huyu ni "match" wa masomo — chips zote dhahabu
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
 

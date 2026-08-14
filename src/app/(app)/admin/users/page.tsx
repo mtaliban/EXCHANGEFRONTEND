@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
   adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
-  register, getRegions, getDistricts, getFacilities, getCadres, getSubjects,
+  register, getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
 import { API_URL } from '@/lib/config';
@@ -392,20 +392,21 @@ export default function AdminUsersPage() {
 }
 
 /** Subject picker — inachagua masomo kwa kiwango cha kada (Msingi/Sekondari). */
-function SubjectPicker({ category, cadreCode, value, onChange, cadres }: {
-  category: string; cadreCode: string; value: string[];
+function SubjectPicker({ cadreCode, value, onChange, cadres }: {
+  cadreCode: string; value: string[];
   onChange: (v: string[]) => void; cadres: Cadre[];
 }) {
   const t = useT();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const cadre = cadres.find((c) => c.code === cadreCode);
-  const level = cadre?.level || (category === 'education' ? 'Secondary' : undefined);
+  // Kada yenye level (Primary/Secondary) = ya ualimu → ina masomo.
+  const level = cadre?.level;
 
   useEffect(() => {
     if (level) getSubjects(level as 'Primary' | 'Secondary').then(setSubjects).catch(() => setSubjects([]));
   }, [level]);
 
-  if (category !== 'education' || !level) return null;
+  if (!level) return null;
 
   return (
     <div className="col-span-2">
@@ -440,9 +441,11 @@ function EditUserModal({ user, onClose, onSaved }: any) {
   const [is_admin, setAdmin] = useState(!!user.is_admin);
   const [new_password, setNewPassword] = useState('');
   const [cadres, setCadres] = useState<Cadre[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { getCadres(category as 'health' | 'education').then(setCadres).catch(() => {}); }, [category]);
+  useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
+  useEffect(() => { getCadres(category).then(setCadres).catch(() => {}); }, [category]);
 
   async function save() {
     setSaving(true);
@@ -483,7 +486,10 @@ function EditUserModal({ user, onClose, onSaved }: any) {
           </div>
           <div><label className="label">{t('admin.department')}</label>
             <select className="input" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }}>
-              <option value="health">{t('admin.health')}</option><option value="education">{t('admin.education')}</option>
+              {departments.length === 0 && <option value="health">{t('admin.health')}</option>}
+              {departments.map((d) => (
+                <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
+              ))}
             </select>
           </div>
           <div><label className="label">{t('admin.cadre')}</label>
@@ -493,7 +499,7 @@ function EditUserModal({ user, onClose, onSaved }: any) {
             </select>
           </div>
           <div><label className="label">{t('admin.new_password')}</label><input type="password" className="input" value={new_password} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('admin.leave_blank')} /></div>
-          <SubjectPicker category={category} cadreCode={cadre_code} value={subjects} onChange={setSubjects} cadres={cadres} />
+          <SubjectPicker cadreCode={cadre_code} value={subjects} onChange={setSubjects} cadres={cadres} />
         </div>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={is_verified} onChange={(e) => setVerified(e.target.checked)} /> {t('admin.verified')}</label>
@@ -513,10 +519,11 @@ function CreateUserModal({ onClose, onCreated }: any) {
   const [full_name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('changeme123');
-  const [category, setCategory] = useState<'health' | 'education'>('health');
-  const [cadre_code, setCadre] = useState('CO');
+  const [category, setCategory] = useState<string>('health');
+  const [cadre_code, setCadre] = useState('');
   const [subjects, setSubjects] = useState<string[]>([]);
   const [cadres, setCadres] = useState<Cadre[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [facilities, setFacilities] = useState<any[]>([]);
@@ -530,9 +537,10 @@ function CreateUserModal({ onClose, onCreated }: any) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { getRegions().then(setRegions); }, []);
+  useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
   useEffect(() => { getCadres(category).then(setCadres); }, [category]);
   useEffect(() => { if (region_id) getDistricts(Number(region_id)).then(setDistricts); }, [region_id]);
-  useEffect(() => { if (district_id) getFacilities(Number(district_id), category).then(setFacilities).catch(() => setFacilities([])); }, [district_id, category]);
+  useEffect(() => { if (district_id) getFacilities(Number(district_id), (category as 'health' | 'education') || 'health').then(setFacilities).catch(() => setFacilities([])); }, [district_id, category]);
 
   function updateDest(i: number, field: 'region_id' | 'district_id', v: number | '') {
     const copy = dests.map((d) => ({ ...d }));
@@ -590,8 +598,11 @@ function CreateUserModal({ onClose, onCreated }: any) {
           <div><label className="label">{t('admin.phone')}</label><input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" /></div>
           <div><label className="label">{t('admin.password')}</label><input className="input" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
           <div><label className="label">{t('admin.department')}</label>
-            <select className="input" value={category} onChange={(e) => { setCategory(e.target.value as any); setCadre(''); }}>
-              <option value="health">{t('admin.health')}</option><option value="education">{t('admin.education')}</option>
+            <select className="input" value={category} onChange={(e) => { setCategory(e.target.value); setCadre(''); }}>
+              {departments.length === 0 && <option value="health">{t('admin.health')}</option>}
+              {departments.map((d) => (
+                <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
+              ))}
             </select>
           </div>
           <div><label className="label">{t('admin.cadre')}</label>
@@ -608,7 +619,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
           <label className="col-span-2 flex items-center gap-2 text-sm py-1">
             <input type="checkbox" checked={is_admin} onChange={(e) => setAdmin(e.target.checked)} /> {t('admin.admin_ck')} 👑
           </label>
-          <SubjectPicker category={category} cadreCode={cadre_code} value={subjects} onChange={setSubjects} cadres={cadres} />
+          <SubjectPicker cadreCode={cadre_code} value={subjects} onChange={setSubjects} cadres={cadres} />
 
           {/* Kituo cha sasa */}
           <div><label className="label">{t('admin.region')} *</label>
