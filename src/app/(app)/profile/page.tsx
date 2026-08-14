@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, getCadres, bustGetCache, type Region, type District, type Subject, type Facility, type Cadre, type Station, type Destination } from '@/lib/api';
+import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, getCadres, getFollowedRegions, updateFollowedRegions, bustGetCache, type Region, type District, type Subject, type Facility, type Cadre, type Station, type Destination } from '@/lib/api';
+import { useFollowStore } from '@/lib/followStore';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 
@@ -25,9 +26,9 @@ export default function ProfilePage() {
           {isAdmin && <span className="ml-2 align-middle inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-brand-gold-100 text-brand-gold-600">👑 {t('admin.admin_role')}</span>}
         </h1>
         {mode === 'view' ? (
-          <button onClick={() => setMode('edit')} className="btn-primary text-sm">✎ {t('profile.edit_button')}</button>
+          <button onClick={() => setMode('edit')} className="btn-primary text-xs px-3 py-1.5">✎ {t('profile.edit_button')}</button>
         ) : (
-          <button onClick={() => setMode('view')} className="btn-outline text-sm">{t('action.cancel')}</button>
+          <button onClick={() => setMode('view')} className="btn-outline text-xs px-3 py-1.5">{t('action.cancel')}</button>
         )}
       </div>
 
@@ -52,6 +53,9 @@ export default function ProfilePage() {
           }} />
         )
       )}
+
+      {/* Fuata Mikoa — hapa ndio mahali pa kuadd mikoa unayofuata (update ya taarifa zote) */}
+      {!isAdmin && <FollowRegionsCard />}
     </div>
   );
 }
@@ -112,9 +116,11 @@ function EditAdminProfile({ profile, onSaved }: any) {
         <div><label className="label">{t('label.email')}</label><input className="input" value={profile.email || ''} disabled /></div>
         <div className="text-xs text-brand-grey-500">{t('profile.email_change_hint')}</div>
       </div>
-      <button onClick={save} disabled={saving} className="btn-primary w-full">
-        {saving ? '...' : t('profile.save')}
-      </button>
+      <div className="flex justify-end">
+        <button onClick={save} disabled={saving} className="btn-primary text-xs px-4 py-1.5">
+          {saving ? '...' : t('profile.save')}
+        </button>
+      </div>
     </div>
   );
 }
@@ -377,17 +383,78 @@ function EditProfile({ profile, onSaved }: any) {
         ))}
       </div>
 
-      <div className="card space-y-3">
-        <h3 className="font-bold">🔑 {t('profile.change_pwd')}</h3>
-        {pwdMsg && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{pwdMsg}</div>}
-        <div><label className="label">{t('profile.cur_pwd')}</label><input type="password" className="input" value={curPassword} onChange={(e) => setCurPassword(e.target.value)} autoComplete="current-password" /></div>
-        <div><label className="label">{t('profile.new_pwd')}</label><input type="password" className="input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" /></div>
-        <button onClick={savePassword} disabled={!curPassword || newPassword.length < 6} className="btn-outline w-full">
+      <div className="card space-y-2.5">
+        <h3 className="font-bold text-sm">🔑 {t('profile.change_pwd')}</h3>
+        {pwdMsg && <div className="bg-green-50 text-green-700 text-xs rounded-lg px-2.5 py-1.5">{pwdMsg}</div>}
+        <div><label className="label">{t('profile.cur_pwd')}</label><input type="password" className="input !py-1.5 text-sm" value={curPassword} onChange={(e) => setCurPassword(e.target.value)} autoComplete="current-password" /></div>
+        <div><label className="label">{t('profile.new_pwd')}</label><input type="password" className="input !py-1.5 text-sm" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" /></div>
+        <button onClick={savePassword} disabled={!curPassword || newPassword.length < 6} className="text-xs px-3 py-1.5 rounded-lg border border-brand-blue text-brand-blue hover:bg-brand-blue-50 transition disabled:opacity-40">
           {t('profile.change_pwd_btn')}
         </button>
       </div>
 
-      <button onClick={saveProfile} disabled={saving} className="btn-primary w-full">
+      <div className="flex justify-end">
+        <button onClick={saveProfile} disabled={saving} className="btn-primary text-xs px-4 py-1.5">
+          {saving ? '...' : t('profile.save')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** 🔔 Fuata Mikoa — kuadd/ondoa mikoa unayofuata (inapata live notifications za
+ *  wanaokuja mkoa wako kutoka mikoa hii). Ina-sync na dashboard PAPO HAPO. */
+function FollowRegionsCard() {
+  const t = useT();
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const loadFollow = useFollowStore((s) => s.load);
+  const setFollow = useFollowStore((s) => s.set);
+
+  useEffect(() => {
+    getRegions().then((r) => setRegions(r)).catch(() => {});
+    getFollowedRegions().then((r) => setSelected(new Set(r.region_ids))).catch(() => {}).finally(() => setLoaded(true));
+  }, []);
+
+  async function save() {
+    setSaving(true);
+    try {
+      const ids = Array.from(selected);
+      await updateFollowedRegions(ids);
+      setFollow(ids); // dashboard inabadilika mara moja (hakuna refresh)
+      loadFollow();
+      setMsg(t('board.follow_saved'));
+      setTimeout(() => setMsg(null), 2500);
+    } catch { setMsg('Imeshindikana — jaribu tena'); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="card space-y-2.5">
+      <div>
+        <h3 className="font-bold text-sm">🔔 {t('board.follow')}</h3>
+        <p className="text-xs text-brand-grey-500 mt-0.5">{t('board.follow_hint')}</p>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {regions.map((r) => {
+          const on = selected.has(r.id);
+          return (
+            <button key={r.id} type="button" onClick={() => setSelected((prev) => {
+              const next = new Set(prev);
+              if (next.has(r.id)) next.delete(r.id); else next.add(r.id);
+              return next;
+            })}
+              className={`px-2.5 py-1 rounded-full border text-[11px] font-semibold transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-blue'}`}>
+              {on ? '✓ ' : ''}{r.name}
+            </button>
+          );
+        })}
+      </div>
+      {msg && <div className="text-xs text-green-600">{msg}</div>}
+      <button onClick={save} disabled={saving || !loaded} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition disabled:opacity-40">
         {saving ? '...' : t('profile.save')}
       </button>
     </div>
