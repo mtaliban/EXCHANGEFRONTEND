@@ -50,8 +50,8 @@ export default function Footer() {
 
           <div>
             <h4 className="font-semibold text-white mb-3">{t('footer.contact_title')}</h4>
-            <p className="flex items-center gap-2 text-sm text-brand-grey-300 mb-2"><Phone size={15} className="text-brand-orange" />WhatsApp: 0778 764 578</p>
-            <p className="flex items-center gap-2 text-sm text-brand-grey-300"><PhoneCall size={15} className="text-brand-orange" />Simu: 0710 703 705</p>
+            <p className="flex items-center gap-2 text-sm text-brand-grey-300 mb-2"><Phone size={15} className="text-brand-orange" />WhatsApp: +255 625 607 088</p>
+            <p className="flex items-center gap-2 text-sm text-brand-grey-300"><PhoneCall size={15} className="text-brand-orange" />Simu: 0763 795 801</p>
           </div>
         </div>
 

@@ -15,12 +15,12 @@ export default function ContactPage() {
         <div className="card">
           <div className="w-12 h-12 rounded-xl bg-brand-blue-100 text-brand-blue flex items-center justify-center text-2xl mb-4">📞</div>
           <h3 className="font-bold text-brand-grey-900 mb-1">{t('contact.phone')}</h3>
-          <a href="tel:+255710703705" className="text-brand-blue hover:underline">+255 710 703 705</a>
+          <a href="tel:+255763795801" className="text-brand-blue hover:underline">0763 795 801</a>
         </div>
         <div className="card">
           <div className="w-12 h-12 rounded-xl bg-brand-orange-100 text-brand-orange flex items-center justify-center text-2xl mb-4">💬</div>
           <h3 className="font-bold text-brand-grey-900 mb-1">{t('contact.whatsapp')}</h3>
-          <a href="https://wa.me/255778764578" className="text-brand-orange hover:underline">+255 778 764 578</a>
+          <a href="https://wa.me/255625607088" className="text-brand-orange hover:underline">+255 625 607 088</a>
         </div>
         <div className="card">
           <div className="w-12 h-12 rounded-xl bg-brand-red-100 text-brand-red flex items-center justify-center text-2xl mb-4">📧</div>
