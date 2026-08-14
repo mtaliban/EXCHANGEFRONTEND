@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { adminStats, adminReports, adminUsers, adminMatches, adminEvents } from '@/lib/api';
+import { adminStats, adminReports, adminUsers, adminMatches, adminEvents, adminListDepartments } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
@@ -166,11 +166,23 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
   const t = useT();
   const [region, setRegion] = useState<string>('');
   const [department, setDepartment] = useState<string>('');
+  const [departments, setDepartments] = useState<any[]>([]);
+
+  // Idara zinapakuliwa dynamic — idara mpya inaonekana kwenye filter na
+  // takwimu PAPO HAPO bila refresh (real-time, event-driven).
+  useEffect(() => { adminListDepartments().then(setDepartments).catch(() => {}); }, []);
 
   const usersByRegion = reports?.users_by_region || [];
   const incomingByRegion = reports?.incoming_by_region || [];
   const usersByDistrict = reports?.users_by_district || [];
   const incomingByDistrict = reports?.incoming_by_district || [];
+
+  // Ramani: category code → jina la idara (dynamic).
+  const deptName = (code: string) => {
+    if (!code) return '-';
+    const found = departments.find((d) => d.code === code);
+    return found ? `${found.icon ? `${found.icon} ` : ''}${found.name}` : code;
+  };
 
   // Mikoa yote iliyopo (wako au wanaohamia) kwa ajili ya filter.
   const allRegions = Array.from(new Set([
@@ -199,6 +211,15 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
     .sort((a: any, b: any) => b.count - a.count);
 
   const byCategory = (reports?.users_by_category || []).filter((c: any) => !department || c.category === department);
+
+  // Walimu kwa NGazi (Primary/Secondary) — "Walimu wa Secondary wangapi".
+  const byCadreLevel = (reports?.users_by_cadre || [])
+    .filter((c: any) => !department || c.category === department)
+    .reduce((acc: Record<string, number>, c: any) => {
+      const key = c.level === 'Primary' ? 'primary' : c.level === 'Secondary' ? 'secondary' : 'none';
+      acc[key] = (acc[key] || 0) + c.count;
+      return acc;
+    }, { primary: 0, secondary: 0, none: 0 });
   const byStatus = reports?.users_by_status || [];
   const perPurpose = reports?.revenue?.per_purpose || [];
 
@@ -212,8 +233,9 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
         </select>
         <select className="input sm:w-64" value={department} onChange={(e) => setDepartment(e.target.value)}>
           <option value="">{t('admin.filter_all_departments')}</option>
-          <option value="health">{t('admin.health')}</option>
-          <option value="education">{t('admin.education')}</option>
+          {departments.map((d) => (
+            <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
+          ))}
         </select>
       </div>
 
@@ -221,7 +243,7 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card">
           <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.by_department')}</h3>
-          <NumberTable rows={byCategory.map((c: any) => ({ label: c.category === 'health' ? t('admin.health') : t('admin.education'), count: c.count }))} />
+          <NumberTable rows={byCategory.map((c: any) => ({ label: deptName(c.category), count: c.count }))} />
         </div>
         <div className="card">
           <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.by_status')}</h3>
@@ -296,11 +318,23 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
         </div>
       </div>
 
+      {/* Walimu kwa Ngazi (Primary/Secondary) — "Walimu wa Secondary wangapi" */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="card">
+          <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.by_cadre_level')}</h3>
+          <NumberTable rows={[
+            { label: `👩🏫 ${t('admin.primary_teachers')}`, count: byCadreLevel.primary },
+            { label: `👨🏫 ${t('admin.secondary_teachers')}`, count: byCadreLevel.secondary },
+            { label: t('admin.no_level'), count: byCadreLevel.none },
+          ]} />
+        </div>
+      </div>
+
       {/* Kada + Michango */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card">
           <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.by_cadre')}</h3>
-          <NumberTable rows={byCadre.slice(0, 20).map((c: any) => ({ label: `${c.cadre} (${c.category})`, count: c.count }))} maxH />
+          <NumberTable rows={byCadre.slice(0, 20).map((c: any) => ({ label: `${c.cadre_name || c.cadre}${c.level ? ` (${c.level})` : ''}`, count: c.count }))} maxH />
         </div>
         <div className="card">
           <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.donations_purpose')}</h3>
