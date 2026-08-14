@@ -45,7 +45,10 @@ export default function Step1Identity({ initial, onNext }: Props) {
     if (!/^(\+?255|0)\d{9}$/.test(phone_primary.replace(/[\s-]/g, ''))) {
       e.phone_primary = t('step1.err_phone');
     }
-    if (phone_alt && !/^(\+?255|0)\d{9}$/.test(phone_alt.replace(/[\s-]/g, ''))) {
+    // WhatsApp namba ni LAZIMA — kama haijawekwa, button ya WhatsApp haifanyi kazi.
+    if (!phone_alt) {
+      e.phone_alt = t('step1.err_phone_alt_required');
+    } else if (!/^(\+?255|0)\d{9}$/.test(phone_alt.replace(/[\s-]/g, ''))) {
       e.phone_alt = t('step1.err_phone_alt');
     }
     if (password.length < 6) e.password = t('step1.err_password');
@@ -83,8 +86,8 @@ export default function Step1Identity({ initial, onNext }: Props) {
       </div>
 
       <div>
-        <label className="label">🟢 {t('step1.phone_whatsapp')} ({t('msg.optional')})</label>
-        <input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" />
+        <label className="label">🟢 {t('step1.phone_whatsapp')} *</label>
+        <input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" required />
         <p className="text-[11px] text-brand-grey-400 mt-0.5">{t('step1.phone_whatsapp_hint')}</p>
         {errors.phone_alt && <p className="text-brand-red text-xs mt-1">{errors.phone_alt}</p>}
       </div>

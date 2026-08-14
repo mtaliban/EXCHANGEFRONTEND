@@ -229,6 +229,12 @@ function EditProfile({ profile, onSaved }: any) {
 
   async function saveProfile() {
     setSaving(true); setError(null);
+    // WhatsApp namba ni LAZIMA — ndiyo inayotumika kwa button ya WhatsApp.
+    if (!phone_alt || !/^(\+?255|0)\d{9}$/.test(phone_alt.replace(/[\s-]/g, ''))) {
+      setError(t('step1.err_phone_alt_required'));
+      setSaving(false);
+      return;
+    }
     try {
       const region = regions.find((r) => r.id === region_id);
       const district = districts.find((d) => d.id === district_id);
@@ -307,7 +313,7 @@ function EditProfile({ profile, onSaved }: any) {
         <h3 className="font-bold">{t('profile.identity')}</h3>
         <div><label className="label">{t('label.name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
         <div><label className="label">{t('profile.phone_normal')}</label><input className="input" value={phone_primary} onChange={(e) => setPhonePrimary(e.target.value)} inputMode="tel" /></div>
-        <div><label className="label">{t('profile.phone_whatsapp')}</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder={t('msg.optional')} /></div>
+        <div><label className="label">🟢 {t('profile.phone_whatsapp')} *</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" /></div>
         {category === 'education' && (
           <div>
             <label className="label">{t('label.cadre')}</label>

@@ -206,7 +206,7 @@ export default function DonatePage() {
           {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
 
           <button onClick={submit} disabled={!smsText.trim()}
-            className="btn-accent w-full text-lg py-3 disabled:opacity-50">
+            className="btn-accent w-full text-sm py-2 disabled:opacity-50">
             {t('donate.submit')}
           </button>
         </div>
@@ -220,23 +220,42 @@ export default function DonatePage() {
 function HistoryList({ history }: { history: any[] }) {
   const t = useT();
   return (
-    <div className="card">
-      <h3 className="font-bold text-brand-grey-900 dark:text-white mb-2">{t('donate.history')}</h3>
-      <div className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
-        {history.map((p) => (
-          <div key={p.order_id} className="flex items-center justify-between py-2 text-sm">
-            <div>
-              <div className="font-medium text-brand-grey-900 dark:text-white">{p.amount?.toLocaleString()} TZS</div>
-              <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400">
-                {(parseServerDate(p.created_at) || new Date()).toLocaleString('sw-TZ')}
-                {' · '}<span className="font-mono">{p.order_id}</span>
-              </div>
-            </div>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${STATUS_STYLES[p.status] || 'bg-brand-grey-100 text-brand-grey-700'}`}>
-              {STATUS_LABELS[p.status] || p.status}
-            </span>
-          </div>
-        ))}
+    <div className="card overflow-hidden">
+      <div className="px-4 pt-4 pb-3 border-b border-brand-grey-100 dark:border-brand-grey-200 flex items-center justify-between">
+        <h3 className="font-bold text-brand-grey-900 dark:text-white">{t('donate.history')}</h3>
+        <span className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{history.length} {t('donate.history_count')}</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[520px]">
+          <thead className="bg-brand-grey-50 dark:bg-brand-grey-100 text-[11px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400">
+            <tr>
+              <th className="px-4 py-2.5 text-left font-semibold">{t('donate.history_amount')}</th>
+              <th className="px-4 py-2.5 text-left font-semibold">{t('donate.history_date')}</th>
+              <th className="px-4 py-2.5 text-left font-semibold hidden sm:table-cell">{t('msg.reference')}</th>
+              <th className="px-4 py-2.5 text-right font-semibold">{t('donate.history_status')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
+            {history.map((p) => (
+              <tr key={p.order_id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 transition">
+                <td className="px-4 py-3 font-bold text-brand-grey-900 dark:text-white tabular-nums whitespace-nowrap">
+                  {p.amount?.toLocaleString()} <span className="text-xs font-semibold text-brand-grey-500">TZS</span>
+                </td>
+                <td className="px-4 py-3 text-brand-grey-600 dark:text-brand-grey-300 whitespace-nowrap">
+                  {(parseServerDate(p.created_at) || new Date()).toLocaleString('sw-TZ')}
+                </td>
+                <td className="px-4 py-3 hidden sm:table-cell">
+                  <span className="font-mono text-xs text-brand-grey-500 dark:text-brand-grey-400">{p.order_id}</span>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <span className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${STATUS_STYLES[p.status] || 'bg-brand-grey-100 text-brand-grey-700'}`}>
+                    {STATUS_LABELS[p.status] || p.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

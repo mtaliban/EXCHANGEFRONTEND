@@ -110,6 +110,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'step1.err_name': 'Jina lazima liwe angalau herufi 3',
     'step1.err_phone': 'Namba ya simu si sahihi (mfano: 0712345678)',
     'step1.err_phone_alt': 'Namba ya simu ya pili si sahihi',
+    'step1.err_phone_alt_required': 'Namba ya WhatsApp ni LAZIMA — ndiyo inayotumika kwa button ya WhatsApp',
     'step1.err_password': 'Password lazima iwe angalau herufi 6',
     'step1.err_password2': 'Password hazifanani', 'step1.min6': 'Angalau herufi 6',
     'step1.repeat_ph': 'Rudia password',
@@ -413,6 +414,7 @@ const dict: Record<Lang, Record<string, string>> = {
       'Hakikisha umelipa kiasi ulichoandika na SMS ni sahihi.',
     'donate.try_again': 'Jaribu Tena', 'donate.donate_again': 'Changia Tena',
     'donate.history': 'Historia Yako ya Michango',
+    'donate.history_count': 'za michango', 'donate.history_amount': 'Kiasi', 'donate.history_date': 'Tarehe', 'donate.history_status': 'Hali',
     /* ── Services page ── */
     'svc.badge': 'Huduma Zetu', 'svc.title': 'Kile Tunachotoa',
     'svc.subtitle': 'Jukwaa kamili la kubadilishana vituo — kutoka usajili hadi kuwasiliana na aliyekusiliana.',
@@ -539,6 +541,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'step1.err_name': 'Name must be at least 3 characters',
     'step1.err_phone': 'Invalid phone number (e.g. 0712345678)',
     'step1.err_phone_alt': 'Invalid second phone number',
+    'step1.err_phone_alt_required': 'WhatsApp number is REQUIRED — it is used for the WhatsApp button',
     'step1.err_password': 'Password must be at least 6 characters',
     'step1.err_password2': 'Passwords do not match', 'step1.min6': 'At least 6 characters',
     'step1.repeat_ph': 'Repeat password',
@@ -842,6 +845,7 @@ const dict: Record<Lang, Record<string, string>> = {
       'Make sure you paid the amount you entered and the SMS is correct.',
     'donate.try_again': 'Try Again', 'donate.donate_again': 'Donate Again',
     'donate.history': 'Your Donation History',
+    'donate.history_count': 'donations', 'donate.history_amount': 'Amount', 'donate.history_date': 'Date', 'donate.history_status': 'Status',
     /* ── Services page ── */
     'svc.badge': 'Our Services', 'svc.title': 'What We Offer',
     'svc.subtitle': 'A complete platform for station exchange — from registration to connecting with your partner.',
