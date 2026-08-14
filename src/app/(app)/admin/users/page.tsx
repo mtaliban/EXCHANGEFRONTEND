@@ -1,8 +1,64 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke, register, adminCleanupTestData, getRegions, getDistricts, getFacilities, getCadres, getSubjects, type Region, type District, type Cadre, type Subject } from '@/lib/api';
+import { useEffect, useRef, useState } from 'react';
+import {
+  adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
+  adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
+  register, getRegions, getDistricts, getFacilities, getCadres, getSubjects,
+  type Region, type District, type Cadre, type Subject,
+} from '@/lib/api';
+import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
+
+/**
+ * REAL-TIME: SSE feed ya admin — mtumiaji mpya anapojisajili (au kufutwa /
+ * kusasishwa) orodha inajirefresh PAPO HAPO bila refresh ya page (event-driven).
+ */
+function useLiveUsersRefresh(onEvent: (ev: any) => void) {
+  useEffect(() => {
+    let aborter: AbortController | null = null;
+    let retry: any = null;
+    let stopped = false;
+    async function connect() {
+      try {
+        const raw = sessionStorage.getItem('kv_auth');
+        let token: string | null = null;
+        try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
+        aborter = new AbortController();
+        const res = await fetch(`${API_URL}/admin/live-events`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          signal: aborter.signal,
+        });
+        if (!res.ok || !res.body) throw new Error('feed failed');
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (!stopped) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let idx;
+          while ((idx = buffer.indexOf('\n\n')) !== -1) {
+            const chunk = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 2);
+            const line = chunk.split('\n').find((l) => l.startsWith('data: '));
+            if (line) {
+              try { onEvent(JSON.parse(line.slice(6))); } catch { /* sio JSON — puuza */ }
+            }
+          }
+        }
+      } catch { /* mtandao/abort — reconnect chini */ }
+      if (!stopped) retry = setTimeout(connect, 3000);
+    }
+    connect();
+    return () => {
+      stopped = true;
+      aborter?.abort();
+      if (retry) clearTimeout(retry);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
 
 export default function AdminUsersPage() {
   const t = useT();
@@ -14,6 +70,12 @@ export default function AdminUsersPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [showTrash, setShowTrash] = useState(false);
+  const [trash, setTrash] = useState<any[]>([]);
+  const [trashTotal, setTrashTotal] = useState(0);
+  const [addingAdmin, setAddingAdmin] = useState(false);
+  const [live, setLive] = useState(false);
+  const lastEvent = useRef(0);
 
   async function load() {
     const params: any = { limit: 200 };
@@ -22,7 +84,34 @@ export default function AdminUsersPage() {
     setData(await adminUsers(params));
   }
 
+  async function loadTrash() {
+    try {
+      const r = await adminTrashList();
+      setTrash(r.items || []);
+      setTrashTotal(r.total || 0);
+    } catch {}
+  }
+
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, category]);
+
+  // REAL-TIME: mtumiaji akijisajili / kufutwa / kusasishwa na admin → orodha
+  // inajirefresh PAPO HAPO (event-driven, hakuna refresh ya page).
+  useLiveUsersRefresh((ev) => {
+    setLive(true);
+    const now = Date.now();
+    if (now - lastEvent.current < 1200) return; // debounce — usipige mara nyingi
+    lastEvent.current = now;
+    const et = ev?.event_type || '';
+    if (et.startsWith('user.') || et.startsWith('data.')) {
+      load();
+      loadTrash();
+    }
+  });
+  // LIVE dot inazimika baada ya sekunde 8 bila tukio (feed iko hai au la).
+  useEffect(() => {
+    const id = setTimeout(() => setLive(false), 8000);
+    return () => clearTimeout(id);
+  }, [live]);
   // Chaguzi huisha wakati filters zinabadilika — orodha yenyewe imebadilika.
   useEffect(() => { setSelected(new Set()); }, [q, category]);
 
@@ -70,48 +159,42 @@ export default function AdminUsersPage() {
     const next = u.status === 'disabled' ? 'active' : 'disabled';
     if (next === 'disabled' && !confirm(`${t('admin.suspend_confirm')}\n\n${u.full_name} (${u.phone_primary})`)) return;
     await adminUpdateUser(u._id, { status: next });
+    // REAL-TIME: kama mtumiaji yupo logged-in, anaondolewa PAPO HAPO (WS).
     setMessage(`${u.full_name}: ${next === 'disabled' ? t('admin.suspended') : t('admin.unsuspended')}`);
     load();
     setTimeout(() => setMessage(null), 3000);
   }
 
-  async function cleanFakeData() {
-    if (!confirm(t('admin.cleanup_confirm'))) return;
-    const r = await adminCleanupTestData();
-    setMessage(`${t('admin.cleanup_done')} ${r.deleted_users} ${t('admin.cleanup_users')}, ${r.deleted_events} ${t('admin.cleanup_events')}`);
-    load();
-    setTimeout(() => setMessage(null), 6000);
-  }
-
-  async function wipeAllUsers() {
-    if (!confirm(t('admin.wipe_all_confirm'))) return;
-    const r = await adminCleanupTestData(true);
-    setMessage(`${t('admin.wipe_all_done')} ${r.deleted_users} ${t('admin.cleanup_users')}`);
-    load();
-    setTimeout(() => setMessage(null), 6000);
-  }
-
   async function del(u: any) {
-    if (!confirm(t('admin.confirm_delete') + `\n\n${u.full_name} (${u.phone_primary})`)) return;
+    // Delete sasa ni SOFT DELETE → akaunti inaenda TRASH (inaweza kurudishwa).
+    if (!confirm(t('admin.confirm_delete') + `\n\n${u.full_name} (${u.phone_primary})\n\n${t('admin.trash_hint')}`)) return;
     await adminDeleteUser(u._id);
-    setMessage(`${t('admin.deleted')} ${u.full_name}`);
+    setMessage(`${t('admin.deleted')} ${u.full_name} — ${t('admin.trash_moved')}`);
     load();
-    setTimeout(() => setMessage(null), 3000);
+    setTimeout(() => setMessage(null), 4000);
   }
 
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold text-brand-grey-900">{t('nav.users')}</h1>
+        <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
+          {t('nav.users')}
+          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+            live ? 'bg-green-50 text-green-600 border-green-300' : 'bg-brand-grey-50 text-brand-grey-400 border-brand-grey-200'}`}>
+            <span className={`w-2 h-2 rounded-full ${live ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-300'}`} />
+            {t('data.live')}
+          </span>
+        </h1>
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={cleanFakeData} className="btn-outline text-xs text-brand-orange border-brand-orange">
-            🧹 {t('admin.cleanup_btn')}
-          </button>
-          <button onClick={wipeAllUsers} className="btn-outline text-xs text-brand-red border-brand-red">
-            🗑 {t('admin.wipe_all_btn')}
+          <button onClick={() => setShowTrash((v) => !v)}
+            className={`btn-outline text-xs ${showTrash ? 'border-brand-red text-brand-red' : 'border-brand-grey-300 text-brand-grey-600'}`}>
+            🗑 {t('admin.trash_btn')} {trashTotal > 0 && `(${trashTotal})`}
           </button>
           <button onClick={() => setCreating(true)} className="btn-primary text-sm">
             + {t('admin.new_user')}
+          </button>
+          <button onClick={() => setAddingAdmin(true)} className="btn-primary text-sm !bg-brand-gold !border-brand-gold">
+            + {t('admin.add_admin')} 👑
           </button>
         </div>
       </div>
@@ -214,14 +297,98 @@ export default function AdminUsersPage() {
         </table>
       </div>
 
+      {/* ═══ TRASH — akaunti zilizofutwa (zinaweza kurudishwa au kufutwa KABISA) ═══ */}
+      {showTrash && (
+        <div className="bg-white rounded-2xl border border-brand-red/30 overflow-hidden">
+          <div className="flex items-center justify-between flex-wrap gap-2 px-4 py-3 bg-brand-red-50/60 border-b border-brand-red/20">
+            <h2 className="font-bold text-brand-grey-900 flex items-center gap-2">
+              🗑 {t('admin.trash_title')} <span className="text-xs font-semibold text-brand-grey-500">({trashTotal})</span>
+            </h2>
+            <div className="flex items-center gap-2">
+              <button onClick={purgeAllTrash} disabled={trash.length === 0}
+                className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition disabled:opacity-40">
+                🗑 {t('admin.trash_purge_all')}
+              </button>
+              <button onClick={() => setShowTrash(false)} className="text-xs px-3 py-1.5 rounded-lg border border-brand-grey-300 text-brand-grey-600 hover:bg-brand-grey-50 transition">
+                ✕ {t('admin.cancel')}
+              </button>
+            </div>
+          </div>
+          {trash.length === 0 ? (
+            <div className="p-8 text-center text-sm text-brand-grey-500">{t('admin.trash_empty')}</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[640px]">
+                <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
+                  <tr>
+                    <th className="px-3 py-2 text-left">{t('admin.col_name')}</th>
+                    <th className="px-3 py-2 text-left">{t('admin.col_phone')}</th>
+                    <th className="px-3 py-2 text-left">{t('admin.col_cadre')}</th>
+                    <th className="px-3 py-2 text-left">{t('admin.col_region_short')}</th>
+                    <th className="px-3 py-2 text-right">{t('admin.col_actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-brand-grey-100">
+                  {trash.map((u: any) => (
+                    <tr key={u._id} className="hover:bg-brand-grey-50">
+                      <td className="px-3 py-2 font-medium">{u.full_name}</td>
+                      <td className="px-3 py-2 text-brand-blue">{u.phone_primary || '—'}</td>
+                      <td className="px-3 py-2 text-xs">{u.cadre_code || (u.is_admin ? '👑 Admin' : '—')}</td>
+                      <td className="px-3 py-2 text-xs">{u.current_station?.region_name || '—'}</td>
+                      <td className="px-3 py-2 text-right whitespace-nowrap">
+                        <button onClick={() => restore(u)}
+                          className="text-green-600 text-xs px-2 hover:underline font-semibold">
+                          ↺ {t('admin.trash_restore')}
+                        </button>
+                        <button onClick={() => purge(u)}
+                          className="text-brand-red text-xs px-2 hover:underline">
+                          🗑 {t('admin.trash_permanent')}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {editing && (
         <EditUserModal user={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); setMessage(t('admin.user_updated')); setTimeout(() => setMessage(null), 3000); }} />
       )}
       {creating && (
-        <CreateUserModal onClose={() => setCreating(false)} onCreated={() => { setCreating(false); load(); setMessage(t('admin.user_created')); setTimeout(() => setMessage(null), 3000); }} />
+        <CreateUserModal onClose={() => setCreating(false)} onCreated={() => { setCreating(false); load(); loadTrash(); setMessage(t('admin.user_created')); setTimeout(() => setMessage(null), 3000); }} />
+      )}
+      {addingAdmin && (
+        <AddAdminModal onClose={() => setAddingAdmin(false)} onCreated={() => { setAddingAdmin(false); load(); loadTrash(); setMessage(t('admin.admin_created')); setTimeout(() => setMessage(null), 3000); }} />
       )}
     </div>
   );
+
+  async function restore(u: any) {
+    if (!confirm(`${t('admin.trash_restore_confirm')}\n\n${u.full_name}`)) return;
+    await adminTrashRestore(u._id);
+    setMessage(`${t('admin.trash_restored')} ${u.full_name}`);
+    loadTrash(); load();
+    setTimeout(() => setMessage(null), 3000);
+  }
+
+  async function purge(u: any) {
+    if (!confirm(`${t('admin.trash_permanent_confirm')}\n\n${u.full_name} — hii haiwezi kugeuzwa!`)) return;
+    await adminTrashPurge(u._id);
+    setMessage(`${t('admin.trash_purged')} ${u.full_name}`);
+    loadTrash(); load();
+    setTimeout(() => setMessage(null), 3000);
+  }
+
+  async function purgeAllTrash() {
+    if (!confirm(`${t('admin.trash_purge_all_confirm')} (${trash.length})`)) return;
+    const r = await adminTrashPurgeBulk(trash.map((u) => u._id));
+    setMessage(`${t('admin.trash_purged')} ${r.purged} ${t('admin.users')}`);
+    loadTrash(); load();
+    setTimeout(() => setMessage(null), 3000);
+  }
 }
 
 /** Subject picker — inachagua masomo kwa kiwango cha kada (Msingi/Sekondari). */
@@ -262,7 +429,9 @@ function SubjectPicker({ category, cadreCode, value, onChange, cadres }: {
 function EditUserModal({ user, onClose, onSaved }: any) {
   const t = useT();
   const [full_name, setName] = useState(user.full_name);
+  const [phone_primary, setPhonePrimary] = useState(user.phone_primary || '');
   const [phone_alt, setPhoneAlt] = useState(user.phone_alt || '');
+  const [email, setEmail] = useState(user.email || '');
   const [category, setCategory] = useState<string>(user.category || 'health');
   const [cadre_code, setCadreCode] = useState<string>(user.cadre_code || '');
   const [subjects, setSubjects] = useState<string[]>(user.subjects || []);
@@ -279,10 +448,12 @@ function EditUserModal({ user, onClose, onSaved }: any) {
     setSaving(true);
     try {
       const changes: any = {
-        full_name, phone_alt: phone_alt || null, category, cadre_code,
+        full_name, phone_primary: phone_primary || undefined,
+        phone_alt: phone_alt || null, category, cadre_code,
         subjects: subjects.length ? subjects : [],
         status, is_verified, is_admin,
       };
+      if (email) changes.email = email;
       if (new_password) changes.new_password = new_password;
       await adminUpdateUser(user._id, changes);
       onSaved();
@@ -297,7 +468,11 @@ function EditUserModal({ user, onClose, onSaved }: any) {
         <h2 className="text-xl font-bold">{t('admin.edit_title')} {user.is_admin && '👑'}</h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2"><label className="label">{t('admin.col_name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
-          <div><label className="label">{t('admin.phone')} Alt</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} /></div>
+          <div className="col-span-2"><label className="label">{t('admin.phone')}</label><input className="input" value={phone_primary} onChange={(e) => setPhonePrimary(e.target.value)} placeholder="0712345678" /></div>
+          {user.is_admin && (
+            <div className="col-span-2"><label className="label">{t('admin.email')}</label><input className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@mfano.co.tz" /></div>
+          )}
+          <div><label className="label">{t('admin.phone')} WhatsApp</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} /></div>
           <div><label className="label">{t('admin.status')}</label>
             <select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="active">{t('admin.status_active')}</option>
@@ -480,6 +655,55 @@ function CreateUserModal({ onClose, onCreated }: any) {
         <div className="flex gap-2 pt-3 border-t">
           <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
           <button onClick={submit} disabled={saving || !full_name || !phone || !region_id || !district_id} className="btn-primary flex-1">
+            {saving ? t('admin.creating') : t('admin.create')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Ongeza ADMIN mpya — ana EMAIL + jina + role (hawapo kwenye idara yoyote).
+ *  Anaingia kwa email (sio namba) kama admin wengine. */
+function AddAdminModal({ onClose, onCreated }: any) {
+  const t = useT();
+  const [full_name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('changeme123');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    setError(null); setSaving(true);
+    try {
+      await adminCreateUser({
+        full_name, email, phone_primary: phone || undefined, password,
+        is_admin: true, status: 'active', is_verified: true,
+      });
+      onCreated();
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || t('admin.failed'));
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 my-4" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-xl font-bold">+ {t('admin.add_admin')} 👑</h2>
+        <p className="text-xs text-brand-grey-500 leading-relaxed">
+          {t('admin.add_admin_hint')}
+        </p>
+        {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-2">{error}</div>}
+        <div className="grid grid-cols-1 gap-3">
+          <div><label className="label">{t('admin.full_name')} *</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
+          <div><label className="label">{t('admin.email')} *</label><input type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@mfano.co.tz" /></div>
+          <div><label className="label">{t('admin.phone')} <span className="text-brand-grey-400">({t('msg.optional')})</span></label><input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" /></div>
+          <div><label className="label">{t('admin.password')} *</label><input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+        </div>
+        <div className="flex gap-2 pt-3 border-t">
+          <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
+          <button onClick={submit} disabled={saving || !full_name || !email || password.length < 6} className="btn-primary flex-1">
             {saving ? t('admin.creating') : t('admin.create')}
           </button>
         </div>

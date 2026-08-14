@@ -9,7 +9,8 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
 import { playPingSound, playArrivalSound, isSoundEnabled } from '@/lib/sound';
 import { parseServerDate } from '@/lib/dates';
-import { Handshake, MessageCircle, Phone, Bell } from 'lucide-react';
+import { getMe } from '@/lib/api';
+import { Handshake, Phone, Bell, ShieldAlert, Trash2, UserCog } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -17,8 +18,10 @@ import type { LucideIcon } from 'lucide-react';
  * Wraps app children with:
  *   - Auto-connect WS with token
  *   - Uber-style toast on match.found
- *   - Toast on new message.sent
  *   - Toast on call.initiated
+ *   - REAL-TIME ACCOUNT CONTROL: admin akisuspend/kufuta akaunti → forced
+ *     logout PAPO HAPO; admin akibadilisha taarifa zako → session inasasishwa
+ *     mara moja (bila refresh).
  */
 
 /** Baada ya muda huu wa kutokuwa ACTIVE (hakuna click/keyboard/scroll) →
@@ -50,7 +53,7 @@ function useIdleLogout() {
 export default function LiveProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { token, user, logout } = useAuth();
+  const { token, user, logout, setUser } = useAuth();
   const { connect, disconnect, subscribe } = useLive();
 
   // Mtumiaji asipofanya kitu kwa dakika 30 → toa (logout) → login.
@@ -65,6 +68,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
   // Toast handler for live events
   useEffect(() => {
     if (!user) return;
+    const uid = (user as any)?.user_id;
     const unsub1 = subscribe('match.found', (p) => {
       const c = p.candidate || {};
       // Sauti ya ARRIVAL: DashboardBoard inaipiga kwenye /dashboard; kwenye pages
@@ -81,33 +85,63 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         ago: p.occurred_at,
       });
     });
-    const unsub2 = subscribe('message.sent', (p) => {
-      if (p.to_user_id !== user.user_id) return;
-      if (isSoundEnabled()) playPingSound();
-      showToast({
-        icon: MessageCircle,
-        color: 'orange',
-        title: `Ujumbe kutoka ${p.from_full_name || 'mtu'}`,
-        body: p.text?.slice(0, 100) || '',
-        onClick: () => router.push(`/chats/${p.from_user_id}`),
-        ago: p.created_at,
-      });
-    });
-    const unsub3 = subscribe('call.initiated', (p) => {
-      if (p.to_user_id !== user.user_id) return;
+    const unsub2 = subscribe('call.initiated', (p) => {
+      if (p.to_user_id !== uid) return;
       if (isSoundEnabled()) playPingSound();
       showToast({
         icon: Phone,
         color: 'red',
         title: `${p.from_full_name || 'Mtu'} amekupigia`,
         body: 'Simu iliyoshindwa — mpigie sasa',
-        onClick: () => router.push(`/contacts`),
+        onClick: () => router.push('/dashboard'),
         ago: p.initiated_at,
       });
     });
+    // REAL-TIME ACCOUNT CONTROL (admin):
+    //  - account.disabled → mtumiaji anasitishwa → forced LOGOUT mara moja.
+    //  - account.deleted  → akaunti imefutwa (trash) → forced LOGOUT mara moja.
+    //  - user.updated_by_admin → admin amebadilisha taarifa zako → session
+    //    inasasishwa PAPO HAPO bila refresh (jina/kada/status zinaonekana mpya).
+    const unsubAcc = subscribe('account.disabled', (p) => {
+      if (p.user_id && p.user_id !== uid) return;
+      if (isSoundEnabled()) playPingSound();
+      showToast({
+        icon: ShieldAlert,
+        color: 'red',
+        title: 'Akaunti imesitishwa',
+        body: p.message || 'Akaunti yako imesitishwa na admin — wasiliana naye.',
+      });
+      logout();
+      router.replace('/login');
+    });
+    const unsubDel = subscribe('account.deleted', (p) => {
+      if (p.user_id && p.user_id !== uid) return;
+      showToast({
+        icon: Trash2,
+        color: 'red',
+        title: 'Akaunti imefutwa',
+        body: p.message || 'Akaunti yako imefutwa na admin.',
+      });
+      logout();
+      router.replace('/login');
+    });
+    const unsubUpd = subscribe('user.updated_by_admin', (p) => {
+      if (p.user_id && p.user_id !== uid) return;
+      // Session inasasishwa PAPO HAPO kutoka server (taarifa kamili) — bila refresh.
+      getMe().then((me) => setUser(me)).catch(() => {});
+      const fields = (p.changed_fields || []).filter((f: string) => f !== 'status');
+      if (fields.length > 0) {
+        showToast({
+          icon: UserCog,
+          color: 'blue',
+          title: 'Taarifa zako zimesasishwa',
+          body: 'Admin amebadilisha taarifa zako — sasa zinaonekana mpya.',
+          onClick: () => router.push('/profile'),
+          ago: p.occurred_at,
+        });
+      }
+    });
     // Notifications center (payments, profile updates, registrations…)
-    // NOTE: match.found / user.registered / message.sent / call.initiated have
-    // dedicated handling (toasts + sauti ya dashboard) — skip duplicate here.
     const unsub4 = subscribe('notification', (p) => {
       if (p.type === 'match.found' || p.type === 'user.registered'
         || p.type === 'message.sent' || p.type === 'call.initiated') return;
@@ -122,8 +156,8 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         ago: p.occurred_at,
       });
     });
-    return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
-  }, [user, subscribe, router, pathname]);
+    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsub4(); };
+  }, [user, subscribe, router, pathname, logout, setUser]);
 
   return <>{children}</>;
 }

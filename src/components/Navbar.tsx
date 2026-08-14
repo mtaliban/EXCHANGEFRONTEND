@@ -7,7 +7,6 @@ import clsx from 'clsx';
 import { useAuth, isTokenExpired } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
 import { APP_ROUTES } from '@/lib/config';
-import ThemeToggle from '@/components/ThemeToggle';
 import { Home, Info, Stethoscope, FolderKanban, PhoneCall, Languages } from 'lucide-react';
 
 const publicLinks = [
@@ -69,14 +68,13 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <ThemeToggle />
             <button
               onClick={toggleLang}
               className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-md border border-brand-grey-200 hover:bg-brand-grey-50 text-brand-grey-700 transition"
               title={t('lang.toggle_title')}
             >
               <Languages size={14} />
-              {currentLang.toUpperCase()}
+              {currentLang === 'sw' ? 'Badilisha Lugha · English' : 'Switch Language · Kiswahili'}
             </button>
             {/* Public pages: Register/Login tu — hakuna buttons za dashibodi/logout.
                 Mtu aliyeshaingia anarudi dashibodi kwa kubofya logo (au /login ina
@@ -86,13 +84,13 @@ export default function Navbar() {
           </div>
 
           <div className="md:hidden flex items-center gap-1">
-            <ThemeToggle />
             <button
               onClick={toggleLang}
-              className="p-1.5 rounded-md border border-brand-grey-200 text-brand-grey-700"
+              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md border border-brand-grey-200 text-brand-grey-700"
               title={t('lang.toggle_title')}
             >
-              <Languages size={16} />
+              <Languages size={15} />
+              {currentLang === 'sw' ? 'Lugha · EN' : 'Lang · SW'}
             </button>
           </div>
           <button

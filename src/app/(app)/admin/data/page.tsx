@@ -6,12 +6,13 @@ import {
   adminListCadres, adminAddCadre, adminUpdateCadre, adminDeleteCadre,
   adminListRegions, adminAddRegion, adminUpdateRegion, adminDeleteRegion,
   adminListDistricts, adminAddDistrict, adminUpdateDistrict, adminDeleteDistrict,
+  adminListFacilities, adminAddFacility, adminUpdateFacility, adminDeleteFacility,
 } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 
-type Tab = 'subjects' | 'cadres' | 'regions' | 'districts';
+type Tab = 'subjects' | 'cadres' | 'regions' | 'districts' | 'facilities';
 
 /** Pata ujumbe wa kosa la API (ikiwa lipo) — modal isiwe "inabaki inaload". */
 async function errText(e: any): Promise<string> {
@@ -124,10 +125,10 @@ export default function AdminDataPage() {
       )}
 
       <div className="flex gap-2 border-b border-brand-grey-200 flex-wrap">
-        {(['subjects', 'cadres', 'regions', 'districts'] as Tab[]).map((tb) => (
+        {(['subjects', 'cadres', 'regions', 'districts', 'facilities'] as Tab[]).map((tb) => (
           <button key={tb} onClick={() => setTab(tb)}
             className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${tab === tb ? 'border-brand-blue text-brand-blue' : 'border-transparent text-brand-grey-500 hover:text-brand-grey-900'}`}>
-            {tb === 'subjects' ? t('data.subjects') : tb === 'cadres' ? t('data.cadres') : tb === 'regions' ? t('data.regions') : t('data.districts')}
+            {tb === 'subjects' ? t('data.subjects') : tb === 'cadres' ? t('data.cadres') : tb === 'regions' ? t('data.regions') : tb === 'districts' ? t('data.districts') : t('data.facilities')}
           </button>
         ))}
       </div>
@@ -136,6 +137,7 @@ export default function AdminDataPage() {
       {tab === 'cadres' && <CadresTab flash={flash} tick={tick} markOwnAction={markOwnAction} />}
       {tab === 'regions' && <RegionsTab flash={flash} tick={tick} markOwnAction={markOwnAction} />}
       {tab === 'districts' && <DistrictsTab flash={flash} tick={tick} markOwnAction={markOwnAction} />}
+      {tab === 'facilities' && <FacilitiesTab flash={flash} tick={tick} markOwnAction={markOwnAction} />}
     </div>
   );
 }
@@ -558,6 +560,197 @@ function RegionDistrictModal({ title, initial, onClose, onSaved, withRegion, reg
           <select className="input" value={region_id} onChange={(e) => setRegionId(e.target.value)} disabled={busy}>
             <option value="">--</option>
             {regions?.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+          </select>
+        </div>
+      )}
+    </ModalShell>
+  );
+}
+
+/* ═══ VITUO (health facilities + shule) — CRUD ndani ya wilaya, real-time ═══ */
+function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boolean) => void; tick: number; markOwnAction: () => void }) {
+  const t = useT();
+  const [category, setCategory] = useState<'health' | 'education'>('health');
+  const [regions, setRegions] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [regionFilter, setRegionFilter] = useState<number | ''>('');
+  const [districtFilter, setDistrictFilter] = useState<number | ''>('');
+  const [q, setQ] = useState('');
+  const [data, setData] = useState<any[] | null>(null);
+  const [editing, setEditing] = useState<any>(null);
+  const [creating, setCreating] = useState(false);
+
+  async function load() {
+    try {
+      const r = await adminListFacilities({
+        category,
+        region_id: regionFilter || undefined,
+        district_id: districtFilter || undefined,
+        q: q || undefined,
+      }, !!(regionFilter || districtFilter || q));
+      setData(r.items || []);
+    } catch (e) { flash(await errText(e), false); }
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [category, regionFilter, districtFilter, q, tick]);
+  useEffect(() => { adminListRegions().then(setRegions).catch(() => {}); }, [tick]);
+  useEffect(() => {
+    if (regionFilter) adminListDistricts(regionFilter, true).then(setDistricts).catch(() => setDistricts([]));
+    else setDistricts([]);
+  }, [regionFilter, tick]);
+
+  if (!data) return <div className="p-6"><Spinner /></div>;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2 items-center">
+        <select className="input w-auto" value={category} onChange={(e) => { setCategory(e.target.value as any); setDistrictFilter(''); }}>
+          <option value="health">🏥 {t('data.fac_health')}</option>
+          <option value="education">🏫 {t('data.fac_schools')}</option>
+        </select>
+        <select className="input w-auto" value={regionFilter} onChange={(e) => { setRegionFilter(Number(e.target.value) || ''); setDistrictFilter(''); }}>
+          <option value="">{t('data.all_regions')}</option>
+          {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+        <select className="input w-auto" value={districtFilter} onChange={(e) => setDistrictFilter(Number(e.target.value) || '')} disabled={!regionFilter}>
+          <option value="">{t('data.all_districts')}</option>
+          {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+        <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <button onClick={() => setCreating(true)} className="btn-primary text-sm">+ {t('data.add_facility')}</button>
+      </div>
+      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
+          <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
+            <tr>
+              <th className="px-3 py-2 text-left">{t('data.code')}</th>
+              <th className="px-3 py-2 text-left">{t('data.name')}</th>
+              <th className="px-3 py-2 text-left">{category === 'education' ? t('data.level') : t('data.fac_type')}</th>
+              <th className="px-3 py-2 text-left">{t('data.region')}</th>
+              <th className="px-3 py-2 text-left">{t('data.district')}</th>
+              <th className="px-3 py-2 text-right">{t('admin.col_actions')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-brand-grey-100">
+            {data.map((f: any) => {
+              const fid = category === 'education' ? f.id : f.code;
+              const regionName = f.region_name || f.region || '';
+              const districtName = f.district_name || f.district || '';
+              return (
+                <tr key={String(fid)} className="hover:bg-brand-grey-50">
+                  <td className="px-3 py-2 font-mono text-xs">{f.school_code || f.code}</td>
+                  <td className="px-3 py-2 font-medium">{f.name}</td>
+                  <td className="px-3 py-2 text-xs">{category === 'education' ? f.level : (f.type || f.type_category || '-')}</td>
+                  <td className="px-3 py-2 text-xs">{regionName || '-'}</td>
+                  <td className="px-3 py-2 text-xs">{districtName || '-'}</td>
+                  <td className="px-3 py-2 text-right">
+                    <RowAction
+                      onEdit={() => setEditing({ ...f, _category: category })}
+                      onDelete={async () => {
+                        if (!confirm(t('data.confirm_delete'))) return;
+                        try { await adminDeleteFacility(fid, category); markOwnAction(); flash(t('data.deleted')); load(); }
+                        catch (e) { flash(await errText(e), false); }
+                      }} />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {data.length === 0 && <div className="p-8 text-center text-sm text-brand-grey-500">{t('msg.no_data')}</div>}
+      </div>
+      {(editing || creating) && (
+        <FacilityModal
+          initial={editing ? { ...editing, category: editing._category || category } : { category, name: '', region_id: '', district_id: '' }}
+          regions={regions}
+          onClose={() => { setEditing(null); setCreating(false); }}
+          onSaved={async (body) => {
+            try {
+              if (editing) {
+                const fid = editing._category === 'education' ? editing.id : editing.code;
+                await adminUpdateFacility(fid, body);
+              } else {
+                await adminAddFacility(body);
+              }
+              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved')); load();
+            } catch (e) { throw e; }
+          }} />
+      )}
+    </div>
+  );
+}
+
+function FacilityModal({ initial, regions, onClose, onSaved }: {
+  initial: any; regions: any[]; onClose: () => void; onSaved: (b: any) => Promise<void>;
+}) {
+  const t = useT();
+  const [category, setCategory] = useState<'health' | 'education'>(initial.category || 'health');
+  const [name, setName] = useState(initial.name || '');
+  const [region_id, setRegionId] = useState(initial.region_id || '');
+  const [district_id, setDistrictId] = useState(initial.district_id || '');
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [type, setType] = useState(initial.type || initial.type_category || '');
+  const [level, setLevel] = useState(initial.level || 'Primary');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (region_id) adminListDistricts(Number(region_id), true).then(setDistricts).catch(() => setDistricts([]));
+    else setDistricts([]);
+  }, [region_id]);
+
+  return (
+    <ModalShell
+      title={initial.id || initial.code ? t('data.edit_facility') : t('data.add_facility')}
+      onClose={onClose}
+      busy={busy} canSave={!!name && !!region_id && !!district_id && !busy}
+      saveLabel={t('admin.save')} error={error}
+      onSave={async () => {
+        setBusy(true); setError(null);
+        try {
+          await onSaved({
+            category, name,
+            region_id: Number(region_id), district_id: Number(district_id),
+            type: category === 'health' ? type || undefined : undefined,
+            level: category === 'education' ? level : undefined,
+          });
+        } catch (e) { setError(await errText(e)); }
+        finally { setBusy(false); }
+      }}>
+      <div><label className="label">{t('admin.department')}</label>
+        <select className="input" value={category} onChange={(e) => setCategory(e.target.value as any)} disabled={busy}>
+          <option value="health">🏥 {t('data.fac_health')}</option>
+          <option value="education">🏫 {t('data.fac_schools')}</option>
+        </select>
+      </div>
+      <div><label className="label">{t('data.region')} *</label>
+        <select className="input" value={region_id} onChange={(e) => { setRegionId(e.target.value); setDistrictId(''); }} disabled={busy}>
+          <option value="">--</option>
+          {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+      </div>
+      <div><label className="label">{t('data.district')} *</label>
+        <select className="input" value={district_id} onChange={(e) => setDistrictId(e.target.value)} disabled={busy || !region_id}>
+          <option value="">--</option>
+          {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+      </div>
+      <div><label className="label">{t('data.name')} *</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} disabled={busy} /></div>
+      {category === 'education' ? (
+        <div><label className="label">{t('data.level')}</label>
+          <select className="input" value={level} onChange={(e) => setLevel(e.target.value)} disabled={busy}>
+            <option value="Primary">Primary (Msingi)</option>
+            <option value="Secondary">Secondary (Sekondari)</option>
+          </select>
+        </div>
+      ) : (
+        <div><label className="label">{t('data.fac_type')}</label>
+          <select className="input" value={type} onChange={(e) => setType(e.target.value)} disabled={busy}>
+            <option value="">--</option>
+            <option value="Dispensary">Dispensary</option>
+            <option value="Health Center">Health Center</option>
+            <option value="Hospital">Hospital</option>
+            <option value="Regional Hospital">Regional Hospital</option>
+            <option value="Referral Hospital">Referral Hospital</option>
           </select>
         </div>
       )}

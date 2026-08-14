@@ -55,6 +55,6 @@ export const WS_URL: string = (() => {
  * home inaonekana baada ya login" — sasa zote zinasoma list moja hii.
  */
 export const APP_ROUTES = [
-  '/dashboard', '/chats', '/contacts', '/profile', '/donate', '/admin',
+  '/dashboard', '/profile', '/donate', '/admin',
   '/notifications', '/announcements',
 ];

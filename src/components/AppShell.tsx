@@ -6,15 +6,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
-import { getRegions, updateFollowedRegions, type Region } from '@/lib/api';
-import { useFollowStore } from '@/lib/followStore';
 import { useLive } from '@/lib/liveSocket';
-import { useTheme, applyTheme } from '@/lib/theme';
-import ThemeToggle from '@/components/ThemeToggle';
 import { getInitial } from '@/lib/initials';
 import {
-  BarChart3, Contact, Crown, Database, Heart, Languages, LayoutDashboard,
-  LogOut, Megaphone as MegaphoneIcon, MessageSquare, Radio, User, Users, Wallet, Zap,
+  BarChart3, Crown, Database, Heart, Languages, LayoutDashboard,
+  LogOut, Megaphone as MegaphoneIcon, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -22,10 +18,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, logout } = useAuth();
   const t = useT();
-  const theme = useTheme((s) => s.theme);
-
-  // Apply persisted theme (dark/light) on mount + whenever it changes
-  useEffect(() => { applyTheme(theme); }, [theme]);
 
   const isAdmin = (user as any)?.is_admin;
 
@@ -42,8 +34,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-        { href: '/chats', label: t('nav.chats'), icon: MessageSquare },
-        { href: '/contacts', label: t('nav.contacts'), icon: Contact },
         { href: '/profile', label: t('nav.profile'), icon: User },
         { href: '/donate', label: t('nav.donate'), icon: Heart },
       ];
@@ -67,10 +57,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
           <div className="flex items-center gap-0.5 flex-shrink-0">
-            {/* Fuata Mikoa ni kwa WATUMIAJI tu — admin hana haja (anaona wote) */}
-            {!isAdmin && <FollowRegionsButton compact />}
-            <ThemeToggle />
-            <LangToggle compact />
+            <LangToggle />
             <AvatarMenu name={user?.full_name} onLogout={doLogout} />
           </div>
         </div>
@@ -88,13 +75,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 {isAdmin ? 'Admin Panel' : 'Kubadilishana'}
               </span>
             </Link>
-            {/* Toolbar: WS status + notifications + theme/language toggles */}
+            {/* Toolbar: WS status + language switcher (badilisha lugha) */}
             <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
               <WsStatus />
-              <div className="flex items-center gap-0.5">
-                <ThemeToggle />
-                <LangToggle />
-              </div>
+              <LangToggle />
             </div>
           </div>
 
@@ -118,13 +102,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-
-          {/* Fuata Mikoa — kwa WATUMIAJI tu (admin anaona data zote) */}
-          {!isAdmin && (
-            <div className="p-2 pt-0">
-              <FollowRegionsButton />
-            </div>
-          )}
 
           <div className="p-3 border-t mt-auto border-brand-grey-100">
             {user && (
@@ -179,8 +156,6 @@ function MobileBottomNav({ pathname, isAdmin }: {
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-        { href: '/chats', label: t('nav.chats'), icon: MessageSquare },
-        { href: '/contacts', label: t('nav.contacts'), icon: Contact },
         { href: '/donate', label: t('nav.donate'), icon: Heart },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
@@ -289,222 +264,26 @@ function WsStatus() {
   );
 }
 
-/** Language toggle — official icon + code (compact huficha text kwenye simu ndogo sana). */
-function LangToggle({ compact }: { compact?: boolean }) {
+/** Language switcher — MANENO YA WAZI: mtu anapoingia anaona kabisa kwamba
+ *  hapa anabadilisha LUGHA (sio icon pekee). */
+function LangToggle() {
   const currentLang = useI18n((s) => s.lang);
   const toggleLang = useI18n((s) => s.toggle);
   return (
     <button
       onClick={toggleLang}
-      className="flex items-center gap-1 p-1.5 rounded-md text-[11px] font-bold transition flex-shrink-0 hover:bg-brand-grey-100 text-brand-grey-700 dark:hover:bg-brand-grey-200/60 dark:text-brand-grey-300"
-      title="Badilisha lugha / Toggle language"
-      aria-label="Toggle language"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 hover:bg-brand-blue-50 text-brand-blue dark:hover:bg-brand-blue-100/40 border border-brand-blue/30"
+      title="Badilisha lugha / Switch language"
+      aria-label="Badilisha lugha"
     >
       <Languages size={15} strokeWidth={2.2} />
-      <span className={compact ? 'hidden min-[380px]:inline' : undefined}>{currentLang.toUpperCase()}</span>
+      <span className="hidden min-[380px]:inline">
+        {currentLang === 'sw' ? 'Badilisha Lugha · English' : 'Switch Language · Kiswahili'}
+      </span>
+      <span className="min-[380px]:hidden">
+        {currentLang === 'sw' ? 'EN' : 'SW'}
+      </span>
     </button>
-  );
-}
-
-/** Fuata Mikoa — chagua mikoa ya chanzo ya live notifications.
- *  `compact` = mobile top bar → fungua BOTTOM SHEET (mfumo wa kisasa wa simu);
- *  `!compact` = sidebar ya desktop → dropdown panel pana la grid ya mikoa. */
-function FollowRegionsButton({ compact }: { compact?: boolean }) {
-  const t = useT();
-  const { user } = useAuth();
-  const [open, setOpen] = useState(false);
-  const [regions, setRegions] = useState<Region[]>([]);
-  const followed = useFollowStore((s) => s.region_ids);
-  const loadFollow = useFollowStore((s) => s.load);
-  const setFollow = useFollowStore((s) => s.set);
-  const [savedMsg, setSavedMsg] = useState<'added' | 'removed' | null>(null);
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Mikoa ya KUHAMIA (desired_destinations) imefungwa (PINNED) — inafuatiliwa
-  // kiotomatiki na HAIWEZI kuondolewa hapa; inaondolewa tu kwa kubadilisha
-  // profile (desired_destinations). Mikoa mingine ni ya hiari (toggle).
-  const destRegionIds = new Set<number>(
-    ((user as any)?.desired_destinations || []).map((d: any) => d.region_id).filter((x: any) => typeof x === 'number')
-  );
-  const pinnedIds = destRegionIds;
-  const shownFollowed = followed.filter((id) => regions.some((r) => r.id === id));
-
-  // Load regions + followed (shared store) on mount
-  useEffect(() => {
-    loadFollow();
-    getRegions().then(setRegions).catch(() => {});
-  }, [loadFollow]);
-
-  // Close on outside click (desktop) — bottom sheet inafunga kwa backdrop yake
-  useEffect(() => {
-    if (!open || compact) return;
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [open, compact]);
-
-  // Bottom sheet: funga scroll ya ukurasa nyuma (mradi sheet iko wazi)
-  useEffect(() => {
-    if (!open || !compact) return;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, [open, compact]);
-
-  async function save(next: number[]) {
-    // Feedback halisi: unapoongeza → "Imechaguliwa"; unapoondoa → "Imeondolewa"
-    const adding = next.length > followed.length;
-    setFollow(next);
-    setSavedMsg(adding ? 'added' : 'removed');
-    try { await updateFollowedRegions(next); } finally {
-      setTimeout(() => setSavedMsg(null), 2000);
-    }
-  }
-
-  const toggle = (rid: number) => {
-    // Pinned (destinations) haziwezi kuondolewa hapa — mpaka profile
-    if (pinnedIds.has(rid)) return;
-    save(followed.includes(rid) ? followed.filter((x) => x !== rid) : [...followed, rid]);
-  };
-
-  const allIds = regions.filter((r) => !pinnedIds.has(r.id)).map((r) => r.id);
-
-  const content = (
-    <FollowRegionsContent
-      regions={regions}
-      pinnedIds={pinnedIds}
-      followed={shownFollowed}
-      saved={savedMsg}
-      onToggle={toggle}
-      onSelectAll={() => save(allIds)}
-      onClearAll={() => save([])}
-    />
-  );
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={clsx(
-          compact
-            ? 'p-1.5 rounded-md transition hover:bg-brand-grey-100 text-brand-grey-700 dark:hover:bg-brand-grey-200/60 dark:text-brand-grey-300'
-            : 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition text-brand-grey-700 hover:bg-brand-grey-50 dark:text-brand-grey-300 dark:hover:bg-brand-grey-200/60',
-          open && !compact && 'bg-brand-blue-50 text-brand-blue'
-        )}
-        title={t('board.follow_btn_title')}
-        aria-label="Fuata mikoa"
-      >
-        <Radio size={18} strokeWidth={2.2} className="flex-shrink-0" />
-        {!compact && <span className="flex-1 text-left">{t('board.follow')}</span>}
-        {!compact && followed.length > 0 && (
-          <span className="inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-orange text-white">
-            {followed.length}
-          </span>
-        )}
-        {compact && followed.length > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-brand-orange text-white text-[8px] font-bold flex items-center justify-center">
-            {followed.length > 9 ? '9+' : followed.length}
-          </span>
-        )}
-      </button>
-
-      {open && compact ? (
-        <>
-          {/* ═══ BOTTOM SHEET (simu) — inainuka kutoka chini, safe-area aware ═══ */}
-          {/* z-[110]/z-[120]: juu ya toasts (z-[100]) na bottom nav (z-40) */}
-          <div className="fixed inset-0 z-[110] bg-black/50" onClick={() => setOpen(false)} aria-hidden />
-          <div className="fixed inset-x-0 bottom-0 z-[120] rounded-t-2xl bg-white dark:bg-brand-grey-900 shadow-2xl max-h-[75dvh] overflow-y-auto overscroll-contain p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-brand-grey-900 dark:text-white flex items-center gap-1.5">
-                <Radio size={16} className="text-brand-orange" /> {t('board.follow')}
-              </span>
-              <button onClick={() => setOpen(false)}
-                className="text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-grey-200 text-brand-grey-600 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition flex-shrink-0">
-                ✕ {t('action.close')}
-              </button>
-            </div>
-            {content}
-          </div>
-        </>
-      ) : open ? (
-        <>
-          {/* Backdrop + dropdown panel (desktop) */}
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute top-full mt-1 left-0 w-[min(24rem,calc(100vw-1rem))] max-h-[70dvh] overflow-y-auto overscroll-contain rounded-xl border border-brand-grey-100 bg-white dark:bg-brand-grey-900 dark:border-brand-grey-700 shadow-xl z-40 p-3">
-            {content}
-          </div>
-        </>
-      ) : null}
-    </div>
-  );
-}
-
-/** Content ya pamoja (bottom sheet + dropdown) — quick actions + grid ya mikoa.
- *  `pinnedIds` = mikoa ya kuhamia (desired_destinations) — IMEFUNGWA: inaonekana
- *  highlighted (dhahabu) na haiondolewi hapa (inaondolewa kwa kubadilisha profile). */
-function FollowRegionsContent({ regions, pinnedIds, followed, saved, onToggle, onSelectAll, onClearAll }: {
-  regions: Region[]; pinnedIds: Set<number>; followed: number[];
-  saved: 'added' | 'removed' | null;
-  onToggle: (id: number) => void; onSelectAll: () => void; onClearAll: () => void;
-}) {
-  const t = useT();
-  const pinnedNames = regions.filter((r) => pinnedIds.has(r.id)).map((r) => r.name);
-  const freeRegions = regions.filter((r) => !pinnedIds.has(r.id));
-  return (
-    <>
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-bold text-brand-grey-500 dark:text-brand-grey-400">
-          {followed.length} / {regions.length}
-        </span>
-        {saved === 'added' && <span className="text-[10px] font-semibold text-green-600">{t('board.follow_added')}</span>}
-        {saved === 'removed' && <span className="text-[10px] font-semibold text-brand-orange">{t('board.follow_removed')}</span>}
-      </div>
-      <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mb-2 leading-relaxed">{t('board.follow_hint')}</p>
-      {pinnedNames.length > 0 && (
-        <div className="mb-2.5">
-          <div className="text-[10px] font-bold text-brand-gold-600 dark:text-brand-gold-400 mb-1.5">📌 {t('board.follow_pinned')}</div>
-          <div className="flex flex-wrap gap-1.5">
-            {pinnedNames.map((n) => (
-              <span key={n}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-gold-100 text-brand-gold-600 border border-brand-gold-300 dark:bg-brand-gold-900/40 dark:border-brand-gold-700">
-                📌 {n} <span className="font-medium opacity-70">🔒</span>
-              </span>
-            ))}
-          </div>
-          <p className="text-[10px] text-brand-grey-400 dark:text-brand-grey-500 mt-1">{t('board.follow_pinned_hint')}</p>
-        </div>
-      )}
-      <div className="flex items-center gap-1.5 mb-2.5">
-        <button type="button" onClick={onSelectAll}
-          className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-brand-blue text-brand-blue hover:bg-brand-blue-50 transition">
-          {t('board.follow_all')}
-        </button>
-        <button type="button" onClick={onClearAll}
-          className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-brand-grey-300 text-brand-grey-500 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition">
-          {t('board.follow_none')}
-        </button>
-      </div>
-      {/* 2-col tangu mwanzo — sheet/dropdown ni pana, chips zinakata kwa truncate */}
-      <div className="grid grid-cols-2 gap-1.5">
-        {freeRegions.map((r) => {
-          const on = followed.includes(r.id);
-          return (
-            <button key={r.id} type="button" onClick={() => onToggle(r.id)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border text-left transition min-w-0 ${
-                on
-                  ? 'bg-brand-blue text-white border-brand-blue shadow-sm'
-                  : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue hover:text-brand-blue dark:border-brand-grey-700 dark:text-brand-grey-300'
-              }`}>
-              <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${on ? 'bg-white border-white' : 'border-brand-grey-300'}`}>
-                {on && <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />}
-              </span>
-              <span className="truncate">{r.name}</span>
-            </button>
-          );
-        })}
-      </div>
-    </>
   );
 }
 

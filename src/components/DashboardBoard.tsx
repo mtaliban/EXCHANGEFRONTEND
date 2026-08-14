@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import {
   getBoard, getRegions, getDistricts, getFacilities, logCall, bustGetCache,
@@ -11,7 +10,7 @@ import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useI18n, useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 import { timeAgo } from '@/lib/timeAgo';
-import { parseServerDate, formatClock } from '@/lib/dates';
+import { parseServerDate } from '@/lib/dates';
 import { useFollowStore } from '@/lib/followStore';
 import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
@@ -476,8 +475,7 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
   const from = c.current_station;
   const to = c.desired_destinations?.[0];
   const createdTs = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? now) : now;
-  const ago = timeAgo(createdTs, lang);
-  const stamp = formatClock(createdTs, lang); // SAA HALISI — "10:45 AM" (sio tu "3hr")
+  const ago = timeAgo(createdTs, lang); // Muda wa JUUI: "dakika 2 zilizopita", "jana" — sio saa halisi
   const fresh = now - createdTs < FRESH_MS;
   const isEdu = c.category === 'education';
   // SOMO MOJA likifanana → mtu huyu ni "match" wa masomo — chips zote dhahabu
@@ -489,6 +487,20 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
     window.location.href = `tel:${c.phone_primary}`;
   }
 
+  // SMS ya kawaida — sms: inafungua app ya SMS na ujumbe wa kutambulishana.
+  function onSMS() {
+    if (!c.phone_primary) return;
+    window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
+  }
+
+  // WHATSAPP: namba ya WhatsApp ndiyo aliyoiweka kama phone_alt (ya WhatsApp).
+  // Kama hajaweka namba ya WhatsApp → hakuna button ya WhatsApp (2 tu: simu + SMS).
+  function onWhatsApp() {
+    if (!c.phone_alt) return;
+    const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
+    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
+  }
+
   // Ujumbe wa SMS/WhatsApp ulioandaliwa — taarifa za kutambulishana.
   const introMsg = useMemo(() => {
     const myName = me?.full_name || '';
@@ -498,17 +510,6 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
     const role = c.category === 'education' ? t('label.category_education') : t('label.category_health');
     return `Habari ${c.full_name}, wewe ni ${role}${theirSubjects ? ` wa masomo ${theirSubjects}` : ''}. Mimi ni ${myName}${myCadre ? `, ${myCadre}` : ''}${myRegion ? `, niko ${myRegion}` : ''}. Naomba kujadili kubadilishana vituo.`;
   }, [c, me, t]);
-
-  function onSMS() {
-    if (!c.phone_primary) return;
-    window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
-  }
-
-  function onWhatsApp() {
-    if (!c.phone_primary) return;
-    const digits = c.phone_primary.replace(/\D/g, '').replace(/^0/, '255');
-    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
-  }
 
   return (
     <div className={`card p-3 md:p-4 flex flex-col gap-2.5 hover:shadow-md transition group ${
@@ -577,34 +578,30 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
           📞 {c.phone_primary}
         </a>
       )}
-      {c.phone_alt && (
-        <a href={`https://wa.me/${c.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}?text=${encodeURIComponent(introMsg)}`}
-          target="_blank" rel="noreferrer"
-          className="text-xs sm:text-sm text-green-600 font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
-          🟢 {t('board.whatsapp_num')} {c.phone_alt}
-        </a>
-      )}
 
+      {/* MUDA WA JUU (relative): "dakika 2 zilizopita" / "jana" — siyo saa halisi */}
       <div className="text-[11px] font-medium text-brand-grey-400" title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
-        🕐 {ago}{stamp ? ` · ${stamp}` : ''}
+        🕐 {ago}
       </div>
 
+      {/* VIFUNGO VYA KUWASILIANA: 1) PIGA SIMU (tel:) 2) SMS YA KAWAIDA (sms:)
+          3) WHATSAPP — kwa namba ya WhatsApp ALIYOIWEKA (phone_alt) PEKEE.
+          Akiwa HANA namba ya WhatsApp → button 2 tu (simu + SMS). */}
       <div className="flex gap-1.5 mt-auto pt-1">
-        <Link href={`/chats/${c.user_id}`} className="btn-primary text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 text-center min-w-0">
-          💬 <span className="hidden min-[360px]:inline">{t('dash.chat')}</span>
-        </Link>
-        <button onClick={onSMS} disabled={!c.phone_primary} className="btn-outline text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0"
-          title={t('board.sms_btn')}>
-          ✉️ <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
-        </button>
-        <button onClick={onWhatsApp} disabled={!c.phone_primary} className="btn-accent text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 bg-green-600 hover:bg-green-700"
-          title={t('board.wa_btn')}>
-          🟢 <span className="hidden min-[360px]:inline">{t('board.wa_btn')}</span>
-        </button>
         <button onClick={onCall} disabled={!c.phone_primary} className="btn-accent text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0"
           title={t('dash.call')}>
           📞 <span className="hidden min-[360px]:inline">{t('dash.call')}</span>
         </button>
+        <button onClick={onSMS} disabled={!c.phone_primary} className="btn-accent text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 bg-brand-orange hover:bg-brand-orange-600"
+          title={t('board.sms_btn')}>
+          💬 <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
+        </button>
+        {c.phone_alt && (
+          <button onClick={onWhatsApp} className="btn-accent text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 min-w-0 bg-green-600 hover:bg-green-700"
+            title={t('board.wa_btn')}>
+            🟢 <span className="hidden min-[360px]:inline">{t('board.wa_btn')}</span>
+          </button>
+        )}
       </div>
     </div>
   );

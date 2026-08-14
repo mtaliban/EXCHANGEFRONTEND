@@ -33,11 +33,26 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const subjectLevel: 'Primary' | 'Secondary' | undefined =
     currentCadre?.level === 'Primary' ? 'Primary' : currentCadre?.level === 'Secondary' ? 'Secondary' : undefined;
 
+  // Masomo lazima yalingane na kiwango cha kada: mwalimu wa SEKONDARI anaona
+  // masomo ya Sekondari; wa MSINGI anaona masomo ya Msingi. Kada ikiingia
+  // inayobadilisha kiwango (Msingi↔Sekondari) masomo yanajipakia UPYA —
+  // vinginevyo masomo ya Sekondari yanaweza kubaki kwa mwalimu wa Msingi.
   useEffect(() => {
-    if (showSubjects && subjects.length === 0) {
-      getSubjects(subjectLevel).then(setSubjects).catch(() => setError(t('step2.err_load_subjects')));
+    if (showSubjects && subjectLevel) {
+      // Ondoa masomo ya kiwango kingine yaliyochaguliwa awali — yasikwende
+      // kwenye usajili kwa kosa (mwalimu wa Msingi asitumie masomo ya Sekondari).
+      setSubjects([]);
+      getSubjects(subjectLevel)
+        .then((list) => {
+          setSubjects(list);
+          const codes = new Set(list.map((s) => s.code));
+          setSelectedSubjects((prev) => prev.filter((c) => codes.has(c)));
+        })
+        .catch(() => setError(t('step2.err_load_subjects')));
+    } else if (!showSubjects) {
+      setSubjects([]);
     }
-  }, [showSubjects, subjects.length, subjectLevel]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSubjects, subjectLevel]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSubject(code: string) {
     setSelectedSubjects((prev) =>

@@ -287,45 +287,11 @@ export const getMatches = (params?: { region_id?: number; district_id?: number; 
 export const getMatchStats = () =>
   client.get(`${MATCH}/matches/stats`).then((r) => r.data);
 
-/* ── Messaging ───────────────────────────────────── */
-export interface Conversation {
-  conversation_id: string;
-  with_user_id: string;
-  with_full_name: string;
-  with_phone?: string;
-  with_cadre?: string;
-  with_station?: any;
-  last_message_at?: string;
-  last_message_text?: string;
-  last_message_from?: string;
-  unread: number;
-}
-export interface ChatMessage {
-  message_id: string;
-  from_user_id: string;
-  to_user_id: string;
-  text: string;
-  created_at: string;
-  is_read: boolean;
-  delivered_at?: string | null;
-  read_at?: string | null;
-}
-export const listConversations = (bypassCache = false) =>
-  client.get<Conversation[]>(`${MSG}/messages/conversations`, { bypassCache } as any).then((r) => r.data);
-export const chatHistory = (otherUserId: string) =>
-  client.get<{ conversation_id: string; messages: ChatMessage[] }>(`${MSG}/messages/with/${otherUserId}`).then((r) => r.data);
-export const sendMessage = (to_user_id: string, text: string) =>
-  client.post(`${MSG}/messages`, { to_user_id, text }).then((r) => r.data);
-export const markRead = (otherUserId: string) =>
-  client.post(`${MSG}/messages/mark-read/${otherUserId}`).then((r) => r.data);
+/* ── Messaging (call logging + presence only — in-app chat imeondolewa) ── */
 export const logCall = (to_user_id: string, outcome: string = 'initiated') =>
   client.post(`${MSG}/messages/call`, { to_user_id, outcome }).then((r) => r.data);
 export const listCalls = () =>
   client.get(`${MSG}/messages/calls`).then((r) => r.data);
-export const listContacts = () =>
-  client.get(`${MSG}/messages/contacts`).then((r) => r.data);
-export const getContactStats = () =>
-  client.get(`${MSG}/messages/contact-stats`).then((r) => r.data);
 export const getPresence = (bypassCache = false) =>
   client.get<{ online_user_ids: string[]; count: number }>(`${MSG}/messages/presence`, { bypassCache } as any).then((r) => r.data);
 
@@ -355,6 +321,31 @@ export const adminBulkUsers = (user_ids: string[], action: 'delete' | 'disable' 
   client.post<{ ok: boolean; action: string; processed: number; skipped_admin: number }>(
     `${ADMIN}/admin/users/bulk`, { user_ids, action }
   ).then((r) => r.data);
+export const adminCreateUser = (body: {
+  full_name: string;
+  email?: string;
+  phone_primary?: string;
+  phone_alt?: string;
+  password: string;
+  is_admin?: boolean;
+  status?: string;
+  category?: 'health' | 'education';
+  cadre_code?: string;
+  subjects?: string[];
+  current_station?: Station | null;
+  desired_destinations?: Destination[];
+  is_verified?: boolean;
+}) =>
+  client.post(`${ADMIN}/admin/users`, body).then((r) => r.data);
+/* ── Admin: Trash (soft delete → restore | permanent) ── */
+export const adminTrashList = (q?: string) =>
+  client.get<{ total: number; items: any[] }>(`${ADMIN}/admin/users/trash`, { params: q ? { q } : {}, bypassCache: true } as any).then((r) => r.data);
+export const adminTrashRestore = (user_id: string) =>
+  client.post(`${ADMIN}/admin/users/trash/${user_id}/restore`).then((r) => r.data);
+export const adminTrashPurge = (user_id: string) =>
+  client.delete(`${ADMIN}/admin/users/trash/${user_id}`).then((r) => r.data);
+export const adminTrashPurgeBulk = (user_ids: string[]) =>
+  client.delete(`${ADMIN}/admin/users/trash`, { params: { ids: user_ids } }).then((r) => r.data);
 
 /* ── Admin: data management (masomo/kada/mikoa/wilaya) ── */
 export const adminListSubjects = (level?: string, bypass = false) =>
@@ -389,6 +380,25 @@ export const adminUpdateDistrict = (id: number, body: { id: number; region_id: n
   client.patch(`${ADMIN}/admin/data/districts/${id}`, body).then((r) => r.data);
 export const adminDeleteDistrict = (id: number) =>
   client.delete(`${ADMIN}/admin/data/districts/${id}`).then((r) => r.data);
+export interface FacilityBody {
+  category: 'health' | 'education';
+  name: string;
+  region_id: number;
+  district_id: number;
+  code?: string;
+  type?: string;
+  school_code?: string;
+  level?: 'Primary' | 'Secondary';
+  ownership?: string;
+}
+export const adminListFacilities = (params: { category?: string; region_id?: number; district_id?: number; q?: string } = {}, bypass = false) =>
+  client.get(`${ADMIN}/admin/data/facilities`, { params, bypassCache: bypass } as any).then((r) => r.data);
+export const adminAddFacility = (body: FacilityBody) =>
+  client.post(`${ADMIN}/admin/data/facilities`, body).then((r) => r.data);
+export const adminUpdateFacility = (facility_id: string | number, body: FacilityBody) =>
+  client.patch(`${ADMIN}/admin/data/facilities/${facility_id}`, body).then((r) => r.data);
+export const adminDeleteFacility = (facility_id: string | number, category: 'health' | 'education') =>
+  client.delete(`${ADMIN}/admin/data/facilities/${facility_id}`, { params: { category } }).then((r) => r.data);
 
 /* ── Admin: exports + cleanup ── */
 export const adminEventsExport = (event_type?: string, fmt: 'csv' | 'xlsx' = 'csv') =>
