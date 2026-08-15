@@ -114,11 +114,11 @@ export default function LoginPage() {
   // 500ms — hata hivyo hakuna kitu cha kubofya.
   const twoFARef = useRef(twoFA);
   twoFARef.current = twoFA;
-  async function submitTwoFA() {
-    if (twoFACode.length !== 6 || twoFALoading) return;
+  async function submitTwoFA(code: string = twoFACode) {
+    if (code.length !== 6 || twoFALoading) return;
     setError(null); setSuccess(null); setTwoFALoading(true);
     try {
-      const res = await login2FA(twoFA!.email, twoFACode);
+      const res = await login2FA(twoFA!.email, code);
       setAuth(res.access_token, {
         user_id: res.user_id,
         full_name: res.full_name,
@@ -137,7 +137,8 @@ export default function LoginPage() {
     setTwoFACode(v);
     setError(null);
     if (twoFASubmitTimer.current) clearTimeout(twoFASubmitTimer.current);
-    if (v.length === 6) twoFASubmitTimer.current = setTimeout(submitTwoFA, 250);
+    // Tarakimu ya 6 inapofika → SUBMIT YENYEWE (tumia `v` halisi, siyo state ya zamani)
+    if (v.length === 6) twoFASubmitTimer.current = setTimeout(() => submitTwoFA(v), 250);
   }
 
   // Countdown ya 2FA code — anza sekunde 10*60 kutoka anapopata code.
@@ -182,11 +183,11 @@ export default function LoginPage() {
 
   // AUTO-SUBMIT pia hapa: code ya tarakimu 6 → inathibitisha yenyewe.
   const confirmTimer = useRef<any>(null);
-  async function submitVerifyCode() {
-    if (verifyCode.length !== 6 || loading) return;
+  async function submitVerifyCode(code: string = verifyCode) {
+    if (code.length !== 6 || loading) return;
     setError(null); setSuccess(null); setLoading(true);
     try {
-      const res = await confirmEmailVerification(verifyEmail, verifyCode);
+      const res = await confirmEmailVerification(verifyEmail, code);
       setSuccess(res.message || t('login.email_verified'));
       setVerifyCode('');
       setVerifyMode(false);
@@ -201,7 +202,7 @@ export default function LoginPage() {
     setVerifyCode(v);
     setError(null);
     if (confirmTimer.current) clearTimeout(confirmTimer.current);
-    if (v.length === 6) confirmTimer.current = setTimeout(submitVerifyCode, 250);
+    if (v.length === 6) confirmTimer.current = setTimeout(() => submitVerifyCode(v), 250);
   }
 
   async function onConfirmCode(e: React.FormEvent) {
