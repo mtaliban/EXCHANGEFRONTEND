@@ -3,23 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { getDonationInfo, submitDonation, myDonations } from '@/lib/api';
 import { parseServerDate } from '@/lib/dates';
+import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
-import { useT } from '@/lib/i18n';
+import { useT, useI18n } from '@/lib/i18n';
 import { Check, Copy, Heart } from 'lucide-react';
 import SpringSpinner from '@/components/SpringSpinner';
-
-const STATUS_STYLES: Record<string, string> = {
-  verifying: 'bg-brand-gold-100 text-brand-gold-600',
-  approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
-  rejected: 'bg-brand-red-100 text-brand-red',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  verifying: 'Inasindikwa...',
-  approved: 'Imethibitishwa ✓',
-  rejected: 'Imekataliwa',
-};
 
 export default function DonatePage() {
   const { user } = useAuth();
@@ -171,16 +160,8 @@ export default function DonatePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">{t('donate.amount')} ({currency})</label>
-              <div className="grid grid-cols-4 gap-1.5 mb-2">
-                {[1000, 5000, 10000, 20000].map((a) => (
-                  <button key={a} onClick={() => setAmount(a)}
-                    className={`p-1.5 rounded-lg border text-xs font-semibold transition ${amount === a ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-200 dark:border-brand-grey-600 text-brand-grey-700 dark:text-brand-grey-300 hover:border-brand-blue'}`}>
-                    {a.toLocaleString()}
-                  </button>
-                ))}
-              </div>
               <input type="number" className="input" min={500} step={500}
-                value={amount} onChange={(e) => setAmount(Number(e.target.value))} />
+                value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="5000" />
             </div>
             <div>
               <label className="label">{t('donate.phone_label')}</label>
@@ -205,10 +186,12 @@ export default function DonatePage() {
 
           {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
 
-          <button onClick={submit} disabled={!smsText.trim()}
-            className="btn-accent w-full text-sm py-2 disabled:opacity-50">
-            {t('donate.submit')}
-          </button>
+          <div className="flex justify-end">
+            <button onClick={submit} disabled={!smsText.trim()}
+              className="btn-accent text-sm px-5 py-2 disabled:opacity-50">
+              {t('donate.submit')}
+            </button>
+          </div>
         </div>
       ) : null}
 
@@ -219,6 +202,7 @@ export default function DonatePage() {
 
 function HistoryList({ history }: { history: any[] }) {
   const t = useT();
+  const lang = useI18n((s) => s.lang);
   return (
     <div className="card overflow-hidden">
       <div className="px-4 pt-4 pb-3 border-b border-brand-grey-100 dark:border-brand-grey-200 flex items-center justify-between">
@@ -229,6 +213,7 @@ function HistoryList({ history }: { history: any[] }) {
         <table className="w-full text-sm min-w-[520px]">
           <thead className="bg-brand-grey-50 dark:bg-brand-grey-100 text-[11px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400">
             <tr>
+              <th className="px-4 py-2.5 text-left font-semibold w-10">#</th>
               <th className="px-4 py-2.5 text-left font-semibold">{t('donate.history_amount')}</th>
               <th className="px-4 py-2.5 text-left font-semibold">{t('donate.history_date')}</th>
               <th className="px-4 py-2.5 text-left font-semibold hidden sm:table-cell">{t('msg.reference')}</th>
@@ -236,24 +221,38 @@ function HistoryList({ history }: { history: any[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
-            {history.map((p) => (
-              <tr key={p.order_id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 transition">
-                <td className="px-4 py-3 font-bold text-brand-grey-900 dark:text-white tabular-nums whitespace-nowrap">
-                  {p.amount?.toLocaleString()} <span className="text-xs font-semibold text-brand-grey-500">TZS</span>
-                </td>
-                <td className="px-4 py-3 text-brand-grey-600 dark:text-brand-grey-300 whitespace-nowrap">
-                  {(parseServerDate(p.created_at) || new Date()).toLocaleString('sw-TZ')}
-                </td>
-                <td className="px-4 py-3 hidden sm:table-cell">
-                  <span className="font-mono text-xs text-brand-grey-500 dark:text-brand-grey-400">{p.order_id}</span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <span className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${STATUS_STYLES[p.status] || 'bg-brand-grey-100 text-brand-grey-700'}`}>
-                    {STATUS_LABELS[p.status] || p.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
+            {history.map((p, i) => {
+              const ts = parseServerDate(p.created_at)?.getTime() ?? Date.now();
+              const when = timeAgo(ts, lang);
+              return (
+                <tr key={p.order_id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 transition">
+                  <td className="px-4 py-3 text-xs font-bold text-brand-grey-400 dark:text-brand-grey-500 tabular-nums">{i + 1}</td>
+                  <td className="px-4 py-3 font-bold text-brand-grey-900 dark:text-white tabular-nums whitespace-nowrap">
+                    {p.amount?.toLocaleString()} <span className="text-xs font-semibold text-brand-grey-500">TZS</span>
+                  </td>
+                  <td className="px-4 py-3 text-brand-grey-600 dark:text-brand-grey-300 whitespace-nowrap">{when}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className="font-mono text-xs text-brand-grey-500 dark:text-brand-grey-400">{p.order_id}</span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {p.status === 'approved' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 whitespace-nowrap">
+                        ✓ {t('donate.st_approved')}
+                      </span>
+                    ) : p.status === 'rejected' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-red-100 text-brand-red whitespace-nowrap">
+                        ✗ {t('donate.st_rejected')}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-gold-100 text-brand-gold-600 whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-gold-500 animate-pulse" />
+                        {t('donate.st_verifying')}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

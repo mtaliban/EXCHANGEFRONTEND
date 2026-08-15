@@ -417,7 +417,8 @@ const dict: Record<Lang, Record<string, string>> = {
       'Hakikisha umelipa kiasi ulichoandika na SMS ni sahihi.',
     'donate.try_again': 'Jaribu Tena', 'donate.donate_again': 'Changia Tena',
     'donate.history': 'Historia Yako ya Michango',
-    'donate.history_count': 'za michango', 'donate.history_amount': 'Kiasi', 'donate.history_date': 'Tarehe', 'donate.history_status': 'Hali',
+    'donate.history_count': 'za michango', 'donate.history_amount': 'Kiasi', 'donate.history_date': 'Muda', 'donate.history_status': 'Hali',
+    'donate.st_verifying': 'Inasindikwa', 'donate.st_approved': 'Imethibitishwa', 'donate.st_rejected': 'Imekataliwa',
     /* ── Services page ── */
     'svc.badge': 'Huduma Zetu', 'svc.title': 'Kile Tunachotoa',
     'svc.subtitle': 'Jukwaa kamili la kubadilishana vituo — kutoka usajili hadi kuwasiliana na aliyekusiliana.',
@@ -858,7 +859,8 @@ const dict: Record<Lang, Record<string, string>> = {
       'Make sure you paid the amount you entered and the SMS is correct.',
     'donate.try_again': 'Try Again', 'donate.donate_again': 'Donate Again',
     'donate.history': 'Your Donation History',
-    'donate.history_count': 'donations', 'donate.history_amount': 'Amount', 'donate.history_date': 'Date', 'donate.history_status': 'Status',
+    'donate.history_count': 'donations', 'donate.history_amount': 'Amount', 'donate.history_date': 'When', 'donate.history_status': 'Status',
+    'donate.st_verifying': 'Processing', 'donate.st_approved': 'Approved', 'donate.st_rejected': 'Rejected',
     /* ── Services page ── */
     'svc.badge': 'Our Services', 'svc.title': 'What We Offer',
     'svc.subtitle': 'A complete platform for station exchange — from registration to connecting with your partner.',
