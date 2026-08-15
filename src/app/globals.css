@@ -94,7 +94,9 @@ body {
   /* Touch: ondoa tap-highlight ya bluu kwenye Android (user-select inabaki
    * kwa maandishi — tusizuie long-press ya picha/mahusiano kwenye iOS) */
   -webkit-tap-highlight-color: transparent;
-  scroll-behavior: smooth;
+  /* KWA MAKINI: scroll-behavior: smooth HAIWEKWI hapa — inasababisha page
+   * "kushake"/kuteleza unapobofya link (Next.js ina-scroll juu kwa smooth
+   * kwenye kila navigation). Tumia `scroll-smooth` class mahali maalum tu. */
 }
 
 /* Vipengee vyote vya interactive — hakuna 300ms tap-delay (mobile browsers) */
@@ -168,9 +170,11 @@ textarea {
 }
 
 /* Smooth theme transition — scoped to major surfaces only (avoids jank on every element) */
-html, body, .card, nav, aside, footer, .btn-primary, .btn-accent, .btn-outline, .input {
+.card, nav, aside, footer, .btn-primary, .btn-accent, .btn-outline, .input {
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
 }
+/* html/body HAZINA transition ya rangi — hiyo pia ilikuwa inachangia "kushake"
+   kwa page unapobofya link (nyuma nzima inabadilika rangi kwa 0.25s). */
 
 /* Apply a temporary transition to everything ONLY while toggling theme (added via JS) */
 html.theme-switching * {
