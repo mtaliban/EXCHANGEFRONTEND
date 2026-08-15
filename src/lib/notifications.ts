@@ -1,6 +1,6 @@
 import {
   BadgeCheck, Ban, Bell, Handshake, Megaphone,
-  MessageCircle, Phone, UserCog, UserPlus, Wallet,
+  MessageCircle, MessageSquareReply, Phone, UserCog, UserPlus, Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -16,6 +16,9 @@ export const NOTIFICATION_TYPE_META: Record<string, { icon: LucideIcon; color: s
   'user.registered': { icon: UserPlus, color: 'blue' },
   'user.profile_updated': { icon: UserCog, color: 'orange' },
   'announcement': { icon: Megaphone, color: 'gold' },
+  // Maoni na Malalamiko — real-time (feedback.new → admin, feedback.replied → user)
+  'feedback.new': { icon: MessageSquareReply, color: 'orange' },
+  'feedback.replied': { icon: MessageSquareReply, color: 'blue' },
 };
 
 export const DEFAULT_NOTIFICATION_ICON: LucideIcon = Bell;
@@ -35,6 +38,8 @@ export function notificationRoute(type: string, data: any, isAdmin?: boolean): s
     case 'payment.rejected': return '/donate';
     case 'user.profile_updated': return '/profile';
     case 'announcement': return '/announcements';
+    case 'feedback.new': return isAdmin ? '/admin/feedback' : '/feedback';
+    case 'feedback.replied': return '/feedback';
     default: return '/dashboard';
   }
 }

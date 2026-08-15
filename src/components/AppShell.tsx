@@ -35,7 +35,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-        { href: '/feedback', label: t('nav.feedback'), icon: MessageSquare },
         { href: '/donate', label: t('nav.donate'), icon: Heart },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];

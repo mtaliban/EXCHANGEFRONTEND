@@ -5,6 +5,7 @@ import { submitFeedback, myFeedback } from '@/lib/api';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
+import { MessageSquareReply } from 'lucide-react';
 import Spinner from '@/components/Spinner';
 
 export default function FeedbackPage() {
@@ -59,7 +60,10 @@ export default function FeedbackPage() {
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white">💬 {t('fb.title')}</h1>
+        <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+          <MessageSquareReply size={24} className="text-brand-blue" />
+          {t('fb.title')}
+        </h1>
         <p className="text-brand-grey-500 dark:text-brand-grey-400 text-sm mt-1">{t('fb.subtitle')}</p>
       </div>
 
