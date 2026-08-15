@@ -248,39 +248,17 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* ═══ 2FA: PIN pekee — hakuna maneno mengi, weka code tu ═══ */}
+        {/* ═══ 2FA: box la code tu — code inajiingiza yenyewe (kama Telegram) ═══ */}
         {twoFA && (
           <div className="mt-5 border-t border-brand-grey-100 pt-4">
             <form onSubmit={onTwoFASubmit} className="space-y-3 mt-3">
               <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={twoFACode}
                 onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus />
-              <p className="text-[11px] text-brand-blue flex items-center gap-1.5">⚡ {t('login.code_auto')}</p>
-              {/* COUNTDOWN — code inaisha wakati gani (backend TTL dakika 10) */}
-              {twoFACountdown > 0 ? (
-                <div className="inline-flex items-center gap-2 rounded-lg bg-brand-gold-50 border border-brand-gold-200 px-3 py-1.5 text-xs font-bold text-brand-gold-700">
-                  ⏳ {t('login.code_expires_in')}: {String(Math.floor(twoFACountdown / 60)).padStart(2, '0')}:{String(twoFACountdown % 60).padStart(2, '0')}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="text-xs font-semibold text-brand-red bg-brand-red-50 rounded-lg px-3 py-2">
-                    ⏳ {t('login.code_expired')}
-                  </div>
-                  <button type="button" onClick={() => setTwoFA(null)}
-                    className="text-xs font-semibold text-brand-blue hover:underline w-full text-center">
-                    🔄 {t('login.code_send_new')}
-                  </button>
-                </div>
-              )}
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              {/* Hakuna button kubwa — code inajiingiza yenyewe. Enter bado inafanya kazi. */}
               <button type="submit" disabled={twoFALoading || twoFACountdown <= 0} className="hidden">
                 {twoFALoading ? t('login.verifying') : t('login.twofa_submit')}
-              </button>
-              <button type="button" onClick={() => { setTwoFA(null); setError(null); }}
-                className="text-xs text-brand-grey-500 hover:underline">
-                {t('login.twofa_back')}
               </button>
             </form>
           </div>
@@ -308,17 +286,11 @@ export default function LoginPage() {
 
           {verifyMode && (
             <form onSubmit={onConfirmCode} className="space-y-3 mt-3">
-              <p className="text-xs text-brand-grey-500">
-                {t('login.enter_code')} <span className="font-semibold">{verifyEmail}</span>.
-              </p>
               <input type="text" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={verifyCode}
-                onChange={(e) => onVerifyCodeChange(e.target.value.replace(/\D/g, ''))} required />
-              <p className="text-[11px] text-brand-blue flex items-center gap-1.5">⚡ {t('login.code_auto')}</p>
-              <p className="text-[11px] text-brand-grey-500">⏳ {t('login.code_expires_min')}</p>
+                onChange={(e) => onVerifyCodeChange(e.target.value.replace(/\D/g, ''))} required autoFocus />
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              {/* Hakuna button kubwa — code inajiingiza yenyewe. */}
               <button type="submit" disabled={loading} className="hidden">
                 {loading ? t('login.verifying') : t('login.verify_email')}
               </button>
