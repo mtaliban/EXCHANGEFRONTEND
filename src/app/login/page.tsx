@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { login, login2FA, requestEmailVerification, confirmEmailVerification } from '@/lib/api';
@@ -62,6 +62,10 @@ export default function LoginPage() {
   const [twoFA, setTwoFA] = useState<{ email: string; message?: string; devCode?: string } | null>(null);
   const [twoFACode, setTwoFACode] = useState('');
   const [twoFALoading, setTwoFALoading] = useState(false);
+  // Countdown ya code (dakika 10 — backend TTL): inapofika 0, code imeisha.
+  const [twoFAExpiresAt, setTwoFAExpiresAt] = useState<number | null>(null);
+  const [twoFACountdown, setTwoFACountdown] = useState(0);
+  const twoFASubmitTimer = useRef<any>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,9 +108,10 @@ export default function LoginPage() {
     } finally { setLoading(false); }
   }
 
-  // Hatua ya pili: weka code ya 2FA iliyotumwa kwa email
-  async function onTwoFASubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // AUTO-SUBMIT: code ya tarakimu 6 inapoandikwa, inajiingiza YENYEWE
+  // (pause ya 250ms — usi-submit katikati ya kuandika). Hakuna kubofya.
+  async function submitTwoFA() {
+    if (twoFACode.length !== 6 || twoFALoading) return;
     setError(null); setSuccess(null); setTwoFALoading(true);
     try {
       const res = await login2FA(twoFA!.email, twoFACode);
@@ -124,6 +129,35 @@ export default function LoginPage() {
     } finally { setTwoFALoading(false); }
   }
 
+  function onTwoFAChange(v: string) {
+    setTwoFACode(v);
+    setError(null);
+    if (twoFASubmitTimer.current) clearTimeout(twoFASubmitTimer.current);
+    if (v.length === 6) twoFASubmitTimer.current = setTimeout(submitTwoFA, 250);
+  }
+
+  // Countdown ya 2FA code — anza sekunde 10*60 kutoka anapopata code.
+  useEffect(() => {
+    if (!twoFA) return;
+    setTwoFAExpiresAt(Date.now() + 10 * 60 * 1000);
+    setTwoFACountdown(10 * 60);
+  }, [twoFA]);
+  useEffect(() => {
+    if (!twoFA || !twoFAExpiresAt) return;
+    const id = setInterval(() => {
+      const left = Math.max(0, Math.round((twoFAExpiresAt - Date.now()) / 1000));
+      setTwoFACountdown(left);
+      if (left <= 0) setTwoFACountdown(0);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [twoFA, twoFAExpiresAt]);
+
+  // Hatua ya pili: weka code ya 2FA iliyotumwa kwa email
+  async function onTwoFASubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await submitTwoFA();
+  }
+
   async function onRequestCode(e: React.FormEvent) {
     e.preventDefault();
     setError(null); setSuccess(null); setLoading(true);
@@ -136,8 +170,10 @@ export default function LoginPage() {
     } finally { setLoading(false); }
   }
 
-  async function onConfirmCode(e: React.FormEvent) {
-    e.preventDefault();
+  // AUTO-SUBMIT pia hapa: code ya tarakimu 6 → inathibitisha yenyewe.
+  const confirmTimer = useRef<any>(null);
+  async function submitVerifyCode() {
+    if (verifyCode.length !== 6 || loading) return;
     setError(null); setSuccess(null); setLoading(true);
     try {
       const res = await confirmEmailVerification(verifyEmail, verifyCode);
@@ -149,6 +185,18 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(err?.response?.data?.detail || t('msg.error'));
     } finally { setLoading(false); }
+  }
+
+  function onVerifyCodeChange(v: string) {
+    setVerifyCode(v);
+    setError(null);
+    if (confirmTimer.current) clearTimeout(confirmTimer.current);
+    if (v.length === 6) confirmTimer.current = setTimeout(submitVerifyCode, 250);
+  }
+
+  async function onConfirmCode(e: React.FormEvent) {
+    e.preventDefault();
+    await submitVerifyCode();
   }
 
   return (
@@ -201,10 +249,27 @@ export default function LoginPage() {
               )}
               <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={twoFACode}
-                onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ''))} required autoFocus />
+                onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus />
+              <p className="text-[11px] text-brand-blue flex items-center gap-1.5">⚡ {t('login.code_auto')}</p>
+              {/* COUNTDOWN — code inaisha wakati gani (backend TTL dakika 10) */}
+              {twoFACountdown > 0 ? (
+                <div className="inline-flex items-center gap-2 rounded-lg bg-brand-gold-50 border border-brand-gold-200 px-3 py-1.5 text-xs font-bold text-brand-gold-700">
+                  ⏳ {t('login.code_expires_in')}: {String(Math.floor(twoFACountdown / 60)).padStart(2, '0')}:{String(twoFACountdown % 60).padStart(2, '0')}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-brand-red bg-brand-red-50 rounded-lg px-3 py-2">
+                    ⏳ {t('login.code_expired')}
+                  </div>
+                  <button type="button" onClick={() => setTwoFA(null)}
+                    className="text-xs font-semibold text-brand-blue hover:underline w-full text-center">
+                    🔄 {t('login.code_send_new')}
+                  </button>
+                </div>
+              )}
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              <button type="submit" disabled={twoFALoading} className="btn-primary w-full bg-brand-orange">
+              <button type="submit" disabled={twoFALoading || twoFACountdown <= 0} className="btn-primary w-full bg-brand-orange">
                 {twoFALoading ? t('login.verifying') : `${t('login.twofa_submit')} ✓`}
               </button>
               <button type="button" onClick={() => { setTwoFA(null); setError(null); }}
@@ -243,7 +308,9 @@ export default function LoginPage() {
               </p>
               <input type="text" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={verifyCode}
-                onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, ''))} required />
+                onChange={(e) => onVerifyCodeChange(e.target.value.replace(/\D/g, ''))} required />
+              <p className="text-[11px] text-brand-blue flex items-center gap-1.5">⚡ {t('login.code_auto')}</p>
+              <p className="text-[11px] text-brand-grey-500">⏳ {t('login.code_expires_min')}</p>
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
               <button type="submit" disabled={loading} className="btn-primary w-full bg-brand-orange">
