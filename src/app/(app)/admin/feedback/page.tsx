@@ -5,7 +5,7 @@ import { adminListFeedback, adminReplyFeedback, adminDeleteFeedback } from '@/li
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
-import { MessageSquareReply } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
 
@@ -75,7 +75,7 @@ export default function AdminFeedbackPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
-            <MessageSquareReply size={24} className="text-brand-blue" />
+            <ClipboardList size={24} className="text-brand-blue" />
             {t('fbadmin.title')}
           </h1>
           <p className="text-brand-grey-500 text-sm mt-1">{t('fbadmin.subtitle')}</p>

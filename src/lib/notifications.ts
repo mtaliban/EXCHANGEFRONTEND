@@ -1,6 +1,6 @@
 import {
-  BadgeCheck, Ban, Bell, Handshake, Megaphone,
-  MessageCircle, MessageSquareReply, Phone, UserCog, UserPlus, Wallet,
+  BadgeCheck, Ban, Bell, ClipboardList, Handshake, Megaphone,
+  MessageCircle, Phone, UserCog, UserPlus, Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -17,8 +17,8 @@ export const NOTIFICATION_TYPE_META: Record<string, { icon: LucideIcon; color: s
   'user.profile_updated': { icon: UserCog, color: 'orange' },
   'announcement': { icon: Megaphone, color: 'gold' },
   // Maoni na Malalamiko — real-time (feedback.new → admin, feedback.replied → user)
-  'feedback.new': { icon: MessageSquareReply, color: 'orange' },
-  'feedback.replied': { icon: MessageSquareReply, color: 'blue' },
+  'feedback.new': { icon: ClipboardList, color: 'orange' },
+  'feedback.replied': { icon: ClipboardList, color: 'blue' },
 };
 
 export const DEFAULT_NOTIFICATION_ICON: LucideIcon = Bell;
