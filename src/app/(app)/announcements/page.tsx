@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getActiveAnnouncements, getNotifications, dismissAnnouncement, type Announcement } from '@/lib/api';
+import { getActiveAnnouncements, getNotifications, dismissAnnouncement, bustGetCache, type Announcement } from '@/lib/api';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
+import { useLive } from '@/lib/liveSocket';
 import Spinner from '@/components/Spinner';
 
 export default function AnnouncementsPage() {
@@ -24,6 +25,18 @@ export default function AnnouncementsPage() {
   }
 
   useEffect(() => { reload(); }, []);
+
+  // REAL-TIME: tangazo jipya likitumwa (announcement event) → orodha inajirefresh
+  // PAPO HAPO bila refresh ya page (event-driven kama WebSocket).
+  const { subscribe } = useLive();
+  useEffect(() => {
+    const un = subscribe('announcement', () => {
+      bustGetCache();
+      reload();
+    });
+    return () => un();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subscribe]);
 
   async function dismiss(id: string) {
     try { await dismissAnnouncement(id); } catch {}

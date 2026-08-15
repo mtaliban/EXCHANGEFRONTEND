@@ -1,9 +1,66 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { adminReports, adminReportsExport, exportErrorText } from '@/lib/api';
+import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
+
+/**
+ * REAL-TIME (event-driven): SSE feed ya admin — data ikibadilika (user mpya,
+ * donation, data.* ...) ripoti inajirefresh PAPO HAPO bila refresh ya page.
+ */
+function useLiveReportsRefresh(onChange: () => void) {
+  const lastOwn = useRef(0);
+  useEffect(() => {
+    let aborter: AbortController | null = null;
+    let retry: any = null;
+    let stopped = false;
+    async function connect() {
+      try {
+        const raw = sessionStorage.getItem('kv_auth');
+        let token: string | null = null;
+        try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
+        aborter = new AbortController();
+        const res = await fetch(`${API_URL}/admin/live-events`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          signal: aborter.signal,
+        });
+        if (!res.ok || !res.body) throw new Error('feed failed');
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (!stopped) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let idx;
+          while ((idx = buffer.indexOf('\n\n')) !== -1) {
+            const chunk = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 2);
+            const line = chunk.split('\n').find((l) => l.startsWith('data: '));
+            if (line) {
+              try {
+                const ev = JSON.parse(line.slice(6));
+                if (Date.now() - lastOwn.current < 1500) continue; // kitendo chetu
+                onChange();
+              } catch {}
+            }
+          }
+        }
+      } catch {}
+      if (!stopped) retry = setTimeout(connect, 3000);
+    }
+    connect();
+    return () => {
+      stopped = true;
+      aborter?.abort();
+      if (retry) clearTimeout(retry);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return { markOwn: () => { lastOwn.current = Date.now(); } };
+}
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -47,6 +104,13 @@ export default function ReportsPage() {
   const [days, setDays] = useState(30);
   const [exporting, setExporting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // REAL-TIME: data ikibadilika (user mpya/malipo/data.*) ripoti inajirefresh
+  // PAPO HAPO bila refresh — event-driven (kama WebSocket).
+  useLiveReportsRefresh(() => {
+    setErr(null);
+    adminReports(days).then(setData).catch(() => {});
+  });
 
   useEffect(() => {
     setErr(null);

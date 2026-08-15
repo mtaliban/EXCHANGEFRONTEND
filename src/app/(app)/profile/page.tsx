@@ -4,15 +4,32 @@ import { useEffect, useState } from 'react';
 import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, getCadres, getFollowedRegions, updateFollowedRegions, bustGetCache, type Region, type District, type Subject, type Facility, type Cadre, type Station, type Destination } from '@/lib/api';
 import { useFollowStore } from '@/lib/followStore';
 import { useT } from '@/lib/i18n';
+import { useLive } from '@/lib/liveSocket';
+import { useAuth } from '@/lib/auth';
 import Spinner from '@/components/Spinner';
 
 export default function ProfilePage() {
   const t = useT();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => { getMyProfile().then(setProfile).catch(() => {}); }, []);
+
+  // REAL-TIME: admin akibadilisha taarifa zako (user.updated_by_admin) → wasifu
+  // unajirefresh PAPO HAPO bila refresh ya page (event-driven kama WebSocket).
+  const { subscribe } = useLive();
+  useEffect(() => {
+    const un = subscribe('user.updated_by_admin', (p: any) => {
+      const uid = (user as any)?.user_id;
+      if (p.user_id && p.user_id !== uid) return;
+      bustGetCache();
+      getMyProfile().then(setProfile).catch(() => {});
+    });
+    return () => un();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subscribe, user]);
 
   if (!profile) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
