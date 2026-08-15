@@ -5,6 +5,7 @@ import { sendAnnouncement, adminListAnnouncements, adminUsers, adminDeleteAnnoun
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { API_URL } from '@/lib/config';
+import { askConfirm } from '@/components/confirm';
 
 /**
  * REAL-TIME (event-driven): sikiliza /admin/live-events (SSE) — admin akiongeza/
@@ -140,7 +141,7 @@ export default function AdminAnnouncementsPage() {
   // CRUD: resend (tuma tena kwa walengwa wote wa sasa) + delete.
   const [busyId, setBusyId] = useState<string | null>(null);
   async function resend(a: any) {
-    if (!confirm(t('ann.resend_confirm'))) return;
+    if (!(await askConfirm({ title: t('ann.resend_confirm') }))) return;
     setBusyId(a.announcement_id);
     try {
       const res = await adminResendAnnouncement(a.announcement_id);
@@ -151,7 +152,7 @@ export default function AdminAnnouncementsPage() {
     } finally { setBusyId(null); }
   }
   async function del(a: any) {
-    if (!confirm(t('ann.delete_confirm'))) return;
+    if (!(await askConfirm({ title: t('ann.delete_confirm'), danger: true }))) return;
     setBusyId(a.announcement_id);
     try {
       await adminDeleteAnnouncement(a.announcement_id);

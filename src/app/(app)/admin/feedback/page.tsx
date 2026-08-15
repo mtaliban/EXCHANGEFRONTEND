@@ -6,6 +6,7 @@ import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
 import { MessageSquareReply } from 'lucide-react';
+import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
 
 type Status = '' | 'open' | 'replied';
@@ -54,7 +55,7 @@ export default function AdminFeedbackPage() {
   }
 
   async function del(f: any) {
-    if (!confirm('Futa maoni haya?')) return;
+    if (!(await askConfirm({ title: 'Futa maoni haya?', danger: true }))) return;
     try {
       await adminDeleteFeedback(f.id);
       setFlash('✓ Yamefutwa.');

@@ -5,6 +5,7 @@ import { adminEvents, adminEventsExport, adminClearEvents, exportErrorText } fro
 import { API_URL } from '@/lib/config';
 import { useT, useI18n } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
+import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
 
 const TYPES = [
@@ -281,7 +282,7 @@ export default function AdminEventsPage() {
   }
 
   async function doClear() {
-    if (!confirm(t('adminevents.clear_confirm'))) return;
+    if (!(await askConfirm({ title: t('adminevents.clear_confirm'), danger: true }))) return;
     try {
       await adminClearEvents();
       setPage(1);

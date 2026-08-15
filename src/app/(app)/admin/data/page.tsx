@@ -11,6 +11,7 @@ import {
 } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
+import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
 
 type Tab = 'departments' | 'subjects' | 'cadres' | 'regions' | 'districts' | 'facilities';
@@ -267,7 +268,7 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
                     onView={() => setViewing(d)}
                     onEdit={() => setEditing(d)}
                     onDelete={async () => {
-                      if (!confirm(t('data.confirm_delete'))) return;
+                      if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
                       try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== d.code) : prev); }
                       catch (e: any) { flash(e?.response?.data?.detail || await errText(e), false); }
                     }}
@@ -394,7 +395,7 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
                 <td className="px-3 py-2"><span className="badge-gold">{s.level}</span></td>
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(s)} onEdit={() => setEditing(s)} onDelete={async () => {
-                    if (!confirm(t('data.confirm_delete'))) return;
+                    if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
                     try { await adminDeleteSubject(s.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== s.code) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
@@ -511,7 +512,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
                 <td className="px-3 py-2 text-xs">{c.level || '-'}</td>
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(c)} onEdit={() => setEditing(c)} onDelete={async () => {
-                    if (!confirm(t('data.confirm_delete'))) return;
+                    if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
                     try { await adminDeleteCadre(c.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== c.code) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
@@ -648,7 +649,7 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
                 <td className="px-3 py-2 font-medium">{r.name}</td>
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(r)} onEdit={() => setEditing(r)} onDelete={async () => {
-                    if (!confirm(t('data.confirm_delete'))) return;
+                    if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
                     try { await adminDeleteRegion(r.id); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.id !== r.id) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
@@ -742,7 +743,7 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
                 <td className="px-3 py-2 text-xs">{regions.find((r) => r.id === d.region_id)?.name || d.region_id}</td>
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(d)} onEdit={() => setEditing(d)} onDelete={async () => {
-                    if (!confirm(t('data.confirm_delete'))) return;
+                    if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
                     try { await adminDeleteDistrict(d.id); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.id !== d.id) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
@@ -919,7 +920,7 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
                       onView={() => setViewing({ ...f, _category: category })}
                       onEdit={() => setEditing({ ...f, _category: category })}
                       onDelete={async () => {
-                        if (!confirm(t('data.confirm_delete'))) return;
+                        if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
                         try { await adminDeleteFacility(fid, category); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => String(category === 'education' ? x.id : x.code) !== String(fid)) : prev); }
                         catch (e) { flash(await errText(e), false); }
                       }} />

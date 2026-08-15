@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
 import { useLive } from '@/lib/liveSocket';
 import { getInitial } from '@/lib/initials';
+import { ConfirmHost } from '@/components/confirm';
 import {
   BarChart3, Crown, Database, Heart, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, MessageSquare, User, Users, Wallet, Zap,
@@ -120,6 +121,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* ═══ MOBILE BOTTOM NAV (md:hidden) — kama app ya simu ═══ */}
       <MobileBottomNav pathname={pathname} isAdmin={isAdmin} />
+      {/* Confirm dialog ya KISOMI (badala ya confirm() ya kizamani) */}
+      <ConfirmHost />
     </div>
   );
 }

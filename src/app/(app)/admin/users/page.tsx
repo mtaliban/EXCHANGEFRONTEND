@@ -11,6 +11,7 @@ import {
 import { API_URL } from '@/lib/config';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
+import { askConfirm } from '@/components/confirm';
 
 /**
  * REAL-TIME: SSE feed ya admin — mtumiaji mpya anapojisajili (au kufutwa /
@@ -137,7 +138,12 @@ export default function AdminUsersPage() {
     const ids = Array.from(selected);
     if (!ids.length) return;
     const label = action === 'delete' ? t('admin.bulk_delete_confirm') : action === 'disable' ? t('admin.bulk_suspend_confirm') : t('admin.bulk_enable_confirm');
-    if (!confirm(`${label}\n\n${ids.length} ${t('admin.users')}`)) return;
+    const ok = await askConfirm({
+      title: label,
+      message: `${ids.length} ${t('admin.users')}`,
+      danger: action === 'delete',
+    });
+    if (!ok) return;
     setBulkBusy(true);
     try {
       const r = await adminBulkUsers(ids, action);
@@ -171,7 +177,14 @@ export default function AdminUsersPage() {
 
   async function toggleSuspend(u: any) {
     const next = u.status === 'disabled' ? 'active' : 'disabled';
-    if (next === 'disabled' && !confirm(`${t('admin.suspend_confirm')}\n\n${u.full_name} (${u.phone_primary})`)) return;
+    if (next === 'disabled') {
+      const ok = await askConfirm({
+        title: t('admin.suspend_confirm'),
+        message: `${u.full_name} (${u.phone_primary})`,
+        danger: true,
+      });
+      if (!ok) return;
+    }
     await adminUpdateUser(u._id, { status: next });
     // REAL-TIME: kama mtumiaji yupo logged-in, anaondolewa PAPO HAPO (WS).
     setMessage(`${u.full_name}: ${next === 'disabled' ? t('admin.suspended') : t('admin.unsuspended')}`);
@@ -181,7 +194,12 @@ export default function AdminUsersPage() {
 
   async function del(u: any) {
     // Delete sasa ni SOFT DELETE → akaunti inaenda TRASH (inaweza kurudishwa).
-    if (!confirm(t('admin.confirm_delete') + `\n\n${u.full_name} (${u.phone_primary})\n\n${t('admin.trash_hint')}`)) return;
+    const ok = await askConfirm({
+      title: t('admin.confirm_delete'),
+      message: `${u.full_name} (${u.phone_primary})\n\n${t('admin.trash_hint')}`,
+      danger: true,
+    });
+    if (!ok) return;
     await adminDeleteUser(u._id);
     setMessage(`${t('admin.deleted')} ${u.full_name} — ${t('admin.trash_moved')}`);
     // PAPO HAPO — mstari wa mtumiaji unaondoka bila refetch (event-driven).
@@ -402,7 +420,8 @@ export default function AdminUsersPage() {
   );
 
   async function restore(u: any) {
-    if (!confirm(`${t('admin.trash_restore_confirm')}\n\n${u.full_name}`)) return;
+    const ok = await askConfirm({ title: t('admin.trash_restore_confirm'), message: u.full_name });
+    if (!ok) return;
     await adminTrashRestore(u._id);
     setMessage(`${t('admin.trash_restored')} ${u.full_name}`);
     // PAPO HAPO — ondoka trash, rudi kwenye orodha (event-driven).
@@ -413,7 +432,12 @@ export default function AdminUsersPage() {
   }
 
   async function purge(u: any) {
-    if (!confirm(`${t('admin.trash_permanent_confirm')}\n\n${u.full_name} — hii haiwezi kugeuzwa!`)) return;
+    const ok = await askConfirm({
+      title: t('admin.trash_permanent_confirm'),
+      message: `${u.full_name} — hii haiwezi kugeuzwa!`,
+      danger: true,
+    });
+    if (!ok) return;
     await adminTrashPurge(u._id);
     setMessage(`${t('admin.trash_purged')} ${u.full_name}`);
     setTrash((prev) => prev.filter((x: any) => x._id !== u._id));
@@ -422,7 +446,11 @@ export default function AdminUsersPage() {
   }
 
   async function purgeAllTrash() {
-    if (!confirm(`${t('admin.trash_purge_all_confirm')} (${trash.length})`)) return;
+    const ok = await askConfirm({
+      title: `${t('admin.trash_purge_all_confirm')} (${trash.length})`,
+      danger: true,
+    });
+    if (!ok) return;
     const r = await adminTrashPurgeBulk(trash.map((u) => u._id));
     setMessage(`${t('admin.trash_purged')} ${r.purged} ${t('admin.users')}`);
     setTrash([]);
