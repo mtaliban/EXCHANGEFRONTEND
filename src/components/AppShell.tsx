@@ -11,7 +11,7 @@ import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
   BarChart3, Crown, Database, HandCoins, LayoutDashboard,
-  LogOut, Megaphone as MegaphoneIcon, ClipboardList, User, Users, Wallet, Zap,
+  LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, User, Users, Wallet, X, Zap,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -47,9 +47,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-brand-grey-50">
-      {/* ═══ MOBILE TOP BAR (md:hidden) — compact, sticky ═══ */}
+      {/* ═══ MOBILE TOP BAR (md:hidden) — hamburger + lugha + avatar ═══ */}
       <div className="md:hidden sticky top-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm">
-        <div className="flex items-center justify-end gap-1 px-3 h-14">
+        <div className="flex items-center justify-between gap-1 px-3 h-14">
+          <MobileMenuButton links={links} user={user} onLogout={doLogout} />
           <div className="flex items-center gap-0.5 flex-shrink-0">
             <LangToggle />
             <AvatarMenu name={user?.full_name} onLogout={doLogout} />
@@ -124,6 +125,93 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Confirm dialog ya KISOMI (badala ya confirm() ya kizamani) */}
       <ConfirmHost />
     </div>
+  );
+}
+
+/** Hamburger menu ya SIMU — inafungua DROWER kamili na menyu ZOTE.
+ *  Desktop ina sidebar yenye links zote; simu kabla ilikuwa na bottom nav
+ *  ya tabs 5 tu → admin hakupata Matangazo/Malipo/Ripoti/Maoni kwenye simu.
+ *  Sasa hamburger inaonesha kila kitu (kama sidebar ya desktop). */
+function MobileMenuButton({ links, user, onLogout }: {
+  links: { href: string; label: string; icon: any }[];
+  user: any;
+  onLogout: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const t = useT();
+  const initial = getInitial(user?.full_name);
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center justify-center w-9 h-9 rounded-lg border border-brand-grey-200 dark:border-brand-grey-700 text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition"
+        aria-label={t('nav.menu')}
+      >
+        <Menu size={20} strokeWidth={2.2} />
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+          {/* Backdrop — bofya nje kufunga */}
+          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
+          {/* Drower — kutoka kushoto, 85% ya upana wa skrini */}
+          <div className="absolute left-0 top-0 bottom-0 w-[85%] max-w-xs bg-white dark:bg-brand-grey-950 shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-brand-grey-100 dark:border-brand-grey-700">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40 dark:text-brand-blue-500 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                  {initial}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{user?.full_name}</div>
+                  <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">{user?.phone_primary}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-brand-grey-500 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition flex-shrink-0"
+                aria-label="Funga menyu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
+              {links.map((l) => {
+                const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
+                return (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    className={clsx(
+                      'flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition',
+                      active
+                        ? 'bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40'
+                        : 'text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800'
+                    )}
+                  >
+                    <l.icon size={19} strokeWidth={2.2} className="flex-shrink-0" />
+                    <span className="truncate">{l.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="p-3 border-t border-brand-grey-100 dark:border-brand-grey-700">
+              <button
+                onClick={() => { setOpen(false); onLogout(); }}
+                className="w-full flex items-center justify-center gap-2 text-xs border rounded-lg px-2 py-2 border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition"
+              >
+                <LogOut size={14} />
+                {t('nav.logout')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

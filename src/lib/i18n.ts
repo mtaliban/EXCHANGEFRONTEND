@@ -12,7 +12,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'nav.home': 'Nyumbani', 'nav.about': 'Kuhusu Sisi', 'nav.services': 'Huduma Zetu',
     'nav.projects': 'Miradi Yetu', 'nav.contact': 'Wasiliana Nasi',
     'nav.login': 'Ingia', 'nav.register': 'Jisajili', 'nav.open_dashboard': 'Fungua Dashibodi',
-    'nav.logout': 'Toka', 'lang.toggle': 'EN', 'lang.toggle_title': 'Badilisha Lugha',
+    'nav.logout': 'Toka', 'nav.menu': 'Menyu', 'lang.toggle': 'EN', 'lang.toggle_title': 'Badilisha Lugha',
     /* ── Navbar (app) ── */
     'nav.dashboard': 'Dashibodi', 'nav.profile': 'Wasifu',
     'nav.donate': 'Changia', 'nav.admin': 'Statistics',
@@ -490,7 +490,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'nav.home': 'Home', 'nav.about': 'About Us', 'nav.services': 'Our Services',
     'nav.projects': 'Our Projects', 'nav.contact': 'Contact Us',
     'nav.login': 'Login', 'nav.register': 'Register', 'nav.open_dashboard': 'Open Dashboard',
-    'nav.logout': 'Logout', 'lang.toggle': 'SW', 'lang.toggle_title': 'Switch Language',
+    'nav.logout': 'Logout', 'nav.menu': 'Menu', 'lang.toggle': 'SW', 'lang.toggle_title': 'Switch Language',
     /* ── Navbar (app) ── */
     'nav.dashboard': 'Dashboard', 'nav.profile': 'Profile',
     'nav.donate': 'Donate', 'nav.admin': 'Statistics',
