@@ -488,20 +488,25 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
           <div className="w-12 h-12 mx-auto rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-lg">
             {user.full_name?.slice(0, 1).toUpperCase()}
           </div>
-          <div className="font-bold text-brand-grey-900 mt-1.5">{user.full_name}</div>
-          <div className="text-xs text-brand-grey-500">{user.cadre_display || user.cadre_code || '—'}</div>
+          <div className="font-bold text-brand-grey-900 mt-1.5">{user.full_name} {user.is_admin && '👑'}</div>
+          {!user.is_admin && (
+            <div className="text-xs text-brand-grey-500">{user.cadre_display || user.cadre_code || '—'}</div>
+          )}
         </div>
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
           {user.phone_alt && row('WhatsApp', user.phone_alt)}
           {user.email && row(t('admin.email'), user.email)}
-          {row(t('admin.department'), user.category)}
-          {row(t('admin.cadre'), user.cadre_code)}
-          {row(t('label.subjects'), (user.subjects || []).length ? user.subjects.join(', ') : '—')}
-          {row(t('admin.region'), st.region_name)}
-          {row(t('admin.district'), st.district_name)}
-          {row(t('admin.facility'), st.facility_name)}
-          {row(t('admin.destinations'), dests.length
+          {/* ADMIN hana IDARA wala SHULE — jina, email na simu tu. Haya ya
+              chini (idara/kada/masomo/mkoa/wilaya/kituo/destinations) ni ya
+              watumiaji wengine (walimu/madaktari) pekee. */}
+          {!user.is_admin && row(t('admin.department'), user.category)}
+          {!user.is_admin && row(t('admin.cadre'), user.cadre_code)}
+          {!user.is_admin && row(t('label.subjects'), (user.subjects || []).length ? user.subjects.join(', ') : '—')}
+          {!user.is_admin && row(t('admin.region'), st.region_name)}
+          {!user.is_admin && row(t('admin.district'), st.district_name)}
+          {!user.is_admin && row(t('admin.facility'), st.facility_name)}
+          {!user.is_admin && row(t('admin.destinations'), dests.length
             ? dests.map((d: any) => [d.district_name, d.region_name].filter(Boolean).join(', ')).join(' ; ')
             : '—')}
           {row(t('admin.status'),
@@ -623,64 +628,72 @@ function EditUserModal({ user, onClose, onSaved }: any) {
               <option value="disabled">🚫 {t('admin.status_disabled')}</option>
             </select>
           </div>
-          <div><label className="label">{t('admin.department')}</label>
-            <select className="input" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }}>
-              {departments.length === 0 && <option value="health">{t('admin.health')}</option>}
-              {departments.map((d) => (
-                <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
-              ))}
-            </select>
-          </div>
-          <div><label className="label">{t('admin.cadre')}</label>
-            <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)}>
-              <option value="">--</option>
-              {cadres.map((c) => <option key={c.code} value={c.code}>{c.display_name}</option>)}
-            </select>
-          </div>
           <div><label className="label">{t('admin.new_password')}</label><input type="password" className="input" value={new_password} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('admin.leave_blank')} /></div>
-          <SubjectPicker cadreCode={cadre_code} value={subjects} onChange={setSubjects} cadres={cadres} />
 
-          {/* Kituo cha sasa — admin anaweza kubadilisha (real-time matching) */}
-          <div><label className="label">{t('admin.region')}</label>
-            <select className="input" value={region_id} onChange={(e) => { setRegionId(Number(e.target.value) || ''); setDistrictId(''); setFacilityId(''); }}>
-              <option value="">--</option>{regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-            </select>
-          </div>
-          <div><label className="label">{t('admin.district')}</label>
-            <select className="input" value={district_id} onChange={(e) => { setDistrictId(Number(e.target.value) || ''); setFacilityId(''); }}>
-              <option value="">--</option>{districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
-          </div>
-          <div className="col-span-2"><label className="label">{t('admin.facility')}</label>
-            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value || '')} disabled={!district_id}>
-              <option value="">--</option>
-              {facilities.map((f: any) => <option key={f.id || f.code} value={String(f.id || f.code)}>{f.name}</option>)}
-            </select>
-          </div>
+          {/* ADMIN hana IDARA wala SHULE — fields za kada/masomo/kituo/
+              destinations ni za WATUMIAJI WENGINE pekee (walimu/madaktari).
+              Ikiwa mtu anakuwa admin (checkbox), tupa taarifa za shule. */}
+          {!is_admin && (
+            <>
+              <div><label className="label">{t('admin.department')}</label>
+                <select className="input" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }}>
+                  {departments.length === 0 && <option value="health">{t('admin.health')}</option>}
+                  {departments.map((d) => (
+                    <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div><label className="label">{t('admin.cadre')}</label>
+                <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)}>
+                  <option value="">--</option>
+                  {cadres.map((c) => <option key={c.code} value={c.code}>{c.display_name}</option>)}
+                </select>
+              </div>
+              <SubjectPicker cadreCode={cadre_code} value={subjects} onChange={setSubjects} cadres={cadres} />
 
-          {/* Destinations (nyingi) */}
-          <div className="col-span-2">
-            <label className="label">{t('admin.destinations')}</label>
-            <div className="space-y-2">
-              {dests.map((d, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <select className="input flex-1" value={d.region_id} onChange={(e) => updateDest(i, 'region_id', Number(e.target.value) || '')}>
-                    <option value="">{t('admin.wants_region')}</option>
-                    {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                  </select>
-                  <select className="input flex-1" value={d.district_id} onChange={(e) => updateDest(i, 'district_id', Number(e.target.value) || '')} disabled={!d.region_id}>
-                    <option value="">{t('step4.any_district')}</option>
-                    {d.region_id && districts.filter((x) => x.region_id === Number(d.region_id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-                  </select>
-                  {dests.length > 1 && (
-                    <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2">🗑</button>
-                  )}
+              {/* Kituo cha sasa — admin anaweza kubadilisha (real-time matching) */}
+              <div><label className="label">{t('admin.region')}</label>
+                <select className="input" value={region_id} onChange={(e) => { setRegionId(Number(e.target.value) || ''); setDistrictId(''); setFacilityId(''); }}>
+                  <option value="">--</option>{regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                </select>
+              </div>
+              <div><label className="label">{t('admin.district')}</label>
+                <select className="input" value={district_id} onChange={(e) => { setDistrictId(Number(e.target.value) || ''); setFacilityId(''); }}>
+                  <option value="">--</option>{districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+              <div className="col-span-2"><label className="label">{t('admin.facility')}</label>
+                <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value || '')} disabled={!district_id}>
+                  <option value="">--</option>
+                  {facilities.map((f: any) => <option key={f.id || f.code} value={String(f.id || f.code)}>{f.name}</option>)}
+                </select>
+              </div>
+
+              {/* Destinations (nyingi) */}
+              <div className="col-span-2">
+                <label className="label">{t('admin.destinations')}</label>
+                <div className="space-y-2">
+                  {dests.map((d, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <select className="input flex-1" value={d.region_id} onChange={(e) => updateDest(i, 'region_id', Number(e.target.value) || '')}>
+                        <option value="">{t('admin.wants_region')}</option>
+                        {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                      </select>
+                      <select className="input flex-1" value={d.district_id} onChange={(e) => updateDest(i, 'district_id', Number(e.target.value) || '')} disabled={!d.region_id}>
+                        <option value="">{t('step4.any_district')}</option>
+                        {d.region_id && districts.filter((x) => x.region_id === Number(d.region_id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                      </select>
+                      {dests.length > 1 && (
+                        <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2">🗑</button>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <button type="button" onClick={() => setDests([...dests, { region_id: '', district_id: '' }])}
-              className="text-brand-blue text-sm mt-1.5">{t('step4.add_more')}</button>
-          </div>
+                <button type="button" onClick={() => setDests([...dests, { region_id: '', district_id: '' }])}
+                  className="text-brand-blue text-sm mt-1.5">{t('step4.add_more')}</button>
+              </div>
+            </>
+          )}
         </div>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={is_verified} onChange={(e) => setVerified(e.target.checked)} /> {t('admin.verified')}</label>

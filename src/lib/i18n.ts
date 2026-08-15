@@ -9,7 +9,7 @@ const dict: Record<Lang, Record<string, string>> = {
   /* ════════════════════ KISWAHILI ════════════════════ */
   sw: {
     /* ── Navbar (public) ── */
-    'nav.home': 'Nyumbani', 'nav.about': 'Kuhusu Sisi', 'nav.services': 'Huduma Zetu',
+    'nav.back_home': '← Rudi Nyumbani', 'nav.home': 'Nyumbani', 'nav.about': 'Kuhusu Sisi', 'nav.services': 'Huduma Zetu',
     'nav.projects': 'Miradi Yetu', 'nav.contact': 'Wasiliana Nasi',
     'nav.login': 'Ingia', 'nav.register': 'Jisajili', 'nav.open_dashboard': 'Fungua Dashibodi',
     'nav.logout': 'Toka', 'lang.toggle': 'EN', 'lang.toggle_title': 'Badilisha Lugha',
@@ -474,7 +474,7 @@ const dict: Record<Lang, Record<string, string>> = {
   /* ════════════════════ ENGLISH ════════════════════ */
   en: {
     /* ── Navbar (public) ── */
-    'nav.home': 'Home', 'nav.about': 'About Us', 'nav.services': 'Our Services',
+    'nav.back_home': '← Back Home', 'nav.home': 'Home', 'nav.about': 'About Us', 'nav.services': 'Our Services',
     'nav.projects': 'Our Projects', 'nav.contact': 'Contact Us',
     'nav.login': 'Login', 'nav.register': 'Register', 'nav.open_dashboard': 'Open Dashboard',
     'nav.logout': 'Logout', 'lang.toggle': 'SW', 'lang.toggle_title': 'Switch Language',
