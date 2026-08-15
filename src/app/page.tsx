@@ -29,10 +29,10 @@ export default function HomePage() {
                 {t('landing.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/register" className="btn-accent text-base sm:text-lg px-6 sm:px-8 py-3 text-center w-full sm:w-auto">
+                <Link href="/register" className="btn-accent text-sm sm:text-base px-5 sm:px-6 py-2.5 text-center w-full sm:w-auto">
                   {t('landing.cta')}
                 </Link>
-                <Link href="/services" className="inline-flex items-center justify-center rounded-lg border-2 border-white/40 px-6 sm:px-8 py-3 text-white font-medium hover:bg-white/10 transition w-full sm:w-auto">
+                <Link href="/services" className="inline-flex items-center justify-center rounded-lg border border-white/50 px-5 sm:px-6 py-2.5 text-sm sm:text-base text-white font-medium hover:bg-white/10 transition w-full sm:w-auto">
                   {t('landing.services')}
                 </Link>
               </div>
@@ -114,7 +114,7 @@ export default function HomePage() {
           <p className="text-sm sm:text-base text-white/90 mb-6 max-w-2xl mx-auto">
             {t('landing.cta_body')}
           </p>
-          <Link href="/register" className="inline-flex items-center justify-center rounded-lg bg-white px-6 sm:px-8 py-3 text-brand-red font-bold shadow-lg hover:bg-brand-gold-100 transition w-full sm:w-auto">
+          <Link href="/register" className="inline-flex items-center justify-center rounded-lg bg-white px-5 sm:px-6 py-2.5 text-sm sm:text-base text-brand-red font-bold shadow-lg hover:bg-brand-gold-100 transition w-full sm:w-auto">
             {t('landing.register_now')}
           </Link>
         </div>

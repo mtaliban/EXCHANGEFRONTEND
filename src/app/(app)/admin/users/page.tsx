@@ -484,8 +484,8 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
           {row(t('admin.created_at'), conversationTime(user.created_at))}
         </div>
         <div className="flex gap-2 pt-3 border-t">
-          <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
-          <button onClick={onEdit} className="btn-primary flex-1">✎ {t('action.edit')}</button>
+          <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
+          <button onClick={onEdit} className="btn-primary px-5">✎ {t('action.edit')}</button>
         </div>
       </div>
     </div>
@@ -657,8 +657,8 @@ function EditUserModal({ user, onClose, onSaved }: any) {
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={is_admin} onChange={(e) => setAdmin(e.target.checked)} /> {t('admin.admin_ck')}</label>
         </div>
         <div className="flex gap-2 pt-3 border-t">
-          <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
-          <button onClick={save} disabled={saving} className="btn-primary flex-1">{saving ? '...' : t('admin.save')}</button>
+          <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
+          <button onClick={save} disabled={saving} className="btn-primary px-5">{saving ? '...' : t('admin.save')}</button>
         </div>
       </div>
     </div>
@@ -815,8 +815,8 @@ function CreateUserModal({ onClose, onCreated }: any) {
           </div>
         </div>
         <div className="flex gap-2 pt-3 border-t">
-          <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
-          <button onClick={submit} disabled={saving || !full_name || !phone || !region_id || !district_id} className="btn-primary flex-1">
+          <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
+          <button onClick={submit} disabled={saving || !full_name || !phone || !region_id || !district_id} className="btn-primary px-5">
             {saving ? t('admin.creating') : t('admin.create')}
           </button>
         </div>
@@ -864,8 +864,8 @@ function AddAdminModal({ onClose, onCreated }: any) {
           <div><label className="label">{t('admin.password')} *</label><input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
         </div>
         <div className="flex gap-2 pt-3 border-t">
-          <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
-          <button onClick={submit} disabled={saving || !full_name || !email || password.length < 6} className="btn-primary flex-1">
+          <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
+          <button onClick={submit} disabled={saving || !full_name || !email || password.length < 6} className="btn-primary px-5">
             {saving ? t('admin.creating') : t('admin.create')}
           </button>
         </div>

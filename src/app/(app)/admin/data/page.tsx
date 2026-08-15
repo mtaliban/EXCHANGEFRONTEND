@@ -182,8 +182,8 @@ function ViewItemModal({ title, icon, fields, onClose, onEdit }: {
           ))}
         </div>
         <div className="flex gap-2 pt-3 border-t">
-          <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
-          <button onClick={onEdit} className="btn-primary flex-1">✎ {t('action.edit')}</button>
+          <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
+          <button onClick={onEdit} className="btn-primary px-5">✎ {t('action.edit')}</button>
         </div>
       </div>
     </div>
@@ -204,10 +204,10 @@ function ModalShell({ title, children, onClose, onSave, saveLabel, busy, canSave
         {children}
         {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-2.5">{error}</div>}
         <div className="flex gap-2 pt-3 border-t">
-          <button type="button" onClick={onClose} disabled={busy} className="btn-outline flex-1">{t('admin.cancel')}</button>
+          <button type="button" onClick={onClose} disabled={busy} className="btn-outline px-5">{t('admin.cancel')}</button>
           <button type="button" disabled={busy || !canSave} onClick={async () => {
             try { await onSave(); } catch { /* error iko kwenye state ya modal */ }
-          }} className="btn-primary flex-1">
+          }} className="btn-primary px-5">
             {busy ? <span className="inline-flex items-center gap-1.5"><span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" /> {t('action.processing')}</span> : saveLabel}
           </button>
         </div>

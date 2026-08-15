@@ -186,7 +186,7 @@ export default function DonatePage() {
           <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('donate.confirmed_body')}</p>
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-4 py-1.5 text-sm font-semibold mb-2">{t('donate.verified_pill')}</div>
           {order && <p className="text-sm text-brand-grey-700 dark:text-brand-grey-300 font-semibold">{currency} {order.amount?.toLocaleString()}</p>}
-          <button onClick={reset} className="btn-primary w-full mt-4">{t('donate.donate_again')}</button>
+          <button onClick={reset} className="btn-primary px-6">{t('donate.donate_again')}</button>
         </div>
       )}
 
@@ -195,7 +195,7 @@ export default function DonatePage() {
           <div className="w-14 h-14 mx-auto rounded-full bg-brand-red-100 text-brand-red flex items-center justify-center text-2xl mb-3">✗</div>
           <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.rejected_title')}</h2>
           <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('donate.rejected_body')}</p>
-          <button onClick={reset} className="btn-primary w-full">{t('donate.try_again')}</button>
+          <button onClick={reset} className="btn-primary px-6">{t('donate.try_again')}</button>
         </div>
       )}
 
@@ -204,7 +204,7 @@ export default function DonatePage() {
           <div className="w-14 h-14 mx-auto rounded-full bg-brand-grey-100 text-brand-grey-500 flex items-center justify-center text-2xl mb-3">⏳</div>
           <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.expired_title')}</h2>
           <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-3">{t('donate.expired_body')}</p>
-          <button onClick={reset} className="btn-primary w-full">{t('donate.try_again')}</button>
+          <button onClick={reset} className="btn-primary px-6">{t('donate.try_again')}</button>
         </div>
       )}
 
