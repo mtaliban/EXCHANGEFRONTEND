@@ -64,7 +64,8 @@ export default function AdminAnnouncementsPage() {
       });
       setResult(`✅ ${t('ann.sent')} ${res.sent_to}`);
       setTitle(''); setMessage(''); setTargetName(''); setTargetUserId(''); setResults(null);
-      reload();
+      // PAPO HAPO — tangazo jipya linaongezwa juu bila refetch (event-driven).
+      setList((prev) => [{ announcement_id: 'new-' + Date.now(), title: title.trim(), message: message.trim(), audience, created_at: new Date().toISOString(), status: 'sent', sent_to: res.sent_to }, ...(prev || [])]);
     } catch (e: any) {
       setResult(`❌ ${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
     } finally { setSending(false); }
@@ -78,7 +79,7 @@ export default function AdminAnnouncementsPage() {
     try {
       const res = await adminResendAnnouncement(a.announcement_id);
       setResult(`✅ ${t('ann.sent')} ${res.sent_to}`);
-      reload();
+      setList((prev) => (prev || []).map((x: any) => x.announcement_id === a.announcement_id ? { ...x, status: 'sent', sent_to: res.sent_to } : x));
     } catch (e: any) {
       setResult(`❌ ${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
     } finally { setBusyId(null); }
@@ -89,7 +90,8 @@ export default function AdminAnnouncementsPage() {
     try {
       await adminDeleteAnnouncement(a.announcement_id);
       setResult(`✅ ${t('ann.deleted')}`);
-      reload();
+      // PAPO HAPO — tangazo linaondolewa bila refetch (event-driven).
+      setList((prev) => (prev || []).filter((x: any) => x.announcement_id !== a.announcement_id));
     } catch (e: any) {
       setResult(`❌ ${t('ann.delete_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
     } finally { setBusyId(null); }

@@ -268,7 +268,7 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
                     onEdit={() => setEditing(d)}
                     onDelete={async () => {
                       if (!confirm(t('data.confirm_delete'))) return;
-                      try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); load(); }
+                      try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== d.code) : prev); }
                       catch (e: any) { flash(e?.response?.data?.detail || await errText(e), false); }
                     }}
                   />
@@ -299,9 +299,14 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
           onClose={() => { setEditing(null); setCreating(false); }}
           onSaved={async (body) => {
             try {
-              if (editing) await adminUpdateDepartment(editing.code, body);
-              else await adminAddDepartment(body);
-              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved')); load();
+              if (editing) {
+                await adminUpdateDepartment(editing.code, body);
+                setData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body } : x) : prev);
+              } else {
+                const created = await adminAddDepartment(body);
+                setData(prev => prev ? [{ ...body, ...(created || {}) }, ...prev] : prev);
+              }
+              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
           }} />
       )}
@@ -390,7 +395,7 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(s)} onEdit={() => setEditing(s)} onDelete={async () => {
                     if (!confirm(t('data.confirm_delete'))) return;
-                    try { await adminDeleteSubject(s.code); markOwnAction(); flash(t('data.deleted')); load(); }
+                    try { await adminDeleteSubject(s.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== s.code) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
                 </td>
@@ -418,9 +423,14 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
           onClose={() => { setEditing(null); setCreating(false); }}
           onSaved={async (body) => {
             try {
-              if (editing) await adminUpdateSubject(editing.code, body);
-              else await adminAddSubject(body);
-              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved')); load();
+              if (editing) {
+                await adminUpdateSubject(editing.code, body);
+                setData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body } : x) : prev);
+              } else {
+                const created = await adminAddSubject(body);
+                setData(prev => prev ? [{ ...body, ...(created || {}) }, ...prev] : prev);
+              }
+              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
           }} />
       )}
@@ -502,7 +512,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(c)} onEdit={() => setEditing(c)} onDelete={async () => {
                     if (!confirm(t('data.confirm_delete'))) return;
-                    try { await adminDeleteCadre(c.code); markOwnAction(); flash(t('data.deleted')); load(); }
+                    try { await adminDeleteCadre(c.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== c.code) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
                 </td>
@@ -532,9 +542,14 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
           onClose={() => { setEditing(null); setCreating(false); }}
           onSaved={async (body) => {
             try {
-              if (editing) await adminUpdateCadre(editing.code, body);
-              else await adminAddCadre(body);
-              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved')); load();
+              if (editing) {
+                await adminUpdateCadre(editing.code, body);
+                setData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body, display_name: body.display_name || body.name || x.display_name } : x) : prev);
+              } else {
+                const created = await adminAddCadre(body);
+                setData(prev => prev ? [{ ...body, display_name: body.display_name || body.name || '', ...(created || {}) }, ...prev] : prev);
+              }
+              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
           }} />
       )}
@@ -634,7 +649,7 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(r)} onEdit={() => setEditing(r)} onDelete={async () => {
                     if (!confirm(t('data.confirm_delete'))) return;
-                    try { await adminDeleteRegion(r.id); markOwnAction(); flash(t('data.deleted')); load(); }
+                    try { await adminDeleteRegion(r.id); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.id !== r.id) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
                 </td>
@@ -663,9 +678,15 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
           onClose={() => { setEditing(null); setCreating(false); }}
           onSaved={async (body) => {
             try {
-              if (editing) await adminUpdateRegion(editing.id, { id: Number(body.id), name: body.name });
-              else await adminAddRegion({ id: body.id ? Number(body.id) : 0, name: body.name });
-              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved')); load();
+              if (editing) {
+                await adminUpdateRegion(editing.id, { id: Number(body.id), name: body.name });
+                setData(prev => prev ? prev.map(x => x.id === editing.id ? { ...x, id: Number(body.id), name: body.name } : x) : prev);
+              } else {
+                await adminAddRegion({ id: body.id ? Number(body.id) : 0, name: body.name });
+                const created = { id: body.id ? Number(body.id) : 0, name: body.name };
+                setData(prev => prev ? [created, ...prev] : prev);
+              }
+              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
           }} />
       )}
@@ -722,7 +743,7 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(d)} onEdit={() => setEditing(d)} onDelete={async () => {
                     if (!confirm(t('data.confirm_delete'))) return;
-                    try { await adminDeleteDistrict(d.id); markOwnAction(); flash(t('data.deleted')); load(); }
+                    try { await adminDeleteDistrict(d.id); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.id !== d.id) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
                 </td>
@@ -754,9 +775,15 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
           onClose={() => { setEditing(null); setCreating(false); }}
           onSaved={async (body) => {
             try {
-              if (editing) await adminUpdateDistrict(editing.id, { id: Number(body.id), name: body.name, region_id: Number(body.region_id) });
-              else await adminAddDistrict({ id: body.id ? Number(body.id) : 0, name: body.name, region_id: Number(body.region_id) });
-              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved')); load();
+              if (editing) {
+                await adminUpdateDistrict(editing.id, { id: Number(body.id), name: body.name, region_id: Number(body.region_id) });
+                setData(prev => prev ? prev.map(x => x.id === editing.id ? { ...x, id: Number(body.id), name: body.name, region_id: Number(body.region_id) } : x) : prev);
+              } else {
+                await adminAddDistrict({ id: body.id ? Number(body.id) : 0, name: body.name, region_id: Number(body.region_id) });
+                const created = { id: body.id ? Number(body.id) : 0, name: body.name, region_id: Number(body.region_id) };
+                setData(prev => prev ? [created, ...prev] : prev);
+              }
+              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
           }} />
       )}
@@ -893,7 +920,7 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
                       onEdit={() => setEditing({ ...f, _category: category })}
                       onDelete={async () => {
                         if (!confirm(t('data.confirm_delete'))) return;
-                        try { await adminDeleteFacility(fid, category); markOwnAction(); flash(t('data.deleted')); load(); }
+                        try { await adminDeleteFacility(fid, category); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => String(category === 'education' ? x.id : x.code) !== String(fid)) : prev); }
                         catch (e) { flash(await errText(e), false); }
                       }} />
                   </td>
@@ -932,10 +959,12 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
               if (editing) {
                 const fid = editing._category === 'education' ? editing.id : editing.code;
                 await adminUpdateFacility(fid, body);
+                setData(prev => prev ? prev.map(x => String(editing._category === 'education' ? x.id : x.code) === String(fid) ? { ...x, ...body } : x) : prev);
               } else {
-                await adminAddFacility(body);
+                const created = await adminAddFacility(body);
+                setData(prev => prev ? [{ ...body, ...(created || {}) }, ...prev] : prev);
               }
-              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved')); load();
+              markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
           }} />
       )}

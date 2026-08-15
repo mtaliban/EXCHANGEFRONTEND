@@ -142,7 +142,18 @@ export default function AdminUsersPage() {
       const r = await adminBulkUsers(ids, action);
       setMessage(`${action === 'delete' ? t('admin.deleted') : action === 'disable' ? t('admin.suspended') : t('admin.unsuspended')} ${r.processed} ${t('admin.users')}${r.skipped_admin ? ` — ${r.skipped_admin} ${t('admin.bulk_skipped_admin')}` : ''}`);
       setSelected(new Set());
-      load();
+      // PAPO HAPO — usi-refetch orodha nzima (event-driven).
+      setData((prev: any) => {
+        if (!prev) return prev;
+        const idSet = new Set(ids);
+        if (action === 'delete') {
+          const users = prev.users.filter((u: any) => !idSet.has(u._id));
+          return { ...prev, users, total: (prev.total || users.length) - (prev.users.length - users.length) };
+        }
+        const users = prev.users.map((u: any) => idSet.has(u._id) ? { ...u, status: action === 'disable' ? 'disabled' : 'active' } : u);
+        return { ...prev, users };
+      });
+      if (action === 'delete') loadTrash();
     } catch (e: any) {
       setMessage(e?.response?.data?.detail || t('admin.failed'));
     } finally { setBulkBusy(false); }
@@ -153,7 +164,7 @@ export default function AdminUsersPage() {
     if (u.is_admin) await adminRevoke(u._id);
     else await adminGrant(u._id);
     setMessage(`${u.full_name}: ${u.is_admin ? t('admin.revoked') : t('admin.granted')}`);
-    load();
+    setData((prev: any) => prev ? { ...prev, users: prev.users.map((x: any) => x._id === u._id ? { ...x, is_admin: !u.is_admin } : x) } : prev);
     setTimeout(() => setMessage(null), 3000);
   }
 
@@ -163,7 +174,7 @@ export default function AdminUsersPage() {
     await adminUpdateUser(u._id, { status: next });
     // REAL-TIME: kama mtumiaji yupo logged-in, anaondolewa PAPO HAPO (WS).
     setMessage(`${u.full_name}: ${next === 'disabled' ? t('admin.suspended') : t('admin.unsuspended')}`);
-    load();
+    setData((prev: any) => prev ? { ...prev, users: prev.users.map((x: any) => x._id === u._id ? { ...x, status: next } : x) } : prev);
     setTimeout(() => setMessage(null), 3000);
   }
 
@@ -172,7 +183,9 @@ export default function AdminUsersPage() {
     if (!confirm(t('admin.confirm_delete') + `\n\n${u.full_name} (${u.phone_primary})\n\n${t('admin.trash_hint')}`)) return;
     await adminDeleteUser(u._id);
     setMessage(`${t('admin.deleted')} ${u.full_name} — ${t('admin.trash_moved')}`);
-    load();
+    // PAPO HAPO — mstari wa mtumiaji unaondoka bila refetch (event-driven).
+    setData((prev: any) => prev ? { ...prev, users: prev.users.filter((x: any) => x._id !== u._id), total: Math.max(0, (prev.total || prev.users.length) - 1) } : prev);
+    loadTrash();
     setTimeout(() => setMessage(null), 4000);
   }
 
@@ -364,13 +377,25 @@ export default function AdminUsersPage() {
           onEdit={() => { setEditing(viewing); setViewing(null); }} />
       )}
       {editing && (
-        <EditUserModal user={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); setMessage(t('admin.user_updated')); setTimeout(() => setMessage(null), 3000); }} />
+        <EditUserModal user={editing} onClose={() => setEditing(null)} onSaved={(updated: any) => {
+          // PAPO HAPO — mstari wa mtumiaji unasasishwa bila refetch (event-driven).
+          setData((prev: any) => prev ? { ...prev, users: prev.users.map((x: any) => x._id === updated._id ? { ...x, ...updated } : x) } : prev);
+          setEditing(null); setMessage(t('admin.user_updated')); setTimeout(() => setMessage(null), 3000);
+        }} />
       )}
       {creating && (
-        <CreateUserModal onClose={() => setCreating(false)} onCreated={() => { setCreating(false); load(); loadTrash(); setMessage(t('admin.user_created')); setTimeout(() => setMessage(null), 3000); }} />
+        <CreateUserModal onClose={() => setCreating(false)} onCreated={(created: any) => {
+          // PAPO HAPO — mtumiaji mpya anaongezwa juu bila refetch (event-driven).
+          setData((prev: any) => prev ? { ...prev, users: [{ ...created }, ...prev.users], total: (prev.total || prev.users.length) + 1 } : prev);
+          setCreating(false); setMessage(t('admin.user_created')); setTimeout(() => setMessage(null), 3000);
+        }} />
       )}
       {addingAdmin && (
-        <AddAdminModal onClose={() => setAddingAdmin(false)} onCreated={() => { setAddingAdmin(false); load(); loadTrash(); setMessage(t('admin.admin_created')); setTimeout(() => setMessage(null), 3000); }} />
+        <AddAdminModal onClose={() => setAddingAdmin(false)} onCreated={(created: any) => {
+          // PAPO HAPO — admin mpya anaongezwa juu bila refetch (event-driven).
+          setData((prev: any) => prev ? { ...prev, users: [{ ...created }, ...prev.users], total: (prev.total || prev.users.length) + 1 } : prev);
+          setAddingAdmin(false); setMessage(t('admin.admin_created')); setTimeout(() => setMessage(null), 3000);
+        }} />
       )}
     </div>
   );
@@ -379,7 +404,10 @@ export default function AdminUsersPage() {
     if (!confirm(`${t('admin.trash_restore_confirm')}\n\n${u.full_name}`)) return;
     await adminTrashRestore(u._id);
     setMessage(`${t('admin.trash_restored')} ${u.full_name}`);
-    loadTrash(); load();
+    // PAPO HAPO — ondoka trash, rudi kwenye orodha (event-driven).
+    setTrash((prev) => prev.filter((x: any) => x._id !== u._id));
+    setTrashTotal((n) => Math.max(0, n - 1));
+    setData((prev: any) => prev ? { ...prev, users: [{ ...u, status: 'active' }, ...prev.users], total: (prev.total || prev.users.length) + 1 } : prev);
     setTimeout(() => setMessage(null), 3000);
   }
 
@@ -387,7 +415,8 @@ export default function AdminUsersPage() {
     if (!confirm(`${t('admin.trash_permanent_confirm')}\n\n${u.full_name} — hii haiwezi kugeuzwa!`)) return;
     await adminTrashPurge(u._id);
     setMessage(`${t('admin.trash_purged')} ${u.full_name}`);
-    loadTrash(); load();
+    setTrash((prev) => prev.filter((x: any) => x._id !== u._id));
+    setTrashTotal((n) => Math.max(0, n - 1));
     setTimeout(() => setMessage(null), 3000);
   }
 
@@ -395,7 +424,8 @@ export default function AdminUsersPage() {
     if (!confirm(`${t('admin.trash_purge_all_confirm')} (${trash.length})`)) return;
     const r = await adminTrashPurgeBulk(trash.map((u) => u._id));
     setMessage(`${t('admin.trash_purged')} ${r.purged} ${t('admin.users')}`);
-    loadTrash(); load();
+    setTrash([]);
+    setTrashTotal(0);
     setTimeout(() => setMessage(null), 3000);
   }
 }
@@ -568,7 +598,7 @@ function EditUserModal({ user, onClose, onSaved }: any) {
         });
       }
       await adminUpdateUser(user._id, changes);
-      onSaved();
+      onSaved({ ...user, ...changes, phone_alt: changes.phone_alt || user.phone_alt || null });
     } catch (e: any) {
       alert(e?.response?.data?.detail || `${t('admin.failed')} save`);
     } finally { setSaving(false); }
@@ -728,12 +758,19 @@ function CreateUserModal({ onClose, onCreated }: any) {
         desired_destinations: desired_destinations.length ? desired_destinations : [{ region_id: region.id, region_name: region.name }],
       });
       // Set admin/status if needed (register always creates regular active user)
+      let createdUser: any = null;
       if (is_admin || status !== 'active') {
         const list = await adminUsers({ q: phone, limit: 5 });
-        const created = list.users.find((u: any) => u.phone_primary === phone);
-        if (created) await adminUpdateUser(created._id, { is_admin, status });
+        createdUser = list.users.find((u: any) => u.phone_primary === phone);
+        if (createdUser) await adminUpdateUser(createdUser._id, { is_admin, status });
       }
-      onCreated();
+      onCreated({
+        ...(createdUser || {}),
+        _id: createdUser?._id || 'new-' + Date.now(),
+        full_name, phone_primary: phone, category, cadre_code, subjects,
+        is_admin: !!is_admin, status: status || 'active',
+        current_station: region ? { region_id: region.id, region_name: region.name } : null,
+      });
     } catch (e: any) {
       setError(e?.response?.data?.detail || t('admin.failed'));
     } finally { setSaving(false); }
@@ -843,7 +880,17 @@ function AddAdminModal({ onClose, onCreated }: any) {
         full_name, email, phone_primary: phone || undefined, password,
         is_admin: true, status: 'active', is_verified: true,
       });
-      onCreated();
+      // Fetch user halisi (na _id sahihi) ili kuingia kwenye orodha bila refetch.
+      let real: any = null;
+      try {
+        const list = await adminUsers({ q: email || phone, limit: 5 }, true);
+        real = list.users.find((u: any) => u.email === email || u.phone_primary === phone);
+      } catch {}
+      onCreated({
+        ...(real || {}),
+        _id: real?._id || 'new-admin-' + Date.now(),
+        full_name, email, phone_primary: phone || undefined, is_admin: true, status: 'active', is_verified: true,
+      });
     } catch (e: any) {
       setError(e?.response?.data?.detail || t('admin.failed'));
     } finally { setSaving(false); }

@@ -55,7 +55,21 @@ export default function AdminPaymentsPage() {
         await adminRejectDonation(order_id, note || '');
       }
       setFlash(`✓ ${approve ? t('adminpay.approved_flash') : t('adminpay.rejected_flash')} — ${order_id}`);
-      await load();
+      // PAPO HAPO — malipo hubadilika status bila refetch (event-driven).
+      setData((prev: any) => {
+        if (!prev) return prev;
+        const newStatus = approve ? 'approved' : 'rejected';
+        return {
+          ...prev,
+          payments: (prev.payments || []).map((x: any) => x.order_id === order_id ? { ...x, status: newStatus } : x),
+          counts: {
+            ...(prev.counts || {}),
+            [newStatus]: ((prev.counts || {})[newStatus] || 0) + 1,
+            verifying: Math.max(0, ((prev.counts || {}).verifying || 0) - 1),
+            all: prev.counts?.all ?? (prev.payments || []).length,
+          },
+        };
+      });
     } catch (e: any) {
       setFlash(`✗ ${e?.response?.data?.detail || t('adminpay.error')}`);
     }
