@@ -110,6 +110,10 @@ export default function LoginPage() {
 
   // AUTO-SUBMIT: code ya tarakimu 6 inapoandikwa, inajiingiza YENYEWE
   // (pause ya 250ms — usi-submit katikati ya kuandika). Hakuna kubofya.
+  // Pia: code inapojazwa kiotomatiki (dev_code) → inaingia yenyewe baada ya
+  // 500ms — hata hivyo hakuna kitu cha kubofya.
+  const twoFARef = useRef(twoFA);
+  twoFARef.current = twoFA;
   async function submitTwoFA() {
     if (twoFACode.length !== 6 || twoFALoading) return;
     setError(null); setSuccess(null); setTwoFALoading(true);
@@ -141,6 +145,12 @@ export default function LoginPage() {
     if (!twoFA) return;
     setTwoFAExpiresAt(Date.now() + 10 * 60 * 1000);
     setTwoFACountdown(10 * 60);
+    // Dev code (SMTP haijasanidiwa) inapojazwa kiotomatiki → SUBMIT YENYEWE
+    // baada ya 500ms — hakuna kitu cha kubofya, inaingia papo hapo.
+    if (twoFA.devCode && twoFA.devCode.length === 6) {
+      const t = setTimeout(() => submitTwoFA(), 500);
+      return () => clearTimeout(t);
+    }
   }, [twoFA]);
   useEffect(() => {
     if (!twoFA || !twoFAExpiresAt) return;
@@ -241,12 +251,6 @@ export default function LoginPage() {
         {twoFA && (
           <div className="mt-5 border-t border-brand-grey-100 pt-4">
             <form onSubmit={onTwoFASubmit} className="space-y-3 mt-3">
-              {twoFA.devCode && (
-                <div className="bg-brand-orange-50 border border-brand-orange-200 rounded-lg p-3 text-center">
-                  <div className="text-[11px] font-bold text-brand-orange uppercase tracking-wide">Code yako (SMTP haijasanidiwa — weka email kwenye Mipangilio)</div>
-                  <div className="text-3xl font-extrabold tracking-[0.4em] font-mono text-brand-grey-900 mt-1">{twoFA.devCode}</div>
-                </div>
-              )}
               <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={twoFACode}
                 onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus />
@@ -269,11 +273,12 @@ export default function LoginPage() {
               )}
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              <button type="submit" disabled={twoFALoading || twoFACountdown <= 0} className="btn-primary w-full bg-brand-orange">
-                {twoFALoading ? t('login.verifying') : `${t('login.twofa_submit')} ✓`}
+              {/* Hakuna button kubwa — code inajiingiza yenyewe. Enter bado inafanya kazi. */}
+              <button type="submit" disabled={twoFALoading || twoFACountdown <= 0} className="hidden">
+                {twoFALoading ? t('login.verifying') : t('login.twofa_submit')}
               </button>
               <button type="button" onClick={() => { setTwoFA(null); setError(null); }}
-                className="text-xs text-brand-grey-500 hover:underline w-full text-center">
+                className="text-xs text-brand-grey-500 hover:underline">
                 {t('login.twofa_back')}
               </button>
             </form>
@@ -294,7 +299,7 @@ export default function LoginPage() {
                 value={password} onChange={(e) => setPassword(e.target.value)} required />
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              <button type="submit" disabled={loading} className="btn-primary w-full bg-brand-grey-900">
+              <button type="submit" disabled={loading} className="btn-primary bg-brand-grey-900 px-5">
                 {loading ? t('login.sending_code') : t('login.send_code')}
               </button>
             </form>
@@ -304,7 +309,6 @@ export default function LoginPage() {
             <form onSubmit={onConfirmCode} className="space-y-3 mt-3">
               <p className="text-xs text-brand-grey-500">
                 {t('login.enter_code')} <span className="font-semibold">{verifyEmail}</span>.
-                <span className="block text-brand-grey-400 mt-1">{t('login.dev_hint')} <code className="bg-brand-grey-100 px-1 rounded">docker logs kv_backend</code></span>
               </p>
               <input type="text" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={verifyCode}
@@ -313,8 +317,9 @@ export default function LoginPage() {
               <p className="text-[11px] text-brand-grey-500">⏳ {t('login.code_expires_min')}</p>
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              <button type="submit" disabled={loading} className="btn-primary w-full bg-brand-orange">
-                {loading ? t('login.verifying') : `${t('login.verify_email')} ✓`}
+              {/* Hakuna button kubwa — code inajiingiza yenyewe. */}
+              <button type="submit" disabled={loading} className="hidden">
+                {loading ? t('login.verifying') : t('login.verify_email')}
               </button>
             </form>
           )}
