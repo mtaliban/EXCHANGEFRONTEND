@@ -144,12 +144,49 @@ export default function AdminDataPage() {
   );
 }
 
-function RowAction({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+function RowAction({ onView, onEdit, onDelete }: { onView?: () => void; onEdit: () => void; onDelete: () => void }) {
+  const t = useT();
   return (
-    <span className="whitespace-nowrap">
+    <span className="whitespace-nowrap inline-flex items-center">
+      {onView && (
+        <button onClick={onView} className="text-brand-grey-600 text-xs px-2 hover:underline" title={t('action.view')}>
+          👁
+        </button>
+      )}
       <button onClick={onEdit} className="text-brand-blue text-xs px-2 hover:underline">✎</button>
       <button onClick={onDelete} className="text-brand-red text-xs px-2 hover:underline">🗑</button>
     </span>
+  );
+}
+
+/** ViewItemModal — kuona taarifa zote za kipengee (department/subject/cadre/
+ *  mkoa/wilaya/kituo) kwenye jedwali la kisomi bila kuingia kwenye edit. */
+function ViewItemModal({ title, icon, fields, onClose, onEdit }: {
+  title: string; icon: string; fields: { label: string; value: React.ReactNode }[];
+  onClose: () => void; onEdit: () => void;
+}) {
+  const t = useT();
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xl font-bold">{icon} {title}</h2>
+          <button onClick={onClose} className="text-brand-grey-400 hover:text-brand-grey-700 text-lg px-1">✕</button>
+        </div>
+        <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
+          {fields.map((f) => (
+            <div key={f.label} className="flex items-start justify-between gap-3 py-1.5">
+              <span className="text-xs font-semibold text-brand-grey-500 uppercase tracking-wide">{f.label}</span>
+              <span className="text-sm text-brand-grey-900 text-right">{f.value || '—'}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 pt-3 border-t">
+          <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
+          <button onClick={onEdit} className="btn-primary flex-1">✎ {t('action.edit')}</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -184,6 +221,7 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
   const t = useT();
   const [data, setData] = useState<any[] | null>(null);
   const [editing, setEditing] = useState<any>(null);
+  const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   async function load() {
@@ -197,7 +235,8 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2 items-center">
         <p className="text-xs text-brand-grey-500">{t('data.departments_hint')}</p>
-        <button onClick={() => setCreating(true)} className="btn-primary text-sm">+ {t('data.add_department')}</button>
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_department')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
@@ -224,20 +263,36 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
                 <td className="px-3 py-2 text-xs">—</td>
                 <td className="px-3 py-2 text-xs">—</td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
-                  <button onClick={() => setEditing(d)} className="text-brand-blue text-xs px-2 hover:underline">✎</button>
-                  {d.code !== 'health' && d.code !== 'education' && (
-                    <button onClick={async () => {
+                  <RowAction
+                    onView={() => setViewing(d)}
+                    onEdit={() => setEditing(d)}
+                    onDelete={async () => {
                       if (!confirm(t('data.confirm_delete'))) return;
                       try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); load(); }
                       catch (e: any) { flash(e?.response?.data?.detail || await errText(e), false); }
-                    }} className="text-brand-red text-xs px-2 hover:underline">🗑</button>
-                  )}
+                    }}
+                  />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {viewing && (
+        <ViewItemModal
+          title={viewing.name}
+          icon={viewing.icon || '🏢'}
+          onClose={() => setViewing(null)}
+          onEdit={() => { setEditing(viewing); setViewing(null); }}
+          fields={[
+            { label: t('data.code'), value: viewing.code },
+            { label: t('data.name'), value: viewing.name },
+            { label: t('admin.status'), value: viewing.status === 'disabled' ? '🚫 ' + t('admin.status_disabled') : '● ' + t('admin.status_active') },
+            { label: t('admin.col_cadre'), value: '—' },
+            { label: t('admin.col_users'), value: '—' },
+          ]}
+        />
+      )}
       {(editing || creating) && (
         <DepartmentModal
           initial={editing || { code: '', name: '', status: 'active', icon: '' }}
@@ -294,6 +349,7 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
   const [data, setData] = useState<any[] | null>(null);
   const [level, setLevel] = useState('');
   const [editing, setEditing] = useState<any>(null);
+  const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   // bypass wakati level imechaguliwa — dropdown ibadilike mara moja (fresh).
@@ -312,7 +368,8 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
           <option value="Primary">Primary (Msingi)</option>
           <option value="Secondary">Secondary (Sekondari)</option>
         </select>
-        <button onClick={() => setCreating(true)} className="btn-primary text-sm">+ {t('data.add_subject')}</button>
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_subject')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[480px]">
@@ -331,7 +388,7 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
                 <td className="px-3 py-2 font-medium">{s.name}</td>
                 <td className="px-3 py-2"><span className="badge-gold">{s.level}</span></td>
                 <td className="px-3 py-2 text-right">
-                  <RowAction onEdit={() => setEditing(s)} onDelete={async () => {
+                  <RowAction onView={() => setViewing(s)} onEdit={() => setEditing(s)} onDelete={async () => {
                     if (!confirm(t('data.confirm_delete'))) return;
                     try { await adminDeleteSubject(s.code); markOwnAction(); flash(t('data.deleted')); load(); }
                     catch (e) { flash(await errText(e), false); }
@@ -342,6 +399,19 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
           </tbody>
         </table>
       </div>
+      {viewing && (
+        <ViewItemModal
+          title={viewing.name}
+          icon="📚"
+          onClose={() => setViewing(null)}
+          onEdit={() => { setEditing(viewing); setViewing(null); }}
+          fields={[
+            { label: t('data.code'), value: viewing.code },
+            { label: t('data.name'), value: viewing.name },
+            { label: t('data.level'), value: viewing.level },
+          ]}
+        />
+      )}
       {(editing || creating) && (
         <SubjectModal
           initial={editing || { code: '', name: '', level: 'Primary' }}
@@ -395,6 +465,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
   const t = useT();
   const [data, setData] = useState<any[] | null>(null);
   const [editing, setEditing] = useState<any>(null);
+  const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   async function load() {
@@ -406,7 +477,10 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
 
   return (
     <div className="space-y-3">
-      <button onClick={() => setCreating(true)} className="btn-primary text-sm">+ {t('data.add_cadre')}</button>
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_cadre')}</button>
+      </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
@@ -426,7 +500,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
                 <td className="px-3 py-2 text-xs">{c.category === 'health' ? t('admin.health') : c.category === 'education' ? t('admin.education') : c.category}</td>
                 <td className="px-3 py-2 text-xs">{c.level || '-'}</td>
                 <td className="px-3 py-2 text-right">
-                  <RowAction onEdit={() => setEditing(c)} onDelete={async () => {
+                  <RowAction onView={() => setViewing(c)} onEdit={() => setEditing(c)} onDelete={async () => {
                     if (!confirm(t('data.confirm_delete'))) return;
                     try { await adminDeleteCadre(c.code); markOwnAction(); flash(t('data.deleted')); load(); }
                     catch (e) { flash(await errText(e), false); }
@@ -437,6 +511,21 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
           </tbody>
         </table>
       </div>
+      {viewing && (
+        <ViewItemModal
+          title={viewing.display_name}
+          icon="👨‍🏫"
+          onClose={() => setViewing(null)}
+          onEdit={() => { setEditing(viewing); setViewing(null); }}
+          fields={[
+            { label: t('data.code'), value: viewing.code },
+            { label: t('data.name'), value: viewing.display_name },
+            { label: t('admin.department'), value: viewing.category === 'health' ? t('admin.health') : viewing.category === 'education' ? t('admin.education') : viewing.category },
+            { label: t('data.level'), value: viewing.level || '—' },
+            { label: t('data.req_subjects'), value: viewing.requires_subjects ? '✓ ' + t('admin.verified') : '✗' },
+          ]}
+        />
+      )}
       {(editing || creating) && (
         <CadreModal
           initial={editing || { code: '', display_name: '', category: 'education', requires_subjects: false, level: 'Primary' }}
@@ -512,6 +601,7 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
   const t = useT();
   const [data, setData] = useState<any[] | null>(null);
   const [editing, setEditing] = useState<any>(null);
+  const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   async function load() {
@@ -523,7 +613,10 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
 
   return (
     <div className="space-y-3">
-      <button onClick={() => setCreating(true)} className="btn-primary text-sm">+ {t('data.add_region')}</button>
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_region')}</button>
+      </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[420px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
@@ -539,7 +632,7 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
                 <td className="px-3 py-2 font-mono text-xs">{r.id}</td>
                 <td className="px-3 py-2 font-medium">{r.name}</td>
                 <td className="px-3 py-2 text-right">
-                  <RowAction onEdit={() => setEditing(r)} onDelete={async () => {
+                  <RowAction onView={() => setViewing(r)} onEdit={() => setEditing(r)} onDelete={async () => {
                     if (!confirm(t('data.confirm_delete'))) return;
                     try { await adminDeleteRegion(r.id); markOwnAction(); flash(t('data.deleted')); load(); }
                     catch (e) { flash(await errText(e), false); }
@@ -550,6 +643,18 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
           </tbody>
         </table>
       </div>
+      {viewing && (
+        <ViewItemModal
+          title={viewing.name}
+          icon="🌍"
+          onClose={() => setViewing(null)}
+          onEdit={() => { setEditing(viewing); setViewing(null); }}
+          fields={[
+            { label: t('data.id'), value: viewing.id },
+            { label: t('data.name'), value: viewing.name },
+          ]}
+        />
+      )}
       {(editing || creating) && (
         <RegionDistrictModal
           title={editing ? t('data.edit_region') : t('data.add_region')}
@@ -575,6 +680,7 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
   const [regions, setRegions] = useState<any[]>([]);
   const [regionFilter, setRegionFilter] = useState<number | ''>('');
   const [editing, setEditing] = useState<any>(null);
+  const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   // bypass wakati mkoa umechaguliwa — dropdown ibadilike mara moja (fresh).
@@ -594,7 +700,8 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
           <option value="">{t('data.all_regions')}</option>
           {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
-        <button onClick={() => setCreating(true)} className="btn-primary text-sm">+ {t('data.add_district')}</button>
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_district')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
@@ -613,7 +720,7 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
                 <td className="px-3 py-2 font-medium">{d.name}</td>
                 <td className="px-3 py-2 text-xs">{regions.find((r) => r.id === d.region_id)?.name || d.region_id}</td>
                 <td className="px-3 py-2 text-right">
-                  <RowAction onEdit={() => setEditing(d)} onDelete={async () => {
+                  <RowAction onView={() => setViewing(d)} onEdit={() => setEditing(d)} onDelete={async () => {
                     if (!confirm(t('data.confirm_delete'))) return;
                     try { await adminDeleteDistrict(d.id); markOwnAction(); flash(t('data.deleted')); load(); }
                     catch (e) { flash(await errText(e), false); }
@@ -624,6 +731,19 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
           </tbody>
         </table>
       </div>
+      {viewing && (
+        <ViewItemModal
+          title={viewing.name}
+          icon="📍"
+          onClose={() => setViewing(null)}
+          onEdit={() => { setEditing(viewing); setViewing(null); }}
+          fields={[
+            { label: t('data.id'), value: viewing.id },
+            { label: t('data.name'), value: viewing.name },
+            { label: t('data.region'), value: regions.find((r) => r.id === viewing.region_id)?.name || viewing.region_id },
+          ]}
+        />
+      )}
       {(editing || creating) && (
         <RegionDistrictModal
           title={editing ? t('data.edit_district') : t('data.add_district')}
@@ -701,6 +821,7 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
   const [q, setQ] = useState('');
   const [data, setData] = useState<any[] | null>(null);
   const [editing, setEditing] = useState<any>(null);
+  const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   async function load() {
@@ -739,7 +860,8 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
           {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
         <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
-        <button onClick={() => setCreating(true)} className="btn-primary text-sm">+ {t('data.add_facility')}</button>
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_facility')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[640px]">
@@ -767,6 +889,7 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
                   <td className="px-3 py-2 text-xs">{districtName || '-'}</td>
                   <td className="px-3 py-2 text-right">
                     <RowAction
+                      onView={() => setViewing({ ...f, _category: category })}
                       onEdit={() => setEditing({ ...f, _category: category })}
                       onDelete={async () => {
                         if (!confirm(t('data.confirm_delete'))) return;
@@ -781,6 +904,24 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
         </table>
         {data.length === 0 && <div className="p-8 text-center text-sm text-brand-grey-500">{t('msg.no_data')}</div>}
       </div>
+      {viewing && (
+        <ViewItemModal
+          title={viewing.name}
+          icon={viewing._category === 'education' ? '🏫' : '🏥'}
+          onClose={() => setViewing(null)}
+          onEdit={() => { setEditing(viewing); setViewing(null); }}
+          fields={[
+            { label: t('data.code'), value: viewing.school_code || viewing.code },
+            { label: t('data.name'), value: viewing.name },
+            { label: t('admin.department'), value: viewing._category === 'education' ? t('data.fac_schools') : t('data.fac_health') },
+            { label: t('data.level'), value: viewing.level || '—' },
+            { label: t('data.fac_type'), value: viewing.type || viewing.type_category || '—' },
+            { label: t('data.region'), value: viewing.region_name || viewing.region || '—' },
+            { label: t('data.district'), value: viewing.district_name || viewing.district || '—' },
+            { label: t('data.ownership'), value: viewing.ownership || '—' },
+          ]}
+        />
+      )}
       {(editing || creating) && (
         <FacilityModal
           initial={editing ? { ...editing, category: editing._category || category } : { category, name: '', region_id: '', district_id: '' }}

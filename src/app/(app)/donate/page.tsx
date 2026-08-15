@@ -20,11 +20,13 @@ export default function DonatePage() {
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
-  const [status, setStatus] = useState<'idle' | 'processing' | 'confirmed' | 'rejected'>('idle');
+  const [status, setStatus] = useState<'idle' | 'processing' | 'confirmed' | 'rejected' | 'expired'>('idle');
   const [history, setHistory] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const orderRef = useRef<any>(null);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
     getDonationInfo().then((info) => {
@@ -65,20 +67,59 @@ export default function DonatePage() {
     });
   }
 
+  // AUTO-SUBMIT: mtu anapoandika/kunakili SMS (code), inatumwa kwa uthibitisho
+  // PAPO HAPO bila kubofya kitu — pause ya sekunde 1.2 inasubiri SMS kamili,
+  // kisha ina-submit yenyewe. Hakuna button ya "Thibitisha" inayohitajika.
+  const submitTimer = useRef<any>(null);
+  const submittingRef = useRef(false);
+
   async function submit() {
     setError('');
     const text = smsText.trim();
     if (text.length < 10) { setError('Nakili SMS nzima uliyopata kutoka kwa mtandao wako.'); return; }
+    submittingRef.current = true;
     setStatus('processing');
     try {
       const o = await submitDonation({ amount, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
       orderRef.current = o;
+      // Expiry: dakika 15 kutoka sasa — countdown inaonekana kwa mchangiaji.
+      const exp = Date.now() + 15 * 60 * 1000;
+      setExpiresAt(exp);
+      setCountdown(15 * 60);
     } catch (err: any) {
+      submittingRef.current = false;
       setStatus('idle');
       setError(err?.response?.data?.detail || 'Kosa la mtandao. Jaribu tena.');
     }
   }
+
+  // Auto-submit kwenye SMS textarea: pause ya 1.2s → tuma yenyewe.
+  function onSmsChange(v: string) {
+    setSmsText(v);
+    setError('');
+    if (submitTimer.current) clearTimeout(submitTimer.current);
+    const t = v.trim();
+    if (t.length < 10) return;
+    submitTimer.current = setTimeout(() => {
+      if (submittingRef.current) return;
+      submit();
+    }, 1200);
+  }
+
+  // COUNTDOWN: kila sekunde timer inapungua; inapofikia 0 → status 'expired'.
+  useEffect(() => {
+    if (status !== 'processing' || !expiresAt) return;
+    const id = setInterval(() => {
+      const left = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+      setCountdown(left);
+      if (left <= 0) {
+        setStatus('expired');
+        submittingRef.current = false;
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [status, expiresAt]);
 
   function reset() {
     orderRef.current = null;
@@ -125,6 +166,10 @@ export default function DonatePage() {
             <span className="inline-block w-2 h-2 rounded-full bg-brand-gold-500 animate-pulse" />
             {t('donate.processing_pill')}
           </div>
+          {/* COUNTDOWN ya uthibitisho — mchangiaji anaona inaisha lini */}
+          <div className="inline-flex items-center gap-2 rounded-xl border border-brand-gold-200 bg-brand-gold-50 text-brand-gold-700 px-4 py-2 text-sm font-bold mb-3">
+            ⏳ {t('donate.expires_in')}: {String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}
+          </div>
           {order && (
             <div className="bg-brand-grey-50 dark:bg-brand-grey-100 rounded-xl p-3 text-sm text-brand-grey-700 dark:text-brand-grey-300 mx-auto max-w-xs">
               <div className="flex justify-between"><span className="text-brand-grey-500">{t('donate.amount')}:</span><span className="font-semibold">{currency} {order.amount?.toLocaleString()}</span></div>
@@ -154,8 +199,17 @@ export default function DonatePage() {
         </div>
       )}
 
-      {/* Form — SMS textbox chini */}
-      {status !== 'processing' && status !== 'confirmed' && status !== 'rejected' ? (
+      {status === 'expired' && (
+        <div className="card text-center border-2 border-brand-grey-300 dark:border-brand-grey-600">
+          <div className="w-14 h-14 mx-auto rounded-full bg-brand-grey-100 text-brand-grey-500 flex items-center justify-center text-2xl mb-3">⏳</div>
+          <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.expired_title')}</h2>
+          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-3">{t('donate.expired_body')}</p>
+          <button onClick={reset} className="btn-primary w-full">{t('donate.try_again')}</button>
+        </div>
+      )}
+
+      {/* Form — SMS textbox chini (auto-submit) */}
+      {status !== 'processing' && status !== 'confirmed' && status !== 'rejected' && status !== 'expired' ? (
         <div className="card space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -176,22 +230,15 @@ export default function DonatePage() {
               className="input min-h-[110px] resize-y"
               placeholder="Mfano: C2H8MZ3JX1 Confirmed. You have received TZS 5,000.00 from JOHN KAMWENDA - 0712345678 on 08/08/2026 at 10:30..."
               value={smsText}
-              onChange={(e) => setSmsText(e.target.value)}
+              onChange={(e) => onSmsChange(e.target.value)}
             />
             <div className="flex justify-between mt-1 text-xs">
-              <span className="text-brand-grey-500 dark:text-brand-grey-400">{t('donate.sms_hint')}</span>
+              <span className="text-brand-blue-600 dark:text-brand-blue-400 flex items-center gap-1">⚡ {t('donate.auto_hint')}</span>
               <span className={`font-mono ${smsText.length > 0 ? 'text-brand-blue' : 'text-brand-grey-300'}`}>{smsText.length}/1000</span>
             </div>
           </div>
 
           {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
-
-          <div className="flex justify-end">
-            <button onClick={submit} disabled={!smsText.trim()}
-              className="btn-accent text-sm px-5 py-2 disabled:opacity-50">
-              {t('donate.submit')}
-            </button>
-          </div>
         </div>
       ) : null}
 

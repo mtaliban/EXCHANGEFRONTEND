@@ -412,11 +412,11 @@ export const adminDeleteFacility = (facility_id: string | number, category: 'hea
   client.delete(`${ADMIN}/admin/data/facilities/${facility_id}`, { params: { category } }).then((r) => r.data);
 
 /* ── Admin: exports + cleanup ── */
-export const adminEventsExport = (event_type?: string, fmt: 'csv' | 'xlsx' = 'csv') =>
+export const adminEventsExport = (event_type?: string, fmt: 'pdf' | 'docx' | 'csv' | 'xlsx' = 'pdf') =>
   client.get(`${ADMIN}/admin/events/export`, { params: { event_type, fmt }, responseType: 'blob', bypassCache: true } as any);
 export const adminReports = (days = 30) =>
   client.get(`${ADMIN}/admin/reports`, { params: { days }, ttl: 30_000 } as any).then((r) => r.data);
-export const adminReportsExport = (fmt: 'csv' | 'xlsx' = 'csv') =>
+export const adminReportsExport = (fmt: 'pdf' | 'docx' | 'csv' | 'xlsx' = 'pdf') =>
   client.get(`${ADMIN}/admin/reports/export`, { params: { fmt }, responseType: 'blob', bypassCache: true } as any);
 export const adminClearEvents = () =>
   client.post(`${ADMIN}/admin/events/clear`).then((r) => r.data);
@@ -486,5 +486,9 @@ export const dismissAnnouncement = (announcement_id: string) =>
   client.post(`${API}/announcements/${announcement_id}/dismiss`).then((r) => r.data);
 export const adminListAnnouncements = () =>
   client.get<{ total: number; announcements: any[] }>(`${API}/admin/announcements`).then((r) => r.data);
+export const adminResendAnnouncement = (announcement_id: string) =>
+  client.post<{ announcement_id: string; sent_to: number }>(`${API}/admin/announcements/${announcement_id}/resend`).then((r) => r.data);
+export const adminDeleteAnnouncement = (announcement_id: string) =>
+  client.delete<{ ok: boolean }>(`${API}/admin/announcements/${announcement_id}`).then((r) => r.data);
 
 export const MSG_WS_URL = () => WS_URL;

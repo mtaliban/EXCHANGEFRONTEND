@@ -3,13 +3,14 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { adminEvents, adminEventsExport, adminClearEvents, exportErrorText } from '@/lib/api';
 import { API_URL } from '@/lib/config';
-import { useT } from '@/lib/i18n';
+import { useT, useI18n } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
 import Spinner from '@/components/Spinner';
 
 const TYPES = [
   'user.registered', 'user.profile_updated', 'user.station_changed', 'user.destination_changed',
-  'user.prefs_updated', 'user.updated_by_admin', 'user.deleted', 'match.found', 'message.sent',
+  'user.prefs_updated', 'user.updated_by_admin', 'user.deleted', 'user.presence',
+  'match.found', 'message.sent',
   'call.initiated', 'payment.paid', 'email.verification_requested', 'email.verified',
   'announcement.sent', 'page.viewed',
   'data.subject_added', 'data.subject_updated', 'data.subject_deleted',
@@ -17,6 +18,78 @@ const TYPES = [
   'data.region_added', 'data.region_updated', 'data.region_deleted',
   'data.district_added', 'data.district_updated', 'data.district_deleted',
 ];
+
+/** Majina ya MAANA ya kila tukio — dropdown inaonyesha "Usajili mpya" sio
+ *  code mbichi kama 'user.registered'. Hivyo admin anaelewa kila tukio ni nini
+ *  kabla ya kuchagua. */
+const TYPE_LABELS: Record<string, string> = {
+  'user.registered': '👤 Usajili mpya',
+  'user.profile_updated': '✏️ Taarifa zilibadilishwa',
+  'user.station_changed': '📍 Kituo kilibadilishwa',
+  'user.destination_changed': '🎯 Lengo libadilishwa',
+  'user.prefs_updated': '⚙️ Mipangilio ibadilishwa',
+  'user.updated_by_admin': '🛠️ Imebadilishwa na Admin',
+  'user.deleted': '🗑️ Mtumiaji amefutwa',
+  'user.presence': '🟢 Aliingia / Aliondoka (presence)',
+  'match.found': '🤝 Mechi imepatikana',
+  'message.sent': '💬 Ujumbe ulitumwa',
+  'call.initiated': '📞 Simu iliitwa',
+  'payment.paid': '💰 Malipo yalilipwa',
+  'email.verification_requested': '📧 Email verification iko njiani',
+  'email.verified': '✅ Email imethibitishwa',
+  'announcement.sent': '📢 Tangazo lilitumwa',
+  'page.viewed': '🌐 Ukurasa ulitembelewa',
+  'data.subject_added': '📚 Somo limeongezwa',
+  'data.subject_updated': '📚 Somo limehaririwa',
+  'data.subject_deleted': '📚 Somo limefutwa',
+  'data.cadre_added': '👨‍🏫 Kada imeongezwa',
+  'data.cadre_updated': '👨‍🏫 Kada imehaririwa',
+  'data.cadre_deleted': '👨‍🏫 Kada imefutwa',
+  'data.region_added': '🌍 Mkoa umeongezwa',
+  'data.region_updated': '🌍 Mkoa umehaririwa',
+  'data.region_deleted': '🌍 Mkoa umefutwa',
+  'data.district_added': '📍 Wilaya imeongezwa',
+  'data.district_updated': '📍 Wilaya imehaririwa',
+  'data.district_deleted': '📍 Wilaya imefutwa',
+};
+
+const TYPE_LABELS_EN: Record<string, string> = {
+  'user.registered': '👤 New registration',
+  'user.profile_updated': '✏️ Profile updated',
+  'user.station_changed': '📍 Station changed',
+  'user.destination_changed': '🎯 Destination changed',
+  'user.prefs_updated': '⚙️ Preferences updated',
+  'user.updated_by_admin': '🛠️ Updated by Admin',
+  'user.deleted': '🗑️ User deleted',
+  'user.presence': '🟢 Online / Offline (presence)',
+  'match.found': '🤝 Match found',
+  'message.sent': '💬 Message sent',
+  'call.initiated': '📞 Call initiated',
+  'payment.paid': '💰 Payment paid',
+  'email.verification_requested': '📧 Email verification requested',
+  'email.verified': '✅ Email verified',
+  'announcement.sent': '📢 Announcement sent',
+  'page.viewed': '🌐 Page viewed',
+  'data.subject_added': '📚 Subject added',
+  'data.subject_updated': '📚 Subject updated',
+  'data.subject_deleted': '📚 Subject deleted',
+  'data.cadre_added': '👨‍🏫 Cadre added',
+  'data.cadre_updated': '👨‍🏫 Cadre updated',
+  'data.cadre_deleted': '👨‍🏫 Cadre deleted',
+  'data.region_added': '🌍 Region added',
+  'data.region_updated': '🌍 Region updated',
+  'data.region_deleted': '🌍 Region deleted',
+  'data.district_added': '📍 District added',
+  'data.district_updated': '📍 District updated',
+  'data.district_deleted': '📍 District deleted',
+};
+
+function typeLabel(type: string): string {
+  return TYPE_LABELS[type] || type;
+}
+function typeLabelEn(type: string): string {
+  return TYPE_LABELS_EN[type] || type;
+}
 
 const TYPE_COLORS: Record<string, string> = {
   'user.registered': 'bg-blue-100 text-blue-700',
@@ -26,6 +99,7 @@ const TYPE_COLORS: Record<string, string> = {
   'user.prefs_updated': 'bg-slate-200 text-slate-700',
   'user.updated_by_admin': 'bg-violet-100 text-violet-700',
   'user.deleted': 'bg-red-100 text-red-700',
+  'user.presence': 'bg-slate-100 text-slate-600',
   'match.found': 'bg-green-100 text-green-700',
   'message.sent': 'bg-amber-100 text-amber-700',
   'call.initiated': 'bg-orange-100 text-orange-700',
@@ -80,6 +154,15 @@ function downloadBlob(blob: Blob, filename: string) {
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click();
   a.remove(); URL.revokeObjectURL(url);
+}
+
+function StatMini({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) {
+  return (
+    <div className="card">
+      <div className={`text-2xl font-bold ${color}`}>{icon} {value}</div>
+      <div className="text-xs text-brand-grey-500 mt-1">{label}</div>
+    </div>
+  );
 }
 
 /**
@@ -140,6 +223,7 @@ function useLiveEventsFeed(onEvent: (ev: any) => void) {
 
 export default function AdminEventsPage() {
   const t = useT();
+  const lang = useI18n((s) => s.lang);
   const [data, setData] = useState<any>(null);
   const [type, setType] = useState('');
   const [page, setPage] = useState(1);
@@ -156,10 +240,11 @@ export default function AdminEventsPage() {
     setTimeout(() => setMsg(null), 3500);
   }
 
-  // bypass=true wakati kichujio cha type kimechaguliwa → dropdown ibadilike
-  // mara moja na data FRESH (usiache cache ya zamani ionekane).
+  // REAL-TIME: data ya events lazima iwe FRESH kila mara (SSE live feed ina
+  // kuongeza mpya juu) — bypassCache=true hufanya dropdown ibadilike papo
+  // hapo bila kusubiri cache ya zamani (20s) kuisha.
   useEffect(() => {
-    adminEvents(type || undefined, PAGE_SIZE, (page - 1) * PAGE_SIZE, !!type).then(setData);
+    adminEvents(type || undefined, PAGE_SIZE, (page - 1) * PAGE_SIZE, true).then(setData);
   }, [type, page]);
 
   // LIVE: events mpya zinaingia juu bila refresh (event-driven).
@@ -184,12 +269,12 @@ export default function AdminEventsPage() {
 
   if (!data) return <div className="p-10"><Spinner label={t('adminevents.loading')} /></div>;
 
-  async function doExport(fmt: 'csv' | 'xlsx') {
+  async function doExport(fmt: 'pdf' | 'docx') {
     setExporting(fmt);
     try {
       const res = await adminEventsExport(type || undefined, fmt);
-      downloadBlob(res.data as Blob, `events_${type || 'all'}_${new Date().toISOString().slice(0, 10)}.${fmt}`);
-      flash(`⬇ ${fmt.toUpperCase()} imepakuliwa — events_${type || 'all'}`);
+      downloadBlob(res.data as Blob, `events_${type || 'all'}_${new Date().toISOString().slice(0, 10)}.${fmt === 'docx' ? 'docx' : 'pdf'}`);
+      flash(`⬇ ${fmt === 'docx' ? 'WORD' : 'PDF'} imepakuliwa — events_${type || 'all'}`);
     } catch (e: any) {
       flash(`Export imeshindikana: ${await exportErrorText(e)}`, false);
     } finally { setExporting(null); }
@@ -219,11 +304,11 @@ export default function AdminEventsPage() {
           </span>
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => doExport('csv')} disabled={!!exporting} className="btn-outline text-xs min-h-[36px]">
-            {exporting === 'csv' ? 'Inapakua...' : '⬇ CSV'}
+          <button onClick={() => doExport('pdf')} disabled={!!exporting} className="btn-outline text-xs min-h-[36px]">
+            {exporting === 'pdf' ? 'Inapakua...' : '⬇ PDF'}
           </button>
-          <button onClick={() => doExport('xlsx')} disabled={!!exporting} className="btn-outline text-xs min-h-[36px]">
-            {exporting === 'xlsx' ? 'Inapakua...' : '⬇ Excel'}
+          <button onClick={() => doExport('docx')} disabled={!!exporting} className="btn-outline text-xs min-h-[36px]">
+            {exporting === 'docx' ? 'Inapakua...' : '⬇ WORD'}
           </button>
           <button onClick={doClear} className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition">
             🗑 {t('adminevents.clear')}
@@ -237,12 +322,33 @@ export default function AdminEventsPage() {
         </div>
       )}
 
+      {/* STATISTICS za papo hapo: users leo/jana, page views, pages zilizotembelewa */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatMini icon="👤" label={t('adminevents.users_today')} value={data.stats?.users_today ?? 0} color="text-brand-blue" />
+        <StatMini icon="👥" label={t('adminevents.users_yesterday')} value={data.stats?.users_yesterday ?? 0} color="text-brand-grey-700" />
+        <StatMini icon="🌐" label={t('adminevents.views_today')} value={data.stats?.views_today ?? 0} color="text-brand-orange" />
+        <StatMini icon="⭐" label={t('adminevents.top_pages')} value={(data.stats?.top_pages?.[0]?.path || '—').replace(/^\//, '') || '—'} color="text-brand-gold-600" />
+      </div>
+
+      {(data.stats?.top_pages?.length || 0) > 0 && (
+        <div className="card !py-2.5">
+          <div className="text-xs font-bold text-brand-grey-500 uppercase tracking-wide mb-1.5">{t('adminevents.popular_pages')}</div>
+          <div className="flex flex-wrap gap-1.5">
+            {(data.stats?.top_pages || []).map((p: any) => (
+              <span key={p.path} className="inline-flex items-center gap-1 text-[11px] font-medium bg-brand-grey-50 border border-brand-grey-200 rounded-full px-2.5 py-1 text-brand-grey-700">
+                {p.path.replace(/^\//, '') || '/'} <b className="text-brand-blue">{p.views}</b>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2 items-center">
         <select className="input w-auto" value={type} onChange={(e) => { setType(e.target.value); setPage(1); }}>
           <option value="">{t('adminevents.all_types')}</option>
-          {TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
+          {TYPES.map((tp) => <option key={tp} value={tp}>{lang === 'en' ? typeLabelEn(tp) : typeLabel(tp)}</option>)}
         </select>
-        <span className="text-xs text-brand-grey-500">{t('adminevents.type')}: <b>{type || 'zote'}</b></span>
+        <span className="text-xs text-brand-grey-500">{t('adminevents.type')}: <b>{type ? (lang === 'en' ? typeLabelEn(type) : typeLabel(type)) : t('adminevents.all_types')}</b></span>
       </div>
 
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
@@ -271,7 +377,7 @@ export default function AdminEventsPage() {
                   <tr className="hover:bg-brand-grey-50 align-top">
                     <td className="px-3 py-2.5 text-xs font-mono text-brand-grey-400 whitespace-nowrap">{(page - 1) * PAGE_SIZE + i + 1}</td>
                     <td className="px-3 py-2.5">
-                      <span className={`inline-block text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap ${color}`}>{e.event_type}</span>
+                      <span className={`inline-block text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap ${color}`}>{lang === 'en' ? typeLabelEn(e.event_type) : typeLabel(e.event_type)}</span>
                     </td>
                     <td className="px-3 py-2.5 min-w-0 max-w-[340px]">
                       <span className="block text-sm text-brand-grey-800 truncate" title={summary || JSON.stringify(e.payload)}>

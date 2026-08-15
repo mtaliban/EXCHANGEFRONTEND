@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { sendAnnouncement, adminListAnnouncements, adminUsers, getDepartments } from '@/lib/api';
+import { sendAnnouncement, adminListAnnouncements, adminUsers, adminDeleteAnnouncement, adminResendAnnouncement, getDepartments } from '@/lib/api';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 
@@ -28,15 +28,23 @@ export default function AdminAnnouncementsPage() {
   }
   useEffect(() => { reload(); }, []);
 
-  async function findUser() {
-    if (!targetUser.trim()) return;
-    try {
-      const d = await adminUsers({ q: targetUser.trim(), limit: 10 });
-      const users = d.users || [];
-      setResults(users);
-      setTargetName(users.length === 0 ? t('ann.not_found') : '');
-    } catch { setTargetName(t('ann.search_error')); }
-  }
+  // REAL-TIME SEARCH: ukiandika tu watu wanakuja PAPO HAPO (debounce 350ms),
+  // ukifuta wote wanaondoka — hakuna button ya "Tafuta" tena.
+  useEffect(() => {
+    if (audience !== 'user' || targetUser.trim().length < 2) {
+      setResults(null);
+      return;
+    }
+    const id = setTimeout(async () => {
+      try {
+        const d = await adminUsers({ q: targetUser.trim(), limit: 10 }, true);
+        setResults(d.users || []);
+        setTargetName('');
+      } catch { setTargetName(t('ann.search_error')); }
+    }, 350);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetUser, audience]);
 
   function pickUser(u: any) {
     // Hifadhi _id (ObjectId) — backend inahitaji hiyo, sio namba ya simu!
@@ -60,6 +68,39 @@ export default function AdminAnnouncementsPage() {
     } catch (e: any) {
       setResult(`❌ ${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
     } finally { setSending(false); }
+  }
+
+  // CRUD: resend (tuma tena kwa walengwa wote wa sasa) + delete.
+  const [busyId, setBusyId] = useState<string | null>(null);
+  async function resend(a: any) {
+    if (!confirm(t('ann.resend_confirm'))) return;
+    setBusyId(a.announcement_id);
+    try {
+      const res = await adminResendAnnouncement(a.announcement_id);
+      setResult(`✅ ${t('ann.sent')} ${res.sent_to}`);
+      reload();
+    } catch (e: any) {
+      setResult(`❌ ${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
+    } finally { setBusyId(null); }
+  }
+  async function del(a: any) {
+    if (!confirm(t('ann.delete_confirm'))) return;
+    setBusyId(a.announcement_id);
+    try {
+      await adminDeleteAnnouncement(a.announcement_id);
+      setResult(`✅ ${t('ann.deleted')}`);
+      reload();
+    } catch (e: any) {
+      setResult(`❌ ${t('ann.delete_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
+    } finally { setBusyId(null); }
+  }
+
+  // Audience label ya kiswahili kwa dropdown na list
+  function audienceLabel(aud: string): string {
+    if (aud === 'all') return t('ann.aud_all');
+    if (aud === 'user') return t('ann.aud_user');
+    const d = departments.find((x) => x.code === aud);
+    return d ? `${d.icon ? d.icon + ' ' : ''}${d.name}` : aud;
   }
 
   const inputCls = "w-full rounded-lg border border-brand-grey-300 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-950 px-4 py-2.5 text-brand-grey-900 dark:text-white placeholder-brand-grey-500 focus:outline-none focus:ring-2 focus:ring-brand-blue";
@@ -108,14 +149,11 @@ export default function AdminAnnouncementsPage() {
 
         {audience === 'user' && (
           <div className="space-y-2">
-            <div className="flex gap-2">
-              <input className={`${inputCls} flex-1`}
-                value={targetUser} onChange={(e) => { setTargetUser(e.target.value); setResults(null); }} placeholder={t('ann.search_ph')} />
-              <button onClick={findUser}
-                className="px-4 py-2 rounded-lg border border-brand-grey-300 dark:border-brand-grey-700 text-brand-grey-700 dark:text-brand-grey-300 hover:border-brand-blue transition text-sm">
-                {t('ann.search')}
-              </button>
-            </div>
+            <input className={`${inputCls}`}
+              value={targetUser} onChange={(e) => { setTargetUser(e.target.value); setTargetName(''); }} placeholder={t('ann.search_ph')} />
+            {targetUser.trim().length > 0 && targetUser.trim().length < 2 && (
+              <div className="text-xs text-brand-grey-500">{t('ann.type_more')}</div>
+            )}
             {results && results.length > 0 && (
               <div className="border border-brand-grey-200 dark:border-brand-grey-700 rounded-lg divide-y divide-brand-grey-100 dark:divide-brand-grey-700 overflow-hidden">
                 {results.map((u: any) => (
@@ -129,6 +167,9 @@ export default function AdminAnnouncementsPage() {
             )}
             {results && results.length === 0 && <div className="text-xs text-brand-orange">{t('ann.not_found')}</div>}
             {targetName && !results && <div className="text-xs text-green-600">✓ {targetName}</div>}
+            {!targetName && !results && targetUser.trim().length >= 2 && (
+              <div className="text-xs text-brand-grey-400">{t('ann.searching')}</div>
+            )}
           </div>
         )}
 
@@ -141,23 +182,54 @@ export default function AdminAnnouncementsPage() {
         </div>
       </div>
 
-      {/* History */}
-      <h2 className="font-semibold text-brand-grey-700 dark:text-brand-grey-300 text-sm mb-2 mt-8">{t('ann.history')} ({list.length})</h2>
-      <div className="space-y-2">
-        {list.length === 0 && <div className="text-brand-grey-500 text-sm">{t('ann.empty')}</div>}
-        {list.map((a) => (
-          <div key={a.announcement_id} className="card !py-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="font-medium text-sm text-brand-grey-900 dark:text-white">{a.title}</div>
-              <div className="text-xs text-brand-grey-500 flex-shrink-0">{conversationTime(a.created_at)}</div>
-            </div>
-            <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-1 line-clamp-2">{a.message}</div>
-            <div className="text-[11px] text-brand-grey-500 mt-1">
-              {a.audience} · {t('ann.to_people')} {a.recipient_count} · {t('ann.dismissed')} {a.dismissed_count} · {a.created_by_name}
-            </div>
-          </div>
-        ))}
+      {/* History — table ya kisomi + CRUD (resend/delete) */}
+      <div className="flex items-center justify-between mt-8 mb-2">
+        <h2 className="font-semibold text-brand-grey-700 dark:text-brand-grey-300 text-sm">{t('ann.history')} ({list.length})</h2>
       </div>
+      {list.length === 0 ? (
+        <div className="text-brand-grey-500 text-sm">{t('ann.empty')}</div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-brand-grey-100 dark:border-brand-grey-700 overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[720px]">
+            <thead className="bg-brand-grey-50 dark:bg-brand-grey-100 text-xs text-brand-grey-500">
+              <tr>
+                <th className="px-3 py-2 text-left">{t('ann.title_label')}</th>
+                <th className="px-3 py-2 text-left">{t('ann.audience_label')}</th>
+                <th className="px-3 py-2 text-left">{t('ann.to_people')}</th>
+                <th className="px-3 py-2 text-left">{t('ann.sent_by')}</th>
+                <th className="px-3 py-2 text-left">{t('ann.sent_at')}</th>
+                <th className="px-3 py-2 text-right">{t('admin.col_actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-brand-grey-100 dark:divide-brand-grey-700">
+              {list.map((a) => (
+                <tr key={a.announcement_id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 align-top">
+                  <td className="px-3 py-2.5 max-w-[280px]">
+                    <div className="font-medium text-brand-grey-900 dark:text-white truncate">{a.title}</div>
+                    <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5 line-clamp-2">{a.message}</div>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <span className="badge-gold">{audienceLabel(a.audience)}</span>
+                  </td>
+                  <td className="px-3 py-2.5 text-xs font-semibold text-brand-blue tabular-nums">{a.recipient_count}</td>
+                  <td className="px-3 py-2.5 text-xs text-brand-grey-600 dark:text-brand-grey-300">{a.created_by_name || '—'}</td>
+                  <td className="px-3 py-2.5 text-xs text-brand-grey-500 whitespace-nowrap">{conversationTime(a.created_at)}</td>
+                  <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                    <button onClick={() => resend(a)} disabled={busyId === a.announcement_id}
+                      className="text-brand-blue text-xs px-2 hover:underline disabled:opacity-40">
+                      ↺ {t('ann.resend')}
+                    </button>
+                    <button onClick={() => del(a)} disabled={busyId === a.announcement_id}
+                      className="text-brand-red text-xs px-2 hover:underline disabled:opacity-40">
+                      🗑 {t('action.delete')}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

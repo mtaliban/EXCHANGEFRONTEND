@@ -53,7 +53,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               KV
             </div>
             <span className="font-bold text-sm text-brand-grey-900 dark:text-white truncate hidden min-[360px]:inline">
-              {isAdmin ? 'Admin' : 'Kubadilishana'}
+              {isAdmin ? 'Statistics' : 'Kubadilishana'}
             </span>
           </Link>
           <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -72,7 +72,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 KV
               </div>
               <span className="font-bold text-sm text-brand-grey-900 dark:text-white">
-                {isAdmin ? 'Admin Panel' : 'Kubadilishana'}
+                {isAdmin ? 'Statistics' : 'Kubadilishana'}
               </span>
             </Link>
             {/* Toolbar: WS status + language switcher (badilisha lugha) */}

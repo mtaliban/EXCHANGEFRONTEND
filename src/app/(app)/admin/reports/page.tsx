@@ -53,11 +53,11 @@ export default function ReportsPage() {
     adminReports(days).then(setData).catch(() => setErr('Imeshindikana kupakia ripoti — jaribu tena.'));
   }, [days]);
 
-  async function doExport(fmt: 'csv' | 'xlsx') {
+  async function doExport(fmt: 'pdf' | 'docx') {
     setExporting(true);
     try {
       const res = await adminReportsExport(fmt);
-      downloadBlob(res.data as Blob, `ripoti_na_hesabu_${new Date().toISOString().slice(0, 10)}.${fmt}`);
+      downloadBlob(res.data as Blob, `ripoti_na_hesabu_${new Date().toISOString().slice(0, 10)}.${fmt === 'docx' ? 'docx' : 'pdf'}`);
       setErr(null);
     } catch (e: any) {
       setErr(`Export imeshindikana: ${await exportErrorText(e)}`);
@@ -81,11 +81,11 @@ export default function ReportsPage() {
             <option value={90}>{t('adminrep.days90')}</option>
             <option value={365}>{t('adminrep.year')}</option>
           </select>
-          <button onClick={() => doExport('csv')} disabled={exporting} className="btn-primary text-xs min-h-[36px]">
-            {exporting ? 'Inapakua...' : '⬇ CSV'}
+          <button onClick={() => doExport('pdf')} disabled={exporting} className="btn-primary text-xs min-h-[36px]">
+            {exporting ? 'Inapakua...' : '⬇ PDF'}
           </button>
-          <button onClick={() => doExport('xlsx')} disabled={exporting} className="btn-outline text-xs min-h-[36px]">
-            {exporting ? 'Inapakua...' : '⬇ Excel'}
+          <button onClick={() => doExport('docx')} disabled={exporting} className="btn-outline text-xs min-h-[36px]">
+            {exporting ? 'Inapakua...' : '⬇ WORD'}
           </button>
         </div>
       </div>
@@ -115,7 +115,7 @@ export default function ReportsPage() {
         <NumberTable
           title={`👨‍🏫 ${t('adminrep.by_cadre')}`}
           headers={[t('adminrep.department'), t('adminrep.cadre'), t('adminrep.count')]}
-          rows={(data.users_by_cadre || []).map((r: any) => [r.category === 'health' ? t('admin.health') : t('admin.education'), r.cadre, String(r.count)])}
+          rows={(data.users_by_cadre || []).map((r: any) => [r.cadre_name || r.category, r.cadre, String(r.count)])}
         />
         <NumberTable
           title={`🚦 ${t('adminrep.by_status')}`}

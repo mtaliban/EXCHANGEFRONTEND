@@ -8,6 +8,7 @@ import {
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
 import { API_URL } from '@/lib/config';
+import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 
 /**
@@ -66,6 +67,7 @@ export default function AdminUsersPage() {
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
   const [editing, setEditing] = useState<any>(null);
+  const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -277,6 +279,9 @@ export default function AdminUsersPage() {
                   </button>
                 </td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
+                  <button onClick={() => setViewing(u)} className="text-brand-grey-600 text-xs px-2 hover:underline">
+                    👁 {t('action.view')}
+                  </button>
                   <button onClick={() => setEditing(u)} className="text-brand-blue text-xs px-2 hover:underline">
                     ✎ {t('action.edit')}
                   </button>
@@ -354,6 +359,10 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      {viewing && (
+        <ViewUserModal user={viewing} onClose={() => setViewing(null)}
+          onEdit={() => { setEditing(viewing); setViewing(null); }} />
+      )}
       {editing && (
         <EditUserModal user={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); setMessage(t('admin.user_updated')); setTimeout(() => setMessage(null), 3000); }} />
       )}
@@ -427,6 +436,62 @@ function SubjectPicker({ cadreCode, value, onChange, cadres }: {
   );
 }
 
+/** View User — modal ya kuona TAARIFA ZOTE za mtumiaji (kisomi). */
+function ViewUserModal({ user, onClose, onEdit }: any) {
+  const t = useT();
+  const st = user.current_station || {};
+  const dests = user.desired_destinations || [];
+  const row = (label: string, val: React.ReactNode) => (
+    <div className="flex items-start justify-between gap-3 py-1.5 border-b border-brand-grey-100 last:border-0">
+      <span className="text-xs font-semibold text-brand-grey-500 uppercase tracking-wide">{label}</span>
+      <span className="text-sm text-brand-grey-900 text-right">{val || '—'}</span>
+    </div>
+  );
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-xl w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xl font-bold">👁 {t('admin.view_title')} {user.is_admin && '👑'}</h2>
+          <button onClick={onClose} className="text-brand-grey-400 hover:text-brand-grey-700 text-lg px-1">✕</button>
+        </div>
+        <div className="bg-brand-grey-50 rounded-xl p-3 text-center">
+          <div className="w-12 h-12 mx-auto rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-lg">
+            {user.full_name?.slice(0, 1).toUpperCase()}
+          </div>
+          <div className="font-bold text-brand-grey-900 mt-1.5">{user.full_name}</div>
+          <div className="text-xs text-brand-grey-500">{user.cadre_display || user.cadre_code || '—'}</div>
+        </div>
+        <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
+          {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
+          {user.phone_alt && row('WhatsApp', user.phone_alt)}
+          {user.email && row(t('admin.email'), user.email)}
+          {row(t('admin.department'), user.category)}
+          {row(t('admin.cadre'), user.cadre_code)}
+          {row(t('label.subjects'), (user.subjects || []).length ? user.subjects.join(', ') : '—')}
+          {row(t('admin.region'), st.region_name)}
+          {row(t('admin.district'), st.district_name)}
+          {row(t('admin.facility'), st.facility_name)}
+          {row(t('admin.destinations'), dests.length
+            ? dests.map((d: any) => [d.district_name, d.region_name].filter(Boolean).join(', ')).join(' ; ')
+            : '—')}
+          {row(t('admin.status'),
+            <span className={user.status === 'disabled'
+              ? 'text-brand-red font-semibold' : 'text-green-600 font-semibold'}>
+              {user.status === 'disabled' ? '🚫 ' + t('admin.status_disabled') : '● ' + t('admin.status_active')}
+            </span>)}
+          {row(t('admin.verified'), user.is_verified ? '✓ ' + t('admin.verified') : t('admin.not_verified'))}
+          {row(t('admin.role'), user.is_admin ? '👑 ' + t('admin.admin_role') : t('admin.user_role'))}
+          {row(t('admin.created_at'), conversationTime(user.created_at))}
+        </div>
+        <div className="flex gap-2 pt-3 border-t">
+          <button onClick={onClose} className="btn-outline flex-1">{t('admin.cancel')}</button>
+          <button onClick={onEdit} className="btn-primary flex-1">✎ {t('action.edit')}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EditUserModal({ user, onClose, onSaved }: any) {
   const t = useT();
   const [full_name, setName] = useState(user.full_name);
@@ -443,9 +508,31 @@ function EditUserModal({ user, onClose, onSaved }: any) {
   const [cadres, setCadres] = useState<Cadre[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+  // Kituo cha sasa + destinations — admin anaweza kubadilisha TAARIFA ZOTE
+  // za mtumiaji (real-time: mtumiaji anaona mabadiliko papo hapo kwenye WS).
+  const st = user.current_station || {};
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [facilities, setFacilities] = useState<any[]>([]);
+  const [region_id, setRegionId] = useState<number | ''>(st.region_id || '');
+  const [district_id, setDistrictId] = useState<number | ''>(st.district_id || '');
+  const [facility_id, setFacilityId] = useState<string | ''>(String(st.facility_id || ''));
+  const [dests, setDests] = useState<any[]>((user.desired_destinations || []).map((d: any) => ({
+    region_id: d.region_id || '', district_id: d.district_id || '',
+  })));
 
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
   useEffect(() => { getCadres(category).then(setCadres).catch(() => {}); }, [category]);
+  useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, []);
+  useEffect(() => { if (region_id) getDistricts(Number(region_id)).then(setDistricts).catch(() => setDistricts([])); else setDistricts([]); }, [region_id]);
+  useEffect(() => { if (district_id) getFacilities(Number(district_id), (category as any) || 'health').then(setFacilities).catch(() => setFacilities([])); else setFacilities([]); }, [district_id, category]);
+
+  function updateDest(i: number, field: 'region_id' | 'district_id', v: number | '') {
+    const copy = dests.map((d) => ({ ...d }));
+    copy[i][field] = v;
+    if (field === 'region_id') copy[i].district_id = '';
+    setDests(copy);
+  }
 
   async function save() {
     setSaving(true);
@@ -458,6 +545,28 @@ function EditUserModal({ user, onClose, onSaved }: any) {
       };
       if (email) changes.email = email;
       if (new_password) changes.new_password = new_password;
+      // Kituo + destinations ikiwa zimebadilishwa (zina jina pia kwa matching).
+      if (region_id) {
+        const region = regions.find((r) => r.id === Number(region_id));
+        const district = districts.find((d) => d.id === Number(district_id));
+        const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
+        changes.current_station = {
+          region_id: Number(region_id), region_name: region?.name || st.region_name || '',
+          district_id: district ? Number(district.id) : null, district_name: district?.name || null,
+          facility_id: facility ? String(facility.id || facility.code) : null, facility_name: facility?.name || null,
+        };
+      }
+      const validDests = dests.filter((d) => d.region_id !== '');
+      if (validDests.length) {
+        changes.desired_destinations = validDests.map((d) => {
+          const r = regions.find((x) => x.id === Number(d.region_id));
+          const dd = districts.find((x) => x.id === Number(d.district_id));
+          return {
+            region_id: Number(d.region_id), region_name: r?.name || '',
+            district_id: dd ? Number(dd.id) : null, district_name: dd?.name || null,
+          };
+        });
+      }
       await adminUpdateUser(user._id, changes);
       onSaved();
     } catch (e: any) {
@@ -466,8 +575,8 @@ function EditUserModal({ user, onClose, onSaved }: any) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 my-4" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-bold">{t('admin.edit_title')} {user.is_admin && '👑'}</h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2"><label className="label">{t('admin.col_name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
@@ -500,6 +609,48 @@ function EditUserModal({ user, onClose, onSaved }: any) {
           </div>
           <div><label className="label">{t('admin.new_password')}</label><input type="password" className="input" value={new_password} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('admin.leave_blank')} /></div>
           <SubjectPicker cadreCode={cadre_code} value={subjects} onChange={setSubjects} cadres={cadres} />
+
+          {/* Kituo cha sasa — admin anaweza kubadilisha (real-time matching) */}
+          <div><label className="label">{t('admin.region')}</label>
+            <select className="input" value={region_id} onChange={(e) => { setRegionId(Number(e.target.value) || ''); setDistrictId(''); setFacilityId(''); }}>
+              <option value="">--</option>{regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
+          </div>
+          <div><label className="label">{t('admin.district')}</label>
+            <select className="input" value={district_id} onChange={(e) => { setDistrictId(Number(e.target.value) || ''); setFacilityId(''); }}>
+              <option value="">--</option>{districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </div>
+          <div className="col-span-2"><label className="label">{t('admin.facility')}</label>
+            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value || '')} disabled={!district_id}>
+              <option value="">--</option>
+              {facilities.map((f: any) => <option key={f.id || f.code} value={String(f.id || f.code)}>{f.name}</option>)}
+            </select>
+          </div>
+
+          {/* Destinations (nyingi) */}
+          <div className="col-span-2">
+            <label className="label">{t('admin.destinations')}</label>
+            <div className="space-y-2">
+              {dests.map((d, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <select className="input flex-1" value={d.region_id} onChange={(e) => updateDest(i, 'region_id', Number(e.target.value) || '')}>
+                    <option value="">{t('admin.wants_region')}</option>
+                    {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                  </select>
+                  <select className="input flex-1" value={d.district_id} onChange={(e) => updateDest(i, 'district_id', Number(e.target.value) || '')} disabled={!d.region_id}>
+                    <option value="">{t('step4.any_district')}</option>
+                    {d.region_id && districts.filter((x) => x.region_id === Number(d.region_id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                  </select>
+                  {dests.length > 1 && (
+                    <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2">🗑</button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button type="button" onClick={() => setDests([...dests, { region_id: '', district_id: '' }])}
+              className="text-brand-blue text-sm mt-1.5">{t('step4.add_more')}</button>
+          </div>
         </div>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={is_verified} onChange={(e) => setVerified(e.target.checked)} /> {t('admin.verified')}</label>
@@ -589,8 +740,8 @@ function CreateUserModal({ onClose, onCreated }: any) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 my-4" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-bold">{t('admin.create_title')}</h2>
         {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-2">{error}</div>}
         <div className="grid grid-cols-2 gap-3">
@@ -699,8 +850,8 @@ function AddAdminModal({ onClose, onCreated }: any) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 my-4" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-bold">+ {t('admin.add_admin')} 👑</h2>
         <p className="text-xs text-brand-grey-500 leading-relaxed">
           {t('admin.add_admin_hint')}
