@@ -70,10 +70,15 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [live, setLive] = useState(false);
   const lastEvent = useRef(0);
+  // Filters za Statistics — zinabofya/zinabadilika → data inajirefresh PAPO HAPO
+  // (event-driven, bila refresh page). Filter hizi zinatumwa kwenye /admin/reports.
+  const [filters, setFilters] = useState<{ region: string; level: string; category: string }>({ region: '', level: '', category: '' });
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
-  const loadAll = useCallback(() => {
+  const loadAll = useCallback((f: typeof filtersRef.current = filtersRef.current) => {
     adminStats().then(setStats).catch(() => {});
-    adminReports(365).then(setReports).catch(() => {});
+    adminReports(365, f).then(setReports).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -141,7 +146,7 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {tab === 'overview' && <Overview stats={stats} reports={reports} />}
+      {tab === 'overview' && <Overview stats={stats} reports={reports} filters={filters} onFilters={setFilters} />}
       {tab === 'users' && <UsersTab />}
       {tab === 'matches' && <MatchesTab />}
       {tab === 'events' && <EventsTab />}
@@ -162,11 +167,17 @@ function Big({ color, label, value, sub }: { color: string; label: string; value
 }
 
 /** Takwimu kuu: mikoa (wako + wanaohamia), wilaya, idara, kada, michango. */
-function Overview({ stats, reports }: { stats: any; reports: any }) {
+function Overview({ stats, reports, filters, onFilters }: {
+  stats: any; reports: any;
+  filters: { region: string; level: string; category: string };
+  onFilters: (f: { region: string; level: string; category: string }) => void;
+}) {
   const t = useT();
-  const [region, setRegion] = useState<string>('');
-  const [department, setDepartment] = useState<string>('');
   const [departments, setDepartments] = useState<any[]>([]);
+  const { region, level, category: department } = filters;
+  const setRegion = (v: string) => onFilters({ ...filters, region: v });
+  const setDepartment = (v: string) => onFilters({ ...filters, category: v });
+  const setLevel = (v: string) => onFilters({ ...filters, level: v });
 
   // Idara zinapakuliwa dynamic — idara mpya inaonekana kwenye filter na
   // takwimu PAPO HAPO bila refresh (real-time, event-driven).
@@ -176,6 +187,7 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
   const incomingByRegion = reports?.incoming_by_region || [];
   const usersByDistrict = reports?.users_by_district || [];
   const incomingByDistrict = reports?.incoming_by_district || [];
+  const incomingSources = reports?.incoming_sources || [];
 
   // Ramani: category code → jina la idara (dynamic).
   const deptName = (code: string) => {
@@ -190,14 +202,15 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
     ...incomingByRegion.map((r: any) => r.region),
   ].filter(Boolean))).sort((a: string, b: string) => a.localeCompare(b));
 
+  // Kila mkoa: waliopo + wanaohamia, sorted kwa Jumla (kubwa → ndogo).
   const byRegion = allRegions.map((name: string) => {
     const cur = usersByRegion.find((r: any) => r.region === name)?.count || 0;
     const inc = incomingByRegion.find((r: any) => r.region === name)?.count || 0;
     return { region: name, current: cur, incoming: inc };
-  }).filter((r: any) => !region || r.region === region);
+  }).filter((r: any) => !region || r.region === region)
+    .sort((a: any, b: any) => (b.current + b.incoming) - (a.current + a.incoming));
 
   const byDistrict = usersByDistrict
-    .filter((d: any) => (!region || d.region === region) && (!department || true))
     .map((d: any) => ({
       region: d.region, district: d.district,
       current: d.count,
@@ -207,36 +220,57 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
     .sort((a: any, b: any) => (b.current + b.incoming) - (a.current + a.incoming));
 
   const byCadre = (reports?.users_by_cadre || [])
-    .filter((c: any) => !department || c.category === department)
     .sort((a: any, b: any) => b.count - a.count);
 
-  const byCategory = (reports?.users_by_category || []).filter((c: any) => !department || c.category === department);
+  const byCategory = reports?.users_by_category || [];
 
   // Walimu kwa NGazi (Primary/Secondary) — "Walimu wa Secondary wangapi".
   const byCadreLevel = (reports?.users_by_cadre || [])
-    .filter((c: any) => !department || c.category === department)
     .reduce((acc: Record<string, number>, c: any) => {
       const key = c.level === 'Primary' ? 'primary' : c.level === 'Secondary' ? 'secondary' : 'none';
       acc[key] = (acc[key] || 0) + c.count;
       return acc;
     }, { primary: 0, secondary: 0, none: 0 });
   const byStatus = reports?.users_by_status || [];
-  const perPurpose = reports?.revenue?.per_purpose || [];
+
+  // Idadi ya mikoa na wilaya ZOTE zilizopo kwenye system.
+  const regionsTotal = reports?.regions_total ?? allRegions.length;
+  const districtsTotal = reports?.districts_total ?? byDistrict.length;
+  const usersTotal = byRegion.reduce((s: number, r: any) => s + r.current, 0);
+
+  // Wanaohamia wanatoka mikoa ipi — kwa mkoa uliochaguliwa (au zote).
+  const sourcesFor = (toRegion: string) => incomingSources
+    .filter((s: any) => s.to === toRegion)
+    .sort((a: any, b: any) => b.count - a.count);
 
   return (
     <div className="space-y-4">
-      {/* Filters — chuja takwimu zote PAPO HAPO (hakuna refresh) */}
+      {/* Filters — chuja takwimu zote PAPO HAPO (hakuna refresh). Kubadilisha
+          filter kunatumwa kwenye backend → data yote inajirefresh papo hapo. */}
       <div className="flex flex-col sm:flex-row gap-2">
-        <select className="input sm:w-64" value={region} onChange={(e) => setRegion(e.target.value)}>
+        <select className="input sm:w-56" value={region} onChange={(e) => setRegion(e.target.value)}>
           <option value="">{t('admin.filter_all_regions')}</option>
           {allRegions.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
-        <select className="input sm:w-64" value={department} onChange={(e) => setDepartment(e.target.value)}>
+        <select className="input sm:w-56" value={department} onChange={(e) => setDepartment(e.target.value)}>
           <option value="">{t('admin.filter_all_departments')}</option>
           {departments.map((d) => (
             <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
           ))}
         </select>
+        <select className="input sm:w-44" value={level} onChange={(e) => setLevel(e.target.value)}>
+          <option value="">{t('admin.filter_all_levels')}</option>
+          <option value="Primary">Primary (Msingi)</option>
+          <option value="Secondary">Secondary (Sekondari)</option>
+        </select>
+      </div>
+
+      {/* Big numbers: mikoa yote, wilaya zote, watumiaji (waliopo), wanaohamia */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Big color="blue" label={t('admin.regions_total')} value={regionsTotal} />
+        <Big color="gold" label={t('admin.districts_total')} value={districtsTotal} />
+        <Big color="green" label={t('admin.users_total')} value={usersTotal} />
+        <Big color="orange" label={t('admin.incoming_total')} value={incomingByRegion.reduce((s: number, r: any) => s + r.count, 0)} />
       </div>
 
       {/* Idara (departments) */}
@@ -330,27 +364,40 @@ function Overview({ stats, reports }: { stats: any; reports: any }) {
         </div>
       </div>
 
-      {/* Kada + Michango */}
+      {/* Kada (zilizochujwa) + Wanaohamia wanatoka mikoa ipi */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card">
           <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.by_cadre')}</h3>
           <NumberTable rows={byCadre.slice(0, 20).map((c: any) => ({ label: `${c.cadre_name || c.cadre}${c.level ? ` (${c.level})` : ''}`, count: c.count }))} maxH />
         </div>
         <div className="card">
-          <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.donations_purpose')}</h3>
-          <div className="text-xs text-brand-grey-500 mb-2">
-            {t('admin.donation_total')}: <b className="text-brand-gold-600">{fmtTZS(reports?.revenue?.total_tzs)}</b>
+          <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">
+            {t('admin.incoming_sources')}{region ? ` — ${region}` : ''}
+          </h3>
+          <div className="text-xs text-brand-grey-500 mb-2">{t('admin.incoming_sources_hint')}</div>
+          <div className={incomingSources.length > 12 ? 'max-h-96 overflow-y-auto' : ''}>
+            <div className="flex items-center gap-3 py-1.5 text-[10px] uppercase tracking-wider font-bold text-brand-grey-400 border-b border-brand-grey-100 dark:border-brand-grey-200">
+              <span className="w-6 text-center">#</span>
+              <span className="flex-1 min-w-0">{t('admin.col_from_region')}</span>
+              <span className="w-16 text-right">{t('admin.col_to_region')}</span>
+              <span className="w-12 text-right">{t('adminrep.count')}</span>
+            </div>
+            <div className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
+              {incomingSources.map((s: any, i: number) => (
+                <div key={`${s.from}-${s.to}`} className="flex items-center gap-3 py-2">
+                  <span className="w-6 text-center text-xs font-bold text-brand-grey-400 dark:text-brand-grey-500">{i + 1}</span>
+                  <span className="flex-1 min-w-0 truncate text-sm text-brand-grey-700 dark:text-brand-grey-300">{s.from}</span>
+                  <span className="w-16 text-right text-sm text-brand-orange tabular-nums">{s.to}</span>
+                  <span className="w-12 text-right text-lg font-bold text-brand-blue dark:text-brand-blue-500 tabular-nums">{s.count}</span>
+                </div>
+              ))}
+            </div>
+            {incomingSources.length === 0 && <div className="py-4 text-sm text-brand-grey-400">{t('msg.no_data')}</div>}
           </div>
-          <NumberTable rows={perPurpose.map((p: any) => ({ label: p.purpose || t('msg.reference'), count: p.total }))} maxH />
         </div>
       </div>
     </div>
   );
-}
-
-function fmtTZS(n: number | undefined): string {
-  if (n == null) return '…';
-  return `${n.toLocaleString()} TZS`;
 }
 
 /** Jedwali safi la NAMBA — hakuna graphs/bars. # | Jina | % | Idadi. */

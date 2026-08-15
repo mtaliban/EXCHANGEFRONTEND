@@ -414,8 +414,8 @@ export const adminDeleteFacility = (facility_id: string | number, category: 'hea
 /* ── Admin: exports + cleanup ── */
 export const adminEventsExport = (event_type?: string, fmt: 'pdf' | 'docx' | 'csv' | 'xlsx' = 'pdf') =>
   client.get(`${ADMIN}/admin/events/export`, { params: { event_type, fmt }, responseType: 'blob', bypassCache: true } as any);
-export const adminReports = (days = 30) =>
-  client.get(`${ADMIN}/admin/reports`, { params: { days }, ttl: 30_000 } as any).then((r) => r.data);
+export const adminReports = (days = 30, filters: { region?: string; level?: string; category?: string } = {}) =>
+  client.get(`${ADMIN}/admin/reports`, { params: { days, ...filters }, ttl: 15_000, bypassCache: !!filters.region || !!filters.level || !!filters.category } as any).then((r) => r.data);
 export const adminReportsExport = (fmt: 'pdf' | 'docx' | 'csv' | 'xlsx' = 'pdf') =>
   client.get(`${ADMIN}/admin/reports/export`, { params: { fmt }, responseType: 'blob', bypassCache: true } as any);
 export const adminClearEvents = () =>
