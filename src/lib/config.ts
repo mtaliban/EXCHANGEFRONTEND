@@ -57,4 +57,6 @@ export const WS_URL: string = (() => {
 export const APP_ROUTES = [
   '/dashboard', '/profile', '/donate', '/admin',
   '/notifications', '/announcements',
+  // Login/Register pia hazina header/footer — page safi (mshale wa kurudi tu).
+  '/login', '/register', '/forgot-password', '/reset-password',
 ];
