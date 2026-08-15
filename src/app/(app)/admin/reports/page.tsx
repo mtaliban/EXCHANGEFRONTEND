@@ -56,7 +56,9 @@ export default function ReportsPage() {
   async function doExport(fmt: 'pdf' | 'docx') {
     setExporting(true);
     try {
-      const res = await adminReportsExport(fmt);
+      // Export inaheshimu siku zilizochaguliwa (days) — PDF/Word zina data
+      // SAWA na screen (sio kitu kingine).
+      const res = await adminReportsExport(fmt, days);
       downloadBlob(res.data as Blob, `ripoti_na_hesabu_${new Date().toISOString().slice(0, 10)}.${fmt === 'docx' ? 'docx' : 'pdf'}`);
       setErr(null);
     } catch (e: any) {
@@ -73,7 +75,12 @@ export default function ReportsPage() {
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold text-brand-grey-900">📊 {t('adminrep.title')}</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-brand-grey-900">📊 {t('adminrep.title')}</h1>
+          <p className="text-xs text-brand-grey-500 mt-1">
+            📅 {t('adminrep.period')}: <b className="text-brand-blue">{t('adminrep.period_days')} — {days} {t('adminrep.days')}</b>
+          </p>
+        </div>
         <div className="flex items-center gap-2 flex-wrap">
           <select className="input w-auto" value={days} onChange={(e) => setDays(Number(e.target.value))}>
             <option value={7}>{t('adminrep.week')}</option>

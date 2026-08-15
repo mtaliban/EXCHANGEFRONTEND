@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getDonationInfo, submitDonation, myDonations } from '@/lib/api';
 import { parseServerDate } from '@/lib/dates';
-import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useT, useI18n } from '@/lib/i18n';
@@ -269,8 +268,12 @@ function HistoryList({ history }: { history: any[] }) {
           </thead>
           <tbody className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
             {history.map((p, i) => {
-              const ts = parseServerDate(p.created_at)?.getTime() ?? Date.now();
-              const when = timeAgo(ts, lang);
+              const ts = parseServerDate(p.created_at);
+              // Tarehe + saa KAMILI (kisomi): "15/08/2026 09:45" — siyo tu "jana".
+              const when = ts
+                ? ts.toLocaleDateString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                  + ' ' + ts.toLocaleTimeString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+                : '—';
               return (
                 <tr key={p.order_id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 transition">
                   <td className="px-4 py-3 text-xs font-bold text-brand-grey-400 dark:text-brand-grey-500 tabular-nums">{i + 1}</td>

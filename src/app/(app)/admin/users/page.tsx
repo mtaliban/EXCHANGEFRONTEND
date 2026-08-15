@@ -5,6 +5,7 @@ import {
   adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
   adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
   register, getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
+  adminUserMatches,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
 import { API_URL } from '@/lib/config';
@@ -205,10 +206,10 @@ export default function AdminUsersPage() {
             className={`btn-outline text-xs ${showTrash ? 'border-brand-red text-brand-red' : 'border-brand-grey-300 text-brand-grey-600'}`}>
             🗑 {t('admin.trash_btn')} {trashTotal > 0 && `(${trashTotal})`}
           </button>
-          <button onClick={() => setCreating(true)} className="btn-primary text-sm">
+          <button onClick={() => setCreating(true)} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
             + {t('admin.new_user')}
           </button>
-          <button onClick={() => setAddingAdmin(true)} className="btn-primary text-sm !bg-brand-gold !border-brand-gold">
+          <button onClick={() => setAddingAdmin(true)} className="text-xs px-3 py-1.5 rounded-lg bg-brand-gold text-white font-semibold hover:bg-brand-gold-600 transition">
             + {t('admin.add_admin')} 👑
           </button>
         </div>
@@ -466,11 +467,19 @@ function SubjectPicker({ cadreCode, value, onChange, cadres }: {
   );
 }
 
-/** View User — modal ya kuona TAARIFA ZOTE za mtumiaji (kisomi). */
+/** View User — modal ya kuona TAARIFA ZOTE za mtumiaji (kisomi) +
+ *  WALE ANAOWAONA kwenye dashboard yake (matches) — real-time. */
 function ViewUserModal({ user, onClose, onEdit }: any) {
   const t = useT();
   const st = user.current_station || {};
   const dests = user.desired_destinations || [];
+  const [matches, setMatches] = useState<any[] | null>(null);
+  useEffect(() => {
+    if (user.is_admin) return; // admin haoni matches — siyo mwalimu
+    let alive = true;
+    adminUserMatches(user._id).then((d) => { if (alive) setMatches(d.matches || []); }).catch(() => {});
+    return () => { alive = false; };
+  }, [user._id, user.is_admin]);
   const row = (label: string, val: React.ReactNode) => (
     <div className="flex items-start justify-between gap-3 py-1.5 border-b border-brand-grey-100 last:border-0">
       <span className="text-xs font-semibold text-brand-grey-500 uppercase tracking-wide">{label}</span>
@@ -518,6 +527,43 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
           {row(t('admin.role'), user.is_admin ? '👑 ' + t('admin.admin_role') : t('admin.user_role'))}
           {row(t('admin.created_at'), conversationTime(user.created_at))}
         </div>
+
+        {/* WALE ANAOWAONA KWENYE DASHBOARD YAKE (matches) — ndiyo maana ya View */}
+        {!user.is_admin && (
+          <div className="rounded-xl border border-brand-grey-100 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-brand-grey-900">👥 {t('admin.view_matches_title')}</h3>
+              {matches && <span className="text-[11px] font-bold text-brand-blue">{matches.length}</span>}
+            </div>
+            {matches === null ? (
+              <div className="text-xs text-brand-grey-400 py-2">Inapakia...</div>
+            ) : matches.length === 0 ? (
+              <div className="text-xs text-brand-grey-400 py-2">{t('msg.no_data')}</div>
+            ) : (
+              <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                {matches.map((m: any) => (
+                  <div key={m.user_id} className="flex items-center justify-between gap-2 py-1.5 border-b border-brand-grey-100 last:border-0">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-brand-grey-900 truncate">
+                        {m.full_name} {m.online && <span className="text-[10px] font-bold text-green-500">● LIVE</span>}
+                      </div>
+                      <div className="text-[11px] text-brand-grey-500 truncate">
+                        {m.cadre_display || m.cadre_code} · {[m.district_name, m.region_name].filter(Boolean).join(', ') || '—'}
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-xs font-bold text-brand-blue">{m.score}%</div>
+                      <a href={`tel:${m.phone_primary}`} className="text-[11px] text-brand-grey-600 hover:underline">
+                        {m.phone_primary}
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2 pt-3 border-t">
           <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
           <button onClick={onEdit} className="btn-primary px-5">✎ {t('action.edit')}</button>

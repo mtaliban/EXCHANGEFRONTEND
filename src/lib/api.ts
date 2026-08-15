@@ -308,6 +308,19 @@ export const adminUsers = (params?: any, bypass = false) =>
   client.get(`${ADMIN}/admin/users`, { params, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminMatches = (limit = 100) =>
   client.get(`${ADMIN}/admin/matches`, { params: { limit }, ttl: _ADMIN_TTL } as any).then((r) => r.data);
+export const adminUserMatches = (user_id: string, limit = 50) =>
+  client.get(`${ADMIN}/admin/users/${user_id}/matches`, { params: { limit }, ttl: _ADMIN_TTL, bypassCache: true } as any).then((r) => r.data);
+/* ── Maoni na Malalamiko (feedback) ── */
+export const submitFeedback = (body: { subject: string; message: string }) =>
+  client.post(`${ADMIN}/feedback`, body).then((r) => r.data);
+export const myFeedback = () =>
+  client.get(`${ADMIN}/feedback/my`, { bypassCache: true } as any).then((r) => r.data);
+export const adminListFeedback = (status = '', q = '') =>
+  client.get(`${ADMIN}/feedback/admin/all`, { params: { status, q }, ttl: _ADMIN_TTL, bypassCache: true } as any).then((r) => r.data);
+export const adminReplyFeedback = (feedback_id: string, reply: string) =>
+  client.post(`${ADMIN}/feedback/admin/${feedback_id}/reply`, { reply }).then((r) => r.data);
+export const adminDeleteFeedback = (feedback_id: string) =>
+  client.delete(`${ADMIN}/feedback/admin/${feedback_id}`).then((r) => r.data);
 // bypass=true wakati kichujio (event_type) kinatumika — kila mabadiliko ya
 // dropdown yafetch FRESH (cache isiingilie data mpya).
 export const adminEvents = (event_type?: string, limit = 100, skip = 0, bypass = false) =>
@@ -416,8 +429,8 @@ export const adminEventsExport = (event_type?: string, fmt: 'pdf' | 'docx' | 'cs
   client.get(`${ADMIN}/admin/events/export`, { params: { event_type, fmt }, responseType: 'blob', bypassCache: true } as any);
 export const adminReports = (days = 30, filters: { region?: string; level?: string; category?: string } = {}) =>
   client.get(`${ADMIN}/admin/reports`, { params: { days, ...filters }, ttl: 15_000, bypassCache: !!filters.region || !!filters.level || !!filters.category } as any).then((r) => r.data);
-export const adminReportsExport = (fmt: 'pdf' | 'docx' | 'csv' | 'xlsx' = 'pdf') =>
-  client.get(`${ADMIN}/admin/reports/export`, { params: { fmt }, responseType: 'blob', bypassCache: true } as any);
+export const adminReportsExport = (fmt: 'pdf' | 'docx' | 'csv' | 'xlsx' = 'pdf', days = 30) =>
+  client.get(`${ADMIN}/admin/reports/export`, { params: { fmt, days }, responseType: 'blob', bypassCache: true } as any);
 export const adminClearEvents = () =>
   client.post(`${ADMIN}/admin/events/clear`).then((r) => r.data);
 export const adminCleanupTestData = (wipeAll = false) =>

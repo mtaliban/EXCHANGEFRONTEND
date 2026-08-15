@@ -435,6 +435,18 @@ export default function DashboardBoard() {
         </div>
       </div>
 
+      {/* ═══ HEADER BOLDI: HII HAPA NI MIKOA INAYOKUJA MKOA WAKO ═══ */}
+      <div className="card overflow-hidden border-brand-blue/30">
+        <div className="px-4 md:px-5 py-3.5 bg-gradient-to-r from-brand-blue to-brand-blue-700 text-white">
+          <h2 className="font-extrabold text-base md:text-lg tracking-wide uppercase flex items-center gap-2">
+            📍 {t('board.incoming_header')}
+          </h2>
+          <p className="text-[11px] md:text-xs text-white/80 mt-1">
+            {t('board.incoming_header_hint')}
+          </p>
+        </div>
+      </div>
+
       {/* ═══ GRID YA WANAOKUJA MKOA WAKO — 10 kwa ukurasa + pagination ═══ */}
       {loading && candidates.length === 0 ? (
         <div className="py-8"><Spinner label={t('action.loading')} /></div>
@@ -472,6 +484,33 @@ export default function DashboardBoard() {
           )}
         </>
       )}
+
+      {/* ═══ NAMBA ZA ADMIN — kwa matatizo/maswali, piga moja kwa moja ═══ */}
+      <AdminContacts t={t} />
+    </div>
+  );
+}
+
+/** Namba za admin chini ya dashboard — mtu akiwa na tatizo apige moja kwa moja. */
+function AdminContacts({ t }: { t: (k: string) => string }) {
+  return (
+    <div className="card border-brand-gold-200 bg-brand-gold-50/60 dark:bg-brand-gold-100/10">
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+        <h3 className="font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+          🛟 {t('board.admin_help')}
+        </h3>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <a href="tel:+255763795801" className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-700 text-brand-grey-800 dark:text-brand-grey-200 hover:border-brand-blue transition">
+          📞 {t('board.admin_call')} — 0763 795 801
+        </a>
+        <a href="https://wa.me/255625607088" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-700 text-green-700 dark:text-green-400 hover:border-green-500 transition">
+          🟢 {t('board.admin_wa')} — +255 625 607 088
+        </a>
+        <a href="mailto:Hamisiselemani039@gmail.com" className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-700 text-brand-blue hover:border-brand-blue transition">
+          ✉️ Hamisiselemani039@gmail.com
+        </a>
+      </div>
     </div>
   );
 }

@@ -1,14 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { adminStats, adminReports, adminUsers, adminMatches, adminListDepartments } from '@/lib/api';
+import { adminStats, adminReports, adminUsers, adminListDepartments } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
-import { parseServerDate } from '@/lib/dates';
 import Spinner from '@/components/Spinner';
 
-type Tab = 'overview' | 'users' | 'matches';
+type Tab = 'overview' | 'users';
 
 /**
  * REAL-TIME: SSE feed ya admin — tukio lolote (user.registered, donation
@@ -88,6 +86,13 @@ export default function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // REAL-TIME FILTERS: dropdown (mkoa/kada/idara) ikibadilika → data yote
+  // inajirefresh PAPO HAPO bila refresh ya page (event-driven kama WebSocket).
+  useEffect(() => {
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
+
   // REAL-TIME: tukio lolote → takwimu zinajirefresh PAPO HAPO (debounced).
   useLiveStatsRefresh(() => {
     setLive(true);
@@ -128,27 +133,27 @@ export default function AdminPage() {
         </span>
       </div>
 
-      {/* Big totals row — namba halisi: users, matches. (Malipo na Matukio
-          hazionyeshwi hapa — zina sehemu zao: Malipo page na Matukio page.) */}
+      {/* Big totals row — namba halisi: users + verified. (Malipo, Matukio na
+          Mechi hazionyeshwi hapa — zina sehemu zao: Malipo page, Matukio page
+          na Reports.) */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <Big color="blue" label={t('admin.users')} value={stats.totals.users} sub={`+${stats.totals.users_active_7d} ${t('admin.active_7d')}`} />
-        <Big color="orange" label={t('admin.matches')} value={stats.totals.matches} sub={`+${stats.totals.matches_24h} ${t('admin.last_24h')}`} />
         <Big color="gold" label={t('admin.verified')} value={stats.totals.users_verified} />
+        <Big color="green" label={t('admin.regions_total')} value={reports?.regions_total ?? '—'} />
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-brand-grey-200 flex-wrap">
-        {(['overview', 'users', 'matches'] as Tab[]).map((tb) => (
+        {(['overview', 'users'] as Tab[]).map((tb) => (
           <button key={tb} onClick={() => setTab(tb)}
             className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${tab === tb ? 'border-brand-blue text-brand-blue' : 'border-transparent text-brand-grey-500 hover:text-brand-grey-900'}`}>
-            {tb === 'overview' ? t('admin.tab_overview') : tb === 'users' ? t('admin.tab_users') : t('admin.tab_matches')}
+            {tb === 'overview' ? t('admin.tab_overview') : t('admin.tab_users')}
           </button>
         ))}
       </div>
 
       {tab === 'overview' && <Overview stats={stats} reports={reports} filters={filters} onFilters={setFilters} />}
       {tab === 'users' && <UsersTab />}
-      {tab === 'matches' && <MatchesTab />}
     </div>
   );
 }
@@ -221,7 +226,11 @@ function Overview({ stats, reports, filters, onFilters }: {
   const byCadre = (reports?.users_by_cadre || [])
     .sort((a: any, b: any) => b.count - a.count);
 
-  const byCategory = reports?.users_by_category || [];
+  // Pangilia kwa kupungua (kubwa juu) — "kwenye statistics hujui kupangilia".
+  const byCategory = [...(reports?.users_by_category || [])]
+    .sort((a: any, b: any) => (b.count || 0) - (a.count || 0));
+  const byStatus = [...(reports?.users_by_status || [])]
+    .sort((a: any, b: any) => (b.count || 0) - (a.count || 0));
 
   // Walimu kwa NGazi (Primary/Secondary) — "Walimu wa Secondary wangapi".
   const byCadreLevel = (reports?.users_by_cadre || [])
@@ -230,7 +239,6 @@ function Overview({ stats, reports, filters, onFilters }: {
       acc[key] = (acc[key] || 0) + c.count;
       return acc;
     }, { primary: 0, secondary: 0, none: 0 });
-  const byStatus = reports?.users_by_status || [];
 
   // Idadi ya mikoa na wilaya ZOTE zilizopo kwenye system.
   const regionsTotal = reports?.regions_total ?? allRegions.length;
@@ -476,35 +484,4 @@ function UsersTab() {
   );
 }
 
-function MatchesTab() {
-  const t = useT();
-  const [data, setData] = useState<any>(null);
-  useEffect(() => { adminMatches(100).then(setData); }, []);
-  return (
-    <div className="space-y-3">
-      <div className="text-xs text-brand-grey-500">{t('admin.total')} {data?.total ?? '...'}</div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
-            <tr>
-              <th className="px-3 py-2 text-left">{t('admin.col_score')}</th>
-              <th className="px-3 py-2 text-left">{t('admin.col_user_a')}</th>
-              <th className="px-3 py-2 text-left">{t('admin.col_user_b')}</th>
-              <th className="px-3 py-2 text-left">{t('admin.col_time')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-brand-grey-100">
-            {data?.matches?.map((m: any) => (
-              <tr key={m._id}>
-                <td className="px-3 py-2 font-bold">{Math.round(m.score * 100)}%</td>
-                <td className="px-3 py-2">{m.user_a?.full_name} <span className="text-xs text-brand-grey-500">({m.user_a?.region}, {m.user_a?.cadre})</span></td>
-                <td className="px-3 py-2">{m.user_b?.full_name} <span className="text-xs text-brand-grey-500">({m.user_b?.region}, {m.user_b?.cadre})</span></td>
-                <td className="px-3 py-2 text-xs">{m.matched_at ? formatDistanceToNow(parseServerDate(m.matched_at) || new Date(), { addSuffix: true }) : ''}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+

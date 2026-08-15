@@ -211,7 +211,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-10">
+      <div className="w-full max-w-md">
       <div className="card p-4 sm:p-6">
         <div className="text-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-brand-grey-900">{t('login.welcome')}</h1>
@@ -254,7 +255,13 @@ export default function LoginPage() {
             <form onSubmit={onTwoFASubmit} className="space-y-3 mt-3">
               <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={twoFACode}
-                onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus />
+                onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus disabled={twoFALoading} />
+              {twoFALoading && (
+                <div className="flex items-center justify-center gap-2 text-sm text-brand-blue font-semibold">
+                  <span className="inline-block w-5 h-5 rounded-full border-2 border-brand-blue-200 border-t-brand-blue animate-spin" />
+                  {t('login.verifying')}
+                </div>
+              )}
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
               <button type="submit" disabled={twoFALoading || twoFACountdown <= 0} className="hidden">
@@ -288,7 +295,13 @@ export default function LoginPage() {
             <form onSubmit={onConfirmCode} className="space-y-3 mt-3">
               <input type="text" className="input text-center text-xl tracking-[0.5em] font-mono"
                 placeholder="000000" maxLength={6} value={verifyCode}
-                onChange={(e) => onVerifyCodeChange(e.target.value.replace(/\D/g, ''))} required autoFocus />
+                onChange={(e) => onVerifyCodeChange(e.target.value.replace(/\D/g, ''))} required autoFocus disabled={loading} />
+              {loading && (
+                <div className="flex items-center justify-center gap-2 text-sm text-brand-blue font-semibold">
+                  <span className="inline-block w-5 h-5 rounded-full border-2 border-brand-blue-200 border-t-brand-blue animate-spin" />
+                  {t('login.verifying')}
+                </div>
+              )}
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
               <button type="submit" disabled={loading} className="hidden">
@@ -306,6 +319,7 @@ export default function LoginPage() {
           {t('login.no_account')}{' '}
           <Link href="/register" className="text-brand-orange font-semibold hover:underline">{t('login.register_now')}</Link>
         </p>
+      </div>
       </div>
     </div>
   );

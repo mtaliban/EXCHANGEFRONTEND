@@ -26,10 +26,11 @@ export default function AdminPaymentsPage() {
 
   const { subscribe } = useLive();
 
-  // bypass=true wakati status imechaguliwa — dropdown ibadilike mara moja
-  // (cache isiache data ya zamani ionekane).
+  // bypass=true KILA MARA — dropdown na counts ziwe FRESH (real-time). Cache
+  // iliyokuwa inarudisha "zote = 0" wakati status maalum ina 6 imeondolewa:
+  // kila mabadiliko ya dropdown yanapata data ya sasa papo hapo.
   async function load() {
-    try { setData(await adminAllDonations(status || undefined, !!status)); } catch {}
+    try { setData(await adminAllDonations(status || undefined, true)); } catch {}
   }
 
   useEffect(() => { load(); }, [status]);

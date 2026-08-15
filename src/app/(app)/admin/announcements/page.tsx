@@ -250,52 +250,42 @@ export default function AdminAnnouncementsPage() {
         </div>
       </div>
 
-      {/* History — table ya kisomi + CRUD (resend/delete) */}
+      {/* History — cards za kisomi (responsive kwa device zote) + CRUD */}
       <div className="flex items-center justify-between mt-8 mb-2">
         <h2 className="font-semibold text-brand-grey-700 dark:text-brand-grey-300 text-sm">{t('ann.history')} ({list.length})</h2>
       </div>
       {list.length === 0 ? (
         <div className="text-brand-grey-500 text-sm">{t('ann.empty')}</div>
       ) : (
-        <div className="bg-white rounded-2xl border border-brand-grey-100 dark:border-brand-grey-700 overflow-hidden overflow-x-auto">
-          <table className="w-full text-sm min-w-[720px]">
-            <thead className="bg-brand-grey-50 dark:bg-brand-grey-100 text-xs text-brand-grey-500">
-              <tr>
-                <th className="px-3 py-2 text-left">{t('ann.title_label')}</th>
-                <th className="px-3 py-2 text-left">{t('ann.audience_label')}</th>
-                <th className="px-3 py-2 text-left">{t('ann.to_people')}</th>
-                <th className="px-3 py-2 text-left">{t('ann.sent_by')}</th>
-                <th className="px-3 py-2 text-left">{t('ann.sent_at')}</th>
-                <th className="px-3 py-2 text-right">{t('admin.col_actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-brand-grey-100 dark:divide-brand-grey-700">
-              {list.map((a) => (
-                <tr key={a.announcement_id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 align-top">
-                  <td className="px-3 py-2.5 max-w-[280px]">
-                    <div className="font-medium text-brand-grey-900 dark:text-white truncate">{a.title}</div>
-                    <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5 line-clamp-2">{a.message}</div>
-                  </td>
-                  <td className="px-3 py-2.5">
+        <div className="space-y-2">
+          {list.map((a) => (
+            <div key={a.announcement_id} className="card">
+              <div className="flex items-start justify-between gap-2 flex-wrap">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-brand-grey-900 dark:text-white text-sm">{a.title}</span>
                     <span className="badge-gold">{audienceLabel(a.audience)}</span>
-                  </td>
-                  <td className="px-3 py-2.5 text-xs font-semibold text-brand-blue tabular-nums">{a.recipient_count}</td>
-                  <td className="px-3 py-2.5 text-xs text-brand-grey-600 dark:text-brand-grey-300">{a.created_by_name || '—'}</td>
-                  <td className="px-3 py-2.5 text-xs text-brand-grey-500 whitespace-nowrap">{conversationTime(a.created_at)}</td>
-                  <td className="px-3 py-2.5 text-right whitespace-nowrap">
-                    <button onClick={() => resend(a)} disabled={busyId === a.announcement_id}
-                      className="text-brand-blue text-xs px-2 hover:underline disabled:opacity-40">
-                      ↺ {t('ann.resend')}
-                    </button>
-                    <button onClick={() => del(a)} disabled={busyId === a.announcement_id}
-                      className="text-brand-red text-xs px-2 hover:underline disabled:opacity-40">
-                      🗑 {t('action.delete')}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                  <p className="text-xs text-brand-grey-600 dark:text-brand-grey-300 mt-1 whitespace-pre-wrap break-words">{a.message}</p>
+                  <div className="flex items-center gap-3 flex-wrap mt-2 text-[11px] text-brand-grey-500 dark:text-brand-grey-400">
+                    <span>👥 {t('ann.to_people')}: <b className="text-brand-blue">{a.recipient_count}</b></span>
+                    <span>✍️ {a.created_by_name || '—'}</span>
+                    <span>🕐 {conversationTime(a.created_at)}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button onClick={() => resend(a)} disabled={busyId === a.announcement_id}
+                    className="text-xs px-2.5 py-1 rounded-lg border border-brand-blue text-brand-blue hover:bg-brand-blue-50 transition disabled:opacity-40">
+                    ↺ {t('ann.resend')}
+                  </button>
+                  <button onClick={() => del(a)} disabled={busyId === a.announcement_id}
+                    className="text-xs px-2.5 py-1 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red-50 transition disabled:opacity-40">
+                    🗑 {t('action.delete')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
