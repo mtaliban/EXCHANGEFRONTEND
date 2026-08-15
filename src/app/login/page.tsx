@@ -244,8 +244,15 @@ export default function LoginPage() {
           {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
           {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
 
-          <button type="submit" disabled={loading} className="btn-primary w-full">
-            {loading ? t('login.logging_in') : t('login.submit')}
+          <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+            {loading ? (
+              <>
+                <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                {t('login.logging_in')}
+              </>
+            ) : (
+              t('login.submit')
+            )}
           </button>
         </form>
 
@@ -285,8 +292,15 @@ export default function LoginPage() {
                 value={password} onChange={(e) => setPassword(e.target.value)} required />
               {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
               {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              <button type="submit" disabled={loading} className="btn-primary bg-brand-grey-900 px-5">
-                {loading ? t('login.sending_code') : t('login.send_code')}
+              <button type="submit" disabled={loading} className="btn-primary bg-brand-grey-900 px-5 flex items-center justify-center gap-2">
+                {loading ? (
+                  <>
+                    <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                    {t('login.sending_code')}
+                  </>
+                ) : (
+                  t('login.send_code')
+                )}
               </button>
             </form>
           )}
