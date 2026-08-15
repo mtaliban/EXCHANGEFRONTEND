@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { adminStats, adminReports, adminUsers, adminMatches, adminEvents, adminListDepartments } from '@/lib/api';
+import { adminStats, adminReports, adminUsers, adminMatches, adminListDepartments } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
 import Spinner from '@/components/Spinner';
 
-type Tab = 'overview' | 'users' | 'matches' | 'events';
+type Tab = 'overview' | 'users' | 'matches';
 
 /**
  * REAL-TIME: SSE feed ya admin — tukio lolote (user.registered, donation
@@ -128,20 +128,20 @@ export default function AdminPage() {
         </span>
       </div>
 
-      {/* Big totals row — namba halisi: users, michango (TZS), matches, events */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Big totals row — namba halisi: users, matches. (Malipo na Matukio
+          hazionyeshwi hapa — zina sehemu zao: Malipo page na Matukio page.) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <Big color="blue" label={t('admin.users')} value={stats.totals.users} sub={`+${stats.totals.users_active_7d} ${t('admin.active_7d')}`} />
-        <Big color="gold" label={t('admin.donations')} value={reports?.revenue?.total_tzs ?? '…'} sub={reports ? `${reports.revenue.paid_count} ${t('admin.donations_count')}` : ''} />
         <Big color="orange" label={t('admin.matches')} value={stats.totals.matches} sub={`+${stats.totals.matches_24h} ${t('admin.last_24h')}`} />
-        <Big color="red" label={t('admin.events')} value={stats.totals.events} sub={`+${stats.totals.events_24h} ${t('admin.last_24h')}`} />
+        <Big color="gold" label={t('admin.verified')} value={stats.totals.users_verified} />
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-brand-grey-200 flex-wrap">
-        {(['overview', 'users', 'matches', 'events'] as Tab[]).map((tb) => (
+        {(['overview', 'users', 'matches'] as Tab[]).map((tb) => (
           <button key={tb} onClick={() => setTab(tb)}
             className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${tab === tb ? 'border-brand-blue text-brand-blue' : 'border-transparent text-brand-grey-500 hover:text-brand-grey-900'}`}>
-            {tb === 'overview' ? t('admin.tab_overview') : tb === 'users' ? t('admin.tab_users') : tb === 'matches' ? t('admin.tab_matches') : t('admin.tab_events')}
+            {tb === 'overview' ? t('admin.tab_overview') : tb === 'users' ? t('admin.tab_users') : t('admin.tab_matches')}
           </button>
         ))}
       </div>
@@ -149,7 +149,6 @@ export default function AdminPage() {
       {tab === 'overview' && <Overview stats={stats} reports={reports} filters={filters} onFilters={setFilters} />}
       {tab === 'users' && <UsersTab />}
       {tab === 'matches' && <MatchesTab />}
-      {tab === 'events' && <EventsTab />}
     </div>
   );
 }
@@ -501,117 +500,6 @@ function MatchesTab() {
                 <td className="px-3 py-2">{m.user_a?.full_name} <span className="text-xs text-brand-grey-500">({m.user_a?.region}, {m.user_a?.cadre})</span></td>
                 <td className="px-3 py-2">{m.user_b?.full_name} <span className="text-xs text-brand-grey-500">({m.user_b?.region}, {m.user_b?.cadre})</span></td>
                 <td className="px-3 py-2 text-xs">{m.matched_at ? formatDistanceToNow(parseServerDate(m.matched_at) || new Date(), { addSuffix: true }) : ''}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// Mambo yanayojulikana kuhusu aina za events — kwa jedwali safi (sio JSON).
-function humanizeEvent(payload: any, type: string): string {
-  if (!payload) return '';
-  const name = payload.full_name || payload.user_name || payload.candidate?.full_name || '';
-  const parts: string[] = [];
-  if (name) parts.push(`👤 ${name}`);
-  if (payload.by_name) parts.push(`👤 ${payload.by_name}`);
-  if (payload.cadre_display) parts.push(`· ${payload.cadre_display}`);
-  if (payload.current_station?.region_name) parts.push(`· kutoka ${payload.current_station.district_name || ''} ${payload.current_station.region_name}`.replace(/\s+/g, ' '));
-  const dest = payload.desired_destinations?.[0];
-  if (dest) parts.push(`· kwenda ${dest.district_name || dest.region_name}`);
-  if (type === 'match.found') parts.push('· match ✓');
-  if (type === 'call.initiated') parts.push('· simu');
-  if (type === 'donation.approved' || type === 'payment.paid') parts.push(`· TZS ${payload.amount ?? ''}`);
-  if (payload.email) parts.push(`· ${payload.email}`);
-  if (payload.kind && payload.item) {
-    const item = payload.item;
-    parts.push(`· ${payload.kind}: ${item.name || item.code || item.id || ''} ${payload.action}`);
-  }
-  return parts.join(' ');
-}
-
-function EventsTab() {
-  const t = useT();
-  const [data, setData] = useState<any>(null);
-  const [type, setType] = useState('');
-  const [liveAt, setLiveAt] = useState<number | null>(null);
-  const typeRef = useRef(type);
-  typeRef.current = type;
-
-  // bypass=true wakati kichujio kimechaguliwa → dropdown ibadilike mara moja
-  // na data FRESH (usiache cache ya zamani ionekane).
-  useEffect(() => { adminEvents(type || undefined, 50, 0, !!type).then(setData); }, [type]);
-
-  // LIVE: events mpya zinaingia juu bila refresh (event-driven, kama WhatsApp).
-  useLiveStatsRefresh((ev) => {
-    setLiveAt(Date.now());
-    setData((prev: any) => {
-      if (!prev || !ev || !ev._id) return prev;
-      if (prev.events.some((e: any) => e._id === ev._id)) return prev;
-      if (typeRef.current && ev.event_type !== typeRef.current) return prev; // kichujio — ondoa isiyohusika
-      return { ...prev, events: [ev, ...prev.events].slice(0, 100), total: typeRef.current ? prev.total : prev.total + 1 };
-    });
-  });
-  useEffect(() => {
-    if (!liveAt) return;
-    const id = setTimeout(() => setLiveAt((prev) => (prev && Date.now() - prev > 10000 ? null : prev)), 10000);
-    return () => clearTimeout(id);
-  }, [liveAt]);
-
-  const EV_TYPES = [
-    'user.registered', 'user.profile_updated', 'user.station_changed', 'user.destination_changed',
-    'user.updated_by_admin', 'user.deleted', 'match.found', 'call.initiated', 'payment.paid',
-    'donation.approved', 'donation.rejected', 'announcement.sent',
-    'data.department_added', 'data.department_updated', 'data.department_deleted',
-    'data.subject_added', 'data.subject_updated', 'data.subject_deleted',
-    'data.cadre_added', 'data.cadre_updated', 'data.cadre_deleted',
-    'data.region_added', 'data.region_updated', 'data.region_deleted',
-    'data.district_added', 'data.district_updated', 'data.district_deleted',
-    'data.facility_added', 'data.facility_updated', 'data.facility_deleted',
-  ];
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 flex-wrap">
-        <select className="input w-auto" value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="">{t('admin.all_events')}</option>
-          {EV_TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
-        </select>
-        <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${liveAt ? 'bg-green-50 text-green-600 border-green-300' : 'bg-brand-grey-50 text-brand-grey-400 border-brand-grey-200'}`}>
-          <span className={`w-2 h-2 rounded-full ${liveAt ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-300'}`} />
-          {t('adminevents.live')}
-        </span>
-      </div>
-      <div className="text-xs text-brand-grey-500">{t('admin.total')} {data?.total ?? '...'}</div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
-          <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
-            <tr>
-              <th className="px-3 py-2 text-left">{t('adminevents.type')}</th>
-              <th className="px-3 py-2 text-left">{t('adminevents.details')}</th>
-              <th className="px-3 py-2 text-left">{t('adminevents.time')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-brand-grey-100">
-            {data?.events?.length === 0 && (
-              <tr><td colSpan={3} className="p-6 text-center text-sm text-brand-grey-500">{t('adminevents.empty')}</td></tr>
-            )}
-            {data?.events?.map((e: any) => (
-              <tr key={e._id} className="hover:bg-brand-grey-50 align-top">
-                <td className="px-3 py-2 whitespace-nowrap">
-                  <span className="inline-block text-[10px] font-bold px-2 py-1 rounded-full bg-brand-gold-100 text-brand-gold-600">{e.event_type}</span>
-                </td>
-                <td className="px-3 py-2 min-w-0 max-w-[360px]">
-                  <span className="block text-sm text-brand-grey-800 truncate" title={humanizeEvent(e.payload, e.event_type)}>
-                    {humanizeEvent(e.payload, e.event_type) || (e.topic || '')}
-                  </span>
-                  <span className="block text-[11px] text-brand-grey-400 mt-0.5 truncate">{e.topic}</span>
-                </td>
-                <td className="px-3 py-2 text-xs text-brand-grey-500 whitespace-nowrap">
-                  {(parseServerDate(e.occurred_at) || new Date()).toLocaleString('sw-TZ')}
-                </td>
               </tr>
             ))}
           </tbody>
