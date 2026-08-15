@@ -437,17 +437,11 @@ const dict: Record<Lang, Record<string, string>> = {
     'online.title': 'Walio Online Sasa', 'online.empty': 'Hakuna mtu mwingine online sasa',
     /* ── Donate page ── */
     'donate.title': 'Changia Huduma', 'donate.subtitle':
-      'Lipa kwa namba hapa chini kupitia mtandao wowote (M-Pesa, Tigo Pesa, Airtel Money, Halopesa), kisha nakili SMS ya kuthibitisha.',
+      'Lipa kwa namba hapa chini (M-Pesa, Tigo Pesa, Airtel Money, Halopesa), kisha nakili SMS ya kuthibitisha.',
     'donate.pay_to': 'Lipa kwa Namba Hii', 'donate.copy': 'Nakili Namba',
     'donate.copied': 'Ime Nakiliwa!',
-    'donate.steps_title': 'Hatua 3 Rahisi:',
-    'donate.step1': 'Lipa kwa namba hiyo kwenye simu yako',
-    'donate.step2': 'Nakili SMS ya kuthibitisha unayopata',
-    'donate.step3': 'Ibande hapa chini → Tuma',
-    'donate.amount': 'Kiasi', 'donate.phone_label': 'Namba ya Simu (uliyolipia nayo)',
-    'donate.sms_label': 'SMS ya Kuthibitisha Malipo (nakili nzima kutoka simu yako)',
-    'donate.sms_hint': 'Angalia SMS ina kiasi, namba na reference.',
-    'donate.auto_hint': 'Unapoandika SMS, inatumwa kwa uthibitisho moja kwa moja — hakuna kitu cha kubofya.',
+    'donate.amount': 'Kiasi', 'donate.phone_label': 'Namba ya Simu',
+    'donate.sms_label': 'SMS ya Kuthibitisha Malipo',
     'donate.submit': 'Tuma kwa Uthibitisho',
     'donate.processing_title': 'Inasindikwa Malipo…', 'donate.processing_body':
       'Tumeipokea SMS yako. Admin anathibitisha malipo kwenye simu yake — dakika chache tu.',
@@ -921,17 +915,11 @@ const dict: Record<Lang, Record<string, string>> = {
     'online.title': 'Online Now', 'online.empty': 'No one else is online right now',
     /* ── Donate page ── */
     'donate.title': 'Donate', 'donate.subtitle':
-      'Pay to the number below using any mobile money network (M-Pesa, Tigo Pesa, Airtel Money, Halopesa), then copy the confirmation SMS.',
+      'Pay to the number below (M-Pesa, Tigo Pesa, Airtel Money, Halopesa), then copy the confirmation SMS.',
     'donate.pay_to': 'Pay to This Number', 'donate.copy': 'Copy Number',
     'donate.copied': 'Copied!',
-    'donate.steps_title': '3 Easy Steps:',
-    'donate.step1': 'Pay to that number on your phone',
-    'donate.step2': 'Copy the confirmation SMS you receive',
-    'donate.step3': 'Paste it below → Submit',
-    'donate.amount': 'Amount', 'donate.phone_label': 'Phone Number (used to pay)',
-    'donate.sms_label': 'Payment Confirmation SMS (paste the full text from your phone)',
-    'donate.sms_hint': 'Ensure the SMS contains the amount, number and reference.',
-    'donate.auto_hint': 'As you type the SMS it is submitted for verification automatically — nothing to click.',
+    'donate.amount': 'Amount', 'donate.phone_label': 'Phone Number',
+    'donate.sms_label': 'Payment Confirmation SMS',
     'donate.submit': 'Submit for Verification',
     'donate.processing_title': 'Processing Payment…', 'donate.processing_body':
       'We received your SMS. The admin is verifying the payment on their phone — just a few minutes.',

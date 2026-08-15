@@ -10,7 +10,7 @@ import { useLive } from '@/lib/liveSocket';
 import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
-  BarChart3, Crown, Database, Heart, LayoutDashboard,
+  BarChart3, Crown, Database, HandCoins, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, ClipboardList, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
@@ -36,7 +36,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-        { href: '/donate', label: t('nav.donate'), icon: Heart },
+        { href: '/donate', label: t('nav.donate'), icon: HandCoins },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 
@@ -144,7 +144,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-        { href: '/donate', label: t('nav.donate'), icon: Heart },
+        { href: '/donate', label: t('nav.donate'), icon: HandCoins },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 

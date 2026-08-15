@@ -6,7 +6,7 @@ import { parseServerDate } from '@/lib/dates';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useT, useI18n } from '@/lib/i18n';
-import { Check, Copy, Heart } from 'lucide-react';
+import { Check, Copy, HandCoins } from 'lucide-react';
 import SpringSpinner from '@/components/SpringSpinner';
 
 export default function DonatePage() {
@@ -129,7 +129,7 @@ export default function DonatePage() {
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
       <div>
         <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
-          <Heart size={22} className="text-brand-red" />
+          <HandCoins size={24} className="text-brand-red" />
           {t('donate.title')}
         </h1>
         <p className="text-brand-grey-500 dark:text-brand-grey-400 text-sm">
@@ -137,7 +137,7 @@ export default function DonatePage() {
         </p>
       </div>
 
-      {/* Namba ya admin — juu */}
+      {/* Namba ya kuchangia — kisomi, rahisi */}
       <div className="card text-center space-y-3">
         <div className="text-xs uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400 font-semibold">{t('donate.pay_to')}</div>
         <div className="text-3xl md:text-4xl font-bold text-brand-blue tracking-wide">{adminPhone}</div>
@@ -145,12 +145,6 @@ export default function DonatePage() {
           {copied ? <Check size={15} /> : <Copy size={15} />}
           {copied ? t('donate.copied') : t('donate.copy')}
         </button>
-        <div className="bg-brand-gold-50 dark:bg-brand-gold-100/20 border border-brand-gold-100 dark:border-brand-gold-100/30 rounded-xl p-3 text-left text-sm text-brand-grey-700 dark:text-brand-grey-300 space-y-1">
-          <div className="font-semibold text-brand-gold-600 dark:text-brand-gold-500">{t('donate.steps_title')}</div>
-          <div>1️⃣ {t('donate.step1')}</div>
-          <div>2️⃣ {t('donate.step2')}</div>
-          <div>3️⃣ {t('donate.step3')}</div>
-        </div>
       </div>
 
       {/* Processing / Confirmed / Rejected status */}
@@ -207,7 +201,7 @@ export default function DonatePage() {
         </div>
       )}
 
-      {/* Form — SMS textbox chini (auto-submit) */}
+      {/* Form — rahisi na safi (SMS textbox inaji-submit yenyewe) */}
       {status !== 'processing' && status !== 'confirmed' && status !== 'rejected' && status !== 'expired' ? (
         <div className="card space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -227,13 +221,12 @@ export default function DonatePage() {
             <label className="label">{t('donate.sms_label')}</label>
             <textarea
               className="input min-h-[110px] resize-y"
-              placeholder="Mfano: C2H8MZ3JX1 Confirmed. You have received TZS 5,000.00 from JOHN KAMWENDA - 0712345678 on 08/08/2026 at 10:30..."
+              placeholder="C2H8MZ3JX1 Confirmed. You have received TZS 5,000.00 from JOHN KAMWENDA - 0712345678..."
               value={smsText}
               onChange={(e) => onSmsChange(e.target.value)}
             />
-            <div className="flex justify-between mt-1 text-xs">
-              <span className="text-brand-blue-600 dark:text-brand-blue-400 flex items-center gap-1">⚡ {t('donate.auto_hint')}</span>
-              <span className={`font-mono ${smsText.length > 0 ? 'text-brand-blue' : 'text-brand-grey-300'}`}>{smsText.length}/1000</span>
+            <div className="flex justify-end mt-1">
+              <span className={`font-mono text-xs ${smsText.length > 0 ? 'text-brand-blue' : 'text-brand-grey-300'}`}>{smsText.length}/1000</span>
             </div>
           </div>
 
