@@ -226,16 +226,21 @@ export default function DashboardBoard() {
   // Masomo yangu (kwa highlight ya masomo yanayolingana kwenye cards)
   const mySubjects = useMemo(() => (user?.subjects || []) as string[], [user?.subjects]);
 
-  // Candidates: MPYA JUU (sorted newest first) — live event ikija inaonekana juu!
+  // Candidates: WAPYA (ndani ya dakika 30) juu kabisa, kisha wengine chini —
+  // ndani ya kila kundi sorted newest first. Mtu akipita dakika 30 (au baada ya
+  // kuonekana mara ya kwanza) anashuka chini — wapya wasiojulikana wabaki juu.
   const candidates = useMemo(() => {
     const list = [...((board?.candidates as any[]) || [])];
     list.sort((a, b) => {
       const ta = a.created_at ? (parseServerDate(a.created_at)?.getTime() ?? 0) : 0;
       const tb = b.created_at ? (parseServerDate(b.created_at)?.getTime() ?? 0) : 0;
+      const aFresh = ta && now - ta < FRESH_MS;
+      const bFresh = tb && now - tb < FRESH_MS;
+      if (aFresh !== bFresh) return aFresh ? -1 : 1; // wapya juu, wengine chini
       return tb - ta;
     });
     return list;
-  }, [board]);
+  }, [board, now]);
 
   // Pagination: data 10 za mwanzo (wageni) — zilizobaki kupitia pagination
   const totalPages = Math.max(1, Math.ceil(candidates.length / PAGE_SIZE));
