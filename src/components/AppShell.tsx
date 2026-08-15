@@ -9,7 +9,7 @@ import { useI18n, useT } from '@/lib/i18n';
 import { useLive } from '@/lib/liveSocket';
 import { getInitial } from '@/lib/initials';
 import {
-  ArrowLeft, BarChart3, Crown, Database, Heart, LayoutDashboard,
+  BarChart3, Crown, Database, Heart, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
@@ -47,12 +47,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-brand-grey-50">
       {/* ═══ MOBILE TOP BAR (md:hidden) — compact, sticky ═══ */}
       <div className="md:hidden sticky top-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm">
-        <div className="flex items-center justify-between gap-1 px-3 h-14">
-          {/* Mshale wa KURUDI NYUMA — inarudisha kwenye HOME page (sio logo) */}
-          <Link href="/" aria-label="Rudi nyuma / Back to home" className="flex items-center gap-1.5 flex-shrink-0 min-w-0 rounded-lg px-1.5 py-1 text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-100 dark:hover:bg-brand-grey-800 transition">
-            <ArrowLeft size={20} strokeWidth={2.4} />
-            <span className="text-xs font-semibold truncate">{t('nav.back_home')}</span>
-          </Link>
+        <div className="flex items-center justify-end gap-1 px-3 h-14">
           <div className="flex items-center gap-0.5 flex-shrink-0">
             <LangToggle />
             <AvatarMenu name={user?.full_name} onLogout={doLogout} />
@@ -64,13 +59,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* ═══ DESKTOP SIDEBAR (hidden kwenye simu) ═══ */}
         <aside className="hidden md:block md:w-64 md:min-h-screen md:sticky md:top-0 bg-white border-r border-brand-grey-100">
           <div className="p-4 border-b border-brand-grey-100">
-            {/* Mshale wa KURUDI NYUMA — inarudisha kwenye HOME page (sio logo) */}
-            <Link href="/" className="flex items-center gap-2 rounded-lg px-1.5 py-1 text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-100 dark:hover:bg-brand-grey-800 transition w-fit">
-              <ArrowLeft size={18} strokeWidth={2.4} />
-              <span className="font-bold text-sm">{t('nav.back_home')}</span>
-            </Link>
             {/* Toolbar: WS status + language switcher (badilisha lugha) */}
-            <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               <WsStatus />
               <LangToggle />
             </div>
