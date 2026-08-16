@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, type Region, type District, type Destination } from '@/lib/api';
+import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 
 interface Props {
@@ -32,7 +33,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   );
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { getRegions().then(setRegions); }, []);
+  const dv = useDataVersion();
+  useEffect(() => { getRegions().then(setRegions); }, [dv]);
 
   async function loadDistrictsFor(regionId: number) {
     if (districtsMap[regionId]) return;

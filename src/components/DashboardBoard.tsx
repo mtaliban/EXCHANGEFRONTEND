@@ -7,6 +7,7 @@ import {
   type Region, type District, type Facility,
 } from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
+import { useDataVersion } from '@/lib/useDataVersion';
 import { useI18n, useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 import { timeAgo } from '@/lib/timeAgo';
@@ -128,10 +129,13 @@ export default function DashboardBoard() {
   }, [effectiveRegionIds, districtId, facilityId, subjectFilter, subjectQ]);
 
   // Load regions kwa dropdown ya chanzo + followed regions (store ya pamoja na nav)
+  // REAL-TIME: admin akibadilisha mikoa (Data Management) → dropdown hii
+  // inajirefresh PAPO HAPO bila refresh ya page (event-driven).
+  const dv = useDataVersion();
   useEffect(() => {
     getRegions().then(setRegions).catch(() => {});
     loadFollow();
-  }, [loadFollow]);
+  }, [loadFollow, dv]);
 
   // Sync: mtu asiye na destinations lakini akafuata mikoa → '__all__' bado ifanye kazi
   useEffect(() => {

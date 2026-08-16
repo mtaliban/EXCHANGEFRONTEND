@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, type Region, type District, type Facility } from '@/lib/api';
+import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 
 interface Props {
@@ -27,7 +28,8 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const [facility_name_manual, setFacilityNameManual] = useState<string>(cs.facility_name && !cs.facility_id ? cs.facility_name : '');
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { getRegions().then(setRegions).catch(() => setError(t('step3.err_load'))); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const dv = useDataVersion();
+  useEffect(() => { getRegions().then(setRegions).catch(() => setError(t('step3.err_load'))); }, [dv]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (region_id) {

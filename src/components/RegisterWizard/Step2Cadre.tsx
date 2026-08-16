@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getCadres, getDepartments, getSubjects, type Cadre, type Department, type Subject } from '@/lib/api';
+import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 
 interface Props {
@@ -20,6 +21,10 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initial.subjects || []);
   const [error, setError] = useState<string | null>(null);
 
+  // REAL-TIME: admin akibadilisha idara/kada/masomo (Data Management) → hii
+  // inajirefresh PAPO HAPO bila refresh ya page (event-driven).
+  const dv = useDataVersion();
+
   // Idara zinapakuliwa KUTOKA server (dynamic) — admin akiongeza idara mpya
   // inaonekana hapa papo hapo bila kurekebisha code.
   useEffect(() => {
@@ -36,12 +41,12 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       })
       .catch(() => setError(t('step2.err_load_cadres')));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dv]);
 
   useEffect(() => {
     if (!category) { setCadres([]); return; }
     getCadres(category).then(setCadres).catch(() => setError(t('step2.err_load_cadres')));
-  }, [category]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [category, dv]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentCadre = cadres.find((c) => c.code === cadre_code);
   const needsSubjects = currentCadre?.requires_subjects;
@@ -70,7 +75,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
     } else if (!showSubjects) {
       setSubjects([]);
     }
-  }, [showSubjects, subjectLevel]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSubjects, subjectLevel, dv]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSubject(code: string) {
     setSelectedSubjects((prev) =>

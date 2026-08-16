@@ -78,6 +78,41 @@ export function bustGetCache() {
   } catch {}
 }
 
+/* ── Global data-change bus ──────────────────────────────
+   Reference data (masomo/kada/mikoa/wilaya/idara/vituo) inabadilishwa kwenye
+   Data Management. Consumers (Users page pickers, wizard ya usajili, profile)
+   zinasikiliza hii na kujirefresh PAPO HAPO — hata kama mabadiliko yanatoka
+   kwenye tab nyingine au session nyingine (kupitia SSE data.* events).
+   Hii inafanya "add/update data" iwe event-driven kama delete. */
+type DataChangedCb = () => void;
+const _dataCbs = new Set<DataChangedCb>();
+let _dataVer = 0;
+export function onDataChanged(cb: DataChangedCb): () => void {
+  _dataCbs.add(cb);
+  return () => { _dataCbs.delete(cb); };
+}
+/** Piga watumiaji wote — kila mtu atafetch upya (cache imefutwa). */
+export function emitDataChanged() {
+  _dataVer++;
+  bustGetCache();
+  _dataCbs.forEach((cb) => { try { cb(); } catch {} });
+}
+export function dataVersion(): number { return _dataVer; }
+
+// Tab nyingine ikifuta cache ya static (admin akibadilisha data kwenye tab
+// nyingine), tab hii inafuta in-memory cache yake pia — vinginevyo data ya
+// kale ingebaki hadi refresh. (storage event inafyatuka kwenye tabs nyingine
+// tu — tab iliyofanya mabadiliko tayari imebust cache yake.)
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key && e.key.startsWith(_LS_PREFIX)) {
+      _dataVer++;
+      _getCache.clear();
+      _dataCbs.forEach((cb) => { try { cb(); } catch {} });
+    }
+  });
+}
+
 /* Mutations (POST/PUT/PATCH/DELETE) zinapaswa kufusha cache ya GET — vinginevyo
    baada ya kubadilisha followed regions / destinations / wasifu, kurudi kwenye
    page kunaweza kurudisha data ya KALE ("imeshafanyika lakini bado inaonekana
@@ -90,7 +125,16 @@ for (const m of ['post', 'put', 'patch', 'delete'] as const) {
     // ingeonekana hadi siku nzima kwenye wizard ya usajili. Mutations zote
     // (k.m. admin CRUD, destinations) lazima zifanye data FRESH.
     bustGetCache();
-    return orig(...args);
+    return orig(...args).then((r: any) => {
+      // Reference data (masomo/kada/mikoa/wilaya/idara/vituo) ikibadilishwa
+      // → watangazie consumers wote (wizard/pickers/profile) wajirefresh
+      // PAPO HAPO bila refresh ya page (event-driven). Tunagusa mutations za
+      // data management pekee — siyo payments/profile (hizo zinabust cache tu
+      // na hazihitaji consumers za reference data kurefresh).
+      const url = String(args[0] || '');
+      if (/\/admin\/data\//.test(url)) emitDataChanged();
+      return r;
+    });
   };
 }
 

@@ -6,6 +6,9 @@ vi.mock('@/lib/api', () => ({
   getCadres: vi.fn(),
   getSubjects: vi.fn(),
   getDepartments: vi.fn(),
+  // Data-change bus (useDataVersion inajiajiri nayo) — mock rahisi tu.
+  onDataChanged: vi.fn(() => () => {}),
+  dataVersion: () => 0,
 }));
 
 import { getCadres, getSubjects, getDepartments } from '@/lib/api';

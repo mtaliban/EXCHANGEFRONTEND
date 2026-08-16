@@ -7,6 +7,7 @@ import { useT } from '@/lib/i18n';
 import { useLive } from '@/lib/liveSocket';
 import { useAuth } from '@/lib/auth';
 import Spinner from '@/components/Spinner';
+import { useDataVersion } from '@/lib/useDataVersion';
 
 export default function ProfilePage() {
   const t = useT();
@@ -206,6 +207,10 @@ function EditProfile({ profile, onSaved }: any) {
       : currentCadre?.level === 'Primary' ? 'Primary'
         : undefined;
 
+  // REAL-TIME: admin akibadilisha data (masomo/kada/mikoa) → wasifu unajirefresh
+  // PAPO HAPO bila refresh ya page (event-driven).
+  const dv = useDataVersion();
+
   useEffect(() => {
     getRegions().then(setRegions);
     getCadres(category).then((cs) => {
@@ -213,7 +218,7 @@ function EditProfile({ profile, onSaved }: any) {
       if (!cs.find((c) => c.code === cadre_code)) setCadreCode('');
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
+  }, [category, dv]);
   useEffect(() => {
     if (subjectLevel) {
       getSubjects(subjectLevel).then(setAvailSubjects);
@@ -222,7 +227,7 @@ function EditProfile({ profile, onSaved }: any) {
     } else {
       setAvailSubjects([]);
     }
-  }, [category, cadre_code, subjectLevel]);
+  }, [category, cadre_code, subjectLevel, dv]);
   useEffect(() => { if (region_id) getDistricts(region_id).then(setDistricts); }, [region_id]);
   useEffect(() => { if (district_id) getFacilities(district_id, (category as 'health' | 'education') || 'health', subjectLevel).then(setFacilities).catch(() => setFacilities([])); }, [district_id, category, subjectLevel]);
   useEffect(() => {

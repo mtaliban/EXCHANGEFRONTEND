@@ -12,6 +12,8 @@ import { API_URL } from '@/lib/config';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { askConfirm } from '@/components/confirm';
+import { emitDataChanged } from '@/lib/api';
+import { useDataVersion } from '@/lib/useDataVersion';
 
 /**
  * REAL-TIME: SSE feed ya admin — mtumiaji mpya anapojisajili (au kufutwa /
@@ -109,6 +111,9 @@ export default function AdminUsersPage() {
     if (et.startsWith('user.') || et.startsWith('data.')) {
       load();
       loadTrash();
+      // Data ya reference (masomo/kada/mikoa) imebadilika — pickers na modals
+      // wajirefresh PAPO HAPO (event-driven, hakuna refresh ya page).
+      if (et.startsWith('data.')) emitDataChanged();
     }
   });
   // LIVE dot inazimika baada ya sekunde 8 bila tukio (feed iko hai au la).
@@ -469,10 +474,13 @@ function SubjectPicker({ cadreCode, value, onChange, cadres }: {
   const cadre = cadres.find((c) => c.code === cadreCode);
   // Kada yenye level (Primary/Secondary) = ya ualimu → ina masomo.
   const level = cadre?.level;
+  // REAL-TIME: admin akibadilisha masomo (Data Management) → picker hii
+  // inajirefresh PAPO HAPO bila refresh ya page (event-driven).
+  const dv = useDataVersion();
 
   useEffect(() => {
     if (level) getSubjects(level as 'Primary' | 'Secondary').then(setSubjects).catch(() => setSubjects([]));
-  }, [level]);
+  }, [level, dv]);
 
   if (!level) return null;
 
@@ -629,10 +637,13 @@ function EditUserModal({ user, onClose, onSaved }: any) {
   const [dests, setDests] = useState<any[]>((user.desired_destinations || []).map((d: any) => ({
     region_id: d.region_id || '', district_id: d.district_id || '',
   })));
+  // REAL-TIME: admin akibadilisha data (masomo/kada/mikoa) → form inajirefresh
+  // PAPO HAPO bila refresh ya page (event-driven).
+  const dv = useDataVersion();
 
-  useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
-  useEffect(() => { getCadres(category).then(setCadres).catch(() => {}); }, [category]);
-  useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, []);
+  useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, [dv]);
+  useEffect(() => { getCadres(category).then(setCadres).catch(() => {}); }, [category, dv]);
+  useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, [dv]);
   useEffect(() => { if (region_id) getDistricts(Number(region_id)).then(setDistricts).catch(() => setDistricts([])); else setDistricts([]); }, [region_id]);
   useEffect(() => { if (district_id) getFacilities(Number(district_id), (category as any) || 'health').then(setFacilities).catch(() => setFacilities([])); else setFacilities([]); }, [district_id, category]);
 
@@ -803,10 +814,13 @@ function CreateUserModal({ onClose, onCreated }: any) {
   const [status, setStatus] = useState('active');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // REAL-TIME: admin akibadilisha data (masomo/kada/mikoa) → form inajirefresh
+  // PAPO HAPO bila refresh ya page (event-driven).
+  const dv = useDataVersion();
 
-  useEffect(() => { getRegions().then(setRegions); }, []);
-  useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
-  useEffect(() => { getCadres(category).then(setCadres); }, [category]);
+  useEffect(() => { getRegions().then(setRegions); }, [dv]);
+  useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, [dv]);
+  useEffect(() => { getCadres(category).then(setCadres); }, [category, dv]);
   useEffect(() => { if (region_id) getDistricts(Number(region_id)).then(setDistricts); }, [region_id]);
   useEffect(() => { if (district_id) getFacilities(Number(district_id), (category as 'health' | 'education') || 'health').then(setFacilities).catch(() => setFacilities([])); }, [district_id, category]);
 

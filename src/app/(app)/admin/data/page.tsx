@@ -13,6 +13,7 @@ import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
+import { emitDataChanged } from '@/lib/api';
 
 type Tab = 'departments' | 'subjects' | 'cadres' | 'regions' | 'districts' | 'facilities';
 
@@ -69,7 +70,10 @@ function useLiveDataRefresh() {
               try {
                 const ev = JSON.parse(line.slice(6));
                 if (ev?.event_type?.startsWith('data.')) {
+                  // Mabadiliko kutoka session/tab NYINGINE — watangazie consumers
+                  // wote (wizard/pickers/profile) wajirefresh PAPO HAPO.
                   if (Date.now() - lastOwnAction.current < 1500) continue;
+                  emitDataChanged();
                   setTick((t) => t + 1);
                 }
               } catch { /* sio JSON — puuza */ }
