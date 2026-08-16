@@ -37,6 +37,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
         { href: '/donate', label: t('nav.donate'), icon: HandCoins },
+        { href: '/feedback', label: t('nav.feedback'), icon: ClipboardList },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 
@@ -233,6 +234,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
         { href: '/donate', label: t('nav.donate'), icon: HandCoins },
+        { href: '/feedback', label: t('nav.feedback'), icon: ClipboardList },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 

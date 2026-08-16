@@ -1,17 +1,23 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getDonationInfo, submitDonation, myDonations } from '@/lib/api';
 import { parseServerDate } from '@/lib/dates';
+import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useT, useI18n } from '@/lib/i18n';
-import { Check, Copy, HandCoins } from 'lucide-react';
+import { Check, Copy, HandCoins, Phone, MessageCircle } from 'lucide-react';
 import SpringSpinner from '@/components/SpringSpinner';
+
+const ADMIN_CALL = '0763795801';
+const ADMIN_WHATSAPP = '255625607088';
 
 export default function DonatePage() {
   const { user } = useAuth();
   const t = useT();
+  const router = useRouter();
   const { subscribe } = useLive();
   const [adminPhone, setAdminPhone] = useState('');
   const [currency, setCurrency] = useState('TZS');
@@ -24,7 +30,6 @@ export default function DonatePage() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const orderRef = useRef<any>(null);
-  const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
@@ -54,6 +59,13 @@ export default function DonatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe]);
 
+  // Imehakikiwa → inarudisha kwenye DASHBOARD yenyewe baada ya sekunde 2.
+  useEffect(() => {
+    if (status !== 'confirmed') return;
+    const id = setTimeout(() => router.push('/dashboard'), 2000);
+    return () => clearTimeout(id);
+  }, [status, router]);
+
   async function loadHistory() {
     try { setHistory(await myDonations()); } catch {}
   }
@@ -66,9 +78,6 @@ export default function DonatePage() {
     });
   }
 
-  // AUTO-SUBMIT: mtu anapoandika/kunakili SMS (code), inatumwa kwa uthibitisho
-  // PAPO HAPO bila kubofya kitu — pause ya sekunde 1.2 inasubiri SMS kamili,
-  // kisha ina-submit yenyewe. Hakuna button ya "Thibitisha" inayohitajika.
   const submitTimer = useRef<any>(null);
   const submittingRef = useRef(false);
 
@@ -82,9 +91,6 @@ export default function DonatePage() {
       const o = await submitDonation({ amount, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
       orderRef.current = o;
-      // Expiry: dakika 15 kutoka sasa — countdown inaonekana kwa mchangiaji.
-      const exp = Date.now() + 15 * 60 * 1000;
-      setExpiresAt(exp);
       setCountdown(15 * 60);
     } catch (err: any) {
       submittingRef.current = false;
@@ -98,19 +104,20 @@ export default function DonatePage() {
     setSmsText(v);
     setError('');
     if (submitTimer.current) clearTimeout(submitTimer.current);
-    const t = v.trim();
-    if (t.length < 10) return;
+    const text = v.trim();
+    if (text.length < 10) return;
     submitTimer.current = setTimeout(() => {
       if (submittingRef.current) return;
       submit();
     }, 1200);
   }
 
-  // COUNTDOWN: kila sekunde timer inapungua; inapofikia 0 → status 'expired'.
+  // COUNTDOWN: kila sekunde inapungua; ikifikia 0 → status 'expired'.
   useEffect(() => {
-    if (status !== 'processing' || !expiresAt) return;
+    if (status !== 'processing') return;
+    const end = Date.now() + countdown * 1000;
     const id = setInterval(() => {
-      const left = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+      const left = Math.max(0, Math.round((end - Date.now()) / 1000));
       setCountdown(left);
       if (left <= 0) {
         setStatus('expired');
@@ -118,123 +125,143 @@ export default function DonatePage() {
       }
     }, 1000);
     return () => clearInterval(id);
-  }, [status, expiresAt]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   function reset() {
     orderRef.current = null;
     setOrder(null); setSmsText(''); setStatus('idle'); setError('');
   }
 
+  const busy = status === 'processing';
+
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
-          <HandCoins size={24} className="text-brand-red" />
+        <h1 className="text-xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+          <HandCoins size={20} className="text-brand-red" />
           {t('donate.title')}
         </h1>
-        <p className="text-brand-grey-500 dark:text-brand-grey-400 text-sm">
+        <p className="text-brand-grey-500 dark:text-brand-grey-400 text-xs mt-0.5">
           {t('donate.subtitle')}
         </p>
       </div>
 
-      {/* Namba ya kuchangia — kisomi, rahisi */}
-      <div className="card text-center space-y-3">
-        <div className="text-xs uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400 font-semibold">{t('donate.pay_to')}</div>
-        <div className="text-3xl md:text-4xl font-bold text-brand-blue tracking-wide">{adminPhone}</div>
-        <button onClick={copyPhone} className={`btn-outline text-sm inline-flex items-center gap-2 ${copied ? '!border-brand-blue !bg-brand-blue !text-white' : ''}`}>
-          {copied ? <Check size={15} /> : <Copy size={15} />}
+      {/* Namba ya kuchangia — ndogo na kisomi */}
+      <div className="card flex items-center justify-between gap-3 px-4 py-3">
+        <div className="min-w-0">
+          <div className="text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400 font-semibold">{t('donate.pay_to')}</div>
+          <div className="text-xl font-bold text-brand-blue tracking-wide">{adminPhone}</div>
+        </div>
+        <button onClick={copyPhone} className={`btn-outline text-xs px-3 py-1.5 inline-flex items-center gap-1.5 flex-shrink-0 ${copied ? '!border-brand-blue !bg-brand-blue !text-white' : ''}`}>
+          {copied ? <Check size={13} /> : <Copy size={13} />}
           {copied ? t('donate.copied') : t('donate.copy')}
         </button>
       </div>
 
-      {/* Processing / Confirmed / Rejected status */}
-      {status === 'processing' && (
-        <div className="card text-center border-2 border-brand-gold dark:border-brand-gold-400/40">
-          <SpringSpinner size={56} className="mx-auto mb-4 text-brand-gold-500" />
-          <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.processing_title')}</h2>
-          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-3">
-            {t('donate.processing_body')}
-          </p>
-          <div className="inline-flex items-center gap-2 rounded-full bg-brand-gold-100 text-brand-gold-600 dark:bg-brand-gold-100/20 dark:text-brand-gold-500 px-4 py-1.5 text-sm font-semibold mb-3">
-            <span className="inline-block w-2 h-2 rounded-full bg-brand-gold-500 animate-pulse" />
-            {t('donate.processing_pill')}
-          </div>
-          {/* COUNTDOWN ya uthibitisho — mchangiaji anaona inaisha lini */}
-          <div className="inline-flex items-center gap-2 rounded-xl border border-brand-gold-200 bg-brand-gold-50 text-brand-gold-700 px-4 py-2 text-sm font-bold mb-3">
-            ⏳ {t('donate.expires_in')}: {String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}
-          </div>
-          {order && (
-            <div className="bg-brand-grey-50 dark:bg-brand-grey-100 rounded-xl p-3 text-sm text-brand-grey-700 dark:text-brand-grey-300 mx-auto max-w-xs">
-              <div className="flex justify-between"><span className="text-brand-grey-500">{t('donate.amount')}:</span><span className="font-semibold">{currency} {order.amount?.toLocaleString()}</span></div>
-              <div className="flex justify-between mt-1"><span className="text-brand-grey-500">{t('msg.reference')}:</span><span className="font-mono text-xs">{order.order_id}</span></div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {status === 'confirmed' && (
-        <div className="card text-center border-2 border-emerald-200 dark:border-emerald-500/30">
-          <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center text-2xl mb-3"><Check size={26} /></div>
-          <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.confirmed_title')}</h2>
-          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('donate.confirmed_body')}</p>
-          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-4 py-1.5 text-sm font-semibold mb-2">{t('donate.verified_pill')}</div>
-          {order && <p className="text-sm text-brand-grey-700 dark:text-brand-grey-300 font-semibold">{currency} {order.amount?.toLocaleString()}</p>}
-          <button onClick={reset} className="btn-primary px-6">{t('donate.donate_again')}</button>
-        </div>
-      )}
-
-      {status === 'rejected' && (
-        <div className="card text-center">
-          <div className="w-14 h-14 mx-auto rounded-full bg-brand-red-100 text-brand-red flex items-center justify-center text-2xl mb-3">✗</div>
-          <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.rejected_title')}</h2>
-          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-2">{t('donate.rejected_body')}</p>
-          <button onClick={reset} className="btn-primary px-6">{t('donate.try_again')}</button>
-        </div>
-      )}
-
-      {status === 'expired' && (
-        <div className="card text-center border-2 border-brand-grey-300 dark:border-brand-grey-600">
-          <div className="w-14 h-14 mx-auto rounded-full bg-brand-grey-100 text-brand-grey-500 flex items-center justify-center text-2xl mb-3">⏳</div>
-          <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white mb-1">{t('donate.expired_title')}</h2>
-          <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 mb-3">{t('donate.expired_body')}</p>
-          <button onClick={reset} className="btn-primary px-6">{t('donate.try_again')}</button>
-        </div>
-      )}
-
-      {/* Form — rahisi na safi (SMS textbox inaji-submit yenyewe) */}
-      {status !== 'processing' && status !== 'confirmed' && status !== 'rejected' && status !== 'expired' ? (
-        <div className="card space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="label">{t('donate.amount')} ({currency})</label>
-              <input type="number" className="input" min={500} step={500}
-                value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="5000" />
-            </div>
-            <div>
-              <label className="label">{t('donate.phone_label')}</label>
-              <input type="tel" className="input" value={phone}
-                onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" />
-            </div>
-          </div>
-
+      {/* Form — rahisi: kiasi, namba, SMS + button ya kusubmit */}
+      <div className="card space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">{t('donate.sms_label')}</label>
-            <textarea
-              className="input min-h-[110px] resize-y"
-              placeholder="C2H8MZ3JX1 Confirmed. You have received TZS 5,000.00 from JOHN KAMWENDA - 0712345678..."
-              value={smsText}
-              onChange={(e) => onSmsChange(e.target.value)}
-            />
-            <div className="flex justify-end mt-1">
-              <span className={`font-mono text-xs ${smsText.length > 0 ? 'text-brand-blue' : 'text-brand-grey-300'}`}>{smsText.length}/1000</span>
+            <label className="label">{t('donate.amount')} ({currency})</label>
+            <input type="number" className="input" min={500} step={500}
+              value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="5000" disabled={busy} />
+          </div>
+          <div>
+            <label className="label">{t('donate.phone_label')}</label>
+            <input type="tel" className="input" value={phone}
+              onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" disabled={busy} />
+          </div>
+        </div>
+
+        <div>
+          <label className="label">{t('donate.sms_label')}</label>
+          <textarea
+            className="input min-h-[90px] resize-y"
+            placeholder="C2H8MZ3JX1 Confirmed. You have received TZS 5,000.00 from JOHN KAMWENDA - 0712345678..."
+            value={smsText}
+            onChange={(e) => onSmsChange(e.target.value)}
+            disabled={busy}
+          />
+        </div>
+
+        {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
+
+        {/* Hali ya processing — compact, siyo card kubwa */}
+        {status === 'processing' && (
+          <div className="flex items-center justify-between rounded-xl border border-brand-gold-200 bg-brand-gold-50 dark:bg-brand-gold-100/20 px-3 py-2 text-sm">
+            <span className="inline-flex items-center gap-2 font-semibold text-brand-gold-600 dark:text-brand-gold-500">
+              <SpringSpinner size={16} className="text-brand-gold-500" />
+              {t('donate.processing_pill')}
+            </span>
+            <span className="text-xs font-bold text-brand-gold-700 dark:text-brand-gold-500 tabular-nums">
+              ⏳ {String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}
+            </span>
+          </div>
+        )}
+
+        {/* Button ya kusubmit — inabadilika: processing (ring ndogo) → kijani (imethibitishwa) → nyekundu (imekataliwa) */}
+        {status === 'confirmed' ? (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/20 px-3 py-2.5">
+            <div>
+              <div className="text-sm font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                <Check size={16} /> {t('donate.confirmed_title')}
+              </div>
+              <div className="text-xs text-emerald-600 dark:text-emerald-500">
+                {currency} {order?.amount?.toLocaleString()} · {t('donate.redirecting')}
+              </div>
             </div>
           </div>
-
-          {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
-        </div>
-      ) : null}
+        ) : status === 'rejected' ? (
+          <div className="rounded-xl border border-brand-red-200 bg-brand-red-50 dark:bg-brand-red-100/20 px-3 py-2.5">
+            <div className="text-sm font-bold text-brand-red">✗ {t('donate.rejected_title')}</div>
+            <div className="text-xs text-brand-red-600 dark:text-brand-red-400 mt-0.5">{t('donate.rejected_body')}</div>
+            <div className="flex gap-2 mt-2">
+              <button onClick={reset} className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red font-semibold hover:bg-brand-red hover:text-white transition">
+                {t('donate.try_again')}
+              </button>
+              <button onClick={() => router.push('/dashboard')} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
+                {t('donate.back_dashboard')}
+              </button>
+            </div>
+          </div>
+        ) : status === 'expired' ? (
+          <div className="rounded-xl border border-brand-grey-300 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-100/40 px-3 py-2.5">
+            <div className="text-sm font-bold text-brand-grey-700 dark:text-brand-grey-300">⏳ {t('donate.expired_title')}</div>
+            <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5">{t('donate.expired_body')}</div>
+            <button onClick={reset} className="mt-2 text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
+              {t('donate.try_again')}
+            </button>
+          </div>
+        ) : (
+          <button onClick={submit} disabled={busy}
+            className="btn-primary w-full justify-center disabled:opacity-60">
+            {busy ? (
+              <span className="inline-flex items-center gap-2">
+                <SpringSpinner size={16} className="text-white" />
+                {t('donate.processing_pill')}
+              </span>
+            ) : (
+              t('donate.submit')
+            )}
+          </button>
+        )}
+      </div>
 
       {history.length > 0 && <HistoryList history={history} />}
+
+      {/* Namba za admin — maswali/matatizo, ndogo na kisomi */}
+      <div className="rounded-2xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-950 px-4 py-3">
+        <div className="text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400 font-semibold mb-2">{t('donate.help_title')}</div>
+        <div className="flex flex-col sm:flex-row gap-2 text-sm">
+          <a href={`tel:${ADMIN_CALL}`} className="inline-flex items-center gap-2 text-brand-grey-700 dark:text-brand-grey-300 hover:text-brand-blue transition">
+            <Phone size={14} className="text-brand-blue" /> {ADMIN_CALL}
+          </a>
+          <a href={`https://wa.me/${ADMIN_WHATSAPP}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-brand-grey-700 dark:text-brand-grey-300 hover:text-brand-green transition">
+            <MessageCircle size={14} className="text-emerald-600" /> +255 {ADMIN_WHATSAPP.slice(1, 4)} {ADMIN_WHATSAPP.slice(4, 7)} {ADMIN_WHATSAPP.slice(7)}
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
@@ -244,40 +271,52 @@ function HistoryList({ history }: { history: any[] }) {
   const lang = useI18n((s) => s.lang);
   return (
     <div className="card overflow-hidden">
-      <div className="px-4 pt-4 pb-3 border-b border-brand-grey-100 dark:border-brand-grey-200 flex items-center justify-between">
-        <h3 className="font-bold text-brand-grey-900 dark:text-white">{t('donate.history')}</h3>
+      <div className="px-4 pt-3 pb-2.5 border-b border-brand-grey-100 dark:border-brand-grey-200 flex items-center justify-between">
+        <h3 className="font-bold text-brand-grey-900 dark:text-white text-sm">{t('donate.history')}</h3>
         <span className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{history.length} {t('donate.history_count')}</span>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[520px]">
-          <thead className="bg-brand-grey-50 dark:bg-brand-grey-100 text-[11px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400">
+        <table className="w-full text-sm min-w-[560px]">
+          <thead className="bg-brand-grey-50 dark:bg-brand-grey-100 text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400">
             <tr>
-              <th className="px-4 py-2.5 text-left font-semibold w-10">#</th>
-              <th className="px-4 py-2.5 text-left font-semibold">{t('donate.history_amount')}</th>
-              <th className="px-4 py-2.5 text-left font-semibold">{t('donate.history_date')}</th>
-              <th className="px-4 py-2.5 text-left font-semibold hidden sm:table-cell">{t('msg.reference')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('donate.history_status')}</th>
+              <th className="px-4 py-2 text-left font-semibold w-10">#</th>
+              <th className="px-4 py-2 text-left font-semibold">{t('donate.history_amount')}</th>
+              <th className="px-4 py-2 text-left font-semibold">{t('donate.history_date')}</th>
+              <th className="px-4 py-2 text-left font-semibold hidden sm:table-cell">{t('donate.paid_at')}</th>
+              <th className="px-4 py-2 text-right font-semibold">{t('donate.history_status')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
             {history.map((p, i) => {
               const ts = parseServerDate(p.created_at);
-              // Tarehe + saa KAMILI (kisomi): "15/08/2026 09:45" — siyo tu "jana".
-              const when = ts
-                ? ts.toLocaleDateString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                  + ' ' + ts.toLocaleTimeString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+              const paidTs = parseServerDate(p.status === 'approved' ? p.approved_at : p.status === 'rejected' ? p.rejected_at : null);
+              const full = (d: Date | null) => d
+                ? d.toLocaleDateString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                  + ' ' + d.toLocaleTimeString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
                 : '—';
               return (
                 <tr key={p.order_id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 transition">
-                  <td className="px-4 py-3 text-xs font-bold text-brand-grey-400 dark:text-brand-grey-500 tabular-nums">{i + 1}</td>
-                  <td className="px-4 py-3 font-bold text-brand-grey-900 dark:text-white tabular-nums whitespace-nowrap">
+                  <td className="px-4 py-2.5 text-xs font-bold text-brand-grey-400 dark:text-brand-grey-500 tabular-nums">{i + 1}</td>
+                  <td className="px-4 py-2.5 font-bold text-brand-grey-900 dark:text-white tabular-nums whitespace-nowrap">
                     {p.amount?.toLocaleString()} <span className="text-xs font-semibold text-brand-grey-500">TZS</span>
                   </td>
-                  <td className="px-4 py-3 text-brand-grey-600 dark:text-brand-grey-300 whitespace-nowrap">{when}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="font-mono text-xs text-brand-grey-500 dark:text-brand-grey-400">{p.order_id}</span>
+                  <td className="px-4 py-2.5">
+                    <div className="text-brand-grey-900 dark:text-white font-medium whitespace-nowrap">{ts ? timeAgo(ts.getTime(), lang) : '—'}</div>
+                    <div className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 whitespace-nowrap">{full(ts)}</div>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-2.5 hidden sm:table-cell">
+                    {paidTs ? (
+                      <>
+                        <div className="text-brand-grey-700 dark:text-brand-grey-300 font-medium whitespace-nowrap">
+                          {p.status === 'approved' ? '✓' : '✗'} {timeAgo(paidTs.getTime(), lang)}
+                        </div>
+                        <div className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 whitespace-nowrap">{full(paidTs)}</div>
+                      </>
+                    ) : (
+                      <span className="text-brand-grey-400 dark:text-brand-grey-500 text-xs">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2.5 text-right">
                     {p.status === 'approved' ? (
                       <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 whitespace-nowrap">
                         ✓ {t('donate.st_approved')}

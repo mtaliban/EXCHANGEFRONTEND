@@ -455,6 +455,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'donate.history': 'Historia Yako ya Michango',
     'donate.history_count': 'za michango', 'donate.history_amount': 'Kiasi', 'donate.history_date': 'Muda', 'donate.history_status': 'Hali',
     'donate.st_verifying': 'Inasindikwa', 'donate.st_approved': 'Imethibitishwa', 'donate.st_rejected': 'Imekataliwa',
+    'donate.redirecting': 'Inakurudisha kwenye dashboard…', 'donate.back_dashboard': 'Rudi Dashboard',
+    'donate.paid_at': 'Iliyolipwa', 'donate.help_title': 'Maswali au Matatizo? Wasiliana nasi',
     /* ── Services page ── */
     'svc.badge': 'Huduma Zetu', 'svc.title': 'Kile Tunachotoa',
     'svc.subtitle': 'Jukwaa kamili la kubadilishana vituo — kutoka usajili hadi kuwasiliana na aliyekusiliana.',
@@ -933,6 +935,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'donate.history': 'Your Donation History',
     'donate.history_count': 'donations', 'donate.history_amount': 'Amount', 'donate.history_date': 'When', 'donate.history_status': 'Status',
     'donate.st_verifying': 'Processing', 'donate.st_approved': 'Approved', 'donate.st_rejected': 'Rejected',
+    'donate.redirecting': 'Redirecting to dashboard…', 'donate.back_dashboard': 'Back to Dashboard',
+    'donate.paid_at': 'Paid at', 'donate.help_title': 'Questions or Issues? Contact us',
     /* ── Services page ── */
     'svc.badge': 'Our Services', 'svc.title': 'What We Offer',
     'svc.subtitle': 'A complete platform for station exchange — from registration to connecting with your partner.',
