@@ -442,12 +442,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'donate.copied': 'Ime Nakiliwa!',
     'donate.amount': 'Kiasi', 'donate.phone_label': 'Namba ya Simu',
     'donate.sms_label': 'SMS ya Kuthibitisha Malipo',
-    'donate.submit': 'Tuma kwa Uthibitisho',
+    'donate.submit': 'Thibitisha',
     'donate.processing_title': 'Inasindikwa Malipo…', 'donate.processing_body':
       'Tumeipokea SMS yako. Admin anathibitisha malipo kwenye simu yake — dakika chache tu.',
-    'donate.expires_in': 'Inaisha baada ya', 'donate.expired_title': 'Muda Umeisha',
-    'donate.expired_body': 'Uthibitisho huu umeisha muda wake (dakika 15). Tuma SMS tena — bado unaweza kulipa namba ile ile.',
-    'donate.confirmed_title': 'Malipo Yamethibitishwa!', 'donate.confirmed_body': 'Asante sana kwa mchango wako!',
+    'donate.confirmed_title': 'Umekamilika', 'donate.confirmed_body': 'Asante sana kwa mchango wako!',
     'donate.processing_pill': 'Inasindikwa…', 'donate.verified_pill': '✓ Imethibitishwa',
     'donate.rejected_title': 'Malipo Yamekataliwa', 'donate.rejected_body':
       'Hakikisha umelipa kiasi ulichoandika na SMS ni sahihi.',
@@ -922,12 +920,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'donate.copied': 'Copied!',
     'donate.amount': 'Amount', 'donate.phone_label': 'Phone Number',
     'donate.sms_label': 'Payment Confirmation SMS',
-    'donate.submit': 'Submit for Verification',
+    'donate.submit': 'Verify',
     'donate.processing_title': 'Processing Payment…', 'donate.processing_body':
       'We received your SMS. The admin is verifying the payment on their phone — just a few minutes.',
-    'donate.expires_in': 'Expires in', 'donate.expired_title': 'Time Expired',
-    'donate.expired_body': 'This verification has expired (15 minutes). Submit the SMS again — you can still pay the same number.',
-    'donate.confirmed_title': 'Payment Verified!', 'donate.confirmed_body': 'Thank you so much for your donation!',
+    'donate.confirmed_title': 'Completed', 'donate.confirmed_body': 'Thank you so much for your donation!',
     'donate.processing_pill': 'Processing…', 'donate.verified_pill': '✓ Verified',
     'donate.rejected_title': 'Payment Rejected', 'donate.rejected_body':
       'Make sure you paid the amount you entered and the SMS is correct.',

@@ -23,6 +23,8 @@ export default function AdminPaymentsPage() {
   const [busy, setBusy] = useState('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [flash, setFlash] = useState('');
+  // Mchango mpya unaofika LIVE — popup kubwa inayojitokeza (inaondoka baada ya muda).
+  const [newDonation, setNewDonation] = useState<any>(null);
 
   const { subscribe } = useLive();
 
@@ -35,10 +37,15 @@ export default function AdminPaymentsPage() {
 
   useEffect(() => { load(); }, [status]);
   // REAL-TIME: no HTTP polling — mchango mpya unapowasilishwa (payment.submitted)
-  // unamjulisha admin papo hapo kupitia WebSocket.
+  // unamjulisha admin papo hapo kupitia WebSocket (popup + list inajirefresh).
   useEffect(() => {
     const un = subscribe('notification', (p: any) => {
-      if (p.type === 'payment.submitted') load();
+      if (p.type === 'payment.submitted') {
+        setNewDonation(p);
+        load();
+        // Popup inaondoka yenyewe baada ya sekunde 8 (au kubofya ✕).
+        setTimeout(() => setNewDonation(null), 8000);
+      }
     });
     return () => un();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,6 +104,20 @@ export default function AdminPaymentsPage() {
       </div>
 
       {flash && <div className={`rounded-lg px-3 py-2 text-sm ${flash.startsWith('✓') ? 'bg-brand-blue-50 text-brand-blue' : 'bg-brand-red-50 text-brand-red'}`}>{flash}</div>}
+
+      {/* Mchango mpya — popup ya real-time inayoonekana mara moja */}
+      {newDonation && (
+        <div className="rounded-xl border-l-4 border-brand-gold-500 bg-brand-gold-50 dark:bg-brand-gold-500/10 p-3 flex items-start gap-3 animate-slide-in shadow-sm">
+          <span className="text-xl leading-none mt-0.5">💰</span>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-brand-grey-900 dark:text-white">Mchango mpya unahitaji uthibitisho!</div>
+            <div className="text-xs text-brand-grey-600 dark:text-brand-grey-400 mt-0.5">
+              TZS {(newDonation.data?.amount || 0).toLocaleString()} — angalia SMS hapa chini na uthibitishe.
+            </div>
+          </div>
+          <button onClick={() => setNewDonation(null)} className="text-brand-grey-400 hover:text-brand-grey-700 text-lg leading-none" aria-label="Funga">×</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="card">

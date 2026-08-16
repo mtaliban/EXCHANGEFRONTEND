@@ -25,12 +25,11 @@ export default function DonatePage() {
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
-  const [status, setStatus] = useState<'idle' | 'processing' | 'confirmed' | 'rejected' | 'expired'>('idle');
+  const [status, setStatus] = useState<'idle' | 'processing' | 'confirmed' | 'rejected'>('idle');
   const [history, setHistory] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const orderRef = useRef<any>(null);
-  const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
     getDonationInfo().then((info) => {
@@ -97,7 +96,6 @@ export default function DonatePage() {
       const o = await submitDonation({ amount, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
       orderRef.current = o;
-      setCountdown(15 * 60);
     } catch (err: any) {
       submittingRef.current = false;
       setStatus('idle');
@@ -109,22 +107,6 @@ export default function DonatePage() {
     setSmsText(v);
     setError('');
   }
-
-  // COUNTDOWN: kila sekunde inapungua; ikifikia 0 → status 'expired'.
-  useEffect(() => {
-    if (status !== 'processing') return;
-    const end = Date.now() + countdown * 1000;
-    const id = setInterval(() => {
-      const left = Math.max(0, Math.round((end - Date.now()) / 1000));
-      setCountdown(left);
-      if (left <= 0) {
-        setStatus('expired');
-        submittingRef.current = false;
-      }
-    }, 1000);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
 
   function reset() {
     orderRef.current = null;
@@ -209,14 +191,6 @@ export default function DonatePage() {
               </button>
             </div>
           </div>
-        ) : status === 'expired' ? (
-          <div className="rounded-xl border border-brand-grey-300 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-100/40 px-3 py-2.5">
-            <div className="text-sm font-bold text-brand-grey-700 dark:text-brand-grey-300">⏳ {t('donate.expired_title')}</div>
-            <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5">{t('donate.expired_body')}</div>
-            <button onClick={reset} className="mt-2 text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
-              {t('donate.try_again')}
-            </button>
-          </div>
         ) : (
           <button onClick={submit} disabled={busy}
             className="btn-primary w-full justify-center disabled:opacity-60">
@@ -229,14 +203,6 @@ export default function DonatePage() {
               t('donate.submit')
             )}
           </button>
-        )}
-
-        {/* Countdown ndogo tu wakati wa processing — haitengenezi card nyingine */}
-        {status === 'processing' && (
-          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-brand-gold-600 dark:text-brand-gold-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold-500 animate-pulse" />
-            {t('donate.expires_in')}: {String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}
-          </div>
         )}
       </div>
 
