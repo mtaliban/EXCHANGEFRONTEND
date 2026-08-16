@@ -77,9 +77,10 @@ export default function AnnouncementsPage() {
               </div>
               <button
                 onClick={() => dismiss(a.announcement_id)}
-                className="text-xs px-3 py-1 rounded-full border border-brand-grey-300 text-brand-grey-500 hover:border-brand-red hover:text-brand-red transition flex-shrink-0"
+                className="text-xs px-2 py-1 rounded-full text-brand-grey-500 hover:text-brand-red hover:bg-brand-red-50 transition flex-shrink-0"
+                title={t('annuser.dismiss')}
               >
-                {t('annuser.dismiss')}
+                ✕
               </button>
             </div>
             <p className="text-sm text-brand-grey-700 mt-2 whitespace-pre-wrap">{a.message}</p>

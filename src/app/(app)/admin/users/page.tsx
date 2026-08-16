@@ -99,6 +99,10 @@ export default function AdminUsersPage() {
   }
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, category]);
+  // Trash ifunguke na iwe IMEJAA data tangu mwanzo (mtu akifutwa, aonekane
+  // hapo papo hapo) — bila hii, trash inaonekana tupu mpaka tukio lingine
+  // litokee. Event-driven: delete → SSE user.deleted → loadTrash pia.
+  useEffect(() => { loadTrash(); /* eslint-disable-next-line */ }, []);
 
   // REAL-TIME: mtumiaji akijisajili / kufutwa / kusasishwa na admin → orodha
   // inajirefresh PAPO HAPO (event-driven, hakuna refresh ya page).
@@ -225,7 +229,7 @@ export default function AdminUsersPage() {
           </span>
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setShowTrash((v) => !v)}
+          <button onClick={() => { if (!showTrash) loadTrash(); setShowTrash((v) => !v); }}
             className={`btn-outline text-xs ${showTrash ? 'border-brand-red text-brand-red' : 'border-brand-grey-300 text-brand-grey-600'}`}>
             🗑 {t('admin.trash_btn')} {trashTotal > 0 && `(${trashTotal})`}
           </button>
