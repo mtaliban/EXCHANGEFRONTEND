@@ -59,12 +59,17 @@ export default function DonatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe]);
 
-  // Imehakikiwa → inarudisha kwenye DASHBOARD yenyewe baada ya sekunde 2.
+  // Imehakikiwa → button inaonyesha "Imekamilika ✓" kwa sekunde 3, kisha
+  // inarudi PALE PALE kwenye "Tuma Uthibitisho" (reset) — haisubiri refresh.
   useEffect(() => {
     if (status !== 'confirmed') return;
-    const id = setTimeout(() => router.push('/dashboard'), 2000);
+    const id = setTimeout(() => {
+      reset();
+      loadHistory();
+    }, 3000);
     return () => clearTimeout(id);
-  }, [status, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   async function loadHistory() {
     try { setHistory(await myDonations()); } catch {}
@@ -78,13 +83,14 @@ export default function DonatePage() {
     });
   }
 
-  const submitTimer = useRef<any>(null);
   const submittingRef = useRef(false);
 
   async function submit() {
     setError('');
     const text = smsText.trim();
-    if (text.length < 10) { setError('Nakili SMS nzima uliyopata kutoka kwa mtandao wako.'); return; }
+    // SMS YOYOTE inakubaliwa (maneno/namba yoyote ya uthibitisho uliopata) —
+    // hakuna hitaji la "nakili SMS nzima" kwa fomati maalum.
+    if (text.length < 3) { setError('Andika au nakili SMS yoyote uliyopata kutoka kwa mtandao wako.'); return; }
     submittingRef.current = true;
     setStatus('processing');
     try {
@@ -99,17 +105,9 @@ export default function DonatePage() {
     }
   }
 
-  // Auto-submit kwenye SMS textarea: pause ya 1.2s → tuma yenyewe.
   function onSmsChange(v: string) {
     setSmsText(v);
     setError('');
-    if (submitTimer.current) clearTimeout(submitTimer.current);
-    const text = v.trim();
-    if (text.length < 10) return;
-    submitTimer.current = setTimeout(() => {
-      if (submittingRef.current) return;
-      submit();
-    }, 1200);
   }
 
   // COUNTDOWN: kila sekunde inapungua; ikifikia 0 → status 'expired'.
@@ -187,31 +185,17 @@ export default function DonatePage() {
 
         {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
 
-        {/* Hali ya processing — compact, siyo card kubwa */}
-        {status === 'processing' && (
-          <div className="flex items-center justify-between rounded-xl border border-brand-gold-200 bg-brand-gold-50 dark:bg-brand-gold-100/20 px-3 py-2 text-sm">
-            <span className="inline-flex items-center gap-2 font-semibold text-brand-gold-600 dark:text-brand-gold-500">
-              <SpringSpinner size={16} className="text-brand-gold-500" />
-              {t('donate.processing_pill')}
-            </span>
-            <span className="text-xs font-bold text-brand-gold-700 dark:text-brand-gold-500 tabular-nums">
-              ⏳ {String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}
-            </span>
-          </div>
-        )}
-
-        {/* Button ya kusubmit — inabadilika: processing (ring ndogo) → kijani (imethibitishwa) → nyekundu (imekataliwa) */}
+        {/* Button ya kusubmit — inabadilika PALE PALE kwenye button yenyewe:
+            Tuma Uthibitisho → (click) → Processing (ring inazunguka ndani) →
+            Imekamilika (kijani) → inarudi kwenye Tuma Uthibitisho.
+            Hakuna card/box nyingine ya "processing" — yote iko kwenye button. */}
         {status === 'confirmed' ? (
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/20 px-3 py-2.5">
-            <div>
-              <div className="text-sm font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                <Check size={16} /> {t('donate.confirmed_title')}
-              </div>
-              <div className="text-xs text-emerald-600 dark:text-emerald-500">
-                {currency} {order?.amount?.toLocaleString()} · {t('donate.redirecting')}
-              </div>
-            </div>
-          </div>
+          <button onClick={reset}
+            className="btn-primary w-full justify-center !bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700">
+            <span className="inline-flex items-center gap-2">
+              <Check size={16} /> {t('donate.confirmed_title')}
+            </span>
+          </button>
         ) : status === 'rejected' ? (
           <div className="rounded-xl border border-brand-red-200 bg-brand-red-50 dark:bg-brand-red-100/20 px-3 py-2.5">
             <div className="text-sm font-bold text-brand-red">✗ {t('donate.rejected_title')}</div>
@@ -245,6 +229,14 @@ export default function DonatePage() {
               t('donate.submit')
             )}
           </button>
+        )}
+
+        {/* Countdown ndogo tu wakati wa processing — haitengenezi card nyingine */}
+        {status === 'processing' && (
+          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-brand-gold-600 dark:text-brand-gold-500">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold-500 animate-pulse" />
+            {t('donate.expires_in')}: {String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}
+          </div>
         )}
       </div>
 
