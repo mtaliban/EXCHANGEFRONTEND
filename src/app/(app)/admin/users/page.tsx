@@ -544,7 +544,13 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         </div>
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
-          {user.phone_alt && row('WhatsApp', user.phone_alt)}
+          {user.phone_alt && row('WhatsApp', (
+            <a href={`https://wa.me/${user.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}`}
+              target="_blank" rel="noreferrer"
+              className="text-green-600 font-semibold hover:underline inline-flex items-center gap-1">
+              🟢 {user.phone_alt}
+            </a>
+          ))}
           {user.email && row(t('admin.email'), user.email)}
           {/* ADMIN hana IDARA wala SHULE — jina, email na simu tu. Haya ya
               chini (idara/kada/masomo/mkoa/wilaya/kituo/destinations) ni ya
