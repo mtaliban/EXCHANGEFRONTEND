@@ -5,6 +5,7 @@ import DashboardBoard from '@/components/DashboardBoard';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
+import { MapPin } from 'lucide-react';
 
 export default function DashboardPage() {
   const t = useT();
@@ -17,19 +18,20 @@ export default function DashboardPage() {
       {/* ═══ MATANGAZO — juu ya dashboard pekee; mtu aamue kuyafungua ═══ */}
       <AnnouncementBanner />
 
-      {/* ═══ HERO — NDOGO SANA kisomi: mstari mmoja, maandishi meusi, inaonekana kwenye simu ═══ */}
-      <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-[11px] font-bold text-brand-grey-900 dark:text-white flex-shrink-0">
+      {/* ═══ HERO — OFFICIAL: card ndogo nyeupe, avatar, jina bold, mkoa kwa icon rasmi ═══ */}
+      <div className="flex items-center gap-3 rounded-xl border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-900 px-4 py-3 shadow-soft">
+        <div className="w-9 h-9 rounded-full bg-brand-blue-50 dark:bg-brand-blue-900/40 border border-brand-blue-200 dark:border-brand-blue-800 flex items-center justify-center text-sm font-bold text-brand-blue-700 dark:text-brand-blue-300 flex-shrink-0">
           {initial}
         </div>
-        <div className="min-w-0">
-          <h1 className="text-[13px] font-bold text-brand-grey-900 dark:text-white leading-tight break-words">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-sm font-bold text-brand-grey-900 dark:text-white leading-tight truncate">
             {t('dash.welcome')}, {user?.full_name?.split(' ')[0]}
           </h1>
           {myStation?.district_name && (
-            <span className="text-[11px] font-medium text-brand-grey-500 dark:text-brand-grey-400 leading-tight">
-              📍 {myStation.district_name}, {myStation.region_name}
-            </span>
+            <p className="flex items-center gap-1 text-[11px] font-medium text-brand-grey-500 dark:text-brand-grey-400 leading-tight truncate">
+              <MapPin size={11} className="text-brand-blue-500 dark:text-brand-blue-400 flex-shrink-0" />
+              {myStation.district_name}, {myStation.region_name}
+            </p>
           )}
         </div>
       </div>
