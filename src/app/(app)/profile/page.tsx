@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, getCadres, getFollowedRegions, updateFollowedRegions, bustGetCache, type Region, type District, type Subject, type Facility, type Cadre, type Station, type Destination } from '@/lib/api';
-import { useFollowStore } from '@/lib/followStore';
+import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, getCadres, bustGetCache, type Region, type District, type Subject, type Facility, type Cadre, type Station, type Destination } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { useLive } from '@/lib/liveSocket';
 import { useAuth } from '@/lib/auth';
@@ -72,8 +71,6 @@ export default function ProfilePage() {
         )
       )}
 
-      {/* Fuata Mikoa — hapa ndio mahali pa kuadd mikoa unayofuata (update ya taarifa zote) */}
-      {!isAdmin && <FollowRegionsCard />}
     </div>
   );
 }
@@ -416,65 +413,6 @@ function EditProfile({ profile, onSaved }: any) {
           {saving ? '...' : t('profile.save')}
         </button>
       </div>
-    </div>
-  );
-}
-
-/** 🔔 Fuata Mikoa — kuadd/ondoa mikoa unayofuata (inapata live notifications za
- *  wanaokuja mkoa wako kutoka mikoa hii). Ina-sync na dashboard PAPO HAPO. */
-function FollowRegionsCard() {
-  const t = useT();
-  const [regions, setRegions] = useState<Region[]>([]);
-  const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [loaded, setLoaded] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-  const loadFollow = useFollowStore((s) => s.load);
-  const setFollow = useFollowStore((s) => s.set);
-
-  useEffect(() => {
-    getRegions().then((r) => setRegions(r)).catch(() => {});
-    getFollowedRegions().then((r) => setSelected(new Set(r.region_ids))).catch(() => {}).finally(() => setLoaded(true));
-  }, []);
-
-  async function save() {
-    setSaving(true);
-    try {
-      const ids = Array.from(selected);
-      await updateFollowedRegions(ids);
-      setFollow(ids); // dashboard inabadilika mara moja (hakuna refresh)
-      loadFollow();
-      setMsg(t('board.follow_saved'));
-      setTimeout(() => setMsg(null), 2500);
-    } catch { setMsg('Imeshindikana — jaribu tena'); }
-    finally { setSaving(false); }
-  }
-
-  return (
-    <div className="card space-y-2.5">
-      <div>
-        <h3 className="font-bold text-sm">🔔 {t('board.follow')}</h3>
-        <p className="text-xs text-brand-grey-500 mt-0.5">{t('board.follow_hint')}</p>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {regions.map((r) => {
-          const on = selected.has(r.id);
-          return (
-            <button key={r.id} type="button" onClick={() => setSelected((prev) => {
-              const next = new Set(prev);
-              if (next.has(r.id)) next.delete(r.id); else next.add(r.id);
-              return next;
-            })}
-              className={`px-2.5 py-1 rounded-full border text-[11px] font-semibold transition ${on ? 'bg-brand-blue text-white border-brand-blue' : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-blue'}`}>
-              {on ? '✓ ' : ''}{r.name}
-            </button>
-          );
-        })}
-      </div>
-      {msg && <div className="text-xs text-green-600">{msg}</div>}
-      <button onClick={save} disabled={saving || !loaded} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition disabled:opacity-40">
-        {saving ? '...' : t('profile.save')}
-      </button>
     </div>
   );
 }

@@ -13,7 +13,6 @@ import { useI18n, useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
 import { timeAgo } from '@/lib/timeAgo';
 import { parseServerDate } from '@/lib/dates';
-import { useFollowStore } from '@/lib/followStore';
 import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
 
@@ -40,27 +39,21 @@ export default function DashboardBoard() {
     () => Array.from(new Set(dests.map((d) => d.region_name).filter(Boolean))),
     [dests]
   );
-  const followedIds = useFollowStore((s) => s.region_ids);
-  const loadFollow = useFollowStore((s) => s.load);
   const [regions, setRegions] = useState<Region[]>([]);
 
-  // Mikoa YOTE anayojali = destinations + followed
-  const watchedIds = useMemo(() => {
-    const s = new Set<number>(destRegionIds);
-    (followedIds || []).forEach((id) => s.add(id));
-    return Array.from(s);
-  }, [destRegionIds, followedIds]);
+  // Mikoa anayojali = DESTINATIONS tu (mikoa anayotaka kwenda) — hii ndiyo
+  // inayoamua ni watu gani wanaokuja mkoa wake (wanaotoka hiyo mikoa).
+  // Mtu anaweza kubadilisha drop-down na kuona mikoa YOTE ya Tanzania.
+  const watchedIds = useMemo(() => destRegionIds, [destRegionIds]);
 
-  const watchedNames = useMemo(() => {
-    const s = new Set<string>(destRegionNames);
-    (followedIds || []).forEach((id) => {
-      const r = regions.find((x) => x.id === id);
-      if (r) s.add(r.name);
-    });
-    return Array.from(s);
-  }, [destRegionNames, followedIds, regions]);
+  const watchedNames = useMemo(() => destRegionNames, [destRegionNames]);
 
-  const [regionSel, setRegionSel] = useState<string>(destRegionIds.length > 0 ? '__all__' : '');
+  // Default: mkoa wa KWANZA anayotaka kwenda (destination) — mtu akiingia
+  // anaona watu wanaokuja mkoa wake kutoka mkoa huo papo hapo. Akiwa na
+  // destinations nyingi → '__all__' (zote). Anaweza kubadilisha drop-down.
+  const [regionSel, setRegionSel] = useState<string>(
+    destRegionIds.length > 1 ? '__all__' : destRegionIds.length === 1 ? String(destRegionIds[0]) : ''
+  );
   const [districtId, setDistrictId] = useState<number | undefined>();
   const [facilityId, setFacilityId] = useState<string | undefined>();
   // Kichujio cha masomo: off (wote) / any (somo moja linalofanana) / all (yote
@@ -116,19 +109,21 @@ export default function DashboardBoard() {
     }
   }, [effectiveRegionIds, districtId, facilityId, subjectFilter, subjectQ]);
 
-  // Load regions kwa dropdown ya chanzo + followed regions (store ya pamoja na nav)
+  // Load regions kwa dropdown ya chanzo
   // REAL-TIME: admin akibadilisha mikoa (Data Management) → dropdown hii
   // inajirefresh PAPO HAPO bila refresh ya page (event-driven).
   const dv = useDataVersion();
   useEffect(() => {
     getRegions().then(setRegions).catch(() => {});
-    loadFollow();
-  }, [loadFollow, dv]);
+  }, [dv]);
 
-  // Sync: mtu asiye na destinations lakini akafuata mikoa → '__all__' bado ifanye kazi
+  // Sync: mtu asiye na destinations → mkoa wa kwanza wa dropdown (au '__all__')
   useEffect(() => {
-    if (regionSel === '' && watchedIds.length > 0) setRegionSel('__all__');
-  }, [regionSel, watchedIds]);
+    if (regionSel === '') {
+      setRegionSel(destRegionIds.length > 1 ? '__all__' : destRegionIds.length === 1 ? String(destRegionIds[0]) : regions.length ? String(regions[0].id) : '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regionSel, destRegionIds, regions]);
 
   // Cascading: wilaya za mkoa mmoja uliochagua
   useEffect(() => {
@@ -184,7 +179,7 @@ export default function DashboardBoard() {
   }, [messages.length]);
 
   const clearFilters = () => {
-    setRegionSel(watchedIds.length > 0 ? '__all__' : '');
+    setRegionSel(destRegionIds.length > 1 ? '__all__' : destRegionIds.length === 1 ? String(destRegionIds[0]) : '');
     setDistrictId(undefined);
     setFacilityId(undefined);
     setSubjectFilter('off');
@@ -198,6 +193,16 @@ export default function DashboardBoard() {
     }
     return null;
   }, [singleRegion, regions]);
+
+  // Jina la mkoa uliochaguliwa (chanzo) — kwa maelezo ya header kisomi.
+  const activeSourceRegionName = useMemo(() => {
+    if (regionSel === '__all__') return watchedNames.length ? watchedNames.join(', ') : null;
+    if (singleRegion !== undefined) {
+      const r = regions.find((x) => x.id === singleRegion);
+      if (r) return r.name;
+    }
+    return null;
+  }, [regionSel, singleRegion, regions, watchedNames]);
 
   // Stats chips: facility → district → region (kiwango cha sasa)
   const chips = useMemo(() => {
@@ -287,10 +292,11 @@ export default function DashboardBoard() {
           )}
         </div>
       </div>
-      {/* Maelezo mafupi — mtu aelewe MOYO WA INTERFACE: hapa chini ni wanaokuja mkoa wako */}
+      {/* Maelezo mafupi — mtu aelewe MOYO WA INTERFACE: hapa chini ni watu wanaokuja
+          mkoa ULIOCHAGULIWA (chanzo) na wanaotaka kuja mkoa WAKO. */}
       <p className="text-[12px] font-semibold text-brand-grey-900 dark:text-brand-grey-200 leading-snug">
-        {t('board.incoming_header')} <span className="text-brand-blue font-bold">{myStation.region_name || ''}</span> —{' '}
-        <span className="text-brand-grey-600 dark:text-brand-grey-400 font-medium">{t('board.incoming_header_hint_short')}</span>
+        {t('board.incoming_header')} <span className="text-brand-blue font-bold">{activeSourceRegionName || t('board.all_regions')}</span> —{' '}
+        {t('board.incoming_header_to')} <span className="text-brand-blue font-bold">{myStation.region_name || ''}</span>
       </p>
 
       {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
@@ -299,16 +305,14 @@ export default function DashboardBoard() {
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5 mt-1">
             <select className="input text-xs py-1.5 w-full sm:flex-1 sm:min-w-[140px]" value={regionSel}
               onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); setPage(1); }}>
-              {watchedIds.length > 0 && (
+              {/* Default: mkoa wanaotaka kuja kwako (destinations) — lakini mikoa
+                  YOTE ya Tanzania iko kwenye dropdown, mtu aweze kubadilisha. */}
+              {watchedIds.length > 1 && (
                 <option value="__all__">
                   {watchedNames.length ? `${t('board.all_regions')} (${watchedNames.join(', ')})` : t('board.all_regions')}
                 </option>
               )}
-              {watchedIds.map((rid) => {
-                const r = regions.find((x) => x.id === rid);
-                return r ? <option key={r.id} value={String(r.id)}>{r.name}</option> : null;
-              })}
-              {watchedIds.length === 0 && regions.map((r) => (
+              {regions.map((r) => (
                 <option key={r.id} value={String(r.id)}>{r.name}</option>
               ))}
             </select>
@@ -381,42 +385,58 @@ export default function DashboardBoard() {
         <div className="px-3 pt-2 pb-3">
           {loading ? (
             <Spinner label={t('action.loading')} className="py-2" />
-          ) : chips.list.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-brand-grey-300 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-800/60 px-3 py-2.5 text-center">
-              <p className="text-xs font-semibold text-brand-grey-700 dark:text-brand-grey-300">
-                {hasData ? t('board.stats_hint') : t('board.stats_empty')}
-              </p>
-            </div>
           ) : (
-            <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-              {chips.list.map((c: any) => {
-                const label = c.region_name || c.district_name || c.facility_name;
-                const isActive = facilityId
-                  ? c.facility_id === facilityId
-                  : districtId
-                    ? c.district_id === districtId
-                    : effectiveRegionIds.includes(c.region_id);
-                const color = 'border-brand-blue text-brand-blue bg-brand-blue-50';
-                return (
-                  <button key={label} type="button"
-                    onClick={() => {
-                      if (facilityId) {
-                        setFacilityId(c.facility_id);
-                      } else if (districtId) {
-                        setDistrictId(c.district_id);
-                      } else if (c.region_id) {
-                        setRegionSel(String(c.region_id));
-                        setDistrictId(undefined);
-                        setFacilityId(undefined);
-                      }
-                      setPage(1);
-                    }}
-                    className={`px-2.5 py-1 rounded-full border text-[11px] font-medium transition ${isActive ? color + ' ring-1 ring-brand-blue/20' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-blue hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
-                  >
-                    {label} <span className="font-bold">({c.count})</span>
-                  </button>
-                );
-              })}
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand-grey-500 dark:text-brand-grey-400">
+                  {t('board.stats_title')}
+                </span>
+                <span className="h-px flex-1 bg-brand-grey-200 dark:bg-brand-grey-600" />
+                {!loading && (
+                  <span className="text-[11px] font-bold text-brand-grey-700 dark:text-brand-grey-300">
+                    {board?.total ?? 0} {t('board.total_people')}
+                  </span>
+                )}
+              </div>
+              {chips.list.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-brand-grey-300 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-800/60 px-3 py-2.5 text-center">
+                  <p className="text-xs font-semibold text-brand-grey-700 dark:text-brand-grey-300">
+                    {hasData ? t('board.stats_hint') : t('board.stats_empty')}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                  {chips.list.map((c: any) => {
+                    const label = c.region_name || c.district_name || c.facility_name;
+                    const isActive = facilityId
+                      ? c.facility_id === facilityId
+                      : districtId
+                        ? c.district_id === districtId
+                        : effectiveRegionIds.includes(c.region_id);
+                    const color = 'border-brand-blue bg-brand-blue text-white shadow-sm';
+                    return (
+                      <button key={label} type="button"
+                        onClick={() => {
+                          if (facilityId) {
+                            setFacilityId(c.facility_id);
+                          } else if (districtId) {
+                            setDistrictId(c.district_id);
+                          } else if (c.region_id) {
+                            setRegionSel(String(c.region_id));
+                            setDistrictId(undefined);
+                            setFacilityId(undefined);
+                          }
+                          setPage(1);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition ${isActive ? color + ' ring-1 ring-brand-blue/30' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-blue hover:bg-brand-blue-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
+                      >
+                        <span className="font-bold">{c.count}</span>
+                        <span className="ml-1 font-medium opacity-80">{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -435,7 +455,7 @@ export default function DashboardBoard() {
               simu ya kawaida = 2 col, desktop = 3 col. Hakuna kujibana tena! */}
           <div className="grid grid-cols-[repeat(auto-fit,minmax(165px,1fr))] gap-2.5 md:gap-3">
             {pageItems.map((c: any) => (
-              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} me={user as any} />
+              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} me={user as any} myRegionName={myStation.region_name || ''} />
             ))}
           </div>
 
@@ -462,7 +482,7 @@ export default function DashboardBoard() {
   );
 }
 
-function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any }) {
+function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string }) {
   const t = useT();
   const initial = getInitial(c.full_name);
   const from = c.current_station;
@@ -541,12 +561,16 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
       </div>
 
       {from && (
-        <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-0.5">
-          <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words"><b>{t('board.from')}:</b> {from.district_name || ''} {from.region_name}</div>
+        <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-1">
+          <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
+            📍 {t('board.from')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{from.district_name || ''} {from.region_name}</b>
+          </div>
           {to && (
-            <div className="text-brand-grey-800 dark:text-brand-grey-200 break-words"><b>{t('board.wants_go')}:</b> {to.district_name || to.region_name} ({to.region_name})</div>
+            <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
+              🎯 {t('board.wants_go')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{to.district_name || to.region_name}, {to.region_name}</b>
+            </div>
           )}
-          <div className="text-green-700 dark:text-green-500 font-bold">↓ {t('board.coming_to_you')}</div>
+          <div className="text-brand-blue font-extrabold">↓ {t('board.coming_to_you')} <span className="text-brand-grey-900 dark:text-white">{myRegionName}</span></div>
         </div>
       )}
 
