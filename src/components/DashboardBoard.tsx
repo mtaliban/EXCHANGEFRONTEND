@@ -73,23 +73,6 @@ export default function DashboardBoard() {
   const [now, setNow] = useState(Date.now());
   const [page, setPage] = useState(1);
   const [lastArrivalKey, setLastArrivalKey] = useState<string | null>(null);
-  // Sauti inaweza kuzimwa na mtumiaji (toggle juu kwenye LIVE panel) —
-  // inahifadhiwa kwenye localStorage ili isiimike tena kila mtu akiingia.
-  const [soundOn, setSoundOn] = useState(true);
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem('kv_sound');
-      if (saved !== null) setSoundOn(saved !== 'off');
-    } catch {}
-  }, []);
-  const toggleSound = () => {
-    setSoundOn((prev) => {
-      const next = !prev;
-      try { window.localStorage.setItem('kv_sound', next ? 'on' : 'off'); } catch {}
-      if (next) playArrivalSound(); // 🎵 Test sauti PAPO HAPO anapowasha — uthibitisho wa haraka
-      return next;
-    });
-  };
   const { messages, connected } = useLiveEvents(['match.found', 'user.registered', 'user.profile_updated']);
 
   // Re-render "muda uliopita" kila sekunde 30
@@ -174,7 +157,7 @@ export default function DashboardBoard() {
       const key = `${latest.topic}:${latest.payload?.user_id || latest.payload?.candidate?.user_id || latest.at}`;
       if (key !== lastArrivalKey) {
         setLastArrivalKey(key);
-        if (soundOn) playArrivalSound(); // 📣 mtu mpya amefika — ipige sauti!
+        playArrivalSound(); // 📣 mtu mpya amefika — ipige sauti!
       }
       bustGetCache(); // FUSHA cache ya kale — board lazima ionyeshe data mpya SASA
       setPage(1);
@@ -189,7 +172,7 @@ export default function DashboardBoard() {
       return () => clearTimeout(tId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages.length, soundOn]);
+  }, [messages.length]);
 
   const clearFilters = () => {
     setRegionSel(watchedIds.length > 0 ? '__all__' : '');
@@ -269,7 +252,7 @@ export default function DashboardBoard() {
 
   return (
     <div className="space-y-4">
-      {/* ═══ LIVE — MSTARI MMOJA MDOGO tu (siyo box kubwa) ═══ */}
+      {/* ═══ LIVE — MSTARI MMOJA MDOGO tu (siyo box kubwa, hakuna sauti) ═══ */}
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0">
           <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
@@ -291,15 +274,9 @@ export default function DashboardBoard() {
               {board?.total ?? 0}
             </span>
           )}
-          <button type="button" onClick={toggleSound}
-            title={soundOn ? t('board.sound_on') : t('board.sound_off')}
-            className="text-[10px] px-1 py-0.5 rounded border transition border-brand-grey-200 text-brand-grey-600 hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300"
-            aria-label={soundOn ? t('board.sound_on') : t('board.sound_off')}>
-            {soundOn ? '🔊' : '🔇'}
-          </button>
         </div>
       </div>
-      {/* MSTARI MMOJA MREFU — mtu aelewe wazi */}
+      {/* Maelezo mafupi — mtu aelewe MOYO WA INTERFACE: hapa chini ni wanaohamia kwako */}
       <p className="text-[11px] font-semibold text-brand-grey-700 dark:text-brand-grey-300">
         {t('board.incoming_header')}
       </p>
@@ -369,8 +346,8 @@ export default function DashboardBoard() {
                     aria-pressed={subjectFilter === val}
                     className={`px-2 py-0.5 rounded-full border text-[11px] font-semibold transition ${
                       subjectFilter === val
-                        ? 'border-brand-gold bg-brand-gold text-white'
-                        : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-gold dark:border-brand-grey-600 dark:text-brand-grey-300'
+                        ? 'border-brand-blue bg-brand-blue text-white'
+                        : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-blue dark:border-brand-grey-600 dark:text-brand-grey-300'
                     }`}
                   >{label}</button>
                 ))}
@@ -561,13 +538,13 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
           <span className="text-brand-grey-500 font-semibold">{t('board.subjects')}:</span>
           {anySubjectMatch && (
-            <span className="px-1.5 py-0.5 rounded-full bg-brand-gold text-white font-bold">🎯 {t('board.subjects_match')}</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-brand-blue text-white font-bold">🎯 {t('board.subjects_match')}</span>
           )}
           {c.subjects.map((s: string) => {
             const matched = mySubjects.includes(s);
             return (
               <span key={s} title={matched ? t('board.subject_match') : undefined}
-                className={`px-1.5 py-0.5 rounded-full font-semibold ${anySubjectMatch ? 'bg-brand-gold text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
+                className={`px-1.5 py-0.5 rounded-full font-semibold ${anySubjectMatch ? 'bg-brand-blue text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
                 {s}{matched ? ' ✓' : ''}
               </span>
             );
