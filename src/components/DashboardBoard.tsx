@@ -276,9 +276,10 @@ export default function DashboardBoard() {
           )}
         </div>
       </div>
-      {/* Maelezo mafupi — mtu aelewe MOYO WA INTERFACE: hapa chini ni wanaohamia kwako */}
+      {/* Maelezo mafupi — mtu aelewe MOYO WA INTERFACE: hapa chini ni wanaokuja mkoa wako */}
       <p className="text-[11px] font-semibold text-brand-grey-700 dark:text-brand-grey-300">
-        {t('board.incoming_header')}
+        {t('board.incoming_header')} <span className="text-brand-blue font-bold">{myStation.region_name || ''}</span> —{' '}
+        {t('board.incoming_header_hint_short')}
       </p>
 
       {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
@@ -370,8 +371,10 @@ export default function DashboardBoard() {
           {loading ? (
             <Spinner label={t('action.loading')} className="py-2" />
           ) : chips.list.length === 0 ? (
-            <div className="text-xs text-brand-grey-400 py-2">
-              {hasData ? t('board.stats_hint') : t('msg.no_data')}
+            <div className="rounded-lg border border-dashed border-brand-grey-300 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-800/60 px-3 py-2.5 text-center">
+              <p className="text-xs font-semibold text-brand-grey-700 dark:text-brand-grey-300">
+                {hasData ? t('board.stats_hint') : t('board.stats_empty')}
+              </p>
             </div>
           ) : (
             <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
@@ -558,9 +561,13 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
         </a>
       )}
 
-      {/* MUDA WA JUU (relative): "dakika 2 zilizopita" / "jana" — siyo saa halisi */}
-      <div className="text-[11px] font-medium text-brand-grey-400" title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
-        🕐 {ago}
+      {/* MUDA WA JUU (relative): wapya wana "🆕 MPYA + muda", wengine 🕐 muda tu — siyo saa halisi */}
+      <div className={`text-[11px] font-medium ${fresh ? 'text-brand-blue font-bold' : 'text-brand-grey-400'}`} title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
+        {fresh ? (
+          <span className="animate-[newPulse_1s_ease-in-out_infinite]">🆕 {t('board.new_badge')} · {ago}</span>
+        ) : (
+          <>🕐 {ago}</>
+        )}
       </div>
 
       {/* VIFUNGO VYA KUWASILIANA: 1) PIGA SIMU (tel:) 2) SMS YA KAWAIDA (sms:)
