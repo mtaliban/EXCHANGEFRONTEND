@@ -372,8 +372,8 @@ export default function DashboardBoard() {
                     aria-pressed={subjectFilter === val}
                     className={`px-2 py-0.5 rounded-full border text-[11px] font-semibold transition ${
                       subjectFilter === val
-                        ? 'border-brand-grey-900 bg-brand-grey-900 text-white dark:border-white dark:bg-white dark:text-brand-grey-900'
-                        : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-grey-900 dark:border-brand-grey-600 dark:text-brand-grey-300'
+                        ? 'border-brand-gold bg-brand-gold text-white'
+                        : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-gold dark:border-brand-grey-600 dark:text-brand-grey-300'
                     }`}
                   >{label}</button>
                 ))}
@@ -408,7 +408,9 @@ export default function DashboardBoard() {
                   : districtId
                     ? c.district_id === districtId
                     : effectiveRegionIds.includes(c.region_id);
-                const color = 'border-brand-grey-900 bg-brand-grey-900 text-white dark:border-white dark:bg-white dark:text-brand-grey-900';
+                const color = facilityId ? 'border-brand-red text-brand-red bg-brand-red-50'
+                  : districtId ? 'border-brand-orange text-brand-orange bg-brand-orange-50'
+                  : 'border-brand-blue text-brand-blue bg-brand-blue-50';
                 return (
                   <button key={label} type="button"
                     onClick={() => {
@@ -423,7 +425,7 @@ export default function DashboardBoard() {
                       }
                       setPage(1);
                     }}
-                    className={`px-2.5 py-1 rounded-full border text-[11px] font-medium transition ${isActive ? color + ' ring-1 ring-brand-grey-900/30' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-grey-900 hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
+                    className={`px-2.5 py-1 rounded-full border text-[11px] font-medium transition ${isActive ? color + ' ring-1 ring-brand-blue/20' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-blue hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
                   >
                     {label} <span className="font-bold">({c.count})</span>
                   </button>
@@ -518,9 +520,9 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
   }, [c, me, t]);
 
   return (
-    <div className={`rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-3 md:p-3.5 flex flex-col gap-2 hover:border-brand-grey-400 dark:hover:border-brand-grey-500 transition group ${
-      fresh ? 'border-brand-grey-900 dark:border-white'
-      : c.online ? 'border-brand-grey-300 dark:border-brand-grey-600'
+    <div className={`rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-3 md:p-3.5 flex flex-col gap-2 hover:border-brand-blue dark:hover:border-brand-grey-500 transition group ${
+      fresh ? 'border-brand-orange ring-1 ring-brand-orange/30'
+      : c.online ? 'border-green-300 dark:border-green-700/50'
       : ''}`}>
       <div className="flex items-center gap-2.5">
         <div className="relative flex-shrink-0">
@@ -535,7 +537,7 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-brand-grey-900 dark:text-white break-words min-w-0 leading-snug text-[13px]">{c.full_name}</span>
             {fresh && (
-              <span className="text-[10px] font-bold text-brand-grey-900 dark:text-white bg-brand-grey-100 dark:bg-brand-grey-800 px-1.5 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">🆕 {t('board.new_badge')}</span>
+              <span className="text-[10px] font-bold text-brand-orange bg-brand-orange-50 px-1.5 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">🆕 {t('board.new_badge')}</span>
             )}
             {c.online && <span className="text-[10px] font-bold text-green-600">● {t('board.live')}</span>}
           </div>
@@ -565,13 +567,13 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
           <span className="text-brand-grey-500 font-semibold">{t('board.subjects')}:</span>
           {anySubjectMatch && (
-            <span className="px-1.5 py-0.5 rounded-full bg-brand-grey-900 text-white dark:bg-white dark:text-brand-grey-900 font-bold">🎯 {t('board.subjects_match')}</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-brand-gold text-white font-bold">🎯 {t('board.subjects_match')}</span>
           )}
           {c.subjects.map((s: string) => {
             const matched = mySubjects.includes(s);
             return (
               <span key={s} title={matched ? t('board.subject_match') : undefined}
-                className={`px-1.5 py-0.5 rounded-full font-semibold ${anySubjectMatch ? 'bg-brand-grey-800 text-white dark:bg-brand-grey-200 dark:text-brand-grey-900' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
+                className={`px-1.5 py-0.5 rounded-full font-semibold ${anySubjectMatch ? 'bg-brand-gold text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
                 {s}{matched ? ' ✓' : ''}
               </span>
             );
@@ -580,7 +582,7 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
       )}
 
       {c.phone_primary && (
-        <a href={`tel:${c.phone_primary}`} className="text-[11px] sm:text-xs text-brand-grey-800 dark:text-brand-grey-200 font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
+        <a href={`tel:${c.phone_primary}`} className="text-[11px] sm:text-xs text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
           📞 {c.phone_primary}
         </a>
       )}
