@@ -535,12 +535,12 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
             )}
             {c.online && <span className="text-[10px] font-bold text-green-600">● {t('board.live')}</span>}
           </div>
-          {/* Idara husika: Afya / Elimu + kada */}
+          {/* NI NANI: idara (Afya/Elimu) + kada — majina yote yanaonekana (hakuna kukata) */}
           <div className="flex items-center gap-1 flex-wrap mt-0.5">
-            <span className="text-[10px] font-semibold text-brand-grey-500 dark:text-brand-grey-400">
+            <span className="text-[10px] font-semibold text-brand-blue-600 dark:text-brand-blue-400">
               {isEdu ? '👩🏫' : '🏥'} {isEdu ? t('label.category_education') : t('label.category_health')}
             </span>
-            <span className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 truncate">
+            <span className="text-[11px] font-medium text-brand-grey-600 dark:text-brand-grey-300 break-words min-w-0 leading-snug">
               {c.cadre_display || c.cadre_code}
             </span>
           </div>
