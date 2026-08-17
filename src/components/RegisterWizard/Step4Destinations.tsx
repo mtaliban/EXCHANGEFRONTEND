@@ -123,8 +123,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
       })}
 
       <button type="button" onClick={addRow} disabled={drafts.length >= 15}
-        className="w-full py-3 rounded-xl border-2 border-dashed border-brand-blue text-brand-blue font-semibold hover:bg-brand-blue-50 disabled:opacity-50 disabled:cursor-not-allowed">
-        {t('step4.add_more')}
+        className="w-full py-3 rounded-xl border-2 border-dashed border-brand-grey-400 text-brand-grey-700 font-semibold hover:border-brand-grey-600 hover:bg-brand-grey-50 disabled:opacity-50 disabled:cursor-not-allowed">
+        {t('step4.add_more')} ({drafts.length}/15)
       </button>
 
       {error && <p className="text-brand-red text-sm">{error}</p>}

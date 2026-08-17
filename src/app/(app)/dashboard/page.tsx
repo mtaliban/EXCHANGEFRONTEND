@@ -17,27 +17,25 @@ export default function DashboardPage() {
       {/* ═══ MATANGAZO — juu ya dashboard pekee; mtu aamue kuyafungua ═══ */}
       <AnnouncementBanner />
 
-      {/* ═══ HERO — Karibu (mobile-first, hakuna OFFLINE/simu) ═══ */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-blue via-brand-blue-700 to-brand-blue-900 text-white p-4 md:p-6 shadow-lg">
-        <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-brand-orange/25 blur-3xl" />
-        <div className="absolute -bottom-14 -left-10 w-48 h-48 rounded-full bg-brand-gold/20 blur-3xl" />
-        <div className="relative flex items-center gap-3 md:gap-4">
+      {/* ═══ HERO — Karibu (dogo, nyeupe, official — sio div kubwa ya bluu) ═══ */}
+      <section className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-4 py-3 md:px-5 shadow-sm">
+        <div className="flex items-center gap-3">
           <div className="relative flex-shrink-0">
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/15 ring-2 ring-white/40 flex items-center justify-center text-lg md:text-xl font-bold">
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-base md:text-lg font-bold text-brand-grey-900 dark:text-white">
               {initial}
             </div>
-            <span className="absolute bottom-0 right-0 w-3 h-3 md:w-3.5 md:h-3.5 rounded-full bg-green-400 border-2 border-brand-blue-800" />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white dark:border-brand-grey-900" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-lg md:text-2xl font-bold truncate">
+            <h1 className="text-sm md:text-base font-extrabold text-brand-grey-900 dark:text-white truncate">
               {t('dash.welcome')}, {user?.full_name?.split(' ')[0]} 👋
             </h1>
-            <div className="flex items-center gap-1.5 mt-1.5 md:mt-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/15">
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-300">
                 {user?.cadre_display || user?.cadre_code}
               </span>
               {myStation?.district_name && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/15">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-300">
                   📍 {myStation.district_name}, {myStation.region_name}
                 </span>
               )}
