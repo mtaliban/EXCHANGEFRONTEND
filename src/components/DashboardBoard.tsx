@@ -268,36 +268,39 @@ export default function DashboardBoard() {
 
   return (
     <div className="space-y-4">
-      {/* ═══ LIVE — MSTARI MMOJA MDOGO tu (siyo box kubwa, hakuna sauti) ═══ */}
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0">
-          <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-          <span className="text-brand-blue">{t('board.live_title')}</span>
-          <span className="text-brand-grey-900 dark:text-white truncate">{myStation.region_name || ''}</span>
-        </h2>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {freshCount > 0 && (
-            <span className="text-[10px] font-bold text-brand-grey-700 dark:text-brand-grey-300">🆕 {freshCount}</span>
-          )}
-          {onlineCount > 0 && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-brand-grey-700 dark:text-brand-grey-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              {onlineCount}
-            </span>
-          )}
-          {!loading && (
-            <span className="text-[10px] font-semibold text-brand-grey-500 dark:text-brand-grey-400">
-              {board?.total ?? 0}
-            </span>
-          )}
+      {/* ═══ LIVE — statement WAZI: mkoa wa chanzo → mkoa wako, na idadi yao ═══ */}
+      <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0">
+            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
+            <span className="text-brand-blue">{t('board.live_title')}</span>
+            <span className="text-brand-grey-900 dark:text-white font-extrabold truncate">{activeSourceRegionName || t('board.all_regions')}</span>
+          </h2>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {!loading && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-grey-900 dark:text-white bg-brand-grey-100 dark:bg-brand-grey-800 px-2 py-0.5 rounded-full">
+                👥 {board?.total ?? 0}
+              </span>
+            )}
+            {onlineCount > 0 && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                {onlineCount} {t('board.online_now')}
+              </span>
+            )}
+            {freshCount > 0 && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">
+                🆕 {freshCount} {t('board.new_arrivals')}
+              </span>
+            )}
+          </div>
         </div>
+        {/* WAZI: hawa watu wanaokuja [chanzo] ndio wanakuja mkoa wako [mkoa] */}
+        <p className="text-[12px] font-semibold text-brand-grey-900 dark:text-brand-grey-200 leading-snug mt-1">
+          {t('board.incoming_header')} <span className="text-brand-blue font-bold">{activeSourceRegionName || t('board.all_regions')}</span> —{' '}
+          {t('board.incoming_header_to')} <span className="text-brand-blue font-bold">{myStation.region_name || ''}</span>
+        </p>
       </div>
-      {/* Maelezo mafupi — mtu aelewe MOYO WA INTERFACE: hapa chini ni watu wanaokuja
-          mkoa ULIOCHAGULIWA (chanzo) na wanaotaka kuja mkoa WAKO. */}
-      <p className="text-[12px] font-semibold text-brand-grey-900 dark:text-brand-grey-200 leading-snug">
-        {t('board.incoming_header')} <span className="text-brand-blue font-bold">{activeSourceRegionName || t('board.all_regions')}</span> —{' '}
-        {t('board.incoming_header_to')} <span className="text-brand-blue font-bold">{myStation.region_name || ''}</span>
-      </p>
 
       {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
       <div className="bg-white dark:bg-brand-grey-900 rounded-lg border border-brand-grey-200 dark:border-brand-grey-600 px-3 pt-2.5 pb-3">
@@ -379,75 +382,79 @@ export default function DashboardBoard() {
               </div>
             </div>
           )}
-        </div>
+      </div>
 
-        {/* Stats chips (kiwango cha sasa) — HAKUNA "no data" kama data zipo! */}
-        <div className="px-3 pt-2 pb-3">
-          {loading ? (
-            <Spinner label={t('action.loading')} className="py-2" />
-          ) : (
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand-grey-500 dark:text-brand-grey-400">
-                  {t('board.stats_title')}
-                </span>
-                <span className="h-px flex-1 bg-brand-grey-200 dark:bg-brand-grey-600" />
-                {!loading && (
-                  <span className="text-[11px] font-bold text-brand-grey-700 dark:text-brand-grey-300">
-                    {board?.total ?? 0} {t('board.total_people')}
-                  </span>
-                )}
-              </div>
-              {chips.list.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-brand-grey-300 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-800/60 px-3 py-2.5 text-center">
-                  <p className="text-xs font-semibold text-brand-grey-700 dark:text-brand-grey-300">
-                    {hasData ? t('board.stats_hint') : t('board.stats_empty')}
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-                  {chips.list.map((c: any) => {
-                    const label = c.region_name || c.district_name || c.facility_name;
-                    const isActive = facilityId
-                      ? c.facility_id === facilityId
-                      : districtId
-                        ? c.district_id === districtId
-                        : effectiveRegionIds.includes(c.region_id);
-                    const color = 'border-brand-blue bg-brand-blue text-white shadow-sm';
-                    return (
-                      <button key={label} type="button"
-                        onClick={() => {
-                          if (facilityId) {
-                            setFacilityId(c.facility_id);
-                          } else if (districtId) {
-                            setDistrictId(c.district_id);
-                          } else if (c.region_id) {
-                            setRegionSel(String(c.region_id));
-                            setDistrictId(undefined);
-                            setFacilityId(undefined);
-                          }
-                          setPage(1);
-                        }}
-                        className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition ${isActive ? color + ' ring-1 ring-brand-blue/30' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-blue hover:bg-brand-blue-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
-                      >
-                        <span className="font-bold">{c.count}</span>
-                        <span className="ml-1 font-medium opacity-80">{label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+      {/* ═══ STATICS — karibu na LIVE, namba kubwa na jina la mkoa ═══ */}
+      <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand-grey-500 dark:text-brand-grey-400">
+            {t('board.stats_title')}
+          </span>
+          <span className="h-px flex-1 bg-brand-grey-200 dark:bg-brand-grey-600" />
+          {!loading && (
+            <span className="text-[11px] font-bold text-brand-grey-700 dark:text-brand-grey-300">
+              {board?.total ?? 0} {t('board.total_people')}
+            </span>
           )}
         </div>
+        {loading ? (
+          <Spinner label={t('action.loading')} className="py-2" />
+        ) : chips.list.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-brand-grey-300 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-800/60 px-3 py-2.5 text-center">
+            <p className="text-xs font-semibold text-brand-grey-700 dark:text-brand-grey-300">
+              {hasData ? t('board.stats_hint') : t('board.stats_empty')}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+            {chips.list.map((c: any) => {
+              const label = c.region_name || c.district_name || c.facility_name;
+              const isActive = facilityId
+                ? c.facility_id === facilityId
+                : districtId
+                  ? c.district_id === districtId
+                  : effectiveRegionIds.includes(c.region_id);
+              const color = 'border-brand-blue bg-brand-blue text-white shadow-sm';
+              return (
+                <button key={label} type="button"
+                  onClick={() => {
+                    if (facilityId) {
+                      setFacilityId(c.facility_id);
+                    } else if (districtId) {
+                      setDistrictId(c.district_id);
+                    } else if (c.region_id) {
+                      setRegionSel(String(c.region_id));
+                      setDistrictId(undefined);
+                      setFacilityId(undefined);
+                    }
+                    setPage(1);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition ${isActive ? color + ' ring-1 ring-brand-blue/30' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-blue hover:bg-brand-blue-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
+                >
+                  <span className="font-bold">{c.count}</span>
+                  <span className="ml-1 font-medium opacity-80">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ═══ GRID YA WANAOKUJA MKOA WAKO — 10 kwa ukurasa + pagination ═══ */}
       {loading && candidates.length === 0 ? (
         <div className="py-8"><Spinner label={t('action.loading')} /></div>
       ) : pageItems.length === 0 ? (
-        <div className="card text-center py-12">
-          <div className="text-4xl mb-2">{isEdu ? '👩🏫' : '🏥'}</div>
-          <p className="text-brand-grey-500">{t('board.no_candidates')}</p>
+        <div className="card text-center py-10">
+          <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-brand-grey-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <p className="font-semibold text-brand-grey-700 dark:text-brand-grey-300">{t('board.no_candidates')}</p>
+          <p className="text-xs text-brand-grey-400 mt-1">{t('board.no_candidates_hint')}</p>
         </div>
       ) : (
         <>
