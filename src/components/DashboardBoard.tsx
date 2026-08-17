@@ -269,46 +269,43 @@ export default function DashboardBoard() {
 
   return (
     <div className="space-y-4">
-      {/* ═══ LIVE PANEL — NDOGO SANA, kichwa BLUE, maandishi MEUSI ═══ */}
-      <div className="rounded-lg bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 overflow-hidden">
-        <div className="px-3 py-2 border-b border-brand-grey-100 dark:border-brand-grey-600 flex items-center justify-between gap-2">
-          <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0">
-            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-            <span className="text-brand-blue">{t('board.live_title')}</span>
-            <span className="text-brand-grey-900 dark:text-white truncate">{myStation.region_name || ''}</span>
-          </h2>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {freshCount > 0 && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-brand-grey-800 dark:text-brand-grey-200">
-                🆕 {freshCount}
-              </span>
-            )}
-            {onlineCount > 0 && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-brand-grey-800 dark:text-brand-grey-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                {onlineCount}
-              </span>
-            )}
-            {!loading && (
-              <span className="text-[10px] font-semibold text-brand-grey-500 dark:text-brand-grey-400">
-                {board?.total ?? 0}
-              </span>
-            )}
-            <button type="button" onClick={toggleSound}
-              title={soundOn ? t('board.sound_on') : t('board.sound_off')}
-              className="text-[10px] px-1 py-0.5 rounded border transition border-brand-grey-200 text-brand-grey-600 hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300"
-              aria-label={soundOn ? t('board.sound_on') : t('board.sound_off')}>
-              {soundOn ? '🔊' : '🔇'}
-            </button>
-          </div>
+      {/* ═══ LIVE — MSTARI MMOJA MDOGO tu (siyo box kubwa) ═══ */}
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0">
+          <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
+          <span className="text-brand-blue">{t('board.live_title')}</span>
+          <span className="text-brand-grey-900 dark:text-white truncate">{myStation.region_name || ''}</span>
+        </h2>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {freshCount > 0 && (
+            <span className="text-[10px] font-bold text-brand-grey-700 dark:text-brand-grey-300">🆕 {freshCount}</span>
+          )}
+          {onlineCount > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-brand-grey-700 dark:text-brand-grey-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              {onlineCount}
+            </span>
+          )}
+          {!loading && (
+            <span className="text-[10px] font-semibold text-brand-grey-500 dark:text-brand-grey-400">
+              {board?.total ?? 0}
+            </span>
+          )}
+          <button type="button" onClick={toggleSound}
+            title={soundOn ? t('board.sound_on') : t('board.sound_off')}
+            className="text-[10px] px-1 py-0.5 rounded border transition border-brand-grey-200 text-brand-grey-600 hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300"
+            aria-label={soundOn ? t('board.sound_on') : t('board.sound_off')}>
+            {soundOn ? '🔊' : '🔇'}
+          </button>
         </div>
-        {/* MSTARI MMOJA MREFU — mtu aelewe wazi */}
-        <p className="px-3 py-1.5 text-[11px] font-semibold text-brand-grey-800 dark:text-brand-grey-200">
-          {t('board.incoming_header')}
-        </p>
+      </div>
+      {/* MSTARI MMOJA MREFU — mtu aelewe wazi */}
+      <p className="text-[11px] font-semibold text-brand-grey-700 dark:text-brand-grey-300">
+        {t('board.incoming_header')}
+      </p>
 
-        {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
-        <div className="px-3 pt-3 pb-3.5">
+      {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
+      <div className="bg-white dark:bg-brand-grey-900 rounded-lg border border-brand-grey-200 dark:border-brand-grey-600 px-3 pt-2.5 pb-3">
           <label className="text-[11px] font-bold text-brand-grey-700 dark:text-brand-grey-300">{t('board.filter_source')}</label>
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5 mt-1">
             <select className="input text-xs py-1.5 w-full sm:flex-1 sm:min-w-[140px]" value={regionSel}
@@ -408,9 +405,7 @@ export default function DashboardBoard() {
                   : districtId
                     ? c.district_id === districtId
                     : effectiveRegionIds.includes(c.region_id);
-                const color = facilityId ? 'border-brand-red text-brand-red bg-brand-red-50'
-                  : districtId ? 'border-brand-orange text-brand-orange bg-brand-orange-50'
-                  : 'border-brand-blue text-brand-blue bg-brand-blue-50';
+                const color = 'border-brand-blue text-brand-blue bg-brand-blue-50';
                 return (
                   <button key={label} type="button"
                     onClick={() => {
@@ -434,7 +429,6 @@ export default function DashboardBoard() {
             </div>
           )}
         </div>
-      </div>
 
       {/* ═══ GRID YA WANAOKUJA MKOA WAKO — 10 kwa ukurasa + pagination ═══ */}
       {loading && candidates.length === 0 ? (
@@ -521,7 +515,7 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
 
   return (
     <div className={`rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-3 md:p-3.5 flex flex-col gap-2 hover:border-brand-blue dark:hover:border-brand-grey-500 transition group ${
-      fresh ? 'border-brand-orange ring-1 ring-brand-orange/30'
+      fresh ? 'border-brand-blue ring-1 ring-brand-blue/20'
       : c.online ? 'border-green-300 dark:border-green-700/50'
       : ''}`}>
       <div className="flex items-center gap-2.5">
@@ -537,7 +531,7 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-brand-grey-900 dark:text-white break-words min-w-0 leading-snug text-[13px]">{c.full_name}</span>
             {fresh && (
-              <span className="text-[10px] font-bold text-brand-orange bg-brand-orange-50 px-1.5 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">🆕 {t('board.new_badge')}</span>
+              <span className="text-[10px] font-bold text-brand-blue bg-brand-blue-50 px-1.5 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">🆕 {t('board.new_badge')}</span>
             )}
             {c.online && <span className="text-[10px] font-bold text-green-600">● {t('board.live')}</span>}
           </div>

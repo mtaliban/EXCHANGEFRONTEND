@@ -17,19 +17,21 @@ export default function DashboardPage() {
       {/* ═══ MATANGAZO — juu ya dashboard pekee; mtu aamue kuyafungua ═══ */}
       <AnnouncementBanner />
 
-      {/* ═══ HERO — NDOGO SANA kisomi: mstari mmoja, maandishi meusi, hakuna div kubwa ═══ */}
+      {/* ═══ HERO — NDOGO SANA kisomi: mstari mmoja, maandishi meusi, inaonekana kwenye simu ═══ */}
       <div className="flex items-center gap-2">
         <div className="w-7 h-7 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-[11px] font-bold text-brand-grey-900 dark:text-white flex-shrink-0">
           {initial}
         </div>
-        <h1 className="text-[13px] font-bold text-brand-grey-900 dark:text-white truncate leading-tight">
-          {t('dash.welcome')}, {user?.full_name?.split(' ')[0]} 👋
-        </h1>
-        {myStation?.district_name && (
-          <span className="text-[11px] font-medium text-brand-grey-500 dark:text-brand-grey-400 hidden sm:inline flex-shrink-0">
-            · 📍 {myStation.district_name}, {myStation.region_name}
-          </span>
-        )}
+        <div className="min-w-0">
+          <h1 className="text-[13px] font-bold text-brand-grey-900 dark:text-white leading-tight break-words">
+            {t('dash.welcome')}, {user?.full_name?.split(' ')[0]} 👋
+          </h1>
+          {myStation?.district_name && (
+            <span className="text-[11px] font-medium text-brand-grey-500 dark:text-brand-grey-400 leading-tight">
+              📍 {myStation.district_name}, {myStation.region_name}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ═══ BOARD MOJA: Wanaokuja {mkoa} (live mpya juu, kijani=online) ═══ */}
