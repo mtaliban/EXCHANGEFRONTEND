@@ -274,7 +274,11 @@ export const getBoard = (params?: {
 }, bypassCache = false) =>
   // TTL ndefu (45s): kurudi kwenye dashboard hakufetch DB kila mara — WS events
   // zinabust cache na kufetch fresh PAPO HAPO (data ya live haichemki).
-  client.get<BoardStats>(`${MATCH}/matches/board`, { params, bypassCache, ttl: 45_000 } as any).then((r) => r.data);
+  client.get<BoardStats>(`${MATCH}/matches/board`, {
+    params: { ...params, bypass_cache: bypassCache },
+    bypassCache,
+    ttl: 45_000,
+  } as any).then((r) => r.data);
 
 export const getFollowedRegions = () =>
   client.get<{ region_ids: number[] }>(`${USER}/users/me/followed-regions`).then((r) => r.data);

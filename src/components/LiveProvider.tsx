@@ -9,7 +9,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
 import { playPingSound, playArrivalSound, isSoundEnabled } from '@/lib/sound';
 import { parseServerDate } from '@/lib/dates';
-import { getMe } from '@/lib/api';
+import { getMe, emitDataChanged } from '@/lib/api';
 import { Handshake, Phone, Bell, ShieldAlert, Trash2, UserCog } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -141,6 +141,10 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         });
       }
     });
+    // Reference data (idara/masomo/kada/mikoa/wilaya/vituo) imebadilishwa na
+    // admin → dropdowns zote za watumiaji (usajili, profile, filters) zijirefresh
+    // PAPO HAPO bila refresh ya page (event-driven kama WebSocket).
+    const unsubData = subscribe('data.changed', () => emitDataChanged());
     // Notifications center (payments, profile updates, registrations…)
     const unsub4 = subscribe('notification', (p) => {
       if (p.type === 'match.found' || p.type === 'message.sent' || p.type === 'call.initiated') return;
@@ -155,7 +159,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         ago: p.occurred_at,
       });
     });
-    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsub4(); };
+    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsub4(); };
   }, [user, subscribe, router, pathname, logout, setUser]);
 
   return <>{children}</>;

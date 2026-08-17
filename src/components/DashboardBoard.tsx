@@ -7,6 +7,7 @@ import {
   type Region, type District, type Facility,
 } from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
+import { useLive } from '@/lib/liveSocket';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useI18n, useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
@@ -73,7 +74,11 @@ export default function DashboardBoard() {
   const [now, setNow] = useState(Date.now());
   const [page, setPage] = useState(1);
   const [lastArrivalKey, setLastArrivalKey] = useState<string | null>(null);
-  const { messages, connected } = useLiveEvents(['match.found', 'user.registered', 'user.profile_updated']);
+  const { messages, connected } = useLiveEvents(['match.found', 'user.registered', 'user.profile_updated', 'user.changed', 'user.removed']);
+  // ONLINE status LIVE: presence events (WS) zinabroadcast kwa wote — board
+  // inatumia hii (sio `c.online` stale ya fetch) ili mtu akitoka/kuingia
+  // aonekane PAPO HAPO bila refresh ya page.
+  const liveOnline = useLive((s) => s.onlineUserIds);
 
   // Re-render "muda uliopita" kila sekunde 30
   useEffect(() => {
@@ -165,9 +170,13 @@ export default function DashboardBoard() {
       return () => clearTimeout(tId);
     }
     // Profile ikibadilika (mkoa/masomo/kada ya mtumiaji) → board ijirefresh yenyewe
-    if (latest.topic === 'user.profile_updated') {
+    // Admin akibadilisha/kusitisha/kufuta mtumiaji → boards zote zijirefresh PAPO
+    // HAPO bila refresh ya page (event-driven kama WebSocket).
+    if (latest.topic === 'user.profile_updated' || latest.topic === 'user.changed' || latest.topic === 'user.removed') {
       bustGetCache();
       setPage(1);
+      // Debounce: bulk events (watu wengi wakifutwa/suspendwa wakati mmoja)
+      // zisipige reload 10x — moja tu ya mwisho inatosha.
       const tId = setTimeout(() => loadBoard(true), 300);
       return () => clearTimeout(tId);
     }
@@ -216,8 +225,10 @@ export default function DashboardBoard() {
   // Candidates: WAPYA (ndani ya dakika 30) juu kabisa, kisha wengine chini —
   // ndani ya kila kundi sorted newest first. Mtu akipita dakika 30 (au baada ya
   // kuonekana mara ya kwanza) anashuka chini — wapya wasiojulikana wabaki juu.
+  // `online` ina-overriden na presence LIVE (WS) — siyo `c.online` stale ya fetch.
   const candidates = useMemo(() => {
     const list = [...((board?.candidates as any[]) || [])];
+    list.forEach((c) => { c.online = liveOnline.has(c.user_id) || !!c.online; });
     list.sort((a, b) => {
       const ta = a.created_at ? (parseServerDate(a.created_at)?.getTime() ?? 0) : 0;
       const tb = b.created_at ? (parseServerDate(b.created_at)?.getTime() ?? 0) : 0;
@@ -227,7 +238,7 @@ export default function DashboardBoard() {
       return tb - ta;
     });
     return list;
-  }, [board, now]);
+  }, [board, now, liveOnline]);
 
   // Pagination: data 10 za mwanzo (wageni) — zilizobaki kupitia pagination
   const totalPages = Math.max(1, Math.ceil(candidates.length / PAGE_SIZE));
