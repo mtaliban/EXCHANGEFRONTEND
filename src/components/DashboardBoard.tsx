@@ -269,53 +269,49 @@ export default function DashboardBoard() {
 
   return (
     <div className="space-y-4">
-      {/* ═══ LIVE PANEL — KISOMI: maneno wazi, rangi nyeusi/nyeupe tu ═══ */}
-      <div className="rounded-lg bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600">
-        <div className="px-3.5 py-2.5 border-b border-brand-grey-100 dark:border-brand-grey-600">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse`} />
-              {t('board.live_title')} <span className="text-brand-grey-900 dark:text-white font-bold">{myStation.region_name || ''}</span>
-            </h2>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {freshCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-800 dark:bg-brand-grey-800 dark:text-brand-grey-200">
-                  🆕 {freshCount} {t('board.new_arrivals')}
-                </span>
-              )}
-              {onlineCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-800 dark:bg-brand-grey-800 dark:text-brand-grey-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  {onlineCount} {t('board.online_now')}
-                </span>
-              )}
-              {!loading && (
-                <span className="text-[10px] font-semibold text-brand-grey-500 dark:text-brand-grey-400">
-                  {board?.total ?? 0} {t('board.total_people')}
-                </span>
-              )}
-              <button type="button" onClick={toggleSound}
-                title={soundOn ? t('board.sound_on') : t('board.sound_off')}
-                className={`text-[10px] px-1.5 py-0.5 rounded-full border transition ${soundOn ? 'border-brand-grey-300 text-brand-grey-700 dark:text-brand-grey-300' : 'border-brand-grey-200 text-brand-grey-500'}`}
-                aria-label={soundOn ? t('board.sound_on') : t('board.sound_off')}>
-                {soundOn ? '🔊' : '🔇'}
-              </button>
-            </div>
+      {/* ═══ LIVE PANEL — NDOGO SANA, kichwa BLUE, maandishi MEUSI ═══ */}
+      <div className="rounded-lg bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 overflow-hidden">
+        <div className="px-3 py-2 border-b border-brand-grey-100 dark:border-brand-grey-600 flex items-center justify-between gap-2">
+          <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0">
+            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
+            <span className="text-brand-blue">{t('board.live_title')}</span>
+            <span className="text-brand-grey-900 dark:text-white truncate">{myStation.region_name || ''}</span>
+          </h2>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {freshCount > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-brand-grey-800 dark:text-brand-grey-200">
+                🆕 {freshCount}
+              </span>
+            )}
+            {onlineCount > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-brand-grey-800 dark:text-brand-grey-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                {onlineCount}
+              </span>
+            )}
+            {!loading && (
+              <span className="text-[10px] font-semibold text-brand-grey-500 dark:text-brand-grey-400">
+                {board?.total ?? 0}
+              </span>
+            )}
+            <button type="button" onClick={toggleSound}
+              title={soundOn ? t('board.sound_on') : t('board.sound_off')}
+              className="text-[10px] px-1 py-0.5 rounded border transition border-brand-grey-200 text-brand-grey-600 hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300"
+              aria-label={soundOn ? t('board.sound_on') : t('board.sound_off')}>
+              {soundOn ? '🔊' : '🔇'}
+            </button>
           </div>
-          {/* MANENO WAZI — mtu aelewe ni nini kinachoendelea hapa */}
-          <p className="text-[11px] font-semibold text-brand-grey-700 dark:text-brand-grey-300 mt-1">
-            {t('board.incoming_header')}
-          </p>
-          <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mt-0.5">
-            {t('board.incoming_header_hint')} — {isEdu ? t('label.category_education') : t('label.category_health')} · {t('board.subtitle')}
-          </p>
         </div>
+        {/* MSTARI MMOJA MREFU — mtu aelewe wazi */}
+        <p className="px-3 py-1.5 text-[11px] font-semibold text-brand-grey-800 dark:text-brand-grey-200">
+          {t('board.incoming_header')}
+        </p>
 
         {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
-        <div className="px-4 md:px-5 pt-4">
-          <label className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{t('board.filter_source')}</label>
-          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mt-1.5">
-            <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={regionSel}
+        <div className="px-3 pt-3 pb-3.5">
+          <label className="text-[11px] font-bold text-brand-grey-700 dark:text-brand-grey-300">{t('board.filter_source')}</label>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5 mt-1">
+            <select className="input text-xs py-1.5 w-full sm:flex-1 sm:min-w-[140px]" value={regionSel}
               onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); setPage(1); }}>
               {watchedIds.length > 0 && (
                 <option value="__all__">
@@ -331,7 +327,7 @@ export default function DashboardBoard() {
               ))}
             </select>
 
-            <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={districtId ?? ''}
+            <select className="input text-xs py-1.5 w-full sm:flex-1 sm:min-w-[140px]" value={districtId ?? ''}
               onChange={(e) => { setDistrictId(e.target.value ? Number(e.target.value) : undefined); setPage(1); }}
               disabled={singleRegion === undefined}
               title={t('board.filter_district_select')}>
@@ -341,7 +337,7 @@ export default function DashboardBoard() {
               ))}
             </select>
 
-            <select className="input w-full sm:flex-1 sm:min-w-[160px]" value={facilityId ?? ''}
+            <select className="input text-xs py-1.5 w-full sm:flex-1 sm:min-w-[140px]" value={facilityId ?? ''}
               onChange={(e) => { setFacilityId(e.target.value || undefined); setPage(1); }}
               disabled={districtId === undefined}
               title={t('board.filter_facility_select')}>
@@ -353,12 +349,12 @@ export default function DashboardBoard() {
               ))}
             </select>
           </div>
-          <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
-            <span className="text-xs font-medium text-brand-grey-700 dark:text-brand-grey-300">
+          <div className="flex items-center justify-between mt-1.5 flex-wrap gap-1.5">
+            <span className="text-[11px] font-medium text-brand-grey-600 dark:text-brand-grey-300">
               📍 {activeFilterLabel || t('board.all_regions')}
             </span>
             {hasFilter && (
-              <button type="button" onClick={clearFilters} className="text-xs text-brand-red hover:underline">
+              <button type="button" onClick={clearFilters} className="text-[11px] text-brand-red hover:underline">
                 {t('board.clear_filter')}
               </button>
             )}
@@ -366,26 +362,26 @@ export default function DashboardBoard() {
 
           {/* Kichujio cha masomo — wote / yote mawili / moja / wasio match + search */}
           {isEdu && (
-            <div className="mt-2.5 space-y-2">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-semibold text-brand-grey-500 dark:text-brand-grey-400 mr-1">{t('board.subjects')}:</span>
+            <div className="mt-2 space-y-1.5">
+              <div className="flex items-center gap-1 flex-wrap">
+                <span className="text-[11px] font-semibold text-brand-grey-600 dark:text-brand-grey-300 mr-1">{t('board.subjects')}:</span>
                 {([['off', t('board.subj_off')], ['all', t('board.subj_all')], ['any', t('board.subj_any')], ['none', t('board.subj_none')]] as const).map(([val, label]) => (
                   <button
                     key={val} type="button"
                     onClick={() => { setSubjectFilter(val); setPage(1); }}
                     aria-pressed={subjectFilter === val}
-                    className={`px-2.5 py-1 rounded-full border text-[11px] font-semibold transition ${
+                    className={`px-2 py-0.5 rounded-full border text-[11px] font-semibold transition ${
                       subjectFilter === val
-                        ? 'border-brand-gold bg-brand-gold text-white'
-                        : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-gold dark:border-brand-grey-600 dark:text-brand-grey-300'
+                        ? 'border-brand-grey-900 bg-brand-grey-900 text-white dark:border-white dark:bg-white dark:text-brand-grey-900'
+                        : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-grey-900 dark:border-brand-grey-600 dark:text-brand-grey-300'
                     }`}
                   >{label}</button>
                 ))}
               </div>
               <div className="flex items-center gap-1.5 max-w-sm">
-                <span className="text-brand-grey-400 text-sm">🔍</span>
+                <span className="text-brand-grey-400 text-xs">🔍</span>
                 <input
-                  className="input text-xs py-1.5"
+                  className="input text-xs py-1"
                   placeholder={t('board.subj_search_ph')}
                   value={subjectQ}
                   onChange={(e) => { setSubjectQ(e.target.value); setPage(1); }}
@@ -396,7 +392,7 @@ export default function DashboardBoard() {
         </div>
 
         {/* Stats chips (kiwango cha sasa) — HAKUNA "no data" kama data zipo! */}
-        <div className="px-4 md:px-5 pt-3 pb-4">
+        <div className="px-3 pt-2 pb-3">
           {loading ? (
             <Spinner label={t('action.loading')} className="py-2" />
           ) : chips.list.length === 0 ? (
@@ -427,7 +423,7 @@ export default function DashboardBoard() {
                       }
                       setPage(1);
                     }}
-                    className={`px-3 py-1.5 rounded-full border text-xs font-medium transition ${isActive ? color + ' ring-1 ring-brand-grey-900/30' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-grey-900 hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
+                    className={`px-2.5 py-1 rounded-full border text-[11px] font-medium transition ${isActive ? color + ' ring-1 ring-brand-grey-900/30' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-grey-900 hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
                   >
                     {label} <span className="font-bold">({c.count})</span>
                   </button>
