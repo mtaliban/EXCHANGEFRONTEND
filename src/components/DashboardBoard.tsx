@@ -269,44 +269,45 @@ export default function DashboardBoard() {
 
   return (
     <div className="space-y-4">
-      {/* ═══ LIVE PANEL: Wageni + Online (rangi tofauti) ═══ */}
-      <div className="card overflow-hidden">
-        <div className="p-4 md:p-5 border-b border-brand-grey-100 dark:border-brand-grey-200">
+      {/* ═══ LIVE PANEL — KISOMI: maneno wazi, rangi nyeusi/nyeupe tu ═══ */}
+      <div className="rounded-lg bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600">
+        <div className="px-3.5 py-2.5 border-b border-brand-grey-100 dark:border-brand-grey-600">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h2 className="font-bold text-lg text-brand-grey-900 dark:text-white flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse`} />
-              {t('board.live_title')} <span className="text-brand-orange">{myStation.region_name || ''}</span>
+            <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse`} />
+              {t('board.live_title')} <span className="text-brand-grey-900 dark:text-white font-bold">{myStation.region_name || ''}</span>
             </h2>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {freshCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-orange-50 text-brand-orange border border-brand-orange">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-800 dark:bg-brand-grey-800 dark:text-brand-grey-200">
                   🆕 {freshCount} {t('board.new_arrivals')}
                 </span>
               )}
               {onlineCount > 0 && (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-800 dark:bg-brand-grey-800 dark:text-brand-grey-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                   {onlineCount} {t('board.online_now')}
                 </span>
               )}
               {!loading && (
-                <span className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">
+                <span className="text-[10px] font-semibold text-brand-grey-500 dark:text-brand-grey-400">
                   {board?.total ?? 0} {t('board.total_people')}
                 </span>
               )}
               <button type="button" onClick={toggleSound}
                 title={soundOn ? t('board.sound_on') : t('board.sound_off')}
-                className={`text-xs px-2 py-1 rounded-full border transition ${soundOn ? 'border-brand-orange text-brand-orange hover:bg-brand-orange-50' : 'border-brand-grey-300 text-brand-grey-500 hover:bg-brand-grey-50'}`}
+                className={`text-[10px] px-1.5 py-0.5 rounded-full border transition ${soundOn ? 'border-brand-grey-300 text-brand-grey-700 dark:text-brand-grey-300' : 'border-brand-grey-200 text-brand-grey-500'}`}
                 aria-label={soundOn ? t('board.sound_on') : t('board.sound_off')}>
                 {soundOn ? '🔊' : '🔇'}
               </button>
             </div>
           </div>
-          <p className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
-            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isEdu ? 'bg-brand-orange-50 text-brand-orange' : 'bg-brand-blue-50 text-brand-blue'}`}>
-              {isEdu ? '👩🏫' : '🏥'} {isEdu ? t('label.category_education') : t('label.category_health')}
-            </span>
-            {t('board.subtitle')}
+          {/* MANENO WAZI — mtu aelewe ni nini kinachoendelea hapa */}
+          <p className="text-[11px] font-semibold text-brand-grey-700 dark:text-brand-grey-300 mt-1">
+            {t('board.incoming_header')}
+          </p>
+          <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mt-0.5">
+            {t('board.incoming_header_hint')} — {isEdu ? t('label.category_education') : t('label.category_health')} · {t('board.subtitle')}
           </p>
         </div>
 
@@ -353,7 +354,7 @@ export default function DashboardBoard() {
             </select>
           </div>
           <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
-            <span className="text-xs text-brand-blue">
+            <span className="text-xs font-medium text-brand-grey-700 dark:text-brand-grey-300">
               📍 {activeFilterLabel || t('board.all_regions')}
             </span>
             {hasFilter && (
@@ -411,9 +412,7 @@ export default function DashboardBoard() {
                   : districtId
                     ? c.district_id === districtId
                     : effectiveRegionIds.includes(c.region_id);
-                const color = facilityId ? 'border-brand-red text-brand-red bg-brand-red-50'
-                  : districtId ? 'border-brand-orange text-brand-orange bg-brand-orange-50'
-                  : 'border-brand-blue text-brand-blue bg-brand-blue-50';
+                const color = 'border-brand-grey-900 bg-brand-grey-900 text-white dark:border-white dark:bg-white dark:text-brand-grey-900';
                 return (
                   <button key={label} type="button"
                     onClick={() => {
@@ -428,7 +427,7 @@ export default function DashboardBoard() {
                       }
                       setPage(1);
                     }}
-                    className={`px-3 py-1.5 rounded-full border text-xs font-medium transition ${isActive ? color + ' ring-2' : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-grey-400'}`}
+                    className={`px-3 py-1.5 rounded-full border text-xs font-medium transition ${isActive ? color + ' ring-1 ring-brand-grey-900/30' : 'border-brand-grey-300 text-brand-grey-700 hover:border-brand-grey-900 hover:bg-brand-grey-50 dark:border-brand-grey-600 dark:text-brand-grey-300'}`}
                   >
                     {label} <span className="font-bold">({c.count})</span>
                   </button>
@@ -523,33 +522,33 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
   }, [c, me, t]);
 
   return (
-    <div className={`card p-3 md:p-4 flex flex-col gap-2.5 hover:shadow-md transition group ${
-      fresh ? 'border-brand-orange ring-2 ring-brand-orange/30 animate-[requestPing_1.5s_ease-in-out]'
-      : c.online ? 'border-green-300 bg-green-50/60 dark:bg-green-900/10 dark:border-green-700/50'
+    <div className={`rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-3 md:p-3.5 flex flex-col gap-2 hover:border-brand-grey-400 dark:hover:border-brand-grey-500 transition group ${
+      fresh ? 'border-brand-grey-900 dark:border-white'
+      : c.online ? 'border-brand-grey-300 dark:border-brand-grey-600'
       : ''}`}>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         <div className="relative flex-shrink-0">
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold text-base md:text-lg">
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-sm md:text-base font-bold text-brand-grey-900 dark:text-white">
             {initial}
           </div>
           {c.online && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-400 border-2 border-white dark:border-brand-grey-100" />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border border-white dark:border-brand-grey-900" />
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-brand-grey-900 dark:text-white break-words min-w-0 leading-snug">{c.full_name}</span>
+            <span className="font-semibold text-brand-grey-900 dark:text-white break-words min-w-0 leading-snug text-[13px]">{c.full_name}</span>
             {fresh && (
-              <span className="text-[10px] font-bold text-brand-orange bg-brand-orange-50 px-1.5 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite] ring-2 ring-brand-orange/40">🆕 {t('board.new_badge')}</span>
+              <span className="text-[10px] font-bold text-brand-grey-900 dark:text-white bg-brand-grey-100 dark:bg-brand-grey-800 px-1.5 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">🆕 {t('board.new_badge')}</span>
             )}
-            {c.online && <span className="text-[10px] font-bold text-green-500">● {t('board.live')}</span>}
+            {c.online && <span className="text-[10px] font-bold text-green-600">● {t('board.live')}</span>}
           </div>
           {/* Idara husika: Afya / Elimu + kada */}
           <div className="flex items-center gap-1 flex-wrap mt-0.5">
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isEdu ? 'bg-brand-orange-50 text-brand-orange' : 'bg-brand-blue-50 text-brand-blue'}`}>
+            <span className="text-[10px] font-semibold text-brand-grey-500 dark:text-brand-grey-400">
               {isEdu ? '👩🏫' : '🏥'} {isEdu ? t('label.category_education') : t('label.category_health')}
             </span>
-            <span className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">
+            <span className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 truncate">
               {c.cadre_display || c.cadre_code}
             </span>
           </div>
@@ -557,12 +556,12 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
       </div>
 
       {from && (
-        <div className="text-xs bg-brand-grey-50 dark:bg-brand-grey-100 rounded-lg px-2.5 py-1.5 space-y-0.5">
-          <div className="text-brand-grey-500 break-words"><b>{t('board.from')}:</b> {from.district_name || ''} {from.region_name}</div>
+        <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-0.5">
+          <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words"><b>{t('board.from')}:</b> {from.district_name || ''} {from.region_name}</div>
           {to && (
-            <div className="text-brand-orange break-words"><b>{t('board.wants_go')}:</b> {to.district_name || to.region_name} ({to.region_name})</div>
+            <div className="text-brand-grey-800 dark:text-brand-grey-200 break-words"><b>{t('board.wants_go')}:</b> {to.district_name || to.region_name} ({to.region_name})</div>
           )}
-          <div className="text-green-600 font-bold">↓ {t('board.coming_to_you')}</div>
+          <div className="text-green-700 dark:text-green-500 font-bold">↓ {t('board.coming_to_you')}</div>
         </div>
       )}
 
@@ -570,13 +569,13 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
           <span className="text-brand-grey-500 font-semibold">{t('board.subjects')}:</span>
           {anySubjectMatch && (
-            <span className="px-1.5 py-0.5 rounded-full bg-brand-gold text-white font-bold">🎯 {t('board.subjects_match')}</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-brand-grey-900 text-white dark:bg-white dark:text-brand-grey-900 font-bold">🎯 {t('board.subjects_match')}</span>
           )}
           {c.subjects.map((s: string) => {
             const matched = mySubjects.includes(s);
             return (
               <span key={s} title={matched ? t('board.subject_match') : undefined}
-                className={`px-1.5 py-0.5 rounded-full font-semibold ${anySubjectMatch ? 'bg-brand-gold text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
+                className={`px-1.5 py-0.5 rounded-full font-semibold ${anySubjectMatch ? 'bg-brand-grey-800 text-white dark:bg-brand-grey-200 dark:text-brand-grey-900' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
                 {s}{matched ? ' ✓' : ''}
               </span>
             );
@@ -585,7 +584,7 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
       )}
 
       {c.phone_primary && (
-        <a href={`tel:${c.phone_primary}`} className="text-xs sm:text-sm text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
+        <a href={`tel:${c.phone_primary}`} className="text-[11px] sm:text-xs text-brand-grey-800 dark:text-brand-grey-200 font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
           📞 {c.phone_primary}
         </a>
       )}
