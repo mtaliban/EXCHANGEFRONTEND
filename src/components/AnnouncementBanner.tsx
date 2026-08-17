@@ -55,8 +55,8 @@ export default function AnnouncementBanner() {
               <div className="text-sm font-extrabold text-brand-grey-900 dark:text-white">
                 {a.title}
               </div>
-              {/* Ujumbe — bold kidogo, nyeusi, line-clamp inapokuwa mrefu */}
-              <div className={`text-[13px] font-medium text-brand-grey-800 dark:text-brand-grey-200 mt-1 whitespace-pre-wrap break-words ${isOpen ? '' : 'line-clamp-2'}`}>
+              {/* Ujumbe — bold kidogo, nyeusi, inakatwa nusu ikiwa mrefu (Soma zaidi inafungua) */}
+              <div className={`text-[13px] font-medium text-brand-grey-800 dark:text-brand-grey-200 mt-1 whitespace-pre-wrap break-words ${isOpen ? '' : 'line-clamp-1'}`}>
                 {a.message}
               </div>
               <div className="flex items-center gap-3 mt-1.5 flex-wrap">
@@ -76,8 +76,9 @@ export default function AnnouncementBanner() {
             </div>
             <button
               onClick={() => dismiss(a.announcement_id)}
-              className="text-xs px-2 py-0.5 rounded-full border border-brand-grey-400 text-brand-grey-600 dark:text-brand-grey-300 hover:bg-brand-grey-900 hover:text-white transition flex-shrink-0"
+              className="text-brand-grey-400 hover:text-brand-red transition flex-shrink-0 leading-none px-1"
               title="Funga tangazo"
+              aria-label="Funga tangazo"
             >
               ✕
             </button>

@@ -540,7 +540,7 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-brand-grey-900 dark:text-white break-words min-w-0 leading-snug">{c.full_name}</span>
             {fresh && (
-              <span className="text-[10px] font-bold text-brand-orange bg-brand-orange-50 px-1.5 py-0.5 rounded-full">🆕 {t('board.new_badge')}</span>
+              <span className="text-[10px] font-bold text-brand-orange bg-brand-orange-50 px-1.5 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite] ring-2 ring-brand-orange/40">🆕 {t('board.new_badge')}</span>
             )}
             {c.online && <span className="text-[10px] font-bold text-green-500">● {t('board.live')}</span>}
           </div>
