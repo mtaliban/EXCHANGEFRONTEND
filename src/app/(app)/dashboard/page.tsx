@@ -24,7 +24,7 @@ export default function DashboardPage() {
         </div>
         <div className="min-w-0">
           <h1 className="text-[13px] font-bold text-brand-grey-900 dark:text-white leading-tight break-words">
-            {t('dash.welcome')}, {user?.full_name?.split(' ')[0]} 👋
+            {t('dash.welcome')}, {user?.full_name?.split(' ')[0]}
           </h1>
           {myStation?.district_name && (
             <span className="text-[11px] font-medium text-brand-grey-500 dark:text-brand-grey-400 leading-tight">
