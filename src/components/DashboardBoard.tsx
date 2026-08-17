@@ -288,9 +288,9 @@ export default function DashboardBoard() {
         </div>
       </div>
       {/* Maelezo mafupi — mtu aelewe MOYO WA INTERFACE: hapa chini ni wanaokuja mkoa wako */}
-      <p className="text-[11px] font-semibold text-brand-grey-700 dark:text-brand-grey-300">
+      <p className="text-[12px] font-semibold text-brand-grey-900 dark:text-brand-grey-200 leading-snug">
         {t('board.incoming_header')} <span className="text-brand-blue font-bold">{myStation.region_name || ''}</span> —{' '}
-        {t('board.incoming_header_hint_short')}
+        <span className="text-brand-grey-600 dark:text-brand-grey-400 font-medium">{t('board.incoming_header_hint_short')}</span>
       </p>
 
       {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
@@ -522,7 +522,9 @@ function BoardCard({ c, now, lang, mySubjects, me }: { c: any; now: number; lang
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-brand-grey-900 dark:text-white break-words min-w-0 leading-snug text-[13px]">{c.full_name}</span>
             {fresh && (
-              <span className="text-[10px] font-bold text-brand-blue bg-brand-blue-50 px-1.5 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">🆕 {t('board.new_badge')}</span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-white bg-brand-blue px-2 py-0.5 rounded-full shadow-sm animate-[newPulse_1s_ease-in-out_infinite] ring-1 ring-brand-blue/30">
+                🆕 {t('board.new_badge')}
+              </span>
             )}
             {c.online && <span className="text-[10px] font-bold text-green-600">● {t('board.live')}</span>}
           </div>
