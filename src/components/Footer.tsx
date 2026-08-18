@@ -27,7 +27,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-brand-navy text-brand-grey-100 mt-8">
+    <footer className="bg-white dark:bg-brand-grey-900 border-t border-brand-grey-200 dark:border-brand-grey-700 mt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         {/* ── Desktop: grid ya 4 ── */}
         <div className="hidden md:grid md:grid-cols-4 gap-8">
@@ -36,18 +36,18 @@ export default function Footer() {
               <div className="w-8 h-8 rounded-lg bg-brand-blue flex items-center justify-center text-white font-bold text-sm">
                 KV
               </div>
-              <span className="font-bold text-white">Kubadilishana Vituo</span>
+              <span className="font-bold text-brand-grey-900 dark:text-white">Kubadilishana Vituo</span>
             </div>
-            <p className="text-sm text-brand-grey-300 leading-relaxed">{t('footer.desc')}</p>
+            <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">{t('footer.desc')}</p>
           </div>
 
           <div>
-            <h4 className="font-semibold text-white text-sm mb-3">{t('footer.pages')}</h4>
+            <h4 className="font-semibold text-brand-grey-900 dark:text-white text-sm mb-3">{t('footer.pages')}</h4>
             <ul className="space-y-2 text-sm">
               {pagesLinks.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="flex items-center gap-2 text-brand-grey-300 hover:text-white transition">
-                    <l.icon size={15} className="text-brand-blue-500 flex-shrink-0" />
+                  <Link href={l.href} className="flex items-center gap-2 text-brand-grey-600 dark:text-brand-grey-300 hover:text-brand-blue transition">
+                    <l.icon size={15} className="text-brand-blue flex-shrink-0" />
                     {l.label}
                   </Link>
                 </li>
@@ -56,12 +56,12 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-white text-sm mb-3">{t('footer.account')}</h4>
+            <h4 className="font-semibold text-brand-grey-900 dark:text-white text-sm mb-3">{t('footer.account')}</h4>
             <ul className="space-y-2 text-sm">
               {accountLinks.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="flex items-center gap-2 text-brand-grey-300 hover:text-white transition">
-                    <l.icon size={15} className="text-brand-blue-500 flex-shrink-0" />
+                  <Link href={l.href} className="flex items-center gap-2 text-brand-grey-600 dark:text-brand-grey-300 hover:text-brand-blue transition">
+                    <l.icon size={15} className="text-brand-blue flex-shrink-0" />
                     {l.label}
                   </Link>
                 </li>
@@ -70,14 +70,14 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-white text-sm mb-3">{t('footer.contact_title')}</h4>
+            <h4 className="font-semibold text-brand-grey-900 dark:text-white text-sm mb-3">{t('footer.contact_title')}</h4>
             <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2 text-brand-grey-300">
-                <MessageCircle size={15} className="text-brand-blue-500 flex-shrink-0" />
+              <li className="flex items-center gap-2 text-brand-grey-600 dark:text-brand-grey-300">
+                <MessageCircle size={15} className="text-brand-blue flex-shrink-0" />
                 WhatsApp: +255 625 607 088
               </li>
-              <li className="flex items-center gap-2 text-brand-grey-300">
-                <Phone size={15} className="text-brand-blue-500 flex-shrink-0" />
+              <li className="flex items-center gap-2 text-brand-grey-600 dark:text-brand-grey-300">
+                <Phone size={15} className="text-brand-blue flex-shrink-0" />
                 Simu: 0763 795 801
               </li>
             </ul>
@@ -91,13 +91,13 @@ export default function Footer() {
               <div className="w-7 h-7 rounded-lg bg-brand-blue flex items-center justify-center text-white font-bold text-xs">
                 KV
               </div>
-              <span className="font-bold text-white text-sm">Kubadilishana Vituo</span>
+              <span className="font-bold text-brand-grey-900 dark:text-white text-sm">Kubadilishana Vituo</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <a href="https://wa.me/255625607088" aria-label="WhatsApp" className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+              <a href="https://wa.me/255625607088" aria-label="WhatsApp" className="w-8 h-8 rounded-lg bg-brand-blue-50 flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition">
                 <MessageCircle size={16} />
               </a>
-              <a href="tel:+255763795801" aria-label="Simu" className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+              <a href="tel:+255763795801" aria-label="Simu" className="w-8 h-8 rounded-lg bg-brand-blue-50 flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition">
                 <Phone size={16} />
               </a>
             </div>
@@ -105,15 +105,15 @@ export default function Footer() {
 
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-[13px]">
             {[...pagesLinks, ...accountLinks].map((l) => (
-              <Link key={l.href} href={l.href} className="flex items-center gap-1.5 text-brand-grey-300 hover:text-white transition">
-                <l.icon size={13} className="text-brand-blue-500 flex-shrink-0" />
+              <Link key={l.href} href={l.href} className="flex items-center gap-1.5 text-brand-grey-600 dark:text-brand-grey-300 hover:text-brand-blue transition">
+                <l.icon size={13} className="text-brand-blue flex-shrink-0" />
                 {l.label}
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-6 pt-4 text-center text-xs text-brand-grey-400">
+        <div className="border-t border-brand-grey-200 dark:border-brand-grey-700 mt-6 pt-4 text-center text-xs text-brand-grey-500 dark:text-brand-grey-400">
           © {new Date().getFullYear()} Kubadilishana Vituo. {t('footer.rights')}
         </div>
       </div>
