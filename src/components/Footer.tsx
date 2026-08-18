@@ -84,9 +84,9 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* ── Simu: compact — links zote mstari mmoja ── */}
+        {/* ── Simu: grid ya safu 2 zilizopangiliwa (Kurasa | Akaunti) ── */}
         <div className="md:hidden">
-          <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center justify-between gap-2 mb-4">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-brand-blue flex items-center justify-center text-white font-bold text-xs">
                 KV
@@ -103,13 +103,37 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-[13px]">
-            {[...pagesLinks, ...accountLinks].map((l) => (
-              <Link key={l.href} href={l.href} className="flex items-center gap-1.5 text-brand-grey-600 dark:text-brand-grey-300 hover:text-brand-blue transition">
-                <l.icon size={13} className="text-brand-blue flex-shrink-0" />
-                {l.label}
-              </Link>
-            ))}
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-semibold text-brand-grey-900 dark:text-white text-xs uppercase tracking-wide mb-2">
+                {t('footer.pages')}
+              </h4>
+              <ul className="space-y-2 text-[13px]">
+                {pagesLinks.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="flex items-center gap-1.5 text-brand-grey-600 dark:text-brand-grey-300 hover:text-brand-blue transition">
+                      <l.icon size={13} className="text-brand-blue flex-shrink-0" />
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-brand-grey-900 dark:text-white text-xs uppercase tracking-wide mb-2">
+                {t('footer.account')}
+              </h4>
+              <ul className="space-y-2 text-[13px]">
+                {accountLinks.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="flex items-center gap-1.5 text-brand-grey-600 dark:text-brand-grey-300 hover:text-brand-blue transition">
+                      <l.icon size={13} className="text-brand-blue flex-shrink-0" />
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
