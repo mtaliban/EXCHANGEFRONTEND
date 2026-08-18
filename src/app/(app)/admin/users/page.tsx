@@ -363,21 +363,25 @@ export default function AdminUsersPage() {
             </h2>
             <div className="flex items-center gap-2">
               <button onClick={purgeAllTrash} disabled={trash.length === 0}
-                className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition disabled:opacity-40">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-red text-white font-semibold hover:bg-brand-red-600 transition disabled:opacity-40 shadow-sm">
                 <Trash2 size={13} /> {t('admin.trash_purge_all')}
               </button>
-              <button onClick={() => setShowTrash(false)} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-brand-grey-300 text-brand-grey-600 hover:bg-brand-grey-50 transition">
+              <button onClick={() => setShowTrash(false)} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-brand-grey-300 text-brand-grey-600 hover:bg-brand-grey-50 transition">
                 <XCircle size={13} /> {t('admin.cancel')}
               </button>
             </div>
           </div>
           {trash.length === 0 ? (
-            <div className="p-8 text-center text-sm text-brand-grey-500">{t('admin.trash_empty')}</div>
+            <div className="p-8 text-center">
+              <Trash2 size={32} className="mx-auto text-brand-grey-300 mb-2" />
+              <p className="text-sm text-brand-grey-500 font-medium">{t('admin.trash_empty')}</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[640px]">
                 <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
                   <tr>
+                    <th className="px-3 py-2 text-left w-8 text-center">#</th>
                     <th className="px-3 py-2 text-left">{t('admin.col_name')}</th>
                     <th className="px-3 py-2 text-left">{t('admin.col_phone')}</th>
                     <th className="px-3 py-2 text-left">{t('admin.col_cadre')}</th>
@@ -386,19 +390,20 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-grey-100">
-                  {trash.map((u: any) => (
+                  {trash.map((u: any, i: number) => (
                     <tr key={u._id} className="hover:bg-brand-grey-50">
+                      <td className="px-3 py-2 text-center text-xs font-bold text-brand-grey-400">{i + 1}</td>
                       <td className="px-3 py-2 font-medium">{u.full_name}</td>
-                      <td className="px-3 py-2 text-brand-blue">{u.phone_primary || '—'}</td>
-                      <td className="px-3 py-2 text-xs">{u.cadre_code || (u.is_admin ? <span className="inline-flex items-center gap-1"><ShieldCheck size={12} /> Admin</span> : '—')}</td>
+                      <td className="px-3 py-2 text-brand-blue text-xs">{u.phone_primary || '—'}</td>
+                      <td className="px-3 py-2 text-xs"><span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-grey-100 text-brand-grey-600 font-semibold"><BookOpen size={10} />{u.cadre_code || '—'}</span></td>
                       <td className="px-3 py-2 text-xs">{u.current_station?.region_name || '—'}</td>
                       <td className="px-3 py-2 text-right whitespace-nowrap">
                         <button onClick={() => restore(u)}
-                          className="inline-flex items-center gap-1 text-green-600 text-xs px-2 hover:underline font-semibold">
+                          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-green-50 text-green-700 font-semibold border border-green-200 hover:bg-green-100 transition">
                           <RotateCcw size={13} /> {t('admin.trash_restore')}
                         </button>
                         <button onClick={() => purge(u)}
-                          className="inline-flex items-center gap-1 text-brand-red text-xs px-2 hover:underline">
+                          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition ml-1.5">
                           <Trash2 size={13} /> {t('admin.trash_permanent')}
                         </button>
                       </td>
