@@ -5,11 +5,12 @@ import { adminListFeedback, adminReplyFeedback, adminDeleteFeedback } from '@/li
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, Phone, Trash2, Send, CheckCircle2, AlertTriangle, Clock, MessageSquare, ShieldCheck } from 'lucide-react';
 import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
 
 type Status = '' | 'open' | 'replied';
+const PAGE_SIZE = 10;
 
 export default function AdminFeedbackPage() {
   const t = useT();
@@ -18,7 +19,8 @@ export default function AdminFeedbackPage() {
   const [q, setQ] = useState('');
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [replying, setReplying] = useState('');
-  const [flash, setFlash] = useState('');
+  const [flash, setFlash] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+  const [page, setPage] = useState(1);
 
   const { subscribe } = useLive();
 
@@ -26,13 +28,13 @@ export default function AdminFeedbackPage() {
     try { setData(await adminListFeedback(status, q)); } catch {}
   }
   useEffect(() => { load(); }, [status, q]);
+  useEffect(() => { setPage(1); }, [status, q]);
 
-  // REAL-TIME: maoni mapya yanafika PAPO HAPO bila refresh (WS feedback.new).
   useEffect(() => {
     const un = subscribe('notification', (p: any) => {
       if (p.type === 'feedback.new') {
-        setFlash('💬 Maoni mapya yamefika!');
-        setTimeout(() => setFlash(''), 4000);
+        setFlash({ type: 'success', msg: 'Maoni mapya yamefika' });
+        setTimeout(() => setFlash(null), 4000);
         load();
       }
     });
@@ -46,11 +48,11 @@ export default function AdminFeedbackPage() {
     setReplying(f.id);
     try {
       await adminReplyFeedback(f.id, text);
-      setFlash('✓ Jibu limetumwa kwa mtumiaji — anapata papo hapo.');
+      setFlash({ type: 'success', msg: 'Jibu limetumwa kwa mtumiaji' });
       setReplyText((prev) => ({ ...prev, [f.id]: '' }));
       load();
     } catch (e: any) {
-      setFlash(`✗ ${e?.response?.data?.detail || 'Imeshindikana'}`);
+      setFlash({ type: 'error', msg: e?.response?.data?.detail || 'Imeshindikana' });
     } finally { setReplying(''); }
   }
 
@@ -58,29 +60,31 @@ export default function AdminFeedbackPage() {
     if (!(await askConfirm({ title: 'Futa maoni haya?', danger: true }))) return;
     try {
       await adminDeleteFeedback(f.id);
-      setFlash('✓ Yamefutwa.');
+      setFlash({ type: 'success', msg: 'Yamefutwa' });
       load();
     } catch (e: any) {
-      setFlash(`✗ ${e?.response?.data?.detail || 'Imeshindikana'}`);
+      setFlash({ type: 'error', msg: e?.response?.data?.detail || 'Imeshindikana' });
     }
   }
 
   if (!data) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
   const counts = data.counts || { open: 0, replied: 0 };
-  const items = data.items || [];
+  const allItems = data.items || [];
+  const totalPages = Math.max(1, Math.ceil(allItems.length / PAGE_SIZE));
+  const items = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
-            <ClipboardList size={24} className="text-brand-blue" />
+            <ClipboardList size={22} className="text-brand-blue" />
             {t('fbadmin.title')}
           </h1>
           <p className="text-brand-grey-500 text-sm mt-1">{t('fbadmin.subtitle')}</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <select className="input w-auto" value={status} onChange={(e) => setStatus(e.target.value as Status)}>
             <option value="">{t('fbadmin.all')} ({data.total})</option>
             <option value="open">{t('fbadmin.open')} ({counts.open})</option>
@@ -91,37 +95,51 @@ export default function AdminFeedbackPage() {
         </div>
       </div>
 
-      {flash && <div className={`rounded-lg px-3 py-2 text-sm ${flash.startsWith('✓') ? 'bg-brand-blue-50 text-brand-blue' : 'bg-brand-red-50 text-brand-red'}`}>{flash}</div>}
+      {flash && (
+        <div className={`flex items-center gap-2 text-xs font-semibold rounded-full px-3 py-1.5 ${flash.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-brand-red-50 text-brand-red border border-brand-red-200'}`}>
+          {flash.type === 'success' ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+          {flash.msg}
+        </div>
+      )}
 
       {items.length === 0 ? (
-        <div className="card text-center py-10 text-brand-grey-500 text-sm">{t('fbadmin.empty')}</div>
+        <div className="card text-center py-10">
+          <MessageSquare size={28} className="mx-auto text-brand-grey-300 mb-2" />
+          <p className="text-brand-grey-500 text-sm font-medium">{t('fbadmin.empty')}</p>
+        </div>
       ) : (
         <div className="space-y-2.5">
-          {items.map((f: any) => (
-            <div key={f.id} className="card">
+          {items.map((f: any, i: number) => (
+            <div key={f.id} className="bg-white rounded-xl border border-brand-grey-200 p-4">
               <div className="flex items-center justify-between gap-2 flex-wrap mb-1.5">
                 <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[10px] font-bold text-brand-grey-400 w-5 text-center">{(page - 1) * PAGE_SIZE + i + 1}</span>
                   <span className="font-bold text-brand-grey-900 dark:text-white text-sm truncate">{f.user_name || '—'}</span>
-                  {f.user_phone && <a href={`tel:${f.user_phone}`} className="text-xs text-brand-blue hover:underline whitespace-nowrap">📞 {f.user_phone}</a>}
+                  {f.user_phone && <a href={`tel:${f.user_phone}`} className="inline-flex items-center gap-1 text-[11px] text-brand-blue hover:underline whitespace-nowrap"><Phone size={11} /> {f.user_phone}</a>}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    f.status === 'replied' ? 'bg-green-100 text-green-700' : 'bg-brand-gold-100 text-brand-gold-600'
+                <div className="flex items-center gap-1.5">
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    f.status === 'replied' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'
                   }`}>
-                    {f.status === 'replied' ? '✓ ' + t('fbadmin.replied') : t('fbadmin.open')}
+                    {f.status === 'replied' ? <><CheckCircle2 size={10} /> {t('fbadmin.replied')}</> : <><Clock size={10} /> {t('fbadmin.open')}</>}
                   </span>
-                  <button onClick={() => del(f)} className="text-brand-red text-xs hover:underline">🗑</button>
+                  <button onClick={() => del(f)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red border border-brand-red-200 font-medium hover:bg-brand-red-100 transition">
+                    <Trash2 size={10} /> Futa
+                  </button>
                 </div>
               </div>
               <div className="text-sm font-semibold text-brand-grey-800 dark:text-brand-grey-200">{f.subject}</div>
               <p className="text-sm text-brand-grey-700 dark:text-brand-grey-300 whitespace-pre-wrap break-words mt-0.5">{f.message}</p>
-              <div className="text-[11px] text-brand-grey-400 mt-1.5">
+              <div className="text-[11px] text-brand-grey-400 mt-1.5 flex items-center gap-1">
+                <Clock size={10} />
                 {f.created_at ? (parseServerDate(f.created_at) || new Date()).toLocaleString('sw-TZ') : ''}
               </div>
 
               {f.admin_reply && (
                 <div className="mt-2 rounded-lg bg-brand-blue-50 dark:bg-brand-blue-100/10 p-2.5">
-                  <div className="text-[10px] font-bold text-brand-blue uppercase tracking-wide mb-0.5">👑 {t('fbadmin.your_reply')}</div>
+                  <div className="text-[10px] font-bold text-brand-blue uppercase tracking-wide mb-0.5 flex items-center gap-1">
+                    <ShieldCheck size={11} /> {t('fbadmin.your_reply')}
+                  </div>
                   <div className="text-sm text-brand-grey-800 dark:text-brand-grey-200 whitespace-pre-wrap break-words">{f.admin_reply}</div>
                 </div>
               )}
@@ -131,12 +149,27 @@ export default function AdminFeedbackPage() {
                   onChange={(e) => setReplyText((prev) => ({ ...prev, [f.id]: e.target.value }))}
                   placeholder={t('fbadmin.reply_ph')} />
                 <button onClick={() => reply(f)} disabled={replying === f.id || !(replyText[f.id] || '').trim()}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition disabled:opacity-40">
-                  {replying === f.id ? '...' : t('fbadmin.reply_btn')}
+                  className="btn-primary !text-[11px] !px-3 !py-1.5 flex items-center gap-1">
+                  {replying === f.id ? '...' : <><Send size={11} /> {t('fbadmin.reply_btn')}</>}
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <button disabled={page <= 1} onClick={() => setPage(page - 1)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition text-sm font-semibold">
+            ←
+          </button>
+          <span className="text-xs font-bold text-brand-grey-500 px-2">{page} / {totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition text-sm font-semibold">
+            →
+          </button>
         </div>
       )}
     </div>

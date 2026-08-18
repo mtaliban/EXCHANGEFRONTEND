@@ -14,6 +14,7 @@ import { useT } from '@/lib/i18n';
 import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
 import { emitDataChanged } from '@/lib/api';
+import { Eye, Pencil, Trash2, UserX, Database } from 'lucide-react';
 
 type Tab = 'departments' | 'subjects' | 'cadres' | 'regions' | 'districts' | 'facilities';
 
@@ -155,11 +156,11 @@ function RowAction({ onView, onEdit, onDelete }: { onView?: () => void; onEdit: 
     <span className="whitespace-nowrap inline-flex items-center">
       {onView && (
         <button onClick={onView} className="text-brand-grey-600 text-xs px-2 hover:underline" title={t('action.view')}>
-          👁
+          <Eye size={14} />
         </button>
       )}
-      <button onClick={onEdit} className="text-brand-blue text-xs px-2 hover:underline">✎</button>
-      <button onClick={onDelete} className="text-brand-red text-xs px-2 hover:underline">🗑</button>
+      <button onClick={onEdit} className="text-brand-blue text-xs px-2 hover:underline"><Pencil size={13} /></button>
+      <button onClick={onDelete} className="text-brand-red text-xs px-2 hover:underline"><Trash2 size={13} /></button>
     </span>
   );
 }
@@ -188,7 +189,7 @@ function ViewItemModal({ title, icon, fields, onClose, onEdit }: {
         </div>
         <div className="flex gap-2 pt-3 border-t">
           <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
-          <button onClick={onEdit} className="btn-primary px-5">✎ {t('action.edit')}</button>
+          <button onClick={onEdit} className="btn-primary px-5 flex items-center gap-1.5"><Pencil size={14} /> {t('action.edit')}</button>
         </div>
       </div>
     </div>
@@ -240,7 +241,7 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2 items-center">
         <p className="text-xs text-brand-grey-500">{t('data.departments_hint')}</p>
-        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_department')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
@@ -262,7 +263,7 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
                 <td className="px-3 py-2 font-medium">{d.name}</td>
                 <td className="px-3 py-2">
                   {d.status === 'disabled'
-                    ? <span className="text-xs px-2 py-0.5 rounded bg-brand-red-50 text-brand-red font-semibold">🚫 {t('admin.status_disabled')}</span>
+                    ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-brand-red-50 text-brand-red font-semibold"><UserX size={11} /> {t('admin.status_disabled')}</span>
                     : <span className="text-xs px-2 py-0.5 rounded bg-green-50 text-green-600 font-semibold">● {t('admin.status_active')}</span>}
                 </td>
                 <td className="px-3 py-2 text-xs">—</td>
@@ -292,7 +293,7 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
           fields={[
             { label: t('data.code'), value: viewing.code },
             { label: t('data.name'), value: viewing.name },
-            { label: t('admin.status'), value: viewing.status === 'disabled' ? '🚫 ' + t('admin.status_disabled') : '● ' + t('admin.status_active') },
+            { label: t('admin.status'), value: viewing.status === 'disabled' ? t('admin.status_disabled') : t('admin.status_active') },
             { label: t('admin.col_cadre'), value: '—' },
             { label: t('admin.col_users'), value: '—' },
           ]}
@@ -346,7 +347,7 @@ function DepartmentModal({ initial, onClose, onSaved }: { initial: any; onClose:
       <div><label className="label">{t('admin.status')}</label>
         <select className="input" value={status} onChange={(e) => setStatus(e.target.value)} disabled={busy}>
           <option value="active">{t('admin.status_active')}</option>
-          <option value="disabled">🚫 {t('admin.status_disabled')} ({t('data.department_suspend')})</option>
+          <option value="disabled">{t('admin.status_disabled')} ({t('data.department_suspend')})</option>
         </select>
       </div>
     </ModalShell>
@@ -378,7 +379,7 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
           <option value="Primary">Primary (Msingi)</option>
           <option value="Secondary">Secondary (Sekondari)</option>
         </select>
-        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_subject')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
@@ -493,7 +494,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_cadre')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
@@ -529,7 +530,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
       {viewing && (
         <ViewItemModal
           title={viewing.display_name}
-          icon="👨‍🏫"
+          icon="teacher"
           onClose={() => setViewing(null)}
           onEdit={() => { setEditing(viewing); setViewing(null); }}
           fields={[
@@ -634,7 +635,7 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_region')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
@@ -726,7 +727,7 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
           <option value="">{t('data.all_regions')}</option>
           {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
-        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_district')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
@@ -892,7 +893,7 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
           {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
         <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
-        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">📊 {data.length} {t('data.total')}</span>
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_facility')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">

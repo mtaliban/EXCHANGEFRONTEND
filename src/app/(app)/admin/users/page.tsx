@@ -289,6 +289,7 @@ export default function AdminUsersPage() {
         <table className="w-full text-sm min-w-[760px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>
+              <th className="px-3 py-2 text-center w-8">#</th>
               <th className="px-3 py-2 text-left w-10">
                 <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll}
                   className="w-4 h-4 accent-brand-blue" aria-label={t('admin.select_all')} />
@@ -303,8 +304,9 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-brand-grey-100">
-            {data?.users?.map((u: any) => (
+            {data?.users?.map((u: any, i: number) => (
               <tr key={u._id} className={`hover:bg-brand-grey-50 ${u.status === 'disabled' ? 'opacity-50' : ''}`}>
+                <td className="px-3 py-2 text-center text-xs font-bold text-brand-grey-400">{i + 1}</td>
                 <td className="px-3 py-2">
                   <input type="checkbox" checked={selected.has(u._id)}
                     onChange={() => toggleOne(u._id)} disabled={u.is_admin}

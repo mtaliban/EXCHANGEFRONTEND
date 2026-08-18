@@ -6,7 +6,9 @@ import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { useLive } from '@/lib/liveSocket';
 import Spinner from '@/components/Spinner';
-import { Megaphone, X, Clock, Users, Inbox, ChevronDown, ChevronUp } from 'lucide-react';
+import { Megaphone, X, Clock, Users, Inbox, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const PAGE_SIZE = 5;
 
 export default function AnnouncementsPage() {
   const t = useT();
@@ -14,6 +16,7 @@ export default function AnnouncementsPage() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedHistory, setExpandedHistory] = useState<Set<string>>(new Set());
+  const [historyPage, setHistoryPage] = useState(1);
 
   async function reload() {
     try {
@@ -113,14 +116,14 @@ export default function AnnouncementsPage() {
         ))}
       </div>
 
-      {/* History */}
+      {/* History — paginated */}
       {history.length > 0 && (
         <>
           <h2 className="text-[11px] font-bold uppercase tracking-wider text-brand-grey-500 mb-2 mt-8 flex items-center gap-1.5">
             <Clock size={13} /> {t('annuser.past')} ({history.length})
           </h2>
           <div className="space-y-2">
-            {history.map((n) => (
+            {history.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE).map((n) => (
               <div key={n.notification_id} className="bg-brand-grey-50 border border-brand-grey-200 rounded-xl overflow-hidden">
                 <button
                   onClick={() => toggleHistory(n.notification_id)}
@@ -150,6 +153,20 @@ export default function AnnouncementsPage() {
               </div>
             ))}
           </div>
+          {/* History pagination */}
+          {history.length > PAGE_SIZE && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button disabled={historyPage <= 1} onClick={() => setHistoryPage(historyPage - 1)}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-xs font-bold text-brand-grey-500 px-2">{historyPage} / {Math.ceil(history.length / PAGE_SIZE)}</span>
+              <button disabled={historyPage >= Math.ceil(history.length / PAGE_SIZE)} onClick={() => setHistoryPage(historyPage + 1)}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

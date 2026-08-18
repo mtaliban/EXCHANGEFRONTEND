@@ -5,11 +5,11 @@ import { adminReports, adminReportsExport, exportErrorText } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
+import {
+  BarChart3, Users, Banknote, Zap, TrendingUp, MapPin, Building2,
+  GraduationCap, Shield, Download, AlertTriangle, CheckCircle2, Calendar,
+} from 'lucide-react';
 
-/**
- * REAL-TIME (event-driven): SSE feed ya admin — data ikibadilika (user mpya,
- * donation, data.* ...) ripoti inajirefresh PAPO HAPO bila refresh ya page.
- */
 function useLiveReportsRefresh(onChange: () => void) {
   const lastOwn = useRef(0);
   useEffect(() => {
@@ -42,7 +42,7 @@ function useLiveReportsRefresh(onChange: () => void) {
             if (line) {
               try {
                 const ev = JSON.parse(line.slice(6));
-                if (Date.now() - lastOwn.current < 1500) continue; // kitendo chetu
+                if (Date.now() - lastOwn.current < 1500) continue;
                 onChange();
               } catch {}
             }
@@ -70,14 +70,17 @@ function downloadBlob(blob: Blob, filename: string) {
   a.remove(); URL.revokeObjectURL(url);
 }
 
-function NumberTable({ title, headers, rows }: { title: string; headers: string[]; rows: string[][] }) {
+function NumberTable({ title, icon: Icon, headers, rows }: { title: string; icon: any; headers: string[]; rows: string[][] }) {
   const t = useT();
   return (
-    <div className="card overflow-hidden">
-      <h3 className="font-bold text-brand-grey-900 mb-2">{title}</h3>
+    <div className="bg-white rounded-xl border border-brand-grey-200 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-brand-grey-100">
+        <Icon size={14} className="text-brand-blue" />
+        <h3 className="font-bold text-sm text-brand-grey-900">{title}</h3>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
+          <thead className="bg-brand-grey-50 text-[10px] uppercase tracking-wider font-bold text-brand-grey-500">
             <tr>{headers.map((h) => <th key={h} className="px-3 py-2 text-left">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-brand-grey-100">
@@ -105,8 +108,6 @@ export default function ReportsPage() {
   const [exporting, setExporting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // REAL-TIME: data ikibadilika (user mpya/malipo/data.*) ripoti inajirefresh
-  // PAPO HAPO bila refresh — event-driven (kama WebSocket).
   useLiveReportsRefresh(() => {
     setErr(null);
     adminReports(days).then(setData).catch(() => {});
@@ -120,8 +121,6 @@ export default function ReportsPage() {
   async function doExport(fmt: 'pdf' | 'docx') {
     setExporting(true);
     try {
-      // Export inaheshimu siku zilizochaguliwa (days) — PDF/Word zina data
-      // SAWA na screen (sio kitu kingine).
       const res = await adminReportsExport(fmt, days);
       downloadBlob(res.data as Blob, `ripoti_na_hesabu_${new Date().toISOString().slice(0, 10)}.${fmt === 'docx' ? 'docx' : 'pdf'}`);
       setErr(null);
@@ -131,7 +130,7 @@ export default function ReportsPage() {
     finally { setExporting(false); }
   }
 
-  if (err && !data) return <div className="p-6 max-w-md mx-auto"><div className="card bg-brand-red-50 text-brand-red text-sm">{err}</div></div>;
+  if (err && !data) return <div className="p-6 max-w-md mx-auto"><div className="card bg-brand-red-50 text-brand-red text-sm flex items-center gap-2"><AlertTriangle size={16} /> {err}</div></div>;
   if (!data) return <div className="p-10"><Spinner label={t('adminrep.loading')} /></div>;
 
   const totalUsers = data.users_by_region?.reduce((s: number, r: any) => s + r.count, 0) || 0;
@@ -140,85 +139,116 @@ export default function ReportsPage() {
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-brand-grey-900">📊 {t('adminrep.title')}</h1>
-          <p className="text-xs text-brand-grey-500 mt-1">
-            📅 {t('adminrep.period')}: <b className="text-brand-blue">{t('adminrep.period_days')} — {days} {t('adminrep.days')}</b>
+          <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
+            <BarChart3 size={22} className="text-brand-blue" />
+            {t('adminrep.title')}
+          </h1>
+          <p className="text-xs text-brand-grey-500 mt-1 flex items-center gap-1">
+            <Calendar size={12} /> {t('adminrep.period')}: <b className="text-brand-blue">{days} {t('adminrep.days')}</b>
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <select className="input w-auto" value={days} onChange={(e) => setDays(Number(e.target.value))}>
             <option value={7}>{t('adminrep.week')}</option>
             <option value={30}>{t('adminrep.days30')}</option>
             <option value={90}>{t('adminrep.days90')}</option>
             <option value={365}>{t('adminrep.year')}</option>
           </select>
-          <button onClick={() => doExport('pdf')} disabled={exporting} className="btn-primary text-xs min-h-[36px]">
-            {exporting ? 'Inapakua...' : '⬇ PDF'}
+          <button onClick={() => doExport('pdf')} disabled={exporting}
+            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-grey-100 text-brand-grey-600 border border-brand-grey-200 font-semibold hover:bg-brand-grey-200 transition disabled:opacity-40">
+            <Download size={11} /> {exporting ? 'Inapakua...' : 'PDF'}
           </button>
-          <button onClick={() => doExport('docx')} disabled={exporting} className="btn-outline text-xs min-h-[36px]">
-            {exporting ? 'Inapakua...' : '⬇ WORD'}
+          <button onClick={() => doExport('docx')} disabled={exporting}
+            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-grey-100 text-brand-grey-600 border border-brand-grey-200 font-semibold hover:bg-brand-grey-200 transition disabled:opacity-40">
+            <Download size={11} /> {exporting ? 'Inapakua...' : 'WORD'}
           </button>
         </div>
       </div>
 
-      {err && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{err}</div>}
+      {err && <div className="flex items-center gap-2 bg-brand-red-50 text-brand-red text-xs font-semibold rounded-full px-3 py-1.5 border border-brand-red-200"><AlertTriangle size={13} /> {err}</div>}
 
-      {/* Big numbers */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label={t('admin.users')} value={totalUsers} color="text-brand-blue" />
-        <StatCard label={t('adminrep.revenue_total')} value={`TZS ${data.revenue.total_tzs?.toLocaleString()}`} color="text-brand-orange" />
-        <StatCard label={t('admin.matches')} value={data.matches_per_day?.reduce((s: number, r: any) => s + r.count, 0) || 0} color="text-brand-red" />
-        <StatCard label={t('adminrep.revenue_paid')} value={data.revenue.paid_count} color="text-brand-gold-600" />
+      {/* Stats — compact pills */}
+      <div className="flex flex-wrap gap-2">
+        <div className="inline-flex items-center gap-2 bg-white border border-brand-grey-200 rounded-full px-3 py-1.5">
+          <Users size={13} className="text-brand-blue" />
+          <span className="text-xs font-bold text-brand-grey-900">{totalUsers.toLocaleString()}</span>
+          <span className="text-[10px] text-brand-grey-500">{t('admin.users')}</span>
+        </div>
+        <div className="inline-flex items-center gap-2 bg-white border border-brand-grey-200 rounded-full px-3 py-1.5">
+          <Banknote size={13} className="text-green-600" />
+          <span className="text-xs font-bold text-brand-grey-900">TZS {data.revenue.total_tzs?.toLocaleString()}</span>
+          <span className="text-[10px] text-brand-grey-500">{t('adminrep.revenue_total')}</span>
+        </div>
+        <div className="inline-flex items-center gap-2 bg-white border border-brand-grey-200 rounded-full px-3 py-1.5">
+          <Zap size={13} className="text-brand-red" />
+          <span className="text-xs font-bold text-brand-grey-900">{data.matches_per_day?.reduce((s: number, r: any) => s + r.count, 0) || 0}</span>
+          <span className="text-[10px] text-brand-grey-500">{t('admin.matches')}</span>
+        </div>
+        <div className="inline-flex items-center gap-2 bg-white border border-brand-grey-200 rounded-full px-3 py-1.5">
+          <TrendingUp size={13} className="text-brand-blue" />
+          <span className="text-xs font-bold text-brand-grey-900">{data.revenue.paid_count}</span>
+          <span className="text-[10px] text-brand-grey-500">{t('adminrep.revenue_paid')}</span>
+        </div>
       </div>
 
-      {/* NAMBA: by region / district / cadre / status */}
+      {/* Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <NumberTable
-          title={`🌍 ${t('adminrep.by_region')} (${totalUsers})`}
+          title={`${t('adminrep.by_region')} (${totalUsers})`}
+          icon={MapPin}
           headers={[t('adminrep.region'), t('adminrep.count')]}
           rows={(data.users_by_region || []).map((r: any) => [r.region || '(bila mkoa)', String(r.count)])}
         />
         <NumberTable
-          title={`🏢 ${t('adminrep.by_district')}`}
+          title={t('adminrep.by_district')}
+          icon={Building2}
           headers={[t('adminrep.region'), t('adminrep.district'), t('adminrep.count')]}
           rows={(data.users_by_district || []).map((r: any) => [r.region || '', r.district || '', String(r.count)])}
         />
         <NumberTable
-          title={`👨‍🏫 ${t('adminrep.by_cadre')}`}
+          title={t('adminrep.by_cadre')}
+          icon={GraduationCap}
           headers={[t('adminrep.department'), t('adminrep.cadre'), t('adminrep.count')]}
           rows={(data.users_by_cadre || []).map((r: any) => [r.cadre_name || r.category, r.cadre, String(r.count)])}
         />
         <NumberTable
-          title={`🚦 ${t('adminrep.by_status')}`}
+          title={t('adminrep.by_status')}
+          icon={Shield}
           headers={[t('adminrep.status'), t('adminrep.count')]}
           rows={(data.users_by_status || []).map((r: any) => [r.status, String(r.count)])}
         />
       </div>
 
-      {/* Michango */}
-      <div className="card">
-        <h3 className="font-bold mb-3">💰 {t('adminrep.revenue')}</h3>
+      {/* Revenue */}
+      <div className="bg-white rounded-xl border border-brand-grey-200 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Banknote size={14} className="text-green-600" />
+          <h3 className="font-bold text-sm text-brand-grey-900">{t('adminrep.revenue')}</h3>
+        </div>
         <div className="space-y-1">
           {data.revenue.per_purpose.map((m: any) => (
-            <div key={m.purpose} className="flex items-center justify-between text-sm">
-              <span className="badge-gold">{m.purpose}</span>
-              <span>TZS {m.total?.toLocaleString()} ({m.count} {t('adminrep.donations')})</span>
+            <div key={m.purpose} className="flex items-center justify-between text-sm py-1.5 border-b border-brand-grey-100 last:border-0">
+              <span className="text-xs font-medium text-brand-grey-700">{m.purpose}</span>
+              <span className="text-xs font-bold text-brand-grey-900">TZS {m.total?.toLocaleString()} <span className="font-normal text-brand-grey-500">({m.count})</span></span>
             </div>
           ))}
           {data.revenue.per_purpose.length === 0 && <div className="text-brand-grey-500 text-sm">{t('adminrep.no_data')}</div>}
         </div>
       </div>
 
-      {/* Wachanga wa hivi karibuni (registrations) — numbers tu */}
-      <div className="card">
-        <h3 className="font-bold mb-3">👥 {t('adminrep.users_new')}</h3>
+      {/* New users */}
+      <div className="bg-white rounded-xl border border-brand-grey-200 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Users size={14} className="text-brand-blue" />
+          <h3 className="font-bold text-sm text-brand-grey-900">{t('adminrep.users_new')}</h3>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <tbody className="divide-y divide-brand-grey-100">
               {data.users_per_day.slice(-14).reverse().map((d: any) => (
-                <tr key={d.date}>
-                  <td className="py-1 text-brand-grey-500">{d.date}</td>
-                  <td className="py-1 text-right font-mono font-bold text-brand-blue">{d.count}</td>
+                <tr key={d.date} className="hover:bg-brand-grey-50">
+                  <td className="py-1.5 text-brand-grey-500 text-xs">{d.date}</td>
+                  <td className="py-1.5 text-right font-mono font-bold text-brand-blue text-xs">{d.count}</td>
                 </tr>
               ))}
               {data.users_per_day.length === 0 && <tr><td className="py-4 text-center text-brand-grey-400 text-sm">{t('adminrep.no_data')}</td></tr>}
@@ -226,15 +256,6 @@ export default function ReportsPage() {
           </table>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
-  return (
-    <div className="card">
-      <div className={`text-2xl font-bold ${color}`}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
-      <div className="text-xs text-brand-grey-500 mt-1">{label}</div>
     </div>
   );
 }
