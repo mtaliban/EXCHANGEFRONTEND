@@ -72,9 +72,6 @@ export default function LoginPage() {
   const [twoFA, setTwoFA] = useState<{ email: string; message?: string; devCode?: string } | null>(null);
   const [twoFACode, setTwoFACode] = useState('');
   const [twoFALoading, setTwoFALoading] = useState(false);
-  const [twoFAExpiresAt, setTwoFAExpiresAt] = useState<number | null>(null);
-  const [twoFACountdown, setTwoFACountdown] = useState(0);
-  const twoFASubmitTimer = useRef<any>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,8 +90,10 @@ export default function LoginPage() {
     try {
       const res: any = await login(identifier.trim(), password);
       if (res.two_factor_required) {
+        // Admin — onyesha sehemu ya kuweka code PALE PALE (chini ya form)
         setTwoFA({ email: res.email, message: res.message, devCode: res.dev_code });
         setTwoFACode(res.dev_code || '');
+        setLoading(false);
         return;
       }
       setAuth(res.access_token, {
@@ -150,31 +149,11 @@ export default function LoginPage() {
 
   function onTwoFAChange(v: string) {
     setTwoFACode(v); setError(null); setErrorType(undefined);
-    if (twoFASubmitTimer.current) clearTimeout(twoFASubmitTimer.current);
-    if (v.length === 6) twoFASubmitTimer.current = setTimeout(() => submitTwoFA(v), 250);
   }
 
-  useEffect(() => {
-    if (!twoFA) return;
-    setTwoFAExpiresAt(Date.now() + 10 * 60 * 1000);
-    setTwoFACountdown(10 * 60);
-    if (twoFA.devCode && twoFA.devCode.length === 6) {
-      const t = setTimeout(() => submitTwoFA(), 500);
-      return () => clearTimeout(t);
-    }
-  }, [twoFA]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!twoFA || !twoFAExpiresAt) return;
-    const id = setInterval(() => {
-      const left = Math.max(0, Math.round((twoFAExpiresAt - Date.now()) / 1000));
-      setTwoFACountdown(left);
-      if (left <= 0) setTwoFACountdown(0);
-    }, 1000);
-    return () => clearInterval(id);
-  }, [twoFA, twoFAExpiresAt]);
-
   async function onTwoFASubmit(e: React.FormEvent) {
-    e.preventDefault(); await submitTwoFA();
+    e.preventDefault();
+    await submitTwoFA();
   }
 
   async function onRequestCode(e: React.FormEvent) {
@@ -233,16 +212,19 @@ export default function LoginPage() {
             <div>
               <label className="label">{t('login.phone_label')}</label>
               <input type="text" className="input" placeholder="0712345678"
-                value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoComplete="username" />
+                value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoComplete="username"
+                disabled={!!twoFA} />
             </div>
             <div>
               <label className="label">{t('login.password_label')}</label>
               <div className="relative">
                 <input type={showPassword ? 'text' : 'password'} className="input pr-9" placeholder="••••••••"
-                  value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+                  value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password"
+                  disabled={!!twoFA} />
                 <button type="button" tabIndex={-1} onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-grey-600 transition"
-                  aria-label={showPassword ? 'Ficha password' : 'Onyesha password'}>
+                  aria-label={showPassword ? 'Ficha password' : 'Onyesha password'}
+                  disabled={!!twoFA}>
                   <EyeIcon open={showPassword} />
                 </button>
               </div>
@@ -251,24 +233,33 @@ export default function LoginPage() {
             {error && <ErrorAlert msg={error} type={errorType} />}
             {success && <SuccessAlert msg={success} />}
 
-            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
-              {loading ? (
-                <>
-                  <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                  {t('login.logging_in')}
-                </>
-              ) : (
-                t('login.submit')
-              )}
-            </button>
+            {/* Button ya kawaida — ikibadilika kuwa 2FA code input, itaondoka */}
+            {!twoFA && (
+              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+                {loading ? (
+                  <>
+                    <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                    {t('login.logging_in')}
+                  </>
+                ) : (
+                  t('login.submit')
+                )}
+              </button>
+            )}
           </form>
 
+          {/* 2FA — sehemu ya kuweka code PALE PALE (chini ya form, inachukua nafasi ya button) */}
           {twoFA && (
-            <div className="mt-5 border-t border-brand-grey-100 pt-4">
-              <form onSubmit={onTwoFASubmit} className="space-y-3 mt-3">
-                <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
-                  placeholder="000000" maxLength={6} value={twoFACode}
-                  onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus disabled={twoFALoading} />
+            <div className="mt-4">
+              <form onSubmit={onTwoFASubmit} className="space-y-3">
+                <div>
+                  <label className="label text-xs text-brand-grey-500 mb-1 block">
+                    {twoFA.message || 'Weka code ya uthibitisho uliyopokea kwa barua pepe'}
+                  </label>
+                  <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
+                    placeholder="000000" maxLength={6} value={twoFACode}
+                    onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus disabled={twoFALoading} />
+                </div>
                 {twoFALoading && (
                   <div className="flex items-center justify-center gap-2 text-sm text-brand-blue font-semibold">
                     <span className="inline-block w-5 h-5 rounded-full border-2 border-brand-blue-200 border-t-brand-blue animate-spin" />
@@ -276,8 +267,16 @@ export default function LoginPage() {
                   </div>
                 )}
                 {error && <ErrorAlert msg={error} type={errorType} />}
-                <button type="submit" disabled={twoFALoading || twoFACountdown <= 0} className="hidden">
-                  {twoFALoading ? t('login.verifying') : t('login.twofa_submit')}
+                <button type="submit" disabled={twoFALoading || twoFACode.length !== 6}
+                  className="btn-primary w-full flex items-center justify-center gap-2">
+                  {twoFALoading ? (
+                    <>
+                      <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                      {t('login.verifying')}
+                    </>
+                  ) : (
+                    'Ingia'
+                  )}
                 </button>
               </form>
             </div>

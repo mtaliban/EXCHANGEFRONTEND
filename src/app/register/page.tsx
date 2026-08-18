@@ -13,8 +13,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   function onComplete() {
-    // Mtumiaji ameingia tayari (token ipo) — elekeza moja kwa moja kwa dashboard.
-    router.push('/dashboard');
+    // Mtumiaji amesajiliwa — elekeza kwenye login kwa kuweka namba ya simu.
+    router.push('/login');
   }
 
   return (
