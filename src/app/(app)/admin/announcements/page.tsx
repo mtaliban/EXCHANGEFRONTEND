@@ -5,13 +5,11 @@ import { sendAnnouncement, adminListAnnouncements, adminUsers, adminDeleteAnnoun
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { API_URL } from '@/lib/config';
+import {
+  Megaphone, Send, Trash2, RefreshCw, Users, Clock, User, Search,
+  CheckCircle2, AlertTriangle, Loader2, Plus,
+} from 'lucide-react';
 
-/**
- * REAL-TIME (event-driven): sikiliza /admin/live-events (SSE) — admin akiongeza/
- * kubadilisha/kufuta IDARA kwenye Data Management (hata kwenye tab nyingine),
- * matangazo yanapata idara mpya PAPO HAPO bila refresh ya page. Tunaangalia
- * `data.department_*` events tu (matangazo yanahitaji idara kwa audience).
- */
 function useLiveDepartments(onChange: () => void) {
   const lastOwn = useRef(0);
   useEffect(() => {
@@ -45,14 +43,14 @@ function useLiveDepartments(onChange: () => void) {
               try {
                 const ev = JSON.parse(line.slice(6));
                 if (ev?.event_type?.startsWith('data.department')) {
-                  if (Date.now() - lastOwn.current < 1500) continue; // kitendo chetu — puuza mara mbili
+                  if (Date.now() - lastOwn.current < 1500) continue;
                   onChange();
                 }
-              } catch { /* sio JSON — puuza */ }
+              } catch {}
             }
           }
         }
-      } catch { /* mtandao/abort — reconnect chini */ }
+      } catch {}
       if (!stopped) retry = setTimeout(connect, 3000);
     }
     connect();
@@ -76,15 +74,11 @@ export default function AdminAnnouncementsPage() {
   const [targetName, setTargetName] = useState('');
   const [results, setResults] = useState<any[] | null>(null);
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [list, setList] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
 
-  // Idara zinapakuliwa dynamic — admin akiongeza idara mpya inaonekana hapa
-  // papo hapo (real-time, bila kurekebisha code).
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
-  // REAL-TIME: idara mpya ikiongezwa/ibadilishwe/ifutwe kwenye Data Management
-  // → matangazo yanapata papo hapo bila refresh (event-driven kama WebSocket).
   const liveDepts = useLiveDepartments(() => {
     getDepartments(true).then(setDepartments).catch(() => {});
   });
@@ -94,8 +88,6 @@ export default function AdminAnnouncementsPage() {
   }
   useEffect(() => { reload(); }, []);
 
-  // REAL-TIME SEARCH: ukiandika tu watu wanakuja PAPO HAPO (debounce 350ms),
-  // ukifuta wote wanaondoka — hakuna button ya "Tafuta" tena.
   useEffect(() => {
     if (audience !== 'user' || targetUser.trim().length < 2) {
       setResults(null);
@@ -113,7 +105,6 @@ export default function AdminAnnouncementsPage() {
   }, [targetUser, audience]);
 
   function pickUser(u: any) {
-    // Hifadhi _id (ObjectId) — backend inahitaji hiyo, sio namba ya simu!
     setTargetUserId(u._id);
     setTargetName(`${u.full_name} (${u.phone_primary})`);
     setResults(null);
@@ -128,86 +119,82 @@ export default function AdminAnnouncementsPage() {
         audience,
         target_user_id: audience === 'user' ? targetUserId : undefined,
       });
-      setResult(`✅ ${t('ann.sent')} ${res.sent_to}`);
+      setResult({ type: 'success', msg: `${t('ann.sent')} ${res.sent_to} walengwa` });
       setTitle(''); setMessage(''); setTargetName(''); setTargetUserId(''); setResults(null);
-      // PAPO HAPO — tangazo jipya linaongezwa juu bila refetch (event-driven).
       setList((prev) => [{ announcement_id: 'new-' + Date.now(), title: title.trim(), message: message.trim(), audience, created_at: new Date().toISOString(), status: 'sent', sent_to: res.sent_to }, ...(prev || [])]);
     } catch (e: any) {
-      setResult(`❌ ${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
+      setResult({ type: 'error', msg: `${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}` });
     } finally { setSending(false); }
   }
 
-  // CRUD: resend (tuma tena kwa walengwa wote wa sasa) + delete.
   const [busyId, setBusyId] = useState<string | null>(null);
   async function resend(a: any) {
-    // PAPO HAPO — hakuna confirm popup; tangazo linatumwa tena mara moja.
     setBusyId(a.announcement_id);
     try {
       const res = await adminResendAnnouncement(a.announcement_id);
-      setResult(`✅ ${t('ann.sent')} ${res.sent_to}`);
+      setResult({ type: 'success', msg: `${t('ann.sent')} ${res.sent_to} walengwa` });
       setList((prev) => (prev || []).map((x: any) => x.announcement_id === a.announcement_id ? { ...x, status: 'sent', sent_to: res.sent_to } : x));
     } catch (e: any) {
-      setResult(`❌ ${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
+      setResult({ type: 'error', msg: `${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}` });
     } finally { setBusyId(null); }
   }
   async function del(a: any) {
-    // PAPO HAPO — hakuna confirm popup; tangazo linafutwa mara moja.
     setBusyId(a.announcement_id);
     try {
       await adminDeleteAnnouncement(a.announcement_id);
-      setResult(`✅ ${t('ann.deleted')}`);
-      // PAPO HAPO — tangazo linaondolewa bila refetch (event-driven).
+      setResult({ type: 'success', msg: t('ann.deleted') });
       setList((prev) => (prev || []).filter((x: any) => x.announcement_id !== a.announcement_id));
     } catch (e: any) {
-      setResult(`❌ ${t('ann.delete_error')} ${e?.response?.data?.detail || t('msg.try_again')}`);
+      setResult({ type: 'error', msg: `${t('ann.delete_error')} ${e?.response?.data?.detail || t('msg.try_again')}` });
     } finally { setBusyId(null); }
   }
 
-  // Audience label ya kiswahili kwa dropdown na list
   function audienceLabel(aud: string): string {
     if (aud === 'all') return t('ann.aud_all');
     if (aud === 'user') return t('ann.aud_user');
     const d = departments.find((x) => x.code === aud);
-    return d ? `${d.icon ? d.icon + ' ' : ''}${d.name}` : aud;
+    return d ? d.name : aud;
   }
-
-  const inputCls = "w-full rounded-lg border border-brand-grey-300 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-950 px-4 py-2.5 text-brand-grey-900 dark:text-white placeholder-brand-grey-500 focus:outline-none focus:ring-2 focus:ring-brand-blue";
 
   return (
     <div className="p-4 md:p-6 max-w-3xl">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white">{t('ann.title')}</h1>
+      <div className="mb-5">
+        <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+          <Megaphone size={22} className="text-brand-blue" />
+          {t('ann.title')}
+        </h1>
         <p className="text-brand-grey-500 dark:text-brand-grey-400 text-sm mt-1">
           {t('ann.subtitle')}
         </p>
       </div>
 
-      <div className="card space-y-4">
+      {/* Form ya kutuma tangazo */}
+      <div className="bg-white rounded-xl border border-brand-grey-200 p-4 space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-brand-grey-700 dark:text-brand-grey-300 mb-1.5">{t('ann.title_label')}</label>
-          <input className={inputCls}
+          <label className="text-xs font-bold uppercase tracking-wider text-brand-grey-500 mb-1.5 block">{t('ann.title_label')}</label>
+          <input className="input"
             value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('ann.title_ph')} maxLength={120} />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-brand-grey-700 dark:text-brand-grey-300 mb-1.5">{t('ann.message_label')}</label>
-          <textarea className={`${inputCls} min-h-[100px]`}
+          <label className="text-xs font-bold uppercase tracking-wider text-brand-grey-500 mb-1.5 block">{t('ann.message_label')}</label>
+          <textarea className="input min-h-[100px]"
             value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('ann.message_ph')} maxLength={2000} />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-brand-grey-700 dark:text-brand-grey-300 mb-1.5">{t('ann.audience_label')}</label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-brand-grey-500 mb-1.5 block">{t('ann.audience_label')}</label>
+          <div className="flex flex-wrap gap-1.5">
             {[
               { v: 'all', label: t('ann.aud_all') },
-              ...departments.map((d) => ({ v: d.code, label: `${d.icon ? `${d.icon} ` : ''}${d.name}` })),
+              ...departments.map((d) => ({ v: d.code, label: d.name })),
               { v: 'user', label: t('ann.aud_user') },
             ].map((o) => (
               <button key={o.v} onClick={() => setAudience(o.v)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium border transition ${
+                className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-semibold transition border ${
                   audience === o.v
                     ? 'bg-brand-blue text-white border-brand-blue'
-                    : 'border-brand-grey-200 dark:border-brand-grey-700 text-brand-grey-700 dark:text-brand-grey-300 hover:border-brand-blue'
+                    : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue hover:bg-brand-blue-50'
                 }`}>
                 {o.label}
               </button>
@@ -217,70 +204,82 @@ export default function AdminAnnouncementsPage() {
 
         {audience === 'user' && (
           <div className="space-y-2">
-            <input className={`${inputCls}`}
-              value={targetUser} onChange={(e) => { setTargetUser(e.target.value); setTargetName(''); }} placeholder={t('ann.search_ph')} />
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-400" />
+              <input className="input pl-9"
+                value={targetUser} onChange={(e) => { setTargetUser(e.target.value); setTargetName(''); }} placeholder={t('ann.search_ph')} />
+            </div>
             {targetUser.trim().length > 0 && targetUser.trim().length < 2 && (
               <div className="text-xs text-brand-grey-500">{t('ann.type_more')}</div>
             )}
             {results && results.length > 0 && (
-              <div className="border border-brand-grey-200 dark:border-brand-grey-700 rounded-lg divide-y divide-brand-grey-100 dark:divide-brand-grey-700 overflow-hidden">
+              <div className="border border-brand-grey-200 rounded-lg divide-y divide-brand-grey-100 overflow-hidden">
                 {results.map((u: any) => (
                   <button key={u._id} onClick={() => pickUser(u)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-brand-blue-50 dark:hover:bg-brand-grey-800 transition flex items-center justify-between gap-2">
-                    <span className="font-medium">{u.full_name}</span>
-                    <span className="text-xs text-brand-grey-500">{u.phone_primary} · {u.cadre_code}</span>
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-brand-blue-50 transition flex items-center justify-between gap-2">
+                    <span className="font-medium text-brand-grey-900">{u.full_name}</span>
+                    <span className="text-[11px] text-brand-grey-500">{u.phone_primary} · {u.cadre_code}</span>
                   </button>
                 ))}
               </div>
             )}
-            {results && results.length === 0 && <div className="text-xs text-brand-orange">{t('ann.not_found')}</div>}
-            {targetName && !results && <div className="text-xs text-green-600">✓ {targetName}</div>}
-            {!targetName && !results && targetUser.trim().length >= 2 && (
-              <div className="text-xs text-brand-grey-400">{t('ann.searching')}</div>
-            )}
+            {results && results.length === 0 && <div className="text-xs text-orange-600 flex items-center gap-1"><AlertTriangle size={12} /> {t('ann.not_found')}</div>}
+            {targetName && !results && <div className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 size={12} /> {targetName}</div>}
           </div>
         )}
 
         <div className="flex items-center gap-3">
           <button onClick={submit} disabled={sending || !title.trim() || !message.trim()}
-            className="btn-accent disabled:opacity-50">
-            {sending ? t('ann.sending') : t('ann.send')}
+            className="btn-primary flex items-center gap-1.5">
+            {sending ? <><Loader2 size={13} className="animate-spin" /> {t('ann.sending')}</> : <><Send size={13} /> {t('ann.send')}</>}
           </button>
-          {result && <div className="text-sm text-brand-grey-700 dark:text-brand-grey-300">{result}</div>}
+          {result && (
+            <div className={`text-xs font-semibold flex items-center gap-1.5 ${result.type === 'success' ? 'text-green-600' : 'text-brand-red'}`}>
+              {result.type === 'success' ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+              {result.msg}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* History — cards za kisomi (responsive kwa device zote) + CRUD */}
-      <div className="flex items-center justify-between mt-8 mb-2">
-        <h2 className="font-semibold text-brand-grey-700 dark:text-brand-grey-300 text-sm">{t('ann.history')} ({list.length})</h2>
+      {/* History */}
+      <div className="flex items-center justify-between mt-8 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-wider text-brand-grey-500 flex items-center gap-1.5">
+          <Clock size={13} /> {t('ann.history')} ({list.length})
+        </h2>
       </div>
       {list.length === 0 ? (
-        <div className="text-brand-grey-500 text-sm">{t('ann.empty')}</div>
+        <div className="card text-center py-8">
+          <Megaphone size={28} className="mx-auto text-brand-grey-300 mb-2" />
+          <p className="text-sm text-brand-grey-500 font-medium">{t('ann.empty')}</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {list.map((a) => (
-            <div key={a.announcement_id} className="card">
-              <div className="flex items-start justify-between gap-2 flex-wrap">
+            <div key={a.announcement_id} className="bg-white rounded-xl border border-brand-grey-200 p-4">
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-brand-grey-900 dark:text-white text-sm">{a.title}</span>
-                    <span className="badge-gold">{audienceLabel(a.audience)}</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 font-semibold border border-brand-blue-200">
+                      {audienceLabel(a.audience)}
+                    </span>
                   </div>
-                  <p className="text-xs text-brand-grey-600 dark:text-brand-grey-300 mt-1 whitespace-pre-wrap break-words">{a.message}</p>
-                  <div className="flex items-center gap-3 flex-wrap mt-2 text-[11px] text-brand-grey-500 dark:text-brand-grey-400">
-                    <span>👥 {t('ann.to_people')}: <b className="text-brand-blue">{a.recipient_count}</b></span>
-                    <span>✍️ {a.created_by_name || '—'}</span>
-                    <span>🕐 {conversationTime(a.created_at)}</span>
+                  <p className="text-xs text-brand-grey-600 dark:text-brand-grey-300 mt-1.5 whitespace-pre-wrap break-words leading-relaxed">{a.message}</p>
+                  <div className="flex items-center gap-3 flex-wrap mt-2.5 text-[11px] text-brand-grey-500 dark:text-brand-grey-400">
+                    <span className="inline-flex items-center gap-1"><Users size={11} /> {t('ann.to_people')}: <b className="text-brand-blue">{a.recipient_count}</b></span>
+                    <span className="inline-flex items-center gap-1"><User size={11} /> {a.created_by_name || '—'}</span>
+                    <span className="inline-flex items-center gap-1"><Clock size={11} /> {conversationTime(a.created_at)}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-1.5 flex-shrink-0">
                   <button onClick={() => resend(a)} disabled={busyId === a.announcement_id}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-brand-blue text-brand-blue hover:bg-brand-blue-50 transition disabled:opacity-40">
-                    ↺ {t('ann.resend')}
+                    className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue-50 text-brand-blue-700 font-semibold border border-brand-blue-200 hover:bg-brand-blue-100 transition disabled:opacity-40">
+                    <RefreshCw size={11} /> {t('ann.resend')}
                   </button>
                   <button onClick={() => del(a)} disabled={busyId === a.announcement_id}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red-50 transition disabled:opacity-40">
-                    🗑 {t('action.delete')}
+                    className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition disabled:opacity-40">
+                    <Trash2 size={11} /> {t('action.delete')}
                   </button>
                 </div>
               </div>

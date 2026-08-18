@@ -236,14 +236,14 @@ export default function AdminUsersPage() {
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => { if (!showTrash) loadTrash(); setShowTrash((v) => !v); }}
-            className={`btn-outline text-xs ${showTrash ? 'border-brand-red text-brand-red' : 'border-brand-grey-300 text-brand-grey-600'}`}>
-            <Trash2 size={13} /> {t('admin.trash_btn')} {trashTotal > 0 && `(${trashTotal})`}
+            className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-semibold transition ${showTrash ? 'bg-brand-red-50 text-brand-red border border-brand-red-200' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200'}`}>
+            <Trash2 size={12} /> {t('admin.trash_btn')}{trashTotal > 0 && ` (${trashTotal})`}
           </button>
-          <button onClick={() => setCreating(true)} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
-            <Plus size={14} /> {t('admin.new_user')}
+          <button onClick={() => setCreating(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
+            <Plus size={12} /> {t('admin.new_user')}
           </button>
-          <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition">
-            <ShieldCheck size={14} /> {t('admin.add_admin')}
+          <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition">
+            <ShieldCheck size={12} /> {t('admin.add_admin')}
           </button>
         </div>
       </div>
@@ -255,18 +255,18 @@ export default function AdminUsersPage() {
             className="w-4 h-4 accent-brand-blue" />
           {t('admin.select_all')} ({selected.size})
         </label>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <button onClick={() => bulk('enable')} disabled={bulkBusy || selected.size === 0}
-            className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-green-500 text-green-600 hover:bg-green-50 disabled:opacity-40 transition">
-            <CheckCircle2 size={13} /> {t('admin.bulk_enable')}
+            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 font-semibold hover:bg-green-100 disabled:opacity-40 transition">
+            <CheckCircle2 size={11} /> {t('admin.bulk_enable')}
           </button>
           <button onClick={() => bulk('disable')} disabled={bulkBusy || selected.size === 0}
-            className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-orange-500 text-orange-600 hover:bg-orange-50 disabled:opacity-40 transition">
-            <Ban size={13} /> {t('admin.bulk_suspend')}
+            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-semibold hover:bg-orange-100 disabled:opacity-40 transition">
+            <Ban size={11} /> {t('admin.bulk_suspend')}
           </button>
           <button onClick={() => bulk('delete')} disabled={bulkBusy || selected.size === 0}
-            className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red-50 disabled:opacity-40 transition">
-            <Trash2 size={13} /> {t('admin.bulk_delete')}
+            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red border border-brand-red-200 font-semibold hover:bg-brand-red-100 disabled:opacity-40 transition">
+            <Trash2 size={11} /> {t('admin.bulk_delete')}
           </button>
         </div>
       </div>
@@ -331,20 +331,20 @@ export default function AdminUsersPage() {
                   </button>
                 </td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
-                  <button onClick={() => setViewing(u)} className="inline-flex items-center gap-1 text-brand-grey-600 text-xs px-2 hover:underline">
-                    <Eye size={13} /> {t('action.view')}
+                  <button onClick={() => setViewing(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-600 font-medium hover:bg-brand-grey-200 transition">
+                    <Eye size={11} /> {t('action.view')}
                   </button>
-                  <button onClick={() => setEditing(u)} className="inline-flex items-center gap-1 text-brand-blue text-xs px-2 hover:underline">
-                    <Pencil size={13} /> {t('action.edit')}
+                  <button onClick={() => setEditing(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-600 font-medium hover:bg-brand-blue-100 transition">
+                    <Pencil size={11} /> {t('action.edit')}
                   </button>
                   {!u.is_admin && (
-                    <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-orange-600 text-xs px-2 hover:underline">
-                      {u.status === 'disabled' ? <><CheckCircle2 size={13} /> {t('admin.unsuspend_btn')}</> : <><Ban size={13} /> {t('admin.suspend_btn')}</>}
+                    <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium hover:bg-orange-100 transition">
+                      {u.status === 'disabled' ? <><CheckCircle2 size={11} /> {t('admin.unsuspend_btn')}</> : <><Ban size={11} /> {t('admin.suspend_btn')}</>}
                     </button>
                   )}
                   {!u.is_admin && (
-                    <button onClick={() => del(u)} className="inline-flex items-center gap-1 text-brand-red text-xs px-2 hover:underline">
-                      <Trash2 size={13} /> {t('action.delete')}
+                    <button onClick={() => del(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
+                      <Trash2 size={11} /> {t('action.delete')}
                     </button>
                   )}
                 </td>
@@ -363,11 +363,11 @@ export default function AdminUsersPage() {
             </h2>
             <div className="flex items-center gap-2">
               <button onClick={purgeAllTrash} disabled={trash.length === 0}
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-red text-white font-semibold hover:bg-brand-red-600 transition disabled:opacity-40 shadow-sm">
-                <Trash2 size={13} /> {t('admin.trash_purge_all')}
+                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red text-white font-semibold hover:bg-brand-red-600 transition disabled:opacity-40">
+                <Trash2 size={11} /> {t('admin.trash_purge_all')}
               </button>
-              <button onClick={() => setShowTrash(false)} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-brand-grey-300 text-brand-grey-600 hover:bg-brand-grey-50 transition">
-                <XCircle size={13} /> {t('admin.cancel')}
+              <button onClick={() => setShowTrash(false)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-grey-100 text-brand-grey-600 border border-brand-grey-200 font-semibold hover:bg-brand-grey-200 transition">
+                <XCircle size={11} /> {t('admin.cancel')}
               </button>
             </div>
           </div>
@@ -399,12 +399,12 @@ export default function AdminUsersPage() {
                       <td className="px-3 py-2 text-xs">{u.current_station?.region_name || '—'}</td>
                       <td className="px-3 py-2 text-right whitespace-nowrap">
                         <button onClick={() => restore(u)}
-                          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-green-50 text-green-700 font-semibold border border-green-200 hover:bg-green-100 transition">
-                          <RotateCcw size={13} /> {t('admin.trash_restore')}
+                          className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-green-50 text-green-700 font-semibold border border-green-200 hover:bg-green-100 transition">
+                          <RotateCcw size={11} /> {t('admin.trash_restore')}
                         </button>
                         <button onClick={() => purge(u)}
-                          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition ml-1.5">
-                          <Trash2 size={13} /> {t('admin.trash_permanent')}
+                          className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition ml-1.5">
+                          <Trash2 size={11} /> {t('admin.trash_permanent')}
                         </button>
                       </td>
                     </tr>
