@@ -5,6 +5,10 @@ import { adminStats, adminReports, adminUsers, adminListDepartments } from '@/li
 import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
+import {
+  Users, ShieldCheck, MapPin, Building2, BookOpen, BarChart3,
+  UsersRound, Search, Eye, Pencil,
+} from 'lucide-react';
 
 type Tab = 'overview' | 'users';
 
@@ -364,8 +368,8 @@ function Overview({ stats, reports, filters, onFilters }: {
         <div className="card">
           <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">{t('admin.by_cadre_level')}</h3>
           <NumberTable rows={[
-            { label: `👩🏫 ${t('admin.primary_teachers')}`, count: byCadreLevel.primary },
-            { label: `👨🏫 ${t('admin.secondary_teachers')}`, count: byCadreLevel.secondary },
+            { label: t('admin.primary_teachers'), count: byCadreLevel.primary },
+            { label: t('admin.secondary_teachers'), count: byCadreLevel.secondary },
             { label: t('admin.no_level'), count: byCadreLevel.none },
           ]} />
         </div>
@@ -471,10 +475,10 @@ function UsersTab() {
               <tr key={u._id} className="hover:bg-brand-grey-50">
                 <td className="px-3 py-2 font-medium">{u.full_name}</td>
                 <td className="px-3 py-2 text-brand-blue">{u.phone_primary}</td>
-                <td className="px-3 py-2"><span className="badge-gold">{u.cadre_code}</span></td>
+                <td className="px-3 py-2"><span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-blue-50 text-brand-blue-700 text-xs font-semibold"><BookOpen size={10} />{u.cadre_code}</span></td>
                 <td className="px-3 py-2">{u.current_station?.region_name}</td>
                 <td className="px-3 py-2 text-xs text-brand-grey-500">{u.desired_destinations?.map((d: any) => d.region_name).join(', ')}</td>
-                <td className="px-3 py-2">{u.is_admin ? '👑' : '-'}</td>
+                <td className="px-3 py-2">{u.is_admin ? <ShieldCheck size={14} className="text-brand-blue" /> : <span className="text-brand-grey-400">—</span>}</td>
               </tr>
             ))}
           </tbody>

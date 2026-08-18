@@ -8,6 +8,12 @@ import {
   adminUserMatches,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
+import {
+  Users, Shield, ShieldCheck, Trash2, Eye, Pencil, Plus, Ban, CheckCircle2,
+  Search, Filter, Download, AlertTriangle, RotateCcw, XCircle, Phone, Mail,
+  MapPin, Building2, BookOpen, UserCheck, UserX, Clock, Info, ChevronDown,
+  RefreshCw, Database, Settings, Loader2,
+} from 'lucide-react';
 import { API_URL } from '@/lib/config';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
@@ -231,13 +237,13 @@ export default function AdminUsersPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => { if (!showTrash) loadTrash(); setShowTrash((v) => !v); }}
             className={`btn-outline text-xs ${showTrash ? 'border-brand-red text-brand-red' : 'border-brand-grey-300 text-brand-grey-600'}`}>
-            🗑 {t('admin.trash_btn')} {trashTotal > 0 && `(${trashTotal})`}
+            <Trash2 size={13} /> {t('admin.trash_btn')} {trashTotal > 0 && `(${trashTotal})`}
           </button>
-          <button onClick={() => setCreating(true)} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
-            + {t('admin.new_user')}
+          <button onClick={() => setCreating(true)} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
+            <Plus size={14} /> {t('admin.new_user')}
           </button>
-          <button onClick={() => setAddingAdmin(true)} className="text-xs px-3 py-1.5 rounded-lg bg-brand-gold text-white font-semibold hover:bg-brand-gold-600 transition">
-            + {t('admin.add_admin')} 👑
+          <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition">
+            <ShieldCheck size={14} /> {t('admin.add_admin')}
           </button>
         </div>
       </div>
@@ -251,16 +257,16 @@ export default function AdminUsersPage() {
         </label>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => bulk('enable')} disabled={bulkBusy || selected.size === 0}
-            className="text-xs px-3 py-1.5 rounded-lg border border-green-500 text-green-600 hover:bg-green-50 disabled:opacity-40 transition">
-            ✓ {t('admin.bulk_enable')}
+            className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-green-500 text-green-600 hover:bg-green-50 disabled:opacity-40 transition">
+            <CheckCircle2 size={13} /> {t('admin.bulk_enable')}
           </button>
           <button onClick={() => bulk('disable')} disabled={bulkBusy || selected.size === 0}
-            className="text-xs px-3 py-1.5 rounded-lg border border-brand-orange text-brand-orange hover:bg-brand-orange-50 disabled:opacity-40 transition">
-            🚫 {t('admin.bulk_suspend')}
+            className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-orange-500 text-orange-600 hover:bg-orange-50 disabled:opacity-40 transition">
+            <Ban size={13} /> {t('admin.bulk_suspend')}
           </button>
           <button onClick={() => bulk('delete')} disabled={bulkBusy || selected.size === 0}
-            className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red-50 disabled:opacity-40 transition">
-            🗑 {t('admin.bulk_delete')}
+            className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red-50 disabled:opacity-40 transition">
+            <Trash2 size={13} /> {t('admin.bulk_delete')}
           </button>
         </div>
       </div>
@@ -304,14 +310,19 @@ export default function AdminUsersPage() {
                     onChange={() => toggleOne(u._id)} disabled={u.is_admin}
                     className="w-4 h-4 accent-brand-blue" aria-label={t('admin.col_name')} />
                 </td>
-                <td className="px-3 py-2 font-medium">{u.full_name} {u.is_admin && '👑'}</td>
+                <td className="px-3 py-2 font-medium">
+                  <span className="inline-flex items-center gap-1.5">
+                    {u.full_name}
+                    {u.is_admin && <ShieldCheck size={13} className="text-brand-blue flex-shrink-0" />}
+                  </span>
+                </td>
                 <td className="px-3 py-2 text-brand-blue">{u.phone_primary}</td>
-                <td className="px-3 py-2 text-xs"><span className="badge-gold">{u.cadre_code}</span></td>
+                <td className="px-3 py-2 text-xs"><span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-blue-50 text-brand-blue-700 font-semibold"><BookOpen size={10} />{u.cadre_code}</span></td>
                 <td className="px-3 py-2 text-xs">{u.current_station?.region_name}</td>
                 <td className="px-3 py-2">
                   {u.status === 'disabled'
-                    ? <span className="text-xs px-2 py-0.5 rounded bg-brand-red-50 text-brand-red font-semibold">🚫 {t('admin.status_disabled')}</span>
-                    : <span className="text-xs px-2 py-0.5 rounded bg-green-50 text-green-600 font-semibold">● {t('admin.status_active')}</span>}
+                    ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-brand-red-50 text-brand-red font-semibold"><UserX size={11} /> {t('admin.status_disabled')}</span>
+                    : <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-green-50 text-green-600 font-semibold"><UserCheck size={11} /> {t('admin.status_active')}</span>}
                 </td>
                 <td className="px-3 py-2">
                   <button onClick={() => toggleAdmin(u)}
@@ -320,20 +331,20 @@ export default function AdminUsersPage() {
                   </button>
                 </td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
-                  <button onClick={() => setViewing(u)} className="text-brand-grey-600 text-xs px-2 hover:underline">
-                    👁 {t('action.view')}
+                  <button onClick={() => setViewing(u)} className="inline-flex items-center gap-1 text-brand-grey-600 text-xs px-2 hover:underline">
+                    <Eye size={13} /> {t('action.view')}
                   </button>
-                  <button onClick={() => setEditing(u)} className="text-brand-blue text-xs px-2 hover:underline">
-                    ✎ {t('action.edit')}
+                  <button onClick={() => setEditing(u)} className="inline-flex items-center gap-1 text-brand-blue text-xs px-2 hover:underline">
+                    <Pencil size={13} /> {t('action.edit')}
                   </button>
                   {!u.is_admin && (
-                    <button onClick={() => toggleSuspend(u)} className="text-brand-orange text-xs px-2 hover:underline">
-                      {u.status === 'disabled' ? t('admin.unsuspend_btn') : t('admin.suspend_btn')}
+                    <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-orange-600 text-xs px-2 hover:underline">
+                      {u.status === 'disabled' ? <><CheckCircle2 size={13} /> {t('admin.unsuspend_btn')}</> : <><Ban size={13} /> {t('admin.suspend_btn')}</>}
                     </button>
                   )}
                   {!u.is_admin && (
-                    <button onClick={() => del(u)} className="text-brand-red text-xs px-2 hover:underline">
-                      🗑 {t('action.delete')}
+                    <button onClick={() => del(u)} className="inline-flex items-center gap-1 text-brand-red text-xs px-2 hover:underline">
+                      <Trash2 size={13} /> {t('action.delete')}
                     </button>
                   )}
                 </td>
@@ -348,15 +359,15 @@ export default function AdminUsersPage() {
         <div className="bg-white rounded-2xl border border-brand-red/30 overflow-hidden">
           <div className="flex items-center justify-between flex-wrap gap-2 px-4 py-3 bg-brand-red-50/60 border-b border-brand-red/20">
             <h2 className="font-bold text-brand-grey-900 flex items-center gap-2">
-              🗑 {t('admin.trash_title')} <span className="text-xs font-semibold text-brand-grey-500">({trashTotal})</span>
+              <Trash2 size={18} className="text-brand-red" /> {t('admin.trash_title')} <span className="text-xs font-semibold text-brand-grey-500">({trashTotal})</span>
             </h2>
             <div className="flex items-center gap-2">
               <button onClick={purgeAllTrash} disabled={trash.length === 0}
-                className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition disabled:opacity-40">
-                🗑 {t('admin.trash_purge_all')}
+                className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition disabled:opacity-40">
+                <Trash2 size={13} /> {t('admin.trash_purge_all')}
               </button>
-              <button onClick={() => setShowTrash(false)} className="text-xs px-3 py-1.5 rounded-lg border border-brand-grey-300 text-brand-grey-600 hover:bg-brand-grey-50 transition">
-                ✕ {t('admin.cancel')}
+              <button onClick={() => setShowTrash(false)} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-brand-grey-300 text-brand-grey-600 hover:bg-brand-grey-50 transition">
+                <XCircle size={13} /> {t('admin.cancel')}
               </button>
             </div>
           </div>
@@ -379,16 +390,16 @@ export default function AdminUsersPage() {
                     <tr key={u._id} className="hover:bg-brand-grey-50">
                       <td className="px-3 py-2 font-medium">{u.full_name}</td>
                       <td className="px-3 py-2 text-brand-blue">{u.phone_primary || '—'}</td>
-                      <td className="px-3 py-2 text-xs">{u.cadre_code || (u.is_admin ? '👑 Admin' : '—')}</td>
+                      <td className="px-3 py-2 text-xs">{u.cadre_code || (u.is_admin ? <span className="inline-flex items-center gap-1"><ShieldCheck size={12} /> Admin</span> : '—')}</td>
                       <td className="px-3 py-2 text-xs">{u.current_station?.region_name || '—'}</td>
                       <td className="px-3 py-2 text-right whitespace-nowrap">
                         <button onClick={() => restore(u)}
-                          className="text-green-600 text-xs px-2 hover:underline font-semibold">
-                          ↺ {t('admin.trash_restore')}
+                          className="inline-flex items-center gap-1 text-green-600 text-xs px-2 hover:underline font-semibold">
+                          <RotateCcw size={13} /> {t('admin.trash_restore')}
                         </button>
                         <button onClick={() => purge(u)}
-                          className="text-brand-red text-xs px-2 hover:underline">
-                          🗑 {t('admin.trash_permanent')}
+                          className="inline-flex items-center gap-1 text-brand-red text-xs px-2 hover:underline">
+                          <Trash2 size={13} /> {t('admin.trash_permanent')}
                         </button>
                       </td>
                     </tr>
@@ -530,14 +541,17 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-xl w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-xl font-bold">👁 {t('admin.view_title')} {user.is_admin && '👑'}</h2>
+          <h2 className="text-xl font-bold flex items-center gap-2"><Eye size={20} /> {t('admin.view_title')}</h2>
           <button onClick={onClose} className="text-brand-grey-400 hover:text-brand-grey-700 text-lg px-1">✕</button>
         </div>
         <div className="bg-brand-grey-50 rounded-xl p-3 text-center">
           <div className="w-12 h-12 mx-auto rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-lg">
             {user.full_name?.slice(0, 1).toUpperCase()}
           </div>
-          <div className="font-bold text-brand-grey-900 mt-1.5">{user.full_name} {user.is_admin && '👑'}</div>
+          <div className="font-bold text-brand-grey-900 mt-1.5 flex items-center justify-center gap-1.5">
+            {user.full_name}
+            {user.is_admin && <ShieldCheck size={16} className="text-brand-blue" />}
+          </div>
           {!user.is_admin && (
             <div className="text-xs text-brand-grey-500">{user.cadre_display || user.cadre_code || '—'}</div>
           )}
@@ -548,7 +562,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
             <a href={`https://wa.me/${user.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}`}
               target="_blank" rel="noreferrer"
               className="text-green-600 font-semibold hover:underline inline-flex items-center gap-1">
-              🟢 {user.phone_alt}
+              {user.phone_alt}
             </a>
           ))}
           {user.email && row(t('admin.email'), user.email)}
@@ -565,12 +579,12 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
             ? dests.map((d: any) => [d.district_name, d.region_name].filter(Boolean).join(', ')).join(' ; ')
             : '—')}
           {row(t('admin.status'),
-            <span className={user.status === 'disabled'
-              ? 'text-brand-red font-semibold' : 'text-green-600 font-semibold'}>
-              {user.status === 'disabled' ? '🚫 ' + t('admin.status_disabled') : '● ' + t('admin.status_active')}
+            <span className={`inline-flex items-center gap-1 ${user.status === 'disabled'
+              ? 'text-brand-red font-semibold' : 'text-green-600 font-semibold'}`}>
+              {user.status === 'disabled' ? <><UserX size={13} /> {t('admin.status_disabled')}</> : <><UserCheck size={13} /> {t('admin.status_active')}</>}
             </span>)}
-          {row(t('admin.verified'), user.is_verified ? '✓ ' + t('admin.verified') : t('admin.not_verified'))}
-          {row(t('admin.role'), user.is_admin ? '👑 ' + t('admin.admin_role') : t('admin.user_role'))}
+          {row(t('admin.verified'), user.is_verified ? <span className="text-green-600 font-semibold"><CheckCircle2 size={13} className="inline" /> {t('admin.verified')}</span> : <span className="text-brand-grey-500"><XCircle size={13} className="inline" /> {t('admin.not_verified')}</span>)}
+          {row(t('admin.role'), user.is_admin ? <span className="text-brand-blue font-semibold"><ShieldCheck size={13} className="inline" /> {t('admin.admin_role')}</span> : t('admin.user_role'))}
           {row(t('admin.created_at'), conversationTime(user.created_at))}
         </div>
 
@@ -578,7 +592,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         {!user.is_admin && (
           <div className="rounded-xl border border-brand-grey-100 p-3">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-brand-grey-900">👥 {t('admin.view_matches_title')}</h3>
+              <h3 className="text-sm font-bold text-brand-grey-900 flex items-center gap-1.5"><Users size={14} /> {t('admin.view_matches_title')}</h3>
               {matches && <span className="text-[11px] font-bold text-brand-blue">{matches.length}</span>}
             </div>
             {matches === null ? (
@@ -612,7 +626,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
 
         <div className="flex gap-2 pt-3 border-t">
           <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
-          <button onClick={onEdit} className="btn-primary px-5">✎ {t('action.edit')}</button>
+          <button onClick={onEdit} className="btn-primary px-5 flex items-center gap-1.5"><Pencil size={14} /> {t('action.edit')}</button>
         </div>
       </div>
     </div>
@@ -707,7 +721,7 @@ function EditUserModal({ user, onClose, onSaved }: any) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-lg w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-xl font-bold">{t('admin.edit_title')} {user.is_admin && '👑'}</h2>
+        <h2 className="text-xl font-bold flex items-center gap-2"><Pencil size={18} /> {t('admin.edit_title')}</h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2"><label className="label">{t('admin.col_name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
           <div className="col-span-2"><label className="label">{t('admin.phone')}</label><input className="input" value={phone_primary} onChange={(e) => setPhonePrimary(e.target.value)} placeholder="0712345678" /></div>
@@ -720,7 +734,7 @@ function EditUserModal({ user, onClose, onSaved }: any) {
               <option value="active">{t('admin.status_active')}</option>
               <option value="inactive">{t('admin.status_inactive')}</option>
               <option value="matched">{t('admin.status_matched')}</option>
-              <option value="disabled">🚫 {t('admin.status_disabled')}</option>
+              <option value="disabled">{t('admin.status_disabled')}</option>
             </select>
           </div>
           <div><label className="label">{t('admin.new_password')}</label><input type="password" className="input" value={new_password} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('admin.leave_blank')} /></div>
@@ -779,7 +793,7 @@ function EditUserModal({ user, onClose, onSaved }: any) {
                         {d.region_id && districts.filter((x) => x.region_id === Number(d.region_id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
                       </select>
                       {dests.length > 1 && (
-                        <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2">🗑</button>
+                        <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2"><Trash2 size={14} /></button>
                       )}
                     </div>
                   ))}
@@ -890,7 +904,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-xl font-bold">{t('admin.create_title')}</h2>
+        <h2 className="text-xl font-bold flex items-center gap-2"><Plus size={18} /> {t('admin.create_title')}</h2>
         {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-2">{error}</div>}
         <div className="grid grid-cols-2 gap-3">
           <div><label className="label">{t('admin.full_name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
@@ -912,11 +926,11 @@ function CreateUserModal({ onClose, onCreated }: any) {
           <div><label className="label">{t('admin.status')}</label>
             <select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="active">{t('admin.status_active')}</option>
-              <option value="disabled">🚫 {t('admin.status_disabled')}</option>
+              <option value="disabled">{t('admin.status_disabled')}</option>
             </select>
           </div>
           <label className="col-span-2 flex items-center gap-2 text-sm py-1">
-            <input type="checkbox" checked={is_admin} onChange={(e) => setAdmin(e.target.checked)} /> {t('admin.admin_ck')} 👑
+            <input type="checkbox" checked={is_admin} onChange={(e) => setAdmin(e.target.checked)} /> <ShieldCheck size={14} className="text-brand-blue" /> {t('admin.admin_ck')}
           </label>
           <SubjectPicker cadreCode={cadre_code} value={subjects} onChange={setSubjects} cadres={cadres} />
 
@@ -953,7 +967,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
                     {d.region_id && districts.filter((x) => x.region_id === Number(d.region_id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
                   </select>
                   {dests.length > 1 && (
-                    <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2">🗑</button>
+                    <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2"><Trash2 size={14} /></button>
                   )}
                 </div>
               ))}
@@ -1010,7 +1024,7 @@ function AddAdminModal({ onClose, onCreated }: any) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 my-auto" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-xl font-bold">+ {t('admin.add_admin')} 👑</h2>
+        <h2 className="text-xl font-bold flex items-center gap-2"><ShieldCheck size={18} /> {t('admin.add_admin')}</h2>
         <p className="text-xs text-brand-grey-500 leading-relaxed">
           {t('admin.add_admin_hint')}
         </p>

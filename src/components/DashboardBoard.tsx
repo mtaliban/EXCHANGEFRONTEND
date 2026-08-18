@@ -15,6 +15,10 @@ import { timeAgo } from '@/lib/timeAgo';
 import { parseServerDate } from '@/lib/dates';
 import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
+import {
+  Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
+  Stethoscope, GraduationCap, Zap, Filter,
+} from 'lucide-react';
 
 const FRESH_MS = 30 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya NUSU SAA (30min)
 const PAGE_SIZE = 5; // Wageni 5 wa kwanza pale juu — zilizobaki pagination (Next)
@@ -279,7 +283,7 @@ export default function DashboardBoard() {
           <div className="flex items-center gap-2 flex-shrink-0">
             {!loading && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-grey-900 dark:text-white bg-brand-grey-100 dark:bg-brand-grey-800 px-2 py-0.5 rounded-full">
-                👥 {board?.total ?? 0}
+                <Users size={12} /> {board?.total ?? 0}
               </span>
             )}
             {onlineCount > 0 && (
@@ -344,7 +348,9 @@ export default function DashboardBoard() {
           </div>
           <div className="flex items-center justify-between mt-1.5 flex-wrap gap-1.5">
             <span className="text-[11px] font-medium text-brand-grey-600 dark:text-brand-grey-300">
-              📍 {activeFilterLabel || t('board.all_regions')}
+              <span className="text-brand-grey-600 dark:text-brand-grey-300 font-medium">
+                <MapPin size={12} className="inline" /> {activeFilterLabel || t('board.all_regions')}
+              </span>
             </span>
             {hasFilter && (
               <button type="button" onClick={clearFilters} className="text-[11px] text-brand-red hover:underline">
@@ -372,7 +378,7 @@ export default function DashboardBoard() {
                 ))}
               </div>
               <div className="flex items-center gap-1.5 max-w-sm">
-                <span className="text-brand-grey-400 text-xs">🔍</span>
+                <span className="text-brand-grey-400 text-xs"><Search size={12} /></span>
                 <input
                   className="input text-xs py-1"
                   placeholder={t('board.subj_search_ph')}
@@ -558,7 +564,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now
           {/* NI NANI: idara (Afya/Elimu) + kada — majina yote yanaonekana (hakuna kukata) */}
           <div className="flex items-center gap-1 flex-wrap mt-0.5">
             <span className="text-[10px] font-semibold text-brand-blue-600 dark:text-brand-blue-400">
-              {isEdu ? '👩🏫' : '🏥'} {isEdu ? t('label.category_education') : t('label.category_health')}
+              {isEdu ? <GraduationCap size={11} className="inline" /> : <Stethoscope size={11} className="inline" />} {isEdu ? t('label.category_education') : t('label.category_health')}
             </span>
             <span className="text-[11px] font-medium text-brand-grey-600 dark:text-brand-grey-300 break-words min-w-0 leading-snug">
               {c.cadre_display || c.cadre_code}
@@ -568,15 +574,14 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now
       </div>
 
       {from && (
-        <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-1">
-          <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-            📍 {t('board.from')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{from.district_name || ''} {from.region_name}</b>
-          </div>
-          {to && (
-            <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-              🎯 {t('board.wants_go')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{to.district_name || to.region_name}, {to.region_name}</b>
+        <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-1">            <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
+              <MapPin size={11} className="inline" /> {t('board.from')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{from.district_name || ''} {from.region_name}</b>
             </div>
-          )}
+            {to && (
+              <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
+                <Target size={11} className="inline" /> {t('board.wants_go')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{to.district_name || to.region_name}, {to.region_name}</b>
+              </div>
+            )}
           <div className="text-brand-blue font-extrabold">↓ {t('board.coming_to_you')} <span className="text-brand-grey-900 dark:text-white">{myRegionName}</span></div>
         </div>
       )}
@@ -585,7 +590,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
           <span className="text-brand-grey-500 font-semibold">{t('board.subjects')}:</span>
           {anySubjectMatch && (
-            <span className="px-1.5 py-0.5 rounded-full bg-brand-blue text-white font-bold">🎯 {t('board.subjects_match')}</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-brand-blue text-white font-bold"><Target size={10} className="inline" /> {t('board.subjects_match')}</span>
           )}
           {c.subjects.map((s: string) => {
             const matched = mySubjects.includes(s);
@@ -601,16 +606,16 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now
 
       {c.phone_primary && (
         <a href={`tel:${c.phone_primary}`} className="text-[11px] sm:text-xs text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
-          📞 {c.phone_primary}
+          <Phone size={12} /> {c.phone_primary}
         </a>
       )}
 
       {/* MUDA WA JUU (relative): wapya wana "🆕 MPYA + muda", wengine 🕐 muda tu — siyo saa halisi */}
       <div className={`text-[11px] font-medium ${fresh ? 'text-brand-blue font-bold' : 'text-brand-grey-400'}`} title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
         {fresh ? (
-          <span className="animate-[newPulse_1s_ease-in-out_infinite]">🆕 {t('board.new_badge')} · {ago}</span>
+          <span className="inline-flex items-center gap-1 animate-[newPulse_1s_ease-in-out_infinite]"><Zap size={11} className="text-brand-blue" /> {t('board.new_badge')} · {ago}</span>
         ) : (
-          <>🕐 {ago}</>
+          <span className="inline-flex items-center gap-1"><Clock size={11} /> {ago}</span>
         )}
       </div>
 
@@ -620,11 +625,11 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now
       <div className="flex gap-1.5 mt-auto pt-1">
         <button onClick={onCall} disabled={!c.phone_primary} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
           title={t('dash.call')}>
-          📞 <span className="hidden min-[360px]:inline">{t('dash.call')}</span>
+          <Phone size={12} /> <span className="hidden min-[360px]:inline">{t('dash.call')}</span>
         </button>
         <button onClick={onSMS} disabled={!c.phone_primary} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
           title={t('board.sms_btn')}>
-          ✉️ <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
+          <MessageSquare size={12} /> <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
         </button>
         {c.phone_alt && (
           <button onClick={onWhatsApp} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
