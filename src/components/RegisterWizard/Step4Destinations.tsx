@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, type Region, type District, type Destination } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
+import { AlertCircle } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -127,11 +128,16 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         {t('step4.add_more')} ({drafts.length}/15)
       </button>
 
-      {error && <p className="text-brand-red text-sm">{error}</p>}
+      {error && (
+        <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3">
+          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+          <span className="font-medium">{error}</span>
+        </div>
+      )}
 
       <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-3 pt-4">
         <button type="button" onClick={onBack} disabled={submitting} className="btn-outline w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.back')}</button>
-        <button type="submit" disabled={submitting} className="btn-accent w-full sm:w-auto flex-1 sm:flex-none">
+        <button type="submit" disabled={submitting} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">
           {submitting ? t('step4.submitting') : t('step4.submit')}
         </button>
       </div>

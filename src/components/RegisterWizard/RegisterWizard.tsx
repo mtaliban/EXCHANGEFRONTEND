@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import clsx from 'clsx';
+import { AlertCircle } from 'lucide-react';
 import Step1Identity from './Step1Identity';
 import Step2Cadre from './Step2Cadre';
 import Step3Station from './Step3Station';
@@ -84,7 +85,7 @@ export default function RegisterWizard({ onComplete }: Props) {
                   step > s.n
                     ? 'bg-brand-blue text-white border-brand-blue'
                     : step === s.n
-                      ? 'bg-brand-orange text-white border-brand-orange'
+                      ? 'bg-brand-blue text-white border-brand-blue'
                       : 'bg-white text-brand-grey-500 border-brand-grey-300'
                 )}
               >
@@ -108,8 +109,9 @@ export default function RegisterWizard({ onComplete }: Props) {
       </div>
 
       {error && (
-        <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3 mb-4">
-          {error}
+        <div className="flex items-start gap-2.5 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3.5 mb-4">
+          <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+          <span className="font-medium">{error}</span>
         </div>
       )}
 

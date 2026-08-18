@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
+import { AlertCircle, Phone, MessageCircle, User, LockKeyhole, type LucideIcon } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -25,6 +26,25 @@ function EyeIcon({ open }: { open: boolean }) {
         </>
       )}
     </svg>
+  );
+}
+
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p className="flex items-start gap-1.5 text-brand-red text-xs mt-1.5">
+      <AlertCircle size={13} className="flex-shrink-0 mt-0.5" />
+      <span>{msg}</span>
+    </p>
+  );
+}
+
+function FieldLabel({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
+  return (
+    <label className="label flex items-center gap-1.5">
+      <Icon size={15} className="text-brand-blue flex-shrink-0" />
+      {children}
+    </label>
   );
 }
 
@@ -69,32 +89,32 @@ export default function Step1Identity({ initial, onNext }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
-      <h2 className="text-xl font-bold text-brand-grey-900 mb-4">{t('step1.title')}</h2>
+    <form onSubmit={submit} className="space-y-4" noValidate>
+      <h2 className="text-lg font-bold text-brand-grey-900 mb-4">{t('step1.title')}</h2>
 
       <div>
-        <label className="label">{t('step1.full_name')} *</label>
+        <FieldLabel icon={User}>{t('step1.full_name')} *</FieldLabel>
         <input className="input" value={full_name} onChange={(e) => setName(e.target.value)} placeholder={t('step1.name_ph')} required />
-        {errors.full_name && <p className="text-brand-red text-xs mt-1">{errors.full_name}</p>}
+        <FieldError msg={errors.full_name} />
       </div>
 
       <div>
-        <label className="label">📞 {t('step1.phone_normal')} *</label>
+        <FieldLabel icon={Phone}>{t('step1.phone_normal')} *</FieldLabel>
         <input className="input" value={phone_primary} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" />
         <p className="text-[11px] text-brand-grey-400 mt-0.5">{t('step1.phone_normal_hint')}</p>
-        {errors.phone_primary && <p className="text-brand-red text-xs mt-1">{errors.phone_primary}</p>}
+        <FieldError msg={errors.phone_primary} />
       </div>
 
       <div>
-        <label className="label">🟢 {t('step1.phone_whatsapp')} *</label>
+        <FieldLabel icon={MessageCircle}>{t('step1.phone_whatsapp')} *</FieldLabel>
         <input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" required />
         <p className="text-[11px] text-brand-grey-400 mt-0.5">{t('step1.phone_whatsapp_hint')}</p>
-        {errors.phone_alt && <p className="text-brand-red text-xs mt-1">{errors.phone_alt}</p>}
+        <FieldError msg={errors.phone_alt} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="label">{t('step1.password')} *</label>
+          <FieldLabel icon={LockKeyhole}>{t('step1.password')} *</FieldLabel>
           <div className="relative">
             <input className="input pr-11" type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('step1.min6')} required />
             <button type="button" tabIndex={-1} onClick={() => setShowPw(!showPw)}
@@ -103,10 +123,10 @@ export default function Step1Identity({ initial, onNext }: Props) {
               <EyeIcon open={showPw} />
             </button>
           </div>
-          {errors.password && <p className="text-brand-red text-xs mt-1">{errors.password}</p>}
+          <FieldError msg={errors.password} />
         </div>
         <div>
-          <label className="label">{t('step1.repeat_password')} *</label>
+          <FieldLabel icon={LockKeyhole}>{t('step1.repeat_password')} *</FieldLabel>
           <div className="relative">
             <input className="input pr-11" type={showPw2 ? 'text' : 'password'} value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder={t('step1.repeat_ph')} required />
             <button type="button" tabIndex={-1} onClick={() => setShowPw2(!showPw2)}
@@ -115,7 +135,7 @@ export default function Step1Identity({ initial, onNext }: Props) {
               <EyeIcon open={showPw2} />
             </button>
           </div>
-          {errors.password2 && <p className="text-brand-red text-xs mt-1">{errors.password2}</p>}
+          <FieldError msg={errors.password2} />
         </div>
       </div>
 

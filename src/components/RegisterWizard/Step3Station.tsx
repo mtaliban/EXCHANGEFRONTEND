@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, type Region, type District, type Facility } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
+import { AlertCircle } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -114,7 +115,12 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
         </div>
       )}
 
-      {error && <p className="text-brand-red text-sm">{error}</p>}
+      {error && (
+        <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3">
+          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+          <span className="font-medium">{error}</span>
+        </div>
+      )}
 
       <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-3 pt-4">
         <button type="button" onClick={onBack} className="btn-outline w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.back')}</button>
