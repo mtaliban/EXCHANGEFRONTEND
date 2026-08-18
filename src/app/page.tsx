@@ -33,23 +33,37 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            {/* Hospital / school imagery — inatambulisha system */}
-            <div className="relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-lg ring-1 ring-brand-grey-200 dark:ring-brand-grey-600">
+            {/* Picha moja iliyogawanywa: hospitali + shule/walimu */}
+            <div className="relative rounded-3xl overflow-hidden shadow-lg ring-1 ring-brand-grey-200 dark:ring-brand-grey-600 grid grid-cols-2">
+              <div className="relative h-56 sm:h-80">
                 <Image
                   src="/images/hospital.jpg"
-                  alt="Hospitali ya Tanzania"
-                  width={900}
-                  height={600}
-                  className="w-full h-64 sm:h-80 object-cover"
+                  alt="Kituo cha Afya Tanzania"
+                  fill
                   priority
                   unoptimized
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
                 />
-                <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
-                  <span className="text-[11px] font-semibold bg-white text-brand-grey-900 px-3 py-1.5 rounded-full shadow whitespace-nowrap">
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-grey-950/80 via-transparent to-transparent" />
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex justify-center">
+                  <span className="text-[10px] sm:text-[11px] font-semibold bg-white text-brand-grey-900 px-2.5 py-1 rounded-full shadow whitespace-nowrap">
                     Vituo vya Afya 14,000+
                   </span>
-                  <span className="text-[11px] font-semibold bg-white text-brand-grey-900 px-3 py-1.5 rounded-full shadow whitespace-nowrap">
+                </div>
+              </div>
+              <div className="relative h-56 sm:h-80">
+                <Image
+                  src="/images/school-classroom.jpg"
+                  alt="Shule za Tanzania"
+                  fill
+                  unoptimized
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-grey-950/80 via-transparent to-transparent" />
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex justify-center">
+                  <span className="text-[10px] sm:text-[11px] font-semibold bg-white text-brand-grey-900 px-2.5 py-1 rounded-full shadow whitespace-nowrap">
                     Shule 25,000+
                   </span>
                 </div>
