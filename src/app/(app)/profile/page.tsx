@@ -7,6 +7,7 @@ import { useLive } from '@/lib/liveSocket';
 import { useAuth } from '@/lib/auth';
 import Spinner from '@/components/Spinner';
 import { useDataVersion } from '@/lib/useDataVersion';
+import { Loader2 } from 'lucide-react';
 
 export default function ProfilePage() {
   const t = useT();
@@ -17,8 +18,6 @@ export default function ProfilePage() {
 
   useEffect(() => { getMyProfile().then(setProfile).catch(() => {}); }, []);
 
-  // REAL-TIME: admin akibadilisha taarifa zako (user.updated_by_admin) → wasifu
-  // unajirefresh PAPO HAPO bila refresh ya page (event-driven kama WebSocket).
   const { subscribe } = useLive();
   useEffect(() => {
     const un = subscribe('user.updated_by_admin', (p: any) => {
@@ -28,8 +27,7 @@ export default function ProfilePage() {
       getMyProfile().then(setProfile).catch(() => {});
     });
     return () => un();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subscribe, user]);
+  }, [subscribe, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!profile) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
@@ -75,7 +73,6 @@ export default function ProfilePage() {
   );
 }
 
-/** Wasifu wa ADMIN — taarifa za akaunti (email, status, usalama), SIYO za mwalimu. */
 function ViewAdminProfile({ profile }: any) {
   const t = useT();
   return (
@@ -105,7 +102,7 @@ function EditAdminProfile({ profile, onSaved }: any) {
     setSaving(true); setError(null);
     try {
       await updateProfile({ full_name, phone_alt: phone_alt || null });
-      bustGetCache(); // lazima — vinginevyo getMyProfile inarudisha cache ya kale!
+      bustGetCache();
       const fresh = await getMyProfile();
       onSaved(fresh);
     } catch (e: any) {
@@ -195,17 +192,15 @@ function EditProfile({ profile, onSaved }: any) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
 
   const category = profile.category as string;
-  // Kada yenye level (Primary/Secondary) = ya ualimu → inaweza kuchagua masomo.
   const currentCadre = availCadres.find((c) => c.code === cadre_code);
   const subjectLevel: 'Primary' | 'Secondary' | undefined =
     currentCadre?.level === 'Secondary' ? 'Secondary'
       : currentCadre?.level === 'Primary' ? 'Primary'
         : undefined;
 
-  // REAL-TIME: admin akibadilisha data (masomo/kada/mikoa) → wasifu unajirefresh
-  // PAPO HAPO bila refresh ya page (event-driven).
   const dv = useDataVersion();
 
   useEffect(() => {
@@ -214,17 +209,17 @@ function EditProfile({ profile, onSaved }: any) {
       setAvailCadres(cs);
       if (!cs.find((c) => c.code === cadre_code)) setCadreCode('');
     }).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, dv]);
+  }, [category, dv]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (subjectLevel) {
-      getSubjects(subjectLevel).then(setAvailSubjects);
-      // Kada/level ilibadilika → masomo ya level ya kale hayafai tena
-      setSubjects((prev) => prev); // weka; user atachagua upya kama anahitaji
+      setLoadingSubjects(true);
+      getSubjects(subjectLevel).then(setAvailSubjects).finally(() => setLoadingSubjects(false));
     } else {
       setAvailSubjects([]);
     }
-  }, [category, cadre_code, subjectLevel, dv]);
+  }, [category, cadre_code, subjectLevel, dv]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => { if (region_id) getDistricts(region_id).then(setDistricts); }, [region_id]);
   useEffect(() => { if (district_id) getFacilities(district_id, (category as 'health' | 'education') || 'health', subjectLevel).then(setFacilities).catch(() => setFacilities([])); }, [district_id, category, subjectLevel]);
   useEffect(() => {
@@ -233,12 +228,10 @@ function EditProfile({ profile, onSaved }: any) {
         getDistricts(d.region_id).then((list) => setDestDistricts((m) => ({ ...m, [d.region_id]: list })));
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinations]);
+  }, [destinations]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function saveProfile() {
     setSaving(true); setError(null);
-    // WhatsApp namba ni LAZIMA — ndiyo inayotumika kwa button ya WhatsApp.
     if (!phone_alt || !/^(\+?255|0)\d{9}$/.test(phone_alt.replace(/[\s-]/g, ''))) {
       setError(t('step1.err_phone_alt_required'));
       setSaving(false);
@@ -267,7 +260,6 @@ function EditProfile({ profile, onSaved }: any) {
           notes: d.notes ?? null,
         };
       });
-      // UPDATE KAMILI kwenye hatua moja — jina, simu, masomo, kituo, destinations
       await updateProfile({
         full_name,
         phone_primary: phone_primary || undefined,
@@ -277,7 +269,7 @@ function EditProfile({ profile, onSaved }: any) {
         current_station: station as any,
         desired_destinations: dests.length ? dests : undefined,
       });
-      bustGetCache(); // lazima — vinginevyo getMyProfile inarudisha cache ya kale!
+      bustGetCache();
       const fresh = await getMyProfile();
       onSaved(fresh);
     } catch (e: any) {
@@ -337,15 +329,22 @@ function EditProfile({ profile, onSaved }: any) {
         {subjectLevel && (
           <div>
             <label className="label">{t('label.subjects')} ({subjectLevel === 'Primary' ? t('step2.primary') : t('step2.secondary')})</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-44 overflow-y-auto">
-              {availSubjects.map((s) => (
-                <button key={s.code} type="button"
-                  onClick={() => setSubjects((prev) => prev.includes(s.code) ? prev.filter((c) => c !== s.code) : [...prev, s.code])}
-                  className={`px-2 py-1.5 rounded text-xs border transition ${subjects.includes(s.code) ? 'bg-brand-gold text-white border-brand-gold' : 'border-brand-grey-300 hover:border-brand-gold'}`}>
-                  {s.name}
-                </button>
-              ))}
-            </div>
+            {loadingSubjects ? (
+              <div className="flex items-center justify-center py-4 text-brand-grey-400">
+                <Loader2 size={18} className="animate-spin mr-2" />
+                <span className="text-sm">{t('msg.loading')}</span>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto">
+                {availSubjects.map((s) => (
+                  <button key={s.code} type="button"
+                    onClick={() => setSubjects((prev) => prev.includes(s.code) ? prev.filter((c) => c !== s.code) : [...prev, s.code])}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition whitespace-nowrap ${subjects.includes(s.code) ? 'bg-brand-blue text-white border-brand-blue' : 'bg-white text-brand-grey-700 border-brand-grey-300 hover:border-brand-blue'}`}>
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
