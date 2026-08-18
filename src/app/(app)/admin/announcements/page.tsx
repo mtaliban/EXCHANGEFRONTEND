@@ -7,7 +7,7 @@ import { useT } from '@/lib/i18n';
 import { API_URL } from '@/lib/config';
 import {
   Megaphone, Send, Trash2, RefreshCw, Users, Clock, User, Search,
-  CheckCircle2, AlertTriangle, Loader2, Plus,
+  CheckCircle2, AlertTriangle, Loader2, Plus, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 function useLiveDepartments(onChange: () => void) {
@@ -77,6 +77,8 @@ export default function AdminAnnouncementsPage() {
   const [result, setResult] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [list, setList] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
+  const [historyPage, setHistoryPage] = useState(1);
+  const PAGE_SIZE = 3;
 
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
   const liveDepts = useLiveDepartments(() => {
@@ -242,7 +244,7 @@ export default function AdminAnnouncementsPage() {
         </div>
       </div>
 
-      {/* History */}
+      {/* History — paginated */}
       <div className="flex items-center justify-between mt-8 mb-3">
         <h2 className="text-[11px] font-bold uppercase tracking-wider text-brand-grey-500 flex items-center gap-1.5">
           <Clock size={13} /> {t('ann.history')} ({list.length})
@@ -255,7 +257,7 @@ export default function AdminAnnouncementsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {list.map((a) => (
+          {list.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE).map((a) => (
             <div key={a.announcement_id} className="bg-white rounded-xl border border-brand-grey-200 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -285,6 +287,21 @@ export default function AdminAnnouncementsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* History pagination */}
+      {list.length > PAGE_SIZE && (
+        <div className="flex items-center justify-center gap-2 pt-3">
+          <button disabled={historyPage <= 1} onClick={() => setHistoryPage(historyPage - 1)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-xs font-bold text-brand-grey-500 px-2">{historyPage} / {Math.ceil(list.length / PAGE_SIZE)}</span>
+          <button disabled={historyPage >= Math.ceil(list.length / PAGE_SIZE)} onClick={() => setHistoryPage(historyPage + 1)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+            <ChevronRight size={16} />
+          </button>
         </div>
       )}
     </div>

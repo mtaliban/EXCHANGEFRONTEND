@@ -8,7 +8,7 @@ import { useLive } from '@/lib/liveSocket';
 import Spinner from '@/components/Spinner';
 import { Megaphone, X, Clock, Users, Inbox, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 2;
 
 export default function AnnouncementsPage() {
   const t = useT();
@@ -16,6 +16,7 @@ export default function AnnouncementsPage() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedHistory, setExpandedHistory] = useState<Set<string>>(new Set());
+  const [activePage, setActivePage] = useState(1);
   const [historyPage, setHistoryPage] = useState(1);
 
   async function reload() {
@@ -81,7 +82,7 @@ export default function AnnouncementsPage() {
         </div>
       )}
       <div className="space-y-3">
-        {items.map((a) => (
+        {items.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE).map((a) => (
           <div key={a.announcement_id} className="bg-white rounded-xl border border-brand-blue-200 p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
@@ -115,6 +116,21 @@ export default function AnnouncementsPage() {
           </div>
         ))}
       </div>
+
+      {/* Active pagination */}
+      {items.length > PAGE_SIZE && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <button disabled={activePage <= 1} onClick={() => setActivePage(activePage - 1)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-xs font-bold text-brand-grey-500 px-2">{activePage} / {Math.ceil(items.length / PAGE_SIZE)}</span>
+          <button disabled={activePage >= Math.ceil(items.length / PAGE_SIZE)} onClick={() => setActivePage(activePage + 1)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
 
       {/* History — paginated */}
       {history.length > 0 && (
