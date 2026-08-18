@@ -250,7 +250,7 @@ export default function AdminEventsPage() {
   const [liveAt, setLiveAt] = useState<number | null>(null);
   const typeRef = useRef(type);
   typeRef.current = type;
-  const PAGE_SIZE = 25;
+  const PAGE_SIZE = 10;
 
   function flash(text: string, ok = true) {
     setMsg({ text, ok });

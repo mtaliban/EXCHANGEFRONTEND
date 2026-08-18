@@ -8,7 +8,7 @@ import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 import {
   CreditCard, CheckCircle2, XCircle, Clock, Eye, EyeOff,
-  AlertTriangle, Banknote, Users, TrendingUp,
+  AlertTriangle, Banknote, Users, TrendingUp, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 type Status = '' | 'verifying' | 'approved' | 'rejected';
@@ -82,8 +82,12 @@ export default function AdminPaymentsPage() {
 
   if (!data) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
   const counts: Record<string, number> = data.counts || { verifying: 0, approved: 0, rejected: 0, all: data.payments.length };
   const visiblePayments = (data.payments || []).filter((p: any) => !status || p.status === status);
+  const totalPages = Math.max(1, Math.ceil(visiblePayments.length / PAGE_SIZE));
+  const pageItems = visiblePayments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -93,7 +97,7 @@ export default function AdminPaymentsPage() {
           <CreditCard size={22} className="text-brand-blue" />
           {t('adminpay.title')}
         </h1>
-        <select className="input w-auto" value={status} onChange={(e) => setStatus(e.target.value as Status)}>
+        <select className="input w-auto" value={status} onChange={(e) => { setStatus(e.target.value as Status); setPage(1); }}>
           <option value="verifying">{t('adminpay.verifying')} ({counts.verifying ?? 0})</option>
           <option value="approved">{t('adminpay.approved')} ({counts.approved ?? 0})</option>
           <option value="rejected">{t('adminpay.rejected')} ({counts.rejected ?? 0})</option>
@@ -166,7 +170,7 @@ export default function AdminPaymentsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-brand-grey-100">
-            {visiblePayments.map((p: any, i: number) => {
+            {pageItems.map((p: any, i: number) => {
               const isOpen = expanded[p.order_id];
               const st = STATUS_CONFIG[p.status] || STATUS_CONFIG.verifying;
               const StIcon = st.icon;
@@ -240,6 +244,21 @@ export default function AdminPaymentsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <button disabled={page <= 1} onClick={() => setPage(page - 1)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-xs font-bold text-brand-grey-500 px-2">{page} / {totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
 
       {/* SMS ya mchangiaji — inline chini ya table */}
       {Object.keys(expanded).some((k) => expanded[k]) && (
