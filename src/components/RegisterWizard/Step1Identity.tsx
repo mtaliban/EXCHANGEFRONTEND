@@ -11,7 +11,7 @@ interface Props {
 
 function EyeIcon({ open }: { open: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
       {open ? (
         <>
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
@@ -32,8 +32,8 @@ function EyeIcon({ open }: { open: boolean }) {
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
   return (
-    <p className="flex items-start gap-1.5 text-brand-red text-xs mt-1.5">
-      <AlertCircle size={13} className="flex-shrink-0 mt-0.5" />
+    <p className="flex items-start gap-1 text-brand-red text-xs mt-1">
+      <AlertCircle size={12} className="flex-shrink-0 mt-0.5" />
       <span>{msg}</span>
     </p>
   );
@@ -42,7 +42,7 @@ function FieldError({ msg }: { msg?: string }) {
 function FieldLabel({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
   return (
     <label className="label flex items-center gap-1.5">
-      <Icon size={15} className="text-brand-blue flex-shrink-0" />
+      <Icon size={14} className="text-brand-blue flex-shrink-0" />
       {children}
     </label>
   );
@@ -55,8 +55,9 @@ export default function Step1Identity({ initial, onNext }: Props) {
   const [phone_alt, setPhoneAlt] = useState(initial.phone_alt || '');
   const [password, setPassword] = useState(initial.password || '');
   const [password2, setPassword2] = useState(initial.password || '');
-  const [showPw, setShowPw] = useState(false);
-  const [showPw2, setShowPw2] = useState(false);
+  // Password zinaonekana BY DEFAULT (rahisi kwa watumiaji) — macho yanaficha.
+  const [showPw, setShowPw] = useState(true);
+  const [showPw2, setShowPw2] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function validate() {
@@ -89,8 +90,8 @@ export default function Step1Identity({ initial, onNext }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4" noValidate>
-      <h2 className="text-lg font-bold text-brand-grey-900 mb-4">{t('step1.title')}</h2>
+    <form onSubmit={submit} className="space-y-3.5" noValidate>
+      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step1.title')}</h2>
 
       <div>
         <FieldLabel icon={User}>{t('step1.full_name')} *</FieldLabel>
@@ -101,24 +102,22 @@ export default function Step1Identity({ initial, onNext }: Props) {
       <div>
         <FieldLabel icon={Phone}>{t('step1.phone_normal')} *</FieldLabel>
         <input className="input" value={phone_primary} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" />
-        <p className="text-[11px] text-brand-grey-400 mt-0.5">{t('step1.phone_normal_hint')}</p>
         <FieldError msg={errors.phone_primary} />
       </div>
 
       <div>
         <FieldLabel icon={MessageCircle}>{t('step1.phone_whatsapp')} *</FieldLabel>
         <input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" required />
-        <p className="text-[11px] text-brand-grey-400 mt-0.5">{t('step1.phone_whatsapp_hint')}</p>
         <FieldError msg={errors.phone_alt} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <FieldLabel icon={LockKeyhole}>{t('step1.password')} *</FieldLabel>
           <div className="relative">
-            <input className="input pr-11" type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('step1.min6')} required />
+            <input className="input pr-9" type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('step1.min6')} required />
             <button type="button" tabIndex={-1} onClick={() => setShowPw(!showPw)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-grey-600 transition"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-grey-600 transition"
               aria-label="Onyesha/Ficha password">
               <EyeIcon open={showPw} />
             </button>
@@ -128,9 +127,9 @@ export default function Step1Identity({ initial, onNext }: Props) {
         <div>
           <FieldLabel icon={LockKeyhole}>{t('step1.repeat_password')} *</FieldLabel>
           <div className="relative">
-            <input className="input pr-11" type={showPw2 ? 'text' : 'password'} value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder={t('step1.repeat_ph')} required />
+            <input className="input pr-9" type={showPw2 ? 'text' : 'password'} value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder={t('step1.repeat_ph')} required />
             <button type="button" tabIndex={-1} onClick={() => setShowPw2(!showPw2)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-grey-600 transition"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-grey-600 transition"
               aria-label="Onyesha/Ficha password">
               <EyeIcon open={showPw2} />
             </button>
@@ -139,7 +138,7 @@ export default function Step1Identity({ initial, onNext }: Props) {
         </div>
       </div>
 
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end pt-2">
         <button type="submit" className="btn-primary">{t('wizard.next')}</button>
       </div>
     </form>

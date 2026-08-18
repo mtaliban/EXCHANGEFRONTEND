@@ -78,9 +78,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
-      <h2 className="text-xl font-bold text-brand-grey-900 mb-2">{t('step4.title')}</h2>
-      <p className="text-sm text-brand-grey-500 mb-4">{t('step4.subtitle')}</p>
+    <form onSubmit={submit} className="space-y-3.5">
+      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step4.title')}</h2>
+      <p className="text-sm text-brand-grey-500 mb-3">{t('step4.subtitle')}</p>
 
       {drafts.map((d, idx) => {
         const districts = d.region_id ? districtsMap[d.region_id] || [] : [];
@@ -135,9 +135,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         </div>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-3 pt-4">
-        <button type="button" onClick={onBack} disabled={submitting} className="btn-outline w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.back')}</button>
-        <button type="submit" disabled={submitting} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
+        <button type="button" onClick={onBack} disabled={submitting} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
+        <button type="submit" disabled={submitting} className="btn-primary flex-1 sm:flex-none">
           {submitting ? t('step4.submitting') : t('step4.submit')}
         </button>
       </div>

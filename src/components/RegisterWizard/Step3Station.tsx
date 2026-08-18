@@ -70,8 +70,8 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
-      <h2 className="text-xl font-bold text-brand-grey-900 mb-4">{t('step3.title')}</h2>
+    <form onSubmit={submit} className="space-y-3.5">
+      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step3.title')}</h2>
 
       <div>
         <label className="label">{t('step3.region')} *</label>
@@ -122,9 +122,9 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
         </div>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-3 pt-4">
-        <button type="button" onClick={onBack} className="btn-outline w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.back')}</button>
-        <button type="submit" className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.next')}</button>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
+        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary flex-1 sm:flex-none">{t('wizard.next')}</button>
       </div>
     </form>
   );

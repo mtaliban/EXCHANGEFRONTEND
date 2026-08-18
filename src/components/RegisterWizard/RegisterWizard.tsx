@@ -115,7 +115,7 @@ export default function RegisterWizard({ onComplete }: Props) {
         </div>
       )}
 
-      <div className="card p-4 sm:p-6">
+      <div className="card p-4 sm:p-5">
         {step === 1 && <Step1Identity initial={data} onNext={next} />}
         {step === 2 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
         {step === 3 && <Step3Station initial={data} onBack={back} onNext={next} />}

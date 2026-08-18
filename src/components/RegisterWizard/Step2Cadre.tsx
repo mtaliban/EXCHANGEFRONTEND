@@ -87,23 +87,21 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
     if (!category || !cadre_code) { setError(t('step2.err_choose')); return; }
-    if (needsSubjects && selectedSubjects.length === 0) {
-      setError(t('step2.err_subject')); return;
-    }
+    // Masomo ni OPTIONAL — mtu anaweza kuendelea bila kuchagua masomo.
     onNext({ category, cadre_code, subjects: selectedSubjects });
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
-      <h2 className="text-xl font-bold text-brand-grey-900 mb-4">{t('step2.title')}</h2>
+    <form onSubmit={submit} className="space-y-3.5">
+      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step2.title')}</h2>
 
       <div>
         <label className="label">{t('step2.department')} *</label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {departments.map((d) => (
             <button key={d.code} type="button"
               onClick={() => { setCategory(d.code); setCadreCode(''); }}
-              className={`p-4 rounded-xl border-2 font-semibold transition ${
+              className={`px-3 py-2.5 rounded-lg border text-sm font-medium transition ${
                 category === d.code
                   ? 'border-brand-blue bg-brand-blue-50 text-brand-blue'
                   : 'border-brand-grey-200 bg-white text-brand-grey-700 hover:border-brand-blue'
@@ -128,14 +126,14 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
       {showSubjects && (
         <div>
-          <label className="label">{t('step2.subject')}</label>
-          {!needsSubjects && (
-            <p className="text-xs text-brand-grey-400 mb-1">{t('step2.subject_optional')}</p>
-          )}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <label className="label flex items-center gap-1.5">
+            {t('step2.subject')}
+            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">({t('msg.optional')})</span>
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
             {subjects.map((s) => (
               <button key={s.code} type="button" onClick={() => toggleSubject(s.code)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium border transition ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition ${
                   selectedSubjects.includes(s.code)
                     ? 'bg-brand-blue text-white border-brand-blue'
                     : 'bg-white text-brand-grey-700 border-brand-grey-300 hover:border-brand-blue'
@@ -154,9 +152,9 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
         </div>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-3 pt-4">
-        <button type="button" onClick={onBack} className="btn-outline w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.back')}</button>
-        <button type="submit" className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">{t('wizard.next')}</button>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
+        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary flex-1 sm:flex-none">{t('wizard.next')}</button>
       </div>
     </form>
   );
