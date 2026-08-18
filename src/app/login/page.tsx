@@ -3,13 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { login, login2FA, requestEmailVerification, confirmEmailVerification } from '@/lib/api';
 import { useAuth, isTokenExpired } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 
 function EyeIcon({ open }: { open: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
       {open ? (
         <>
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
@@ -43,26 +44,21 @@ export default function LoginPage() {
 
   // Form moja — namba ya simu AU email (admin inatambuliwa kiotomatiki)
   const [identifier, setIdentifier] = useState('');
+  // Password inaonekana BY DEFAULT (rahisi kwa watumiaji — macho yanaficha)
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true);
 
-  // Email verification flow — inaonekana tu INAPOHAJITIKA (admin anapoingia
-  // na email haijathibitishwa) — sio mara kwa mara kwenye login page.
+  // Email verification flow
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState('');
   const [verifyPhone, setVerifyPhone] = useState('');
   const [verifyMode, setVerifyMode] = useState(false);
   const [verifyCode, setVerifyCode] = useState('');
 
-  // 2FA (two-factor auth): admin anapoingia kwa email+password sahihi, backend
-  // inatuma code ya tarakimu 6 kwa EMAIL yake — anaiweka hapa kukamilisha.
-  // SMTP ikibidi isijasanidiwe, backend inarudisha `dev_code` (break-glass) —
-  // code hiyo inaonyeshwa kwenye skrini ili admin asifungiwe nje (inaondoka
-  // mara tu SMTP ikishasanidiwa; basi code inaenda email tu).
+  // 2FA
   const [twoFA, setTwoFA] = useState<{ email: string; message?: string; devCode?: string } | null>(null);
   const [twoFACode, setTwoFACode] = useState('');
   const [twoFALoading, setTwoFALoading] = useState(false);
-  // Countdown ya code (dakika 10 — backend TTL): inapofika 0, code imeisha.
   const [twoFAExpiresAt, setTwoFAExpiresAt] = useState<number | null>(null);
   const [twoFACountdown, setTwoFACountdown] = useState(0);
   const twoFASubmitTimer = useRef<any>(null);
@@ -77,12 +73,10 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null); setSuccess(null); setLoading(true);
     try {
-      // Backend ina-detect: email → admin, namba → user (primary AU alt)
       const res: any = await login(identifier.trim(), password);
-      // 2FA inahitajika? → backend imetuma code kwa email — tuelekeze kwenye step ya code.
       if (res.two_factor_required) {
         setTwoFA({ email: res.email, message: res.message, devCode: res.dev_code });
-        setTwoFACode(res.dev_code || ''); // break-glass: code ikiwa kwenye response, jaza kiotomatiki
+        setTwoFACode(res.dev_code || '');
         return;
       }
       setAuth(res.access_token, {
@@ -97,7 +91,6 @@ export default function LoginPage() {
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       const msg = typeof detail === 'string' ? detail : (isEmail ? t('login.error_admin') : t('login.error_user'));
-      // Email haijathibitishwa? → onyesha verification form kiotomatiki
       if (isEmail && /thibitish|verif/i.test(msg)) {
         setVerifyEmail(identifier.trim());
         setVerifyOpen(true);
@@ -108,10 +101,7 @@ export default function LoginPage() {
     } finally { setLoading(false); }
   }
 
-  // AUTO-SUBMIT: code ya tarakimu 6 inapoandikwa, inajiingiza YENYEWE
-  // (pause ya 250ms — usi-submit katikati ya kuandika). Hakuna kubofya.
-  // Pia: code inapojazwa kiotomatiki (dev_code) → inaingia yenyewe baada ya
-  // 500ms — hata hivyo hakuna kitu cha kubofya.
+  // 2FA
   const twoFARef = useRef(twoFA);
   twoFARef.current = twoFA;
   async function submitTwoFA(code: string = twoFACode) {
@@ -120,12 +110,10 @@ export default function LoginPage() {
     try {
       const res = await login2FA(twoFA!.email, code);
       setAuth(res.access_token, {
-        user_id: res.user_id,
-        full_name: res.full_name,
+        user_id: res.user_id, full_name: res.full_name,
         phone_primary: res.phone_primary || twoFA!.email,
         category: (res.category as 'health' | 'education') || undefined,
-        cadre_code: res.cadre_code,
-        is_admin: res.is_admin,
+        cadre_code: res.cadre_code, is_admin: res.is_admin,
       });
       router.push('/admin');
     } catch (err: any) {
@@ -134,25 +122,20 @@ export default function LoginPage() {
   }
 
   function onTwoFAChange(v: string) {
-    setTwoFACode(v);
-    setError(null);
+    setTwoFACode(v); setError(null);
     if (twoFASubmitTimer.current) clearTimeout(twoFASubmitTimer.current);
-    // Tarakimu ya 6 inapofika → SUBMIT YENYEWE (tumia `v` halisi, siyo state ya zamani)
     if (v.length === 6) twoFASubmitTimer.current = setTimeout(() => submitTwoFA(v), 250);
   }
 
-  // Countdown ya 2FA code — anza sekunde 10*60 kutoka anapopata code.
   useEffect(() => {
     if (!twoFA) return;
     setTwoFAExpiresAt(Date.now() + 10 * 60 * 1000);
     setTwoFACountdown(10 * 60);
-    // Dev code (SMTP haijasanidiwa) inapojazwa kiotomatiki → SUBMIT YENYEWE
-    // baada ya 500ms — hakuna kitu cha kubofya, inaingia papo hapo.
     if (twoFA.devCode && twoFA.devCode.length === 6) {
       const t = setTimeout(() => submitTwoFA(), 500);
       return () => clearTimeout(t);
     }
-  }, [twoFA]);
+  }, [twoFA]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!twoFA || !twoFAExpiresAt) return;
     const id = setInterval(() => {
@@ -163,15 +146,12 @@ export default function LoginPage() {
     return () => clearInterval(id);
   }, [twoFA, twoFAExpiresAt]);
 
-  // Hatua ya pili: weka code ya 2FA iliyotumwa kwa email
   async function onTwoFASubmit(e: React.FormEvent) {
-    e.preventDefault();
-    await submitTwoFA();
+    e.preventDefault(); await submitTwoFA();
   }
 
   async function onRequestCode(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null); setSuccess(null); setLoading(true);
+    e.preventDefault(); setError(null); setSuccess(null); setLoading(true);
     try {
       const res = await requestEmailVerification(verifyEmail, password, verifyPhone || undefined);
       setSuccess(res.message || t('login.code_sent'));
@@ -181,7 +161,6 @@ export default function LoginPage() {
     } finally { setLoading(false); }
   }
 
-  // AUTO-SUBMIT pia hapa: code ya tarakimu 6 → inathibitisha yenyewe.
   const confirmTimer = useRef<any>(null);
   async function submitVerifyCode(code: string = verifyCode) {
     if (code.length !== 6 || loading) return;
@@ -189,161 +168,151 @@ export default function LoginPage() {
     try {
       const res = await confirmEmailVerification(verifyEmail, code);
       setSuccess(res.message || t('login.email_verified'));
-      setVerifyCode('');
-      setVerifyMode(false);
-      setVerifyOpen(false); // maliza — rudi kwenye login
-      setError(null);
+      setVerifyCode(''); setVerifyMode(false); setVerifyOpen(false); setError(null);
     } catch (err: any) {
       setError(err?.response?.data?.detail || t('msg.error'));
     } finally { setLoading(false); }
   }
 
   function onVerifyCodeChange(v: string) {
-    setVerifyCode(v);
-    setError(null);
+    setVerifyCode(v); setError(null);
     if (confirmTimer.current) clearTimeout(confirmTimer.current);
     if (v.length === 6) confirmTimer.current = setTimeout(() => submitVerifyCode(v), 250);
   }
 
   async function onConfirmCode(e: React.FormEvent) {
-    e.preventDefault();
-    await submitVerifyCode();
+    e.preventDefault(); await submitVerifyCode();
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-10 relative">
       {/* Mshale wa kurudi Home — juu kushoto */}
       <div className="absolute top-4 left-4 sm:top-5 sm:left-6">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-grey-600 hover:text-brand-blue transition px-2 py-1.5 rounded-lg hover:bg-brand-grey-100">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5" />
-            <path d="M12 19l-7-7 7-7" />
-          </svg>
-          Home
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-grey-600 hover:text-brand-blue transition px-2 py-1.5 rounded-lg hover:bg-brand-grey-100">
+          <ArrowLeft size={16} />
+          {t('action.back')}
         </Link>
       </div>
+
       <div className="w-full max-w-md">
-      <div className="card p-4 sm:p-6">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-brand-grey-900">{t('login.welcome')}</h1>
-          <p className="text-brand-grey-500 mt-2">{t('login.subtitle')}</p>
-        </div>
-
-        {/* Form moja tu — namba ya simu au email ya admin */}
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <label className="label">{t('login.phone_label')}</label>
-            {/* Form rahisi: namba ya simu + password. Admin anajua mwenyewe kuwa
-                anaingia kwa email (backend ina-detect kiotomatiki) — hatangazi. */}
-            <input type="text" className="input" placeholder="0712345678"
-              value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoComplete="username" />
+        <div className="card p-4 sm:p-6">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-brand-grey-900">{t('login.welcome')}</h1>
+            <p className="text-brand-grey-500 mt-1 text-sm">{t('login.subtitle')}</p>
           </div>
-          <div>
-            <label className="label">{t('login.password_label')}</label>
-            <div className="relative">
-              <input type={showPassword ? 'text' : 'password'} className="input pr-11" placeholder="••••••••"
-                value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
-              <button type="button" tabIndex={-1} onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-grey-600 transition"
-                aria-label={showPassword ? 'Ficha password' : 'Onyesha password'}>
-                <EyeIcon open={showPassword} />
-              </button>
+
+          {/* Form — namba ya simu au email ya admin */}
+          <form onSubmit={onSubmit} className="space-y-3.5">
+            <div>
+              <label className="label">{t('login.phone_label')}</label>
+              <input type="text" className="input" placeholder="0712345678"
+                value={identifier} onChange={(e) => setIdentifier(e.target.value)} required autoComplete="username" />
             </div>
-          </div>
+            <div>
+              <label className="label">{t('login.password_label')}</label>
+              <div className="relative">
+                <input type={showPassword ? 'text' : 'password'} className="input pr-9" placeholder="••••••••"
+                  value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+                <button type="button" tabIndex={-1} onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-grey-600 transition"
+                  aria-label={showPassword ? 'Ficha password' : 'Onyesha password'}>
+                  <EyeIcon open={showPassword} />
+                </button>
+              </div>
+            </div>
 
-          {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
-          {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
+            {error && <div className="bg-brand-red-50 border border-brand-red-100 text-brand-red text-xs font-medium rounded-xl p-3">{error}</div>}
+            {success && <div className="bg-brand-green-50 border border-green-200 text-green-700 text-xs font-medium rounded-xl p-3">{success}</div>}
 
-          <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
-            {loading ? (
-              <>
-                <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                {t('login.logging_in')}
-              </>
-            ) : (
-              t('login.submit')
-            )}
-          </button>
-        </form>
-
-        {/* ═══ 2FA: box la code tu — code inajiingiza yenyewe (kama Telegram) ═══ */}
-        {twoFA && (
-          <div className="mt-5 border-t border-brand-grey-100 pt-4">
-            <form onSubmit={onTwoFASubmit} className="space-y-3 mt-3">
-              <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
-                placeholder="000000" maxLength={6} value={twoFACode}
-                onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus disabled={twoFALoading} />
-              {twoFALoading && (
-                <div className="flex items-center justify-center gap-2 text-sm text-brand-blue font-semibold">
-                  <span className="inline-block w-5 h-5 rounded-full border-2 border-brand-blue-200 border-t-brand-blue animate-spin" />
-                  {t('login.verifying')}
-                </div>
+            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+              {loading ? (
+                <>
+                  <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  {t('login.logging_in')}
+                </>
+              ) : (
+                t('login.submit')
               )}
-              {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
-              {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              <button type="submit" disabled={twoFALoading || twoFACountdown <= 0} className="hidden">
-                {twoFALoading ? t('login.verifying') : t('login.twofa_submit')}
-              </button>
-            </form>
-          </div>
-        )}
+            </button>
+          </form>
 
-        {/* Admin: thibitisha email — inaonekana TU inapohitajika (ikijaribu kuingia kwa email ambayo haijathibitishwa, form inafunguka kiotomatiki). Sio mara kwa mara. */}
-        {verifyOpen && (
-        <div className="mt-5 border-t border-brand-grey-100 pt-4">
-          {!verifyMode && (
-            <form onSubmit={onRequestCode} className="space-y-3 mt-3">
-              <p className="text-xs text-brand-grey-500">{t('login.verify_prompt2')}</p>
-              <input type="email" className="input" placeholder="admin@kubadilishana.go.tz"
-                value={verifyEmail} onChange={(e) => setVerifyEmail(e.target.value)} required />
-              <input type="tel" className="input" placeholder={t('login.verify_phone_label')}
-                value={verifyPhone} onChange={(e) => setVerifyPhone(e.target.value)} autoComplete="tel" />
-              <input type="password" className="input" placeholder={t('login.password_label')}
-                value={password} onChange={(e) => setPassword(e.target.value)} required />
-              {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
-              {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              <button type="submit" disabled={loading} className="btn-primary bg-brand-grey-900 px-5 flex items-center justify-center gap-2">
-                {loading ? (
-                  <>
-                    <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                    {t('login.sending_code')}
-                  </>
-                ) : (
-                  t('login.send_code')
+          {/* 2FA */}
+          {twoFA && (
+            <div className="mt-5 border-t border-brand-grey-100 pt-4">
+              <form onSubmit={onTwoFASubmit} className="space-y-3 mt-3">
+                <input type="text" inputMode="numeric" className="input text-center text-xl tracking-[0.5em] font-mono"
+                  placeholder="000000" maxLength={6} value={twoFACode}
+                  onChange={(e) => onTwoFAChange(e.target.value.replace(/\D/g, ''))} required autoFocus disabled={twoFALoading} />
+                {twoFALoading && (
+                  <div className="flex items-center justify-center gap-2 text-sm text-brand-blue font-semibold">
+                    <span className="inline-block w-5 h-5 rounded-full border-2 border-brand-blue-200 border-t-brand-blue animate-spin" />
+                    {t('login.verifying')}
+                  </div>
                 )}
-              </button>
-            </form>
+                {error && <div className="bg-brand-red-50 border border-brand-red-100 text-brand-red text-xs font-medium rounded-xl p-3">{error}</div>}
+                <button type="submit" disabled={twoFALoading || twoFACountdown <= 0} className="hidden">
+                  {twoFALoading ? t('login.verifying') : t('login.twofa_submit')}
+                </button>
+              </form>
+            </div>
           )}
 
-          {verifyMode && (
-            <form onSubmit={onConfirmCode} className="space-y-3 mt-3">
-              <input type="text" className="input text-center text-xl tracking-[0.5em] font-mono"
-                placeholder="000000" maxLength={6} value={verifyCode}
-                onChange={(e) => onVerifyCodeChange(e.target.value.replace(/\D/g, ''))} required autoFocus disabled={loading} />
-              {loading && (
-                <div className="flex items-center justify-center gap-2 text-sm text-brand-blue font-semibold">
-                  <span className="inline-block w-5 h-5 rounded-full border-2 border-brand-blue-200 border-t-brand-blue animate-spin" />
-                  {t('login.verifying')}
-                </div>
+          {/* Admin: thibitisha email */}
+          {verifyOpen && (
+            <div className="mt-5 border-t border-brand-grey-100 pt-4">
+              {!verifyMode && (
+                <form onSubmit={onRequestCode} className="space-y-3 mt-3">
+                  <p className="text-xs text-brand-grey-500">{t('login.verify_prompt2')}</p>
+                  <input type="email" className="input" placeholder="admin@kubadilishana.go.tz"
+                    value={verifyEmail} onChange={(e) => setVerifyEmail(e.target.value)} required />
+                  <input type="tel" className="input" placeholder={t('login.verify_phone_label')}
+                    value={verifyPhone} onChange={(e) => setVerifyPhone(e.target.value)} autoComplete="tel" />
+                  <input type="text" className="input" placeholder={t('login.password_label')}
+                    value={password} onChange={(e) => setPassword(e.target.value)} />
+                  {error && <div className="bg-brand-red-50 border border-brand-red-100 text-brand-red text-xs font-medium rounded-xl p-3">{error}</div>}
+                  {success && <div className="bg-brand-green-50 border border-green-200 text-green-700 text-xs font-medium rounded-xl p-3">{success}</div>}
+                  <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+                    {loading ? (
+                      <>
+                        <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                        {t('login.sending_code')}
+                      </>
+                    ) : (
+                      t('login.send_code')
+                    )}
+                  </button>
+                </form>
               )}
-              {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
-              {success && <div className="bg-brand-green-50 text-brand-green text-sm rounded-lg p-3">{success}</div>}
-              <button type="submit" disabled={loading} className="hidden">
-                {loading ? t('login.verifying') : t('login.verify_email')}
-              </button>
-            </form>
-          )}
-        </div>
-        )}
 
-        <p className="text-center text-sm text-brand-grey-500 mt-3">
-          <Link href="/forgot-password" className="text-brand-blue hover:underline">{t('login.forgot')}</Link>
-        </p>
-        <p className="text-center text-sm text-brand-grey-500 mt-3">
-          {t('login.no_account')}{' '}
-          <Link href="/register" className="text-brand-orange font-semibold hover:underline">{t('login.register_now')}</Link>
-        </p>
-      </div>
+              {verifyMode && (
+                <form onSubmit={onConfirmCode} className="space-y-3 mt-3">
+                  <input type="text" className="input text-center text-xl tracking-[0.5em] font-mono"
+                    placeholder="000000" maxLength={6} value={verifyCode}
+                    onChange={(e) => onVerifyCodeChange(e.target.value.replace(/\D/g, ''))} required autoFocus disabled={loading} />
+                  {loading && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-brand-blue font-semibold">
+                      <span className="inline-block w-5 h-5 rounded-full border-2 border-brand-blue-200 border-t-brand-blue animate-spin" />
+                      {t('login.verifying')}
+                    </div>
+                  )}
+                  {error && <div className="bg-brand-red-50 border border-brand-red-100 text-brand-red text-xs font-medium rounded-xl p-3">{error}</div>}
+                  {success && <div className="bg-brand-green-50 border border-green-200 text-green-700 text-xs font-medium rounded-xl p-3">{success}</div>}
+                  <button type="submit" disabled={loading} className="hidden">
+                    {loading ? t('login.verifying') : t('login.verify_email')}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          <p className="text-center text-sm text-brand-grey-500 mt-3">
+            <Link href="/forgot-password" className="text-brand-blue hover:underline">{t('login.forgot')}</Link>
+          </p>
+          <p className="text-center text-sm text-brand-grey-500 mt-3">
+            {t('login.no_account')}{' '}
+            <Link href="/register" className="text-brand-blue font-semibold hover:underline">{t('login.register_now')}</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

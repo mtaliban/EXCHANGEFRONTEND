@@ -15,7 +15,7 @@ import { useT } from '@/lib/i18n';
 type WizardData = Partial<RegisterPayload> & { subjects: string[] };
 
 interface Props {
-  onComplete: (data: { user_id: string; full_name: string }) => void;
+  onComplete: () => void;
 }
 
 export default function RegisterWizard({ onComplete }: Props) {
@@ -50,7 +50,7 @@ export default function RegisterWizard({ onComplete }: Props) {
         category: (res.category as any) || merged.category,
         cadre_code: res.cadre_code || merged.cadre_code,
       });
-      onComplete({ user_id: res.user_id, full_name: res.full_name });
+      onComplete();
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       setError(

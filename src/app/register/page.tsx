@@ -10,25 +10,11 @@ import { useT } from '@/lib/i18n';
 export default function RegisterPage() {
   const t = useT();
   const router = useRouter();
-  const [done, setDone] = useState<null | { user_id: string; full_name: string }>(null);
+  const [loading, setLoading] = useState(false);
 
-  if (done) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <div className="card">
-          <div className="w-16 h-16 rounded-full bg-brand-blue-100 text-brand-blue mx-auto flex items-center justify-center text-3xl mb-4">
-            ✓
-          </div>
-          <h1 className="text-2xl font-bold text-brand-grey-900 mb-2">{t('reg.success_title')}</h1>
-          <p className="text-brand-grey-500 mb-6">
-            {t('reg.success_body')} <b>{done.full_name}</b>{t('reg.success_body2')}
-          </p>
-          <button onClick={() => router.push('/login')} className="btn-primary w-full">
-            {t('reg.login_now')}
-          </button>
-        </div>
-      </div>
-    );
+  function onComplete() {
+    // Mtumiaji ameingia tayari (token ipo) — elekeza moja kwa moja kwa dashboard.
+    router.push('/dashboard');
   }
 
   return (
@@ -50,7 +36,7 @@ export default function RegisterPage() {
         <p className="text-brand-grey-500 dark:text-brand-grey-400 mt-1">{t('reg.subtitle')}</p>
       </div>
 
-      <RegisterWizard onComplete={(d) => setDone(d)} />
+      <RegisterWizard onComplete={onComplete} />
 
       <p className="text-center text-sm text-brand-grey-500 dark:text-brand-grey-400 mt-6">
         {t('reg.have_account')}{' '}

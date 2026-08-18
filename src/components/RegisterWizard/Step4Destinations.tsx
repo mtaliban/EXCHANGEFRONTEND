@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, type Region, type District, type Destination } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -16,8 +16,6 @@ interface Props {
 interface DraftDest {
   region_id: number | '';
   district_id: number | '' | null;
-  facility_name?: string;
-  notes?: string;
 }
 
 export default function Step4Destinations({ initial, onBack, onSubmit, submitting }: Props) {
@@ -27,8 +25,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   const [drafts, setDrafts] = useState<DraftDest[]>(
     initial.desired_destinations?.length
       ? initial.desired_destinations.map((d: any) => ({
-          region_id: d.region_id, district_id: d.district_id || null,
-          facility_name: d.facility_name || '', notes: d.notes || '',
+          region_id: d.region_id,
+          district_id: d.district_id || null,
         }))
       : [{ region_id: '', district_id: null }]
   );
@@ -70,75 +68,71 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
       dests.push({
         region_id: region.id, region_name: region.name,
         district_id: district?.id || null, district_name: district?.name || null,
-        facility_id: null, facility_name: d.facility_name || null,
-        notes: d.notes || null,
+        facility_id: null, facility_name: null,
+        notes: null,
       });
     }
     await onSubmit({ desired_destinations: dests });
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3.5">
-      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step4.title')}</h2>
-      <p className="text-sm text-brand-grey-500 mb-3">{t('step4.subtitle')}</p>
+    <form onSubmit={submit} className="space-y-3">
+      <div className="flex items-center gap-2 mb-1">
+        <CheckCircle2 size={18} className="text-brand-blue" />
+        <h2 className="text-base font-bold text-brand-grey-900">{t('step4.title')}</h2>
+      </div>
+      <p className="text-sm text-brand-grey-500 mb-2">{t('step4.subtitle')}</p>
 
       {drafts.map((d, idx) => {
         const districts = d.region_id ? districtsMap[d.region_id] || [] : [];
         return (
-          <div key={idx} className="p-4 rounded-xl border border-brand-grey-200 bg-brand-grey-50">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-semibold text-brand-grey-700">{t('step4.place')} #{idx + 1}</span>
+          <div key={idx} className="relative p-3 rounded-xl border border-brand-grey-200 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-900">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-brand-blue uppercase tracking-wide">#{idx + 1}</span>
               {drafts.length > 1 && (
-                <button type="button" onClick={() => removeRow(idx)} className="text-brand-red text-sm hover:underline">
+                <button type="button" onClick={() => removeRow(idx)} className="text-xs text-brand-red hover:underline">
                   {t('step4.remove')}
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="label text-xs">{t('step3.region')} *</label>
-                <select className="input" value={d.region_id}
-                  onChange={(e) => update(idx, { region_id: e.target.value ? Number(e.target.value) : '', district_id: null })}>
-                  <option value="">{t('step3.choose_region')}</option>
-                  {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="label text-xs">{t('step3.district')} ({t('msg.optional')})</label>
-                <select className="input" value={d.district_id || ''}
-                  onChange={(e) => update(idx, { district_id: e.target.value ? Number(e.target.value) : null })}
-                  disabled={!d.region_id}>
-                  <option value="">{t('step4.any_district')}</option>
-                  {districts.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-              <input className="input" placeholder={t('step4.facility_ph')}
-                value={d.facility_name || ''} onChange={(e) => update(idx, { facility_name: e.target.value })} />
-              <input className="input" placeholder={t('step4.notes_ph')}
-                value={d.notes || ''} onChange={(e) => update(idx, { notes: e.target.value })} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <select className="input text-sm" value={d.region_id}
+                onChange={(e) => update(idx, { region_id: e.target.value ? Number(e.target.value) : '', district_id: null })}>
+                <option value="">— {t('step3.region')} —</option>
+                {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+              <select className="input text-sm" value={d.district_id || ''}
+                onChange={(e) => update(idx, { district_id: e.target.value ? Number(e.target.value) : null })}
+                disabled={!d.region_id}>
+                <option value="">— {t('msg.optional')} —</option>
+                {districts.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+              </select>
             </div>
           </div>
         );
       })}
 
       <button type="button" onClick={addRow} disabled={drafts.length >= 15}
-        className="w-full py-3 rounded-xl border-2 border-dashed border-brand-grey-400 text-brand-grey-700 font-semibold hover:border-brand-grey-600 hover:bg-brand-grey-50 disabled:opacity-50 disabled:cursor-not-allowed">
-        {t('step4.add_more')} ({drafts.length}/15)
+        className="w-full py-2 rounded-lg border border-dashed border-brand-grey-300 text-xs font-semibold text-brand-grey-600 hover:border-brand-blue hover:text-brand-blue transition disabled:opacity-50">
+        + {t('step4.add_more')} ({drafts.length}/15)
       </button>
 
       {error && (
-        <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3">
-          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-xs rounded-xl p-3">
+          <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
           <span className="font-medium">{error}</span>
         </div>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
-        <button type="button" onClick={onBack} disabled={submitting} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
-        <button type="submit" disabled={submitting} className="btn-primary flex-1 sm:flex-none">
-          {submitting ? t('step4.submitting') : t('step4.submit')}
+      <div className="flex justify-between gap-2 pt-2">
+        <button type="button" onClick={onBack} disabled={submitting} className="btn-outline">{t('wizard.back')}</button>
+        <button type="submit" disabled={submitting} className="btn-primary">
+          {submitting ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+              {t('step4.submitting')}
+            </span>
+          ) : t('step4.submit')}
         </button>
       </div>
     </form>
