@@ -14,9 +14,7 @@ import { Bell, BellOff } from 'lucide-react';
 
 const COLOR_BG: Record<string, string> = {
   blue: 'bg-brand-blue-50 text-brand-blue border-brand-blue',
-  orange: 'bg-brand-orange-50 text-brand-orange border-brand-orange',
   red: 'bg-brand-red-50 text-brand-red border-brand-red',
-  gold: 'bg-brand-gold-50 text-brand-gold-600 border-brand-gold',
 };
 
 export default function NotificationsPage() {

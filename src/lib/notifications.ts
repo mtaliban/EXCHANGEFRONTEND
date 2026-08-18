@@ -8,16 +8,15 @@ import type { LucideIcon } from 'lucide-react';
 
 export const NOTIFICATION_TYPE_META: Record<string, { icon: LucideIcon; color: string }> = {
   'match.found': { icon: Handshake, color: 'blue' },
-  'message.sent': { icon: MessageCircle, color: 'orange' },
-  'call.initiated': { icon: Phone, color: 'red' },
-  'payment.submitted': { icon: Wallet, color: 'gold' },
+  'message.sent': { icon: MessageCircle, color: 'blue' },
+  'call.initiated': { icon: Phone, color: 'blue' },
+  'payment.submitted': { icon: Wallet, color: 'blue' },
   'payment.approved': { icon: BadgeCheck, color: 'blue' },
   'payment.rejected': { icon: Ban, color: 'red' },
   'user.registered': { icon: UserPlus, color: 'blue' },
-  'user.profile_updated': { icon: UserCog, color: 'orange' },
-  'announcement': { icon: Megaphone, color: 'gold' },
-  // Maoni na Malalamiko — real-time (feedback.new → admin, feedback.replied → user)
-  'feedback.new': { icon: ClipboardList, color: 'orange' },
+  'user.profile_updated': { icon: UserCog, color: 'blue' },
+  'announcement': { icon: Megaphone, color: 'blue' },
+  'feedback.new': { icon: ClipboardList, color: 'blue' },
   'feedback.replied': { icon: ClipboardList, color: 'blue' },
 };
 
