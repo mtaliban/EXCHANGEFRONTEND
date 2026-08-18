@@ -27,6 +27,7 @@ export default function AdminPaymentsPage() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [flash, setFlash] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [newDonation, setNewDonation] = useState<any>(null);
+  const [page, setPage] = useState(1);
 
   const { subscribe } = useLive();
 
@@ -83,7 +84,6 @@ export default function AdminPaymentsPage() {
   if (!data) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
   const PAGE_SIZE = 10;
-  const [page, setPage] = useState(1);
   const counts: Record<string, number> = data.counts || { verifying: 0, approved: 0, rejected: 0, all: data.payments.length };
   const visiblePayments = (data.payments || []).filter((p: any) => !status || p.status === status);
   const totalPages = Math.max(1, Math.ceil(visiblePayments.length / PAGE_SIZE));
