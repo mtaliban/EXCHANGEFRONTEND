@@ -272,13 +272,16 @@ export default function DashboardBoard() {
 
   return (
     <div className="space-y-4">
-      {/* ═══ LIVE — statement WAZI: mkoa wa chanzo → mkoa wako, na idadi yao ═══ */}
+      {/* ═══ LIVE — Wazi: Watu Wanakotoka [X] Wanaokuja [Y] ═══ */}
       <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0">
             <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-            <span className="text-brand-blue">{t('board.live_title')}</span>
+            <span className="text-brand-blue">Wanakotoka</span>
             <span className="text-brand-grey-900 dark:text-white font-extrabold truncate">{activeSourceRegionName || t('board.all_regions')}</span>
+            <span className="text-brand-grey-400 dark:text-brand-grey-500">→</span>
+            <span className="text-brand-blue">Wanaokuja</span>
+            <span className="text-brand-grey-900 dark:text-white font-extrabold truncate">{myStation.region_name || ''}</span>
           </h2>
           <div className="flex items-center gap-2 flex-shrink-0">
             {!loading && (
@@ -299,10 +302,9 @@ export default function DashboardBoard() {
             )}
           </div>
         </div>
-        {/* WAZI: hawa watu wanaokuja [chanzo] ndio wanakuja mkoa wako [mkoa] */}
-        <p className="text-[12px] font-semibold text-brand-grey-900 dark:text-brand-grey-200 leading-snug mt-1">
-          {t('board.incoming_header')} <span className="text-brand-blue font-bold">{activeSourceRegionName || t('board.all_regions')}</span> —{' '}
-          {t('board.incoming_header_to')} <span className="text-brand-blue font-bold">{myStation.region_name || ''}</span>
+        {/* Maelezo mafupi: nani anakuja na wapi */}
+        <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 leading-snug mt-1">
+          {t('board.incoming_header_hint_short')}
         </p>
       </div>
 
