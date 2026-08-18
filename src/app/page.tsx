@@ -14,12 +14,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-blue-50 border border-brand-blue-200 text-brand-blue">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-blue-50 border border-brand-blue-100 text-brand-blue">
                   {t('landing.badge')}
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-600">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  {t('landing.live_badge')}
                 </span>
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6 text-brand-grey-900 dark:text-white">
@@ -51,10 +47,10 @@ export default function HomePage() {
                 />
                 <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
                   <span className="text-[11px] font-semibold bg-white text-brand-grey-900 px-3 py-1.5 rounded-full shadow whitespace-nowrap">
-                    🏥 Hospitali 14,000+
+                    Vituo vya Afya 14,000+
                   </span>
                   <span className="text-[11px] font-semibold bg-white text-brand-grey-900 px-3 py-1.5 rounded-full shadow whitespace-nowrap">
-                    🏫 Shule 25,000+
+                    Shule 25,000+
                   </span>
                 </div>
               </div>

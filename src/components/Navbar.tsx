@@ -41,7 +41,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href={isAuthed ? '/dashboard' : '/'} className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-blue to-brand-orange flex items-center justify-center text-white font-bold">
+            <div className="w-9 h-9 rounded-lg bg-brand-blue flex items-center justify-center text-white font-bold">
               KV
             </div>
             <span className="font-bold text-brand-grey-900 hidden sm:inline">
@@ -88,7 +88,7 @@ export default function Navbar() {
                 Mtu aliyeshaingia anarudi dashibodi kwa kubofya logo (au /login ina
                 redirect automatic kwa authed users). */}
             <Link href="/login" className="btn-outline text-sm py-2">{t('nav.login')}</Link>
-            <Link href="/register" className="btn-accent text-sm py-2">{t('nav.register')}</Link>
+            <Link href="/register" className="btn-primary text-sm py-2">{t('nav.register')}</Link>
           </div>
 
           <div className="md:hidden flex items-center gap-1">
@@ -146,7 +146,7 @@ export default function Navbar() {
                 <Link href="/login" onClick={() => setOpen(false)} className="btn-outline flex-1 text-sm py-2">
                   {t('nav.login')}
                 </Link>
-                <Link href="/register" onClick={() => setOpen(false)} className="btn-accent flex-1 text-sm py-2">
+                <Link href="/register" onClick={() => setOpen(false)} className="btn-primary flex-1 text-sm py-2">
                   {t('nav.register')}
                 </Link>
               </div>

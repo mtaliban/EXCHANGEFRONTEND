@@ -60,7 +60,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'landing.cta_title': 'Uko Tayari Kubadilisha Kituo?',
     'landing.cta_body': 'Jisajili sasa bure. Tumeshakuwa na watumishi wengi wanaotafuta wenzi wa kubadilishana kila mkoa Tanzania.',
     'landing.register_now': 'Jisajili Sasa',
-    'landing.live_badge': 'Real-time • WebSocket',
+    'landing.live_badge': 'Inafanya kazi • Habari Mpya Mara Kila',
     /* ── About page ── */
     'about.badge': 'Kuhusu Sisi', 'about.title': 'Nia Yetu na Historia Yetu',
     'about.mission_title': 'Nia Yetu', 'about.mission_body':
@@ -543,7 +543,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'landing.cta_title': 'Ready to Swap Your Station?',
     'landing.cta_body': 'Register now for free. We already have many public servants seeking exchange partners in every region of Tanzania.',
     'landing.register_now': 'Register Now',
-    'landing.live_badge': 'Real-time • WebSocket',
+    'landing.live_badge': 'Inafanya kazi • Habari Mpya Mara Kila',
     /* ── About page ── */
     'about.badge': 'About Us', 'about.title': 'Our Mission & History',
     'about.mission_title': 'Our Mission', 'about.mission_body':

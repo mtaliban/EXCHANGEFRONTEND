@@ -33,7 +33,9 @@ export default function RegisterPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-6">
-        <span className="badge-gold mb-2">{t('reg.badge')}</span>
+        <span className="inline-flex items-center rounded-full bg-brand-blue-50 border border-brand-blue-100 px-3 py-1 text-xs font-semibold text-brand-blue mb-2">
+          {t('reg.badge')}
+        </span>
         <h1 className="text-2xl sm:text-3xl font-bold text-brand-grey-900">{t('reg.title')}</h1>
         <p className="text-brand-grey-500 mt-1">{t('reg.subtitle')}</p>
       </div>

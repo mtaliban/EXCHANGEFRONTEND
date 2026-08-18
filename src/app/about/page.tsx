@@ -8,7 +8,9 @@ export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-10">
-        <span className="badge-gold mb-3">{t('about.badge')}</span>
+        <span className="inline-flex items-center rounded-full bg-brand-blue-50 border border-brand-blue-100 px-3 py-1 text-xs font-semibold text-brand-blue mb-3">
+          {t('about.badge')}
+        </span>
         <h1 className="text-3xl sm:text-4xl font-bold text-brand-grey-900 dark:text-white">{t('about.title')}</h1>
       </div>
 
@@ -25,7 +27,7 @@ export default function AboutPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-brand-blue-900/70 via-transparent to-transparent" />
           <div className="absolute bottom-3 left-3 text-white font-semibold text-sm">
-            🏥 Vituo vya Afya 14,000+
+            Vituo vya Afya 14,000+
           </div>
         </div>
         <div className="relative rounded-2xl overflow-hidden shadow-lg group">
@@ -37,9 +39,9 @@ export default function AboutPage() {
             className="w-full h-52 sm:h-56 object-cover transition duration-500 group-hover:scale-105"
             unoptimized
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-orange-900/70 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-blue-900/70 via-transparent to-transparent" />
           <div className="absolute bottom-3 left-3 text-white font-semibold text-sm">
-            🏫 Shule 25,000+
+            Shule 25,000+
           </div>
         </div>
       </div>
@@ -51,7 +53,7 @@ export default function AboutPage() {
         </div>
 
         <div className="card">
-          <h2 className="text-2xl font-bold text-brand-orange mb-3">{t('about.problem_title')}</h2>
+          <h2 className="text-2xl font-bold text-brand-blue mb-3">{t('about.problem_title')}</h2>
           <ul className="space-y-2 list-disc pl-6">
             <li>{t('about.problem1')}</li>
             <li>{t('about.problem2')}</li>
@@ -61,7 +63,7 @@ export default function AboutPage() {
         </div>
 
         <div className="card">
-          <h2 className="text-2xl font-bold text-brand-red mb-3">{t('about.solution_title')}</h2>
+          <h2 className="text-2xl font-bold text-brand-blue mb-3">{t('about.solution_title')}</h2>
           <p>{t('about.solution_body')}</p>
         </div>
       </div>

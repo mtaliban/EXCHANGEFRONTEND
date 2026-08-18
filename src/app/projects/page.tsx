@@ -11,7 +11,9 @@ export default function ProjectsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
-        <span className="badge-gold mb-3">{t('proj.badge')}</span>
+        <span className="inline-flex items-center rounded-full bg-brand-blue-50 border border-brand-blue-100 px-3 py-1 text-xs font-semibold text-brand-blue mb-3">
+          {t('proj.badge')}
+        </span>
         <h1 className="text-3xl sm:text-4xl font-bold text-brand-grey-900">{t('proj.title')}</h1>
       </div>
 
@@ -32,7 +34,7 @@ export default function ProjectsPage() {
             <div className="flex-1 p-5 md:p-8">
               <div className="flex items-start justify-between flex-wrap gap-2 mb-2">
                 <h3 className="text-xl md:text-2xl font-bold text-brand-grey-900">{t('proj.tlm_title')}</h3>
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700">● {t('proj.ongoing')}</span>
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-brand-blue-100 text-brand-blue">● {t('proj.ongoing')}</span>
               </div>
               <p className="text-sm text-brand-grey-600 mb-2">{t('proj.tlm_d1')}</p>
               <p className="text-sm text-brand-grey-600 mb-2">{t('proj.tlm_d2')}</p>
