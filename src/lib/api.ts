@@ -290,8 +290,8 @@ export const checkPhone = (phone: string) =>
   client.get<{ available: boolean; phone_normalized?: string; reason?: string }>(
     `${AUTH}/auth/check-phone/${encodeURIComponent(phone)}`
   ).then((r) => r.data);
-export const forgotPassword = (phone: string) =>
-  client.post(`${AUTH}/auth/forgot-password`, { phone }).then((r) => r.data);
+export const forgotPassword = (phone: string, full_name?: string) =>
+  client.post(`${AUTH}/auth/forgot-password`, { phone, full_name }).then((r) => r.data);
 export const resetPassword = (phone: string, code: string, new_password: string) =>
   client.post(`${AUTH}/auth/reset-password`, { phone, code, new_password }).then((r) => r.data);
 
@@ -506,6 +506,14 @@ export const adminApproveDonation = (order_id: string, note?: string) =>
   client.post(`${API}/payments/admin/${order_id}/approve`, { note }).then((r) => r.data);
 export const adminRejectDonation = (order_id: string, note?: string) =>
   client.post(`${API}/payments/admin/${order_id}/reject`, { note }).then((r) => r.data);
+
+/* ── Admin: Password Reset Requests ─────────────── */
+export const adminListPasswordResets = (status = 'pending') =>
+  client.get<{ items: any[]; counts: Record<string, number> }>(`${ADMIN}/admin/password-resets`, { params: { status }, bypassCache: true } as any).then((r) => r.data);
+export const adminApprovePasswordReset = (resetId: string) =>
+  client.post(`${ADMIN}/admin/password-resets/${resetId}/approve`).then((r) => r.data);
+export const adminRejectPasswordReset = (resetId: string) =>
+  client.post(`${ADMIN}/admin/password-resets/${resetId}/reject`).then((r) => r.data);
 
 /* ── Notifications center ────────────────────────── */
 export interface AppNotification {

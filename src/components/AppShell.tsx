@@ -10,7 +10,7 @@ import { useLive } from '@/lib/liveSocket';
 import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
-  BarChart3, Crown, Database, HandCoins, LayoutDashboard,
+  BarChart3, Crown, Database, HandCoins, KeyRound, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, User, Users, Wallet, X, Zap,
 } from 'lucide-react';
 
@@ -31,6 +31,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
         { href: '/admin/events', label: t('nav.events'), icon: Zap },
         { href: '/admin/reports', label: t('nav.reports'), icon: BarChart3 },
+        { href: '/admin/password-resets', label: 'Password Resets', icon: KeyRound },
         { href: '/admin/feedback', label: t('nav.feedback'), icon: ClipboardList },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ]
