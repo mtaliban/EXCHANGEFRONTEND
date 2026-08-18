@@ -21,7 +21,7 @@ export default function DonatePage() {
   const { subscribe } = useLive();
   const [adminPhone, setAdminPhone] = useState('');
   const [currency, setCurrency] = useState('TZS');
-  const [amount, setAmount] = useState(5000);
+  const [amount, setAmount] = useState<number | ''>('');
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
@@ -41,7 +41,7 @@ export default function DonatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // REAL-TIME: no HTTP polling — admin approve/reject arrives via WebSocket.
+  // REAL-TIME: admin approve/reject via WebSocket.
   useEffect(() => {
     const un = subscribe('notification', (p: any) => {
       const oid = orderRef.current?.order_id;
@@ -57,6 +57,18 @@ export default function DonatePage() {
     return () => un();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe]);
+
+  // AUTO-PROCESS: kama admin hayupo, mchango unaprocessed baada ya sekunde 10 → pending
+  useEffect(() => {
+    if (status !== 'processing' || !order) return;
+    const id = setTimeout(() => {
+      // Bado haija-confirm — weka status = pending (inadumu mpaka admin athibitishe)
+      setStatus('idle');
+      loadHistory();
+    }, 10000);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, order]);
 
   // Imehakikiwa → button inaonyesha "Imekamilika ✓" kwa sekunde 3, kisha
   // inarudi PALE PALE kwenye "Tuma Uthibitisho" (reset) — haisubiri refresh.
@@ -89,11 +101,12 @@ export default function DonatePage() {
     const text = smsText.trim();
     // SMS YOYOTE inakubaliwa (maneno/namba yoyote ya uthibitisho uliopata) —
     // hakuna hitaji la "nakili SMS nzima" kwa fomati maalum.
+    if (!amount || amount < 500) { setError('Weka kiasi chaTZS 500 au zaidi.'); return; }
     if (text.length < 3) { setError('Andika au nakili SMS yoyote uliyopata kutoka kwa mtandao wako.'); return; }
     submittingRef.current = true;
     setStatus('processing');
     try {
-      const o = await submitDonation({ amount, phone, sms_text: text, purpose: 'donation' });
+      const o = await submitDonation({ amount: amount as number, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
       orderRef.current = o;
     } catch (err: any) {
@@ -145,7 +158,7 @@ export default function DonatePage() {
           <div>
             <label className="label">{t('donate.amount')} ({currency})</label>
             <input type="number" className="input" min={500} step={500}
-              value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="5000" disabled={busy} />
+              value={amount} onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))} placeholder="2000" disabled={busy} />
           </div>
           <div>
             <label className="label">{t('donate.phone_label')}</label>
