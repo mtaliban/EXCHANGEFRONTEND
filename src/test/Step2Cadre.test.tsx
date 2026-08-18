@@ -86,7 +86,7 @@ describe('Step2Cadre', () => {
     expect(screen.queryByText('Mathematics')).not.toBeInTheDocument();
   });
 
-  it('requires subjects for teachers and submits them', async () => {
+  it('submits for teachers with subjects (optional) and passes chosen subjects', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
     const onNext = vi.fn();
@@ -100,11 +100,28 @@ describe('Step2Cadre', () => {
     expect(await screen.findByText('Mathematics')).toBeInTheDocument();
     expect(getSubjects).toHaveBeenCalled();
 
-    // Blocked until a subject is chosen.
+    // Subjects are OPTIONAL — a teacher can continue without choosing any.
     fireEvent.click(screen.getByText('Endelea →'));
-    expect(await screen.findByText(/chagua angalau somo moja/i)).toBeInTheDocument();
-    expect(onNext).not.toHaveBeenCalled();
 
+    await waitFor(() =>
+      expect(onNext).toHaveBeenCalledWith({
+        category: 'education', cadre_code: 'TEACHER_SECONDARY', subjects: [],
+      })
+    );
+  });
+
+  it('passes chosen subjects when a teacher selects them', async () => {
+    vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
+    vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
+    const onNext = vi.fn();
+    render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Elimu/ }));
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
+    const select = await screen.findByRole('combobox');
+    fireEvent.change(select, { target: { value: 'TEACHER_SECONDARY' } });
+
+    expect(await screen.findByText('Mathematics')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Mathematics'));
     fireEvent.click(screen.getByText('Endelea →'));
 
