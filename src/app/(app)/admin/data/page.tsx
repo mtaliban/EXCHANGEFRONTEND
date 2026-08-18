@@ -115,7 +115,7 @@ export default function AdminDataPage() {
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
-          🗂️ {t('data.title')}
+           {t('data.title')}
           <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
             live ? 'bg-green-50 text-green-600 border-green-300' : 'bg-brand-grey-50 text-brand-grey-400 border-brand-grey-200'}`}>
             <span className={`w-2 h-2 rounded-full ${live ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-300'}`} />
@@ -343,7 +343,7 @@ function DepartmentModal({ initial, onClose, onSaved }: { initial: any; onClose:
       }}>
       <div><label className="label">{t('data.code')}</label><input className="input font-mono lowercase" value={code} onChange={(e) => setCode(e.target.value)} disabled={busy} placeholder="health" /></div>
       <div><label className="label">{t('data.name')}</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} disabled={busy} placeholder="Afya" /></div>
-      <div><label className="label">{t('data.icon')}</label><input className="input" value={icon} onChange={(e) => setIcon(e.target.value)} disabled={busy} placeholder="🏥" /></div>
+      <div><label className="label">{t('data.icon')}</label><input className="input" value={icon} onChange={(e) => setIcon(e.target.value)} disabled={busy} placeholder="" /></div>
       <div><label className="label">{t('admin.status')}</label>
         <select className="input" value={status} onChange={(e) => setStatus(e.target.value)} disabled={busy}>
           <option value="active">{t('admin.status_active')}</option>
@@ -413,7 +413,7 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
       {viewing && (
         <ViewItemModal
           title={viewing.name}
-          icon="📚"
+          icon=""
           onClose={() => setViewing(null)}
           onEdit={() => { setEditing(viewing); setViewing(null); }}
           fields={[
@@ -667,7 +667,7 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
       {viewing && (
         <ViewItemModal
           title={viewing.name}
-          icon="🌍"
+          icon=""
           onClose={() => setViewing(null)}
           onEdit={() => { setEditing(viewing); setViewing(null); }}
           fields={[
@@ -761,7 +761,7 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
       {viewing && (
         <ViewItemModal
           title={viewing.name}
-          icon="📍"
+          icon=""
           onClose={() => setViewing(null)}
           onEdit={() => { setEditing(viewing); setViewing(null); }}
           fields={[
@@ -827,7 +827,7 @@ function RegionDistrictModal({ title, initial, onClose, onSaved, withRegion, reg
       )}
       {createMode && (
         <p className="text-xs text-brand-grey-500 bg-brand-grey-50 rounded-lg px-3 py-2">
-          💡 {t('data.id_auto')}
+           {t('data.id_auto')}
         </p>
       )}
       <div><label className="label">{t('data.name')}</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} disabled={busy} /></div>
@@ -881,8 +881,8 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2 items-center">
         <select className="input w-auto" value={category} onChange={(e) => { setCategory(e.target.value as any); setDistrictFilter(''); }}>
-          <option value="health">🏥 {t('data.fac_health')}</option>
-          <option value="education">🏫 {t('data.fac_schools')}</option>
+          <option value="health"> {t('data.fac_health')}</option>
+          <option value="education"> {t('data.fac_schools')}</option>
         </select>
         <select className="input w-auto" value={regionFilter} onChange={(e) => { setRegionFilter(Number(e.target.value) || ''); setDistrictFilter(''); }}>
           <option value="">{t('data.all_regions')}</option>
@@ -940,7 +940,7 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
       {viewing && (
         <ViewItemModal
           title={viewing.name}
-          icon={viewing._category === 'education' ? '🏫' : '🏥'}
+          icon={viewing._category === 'education' ? '' : ''}
           onClose={() => setViewing(null)}
           onEdit={() => { setEditing(viewing); setViewing(null); }}
           fields={[
@@ -1017,8 +1017,8 @@ function FacilityModal({ initial, regions, onClose, onSaved }: {
       }}>
       <div><label className="label">{t('admin.department')}</label>
         <select className="input" value={category} onChange={(e) => setCategory(e.target.value as any)} disabled={busy}>
-          <option value="health">🏥 {t('data.fac_health')}</option>
-          <option value="education">🏫 {t('data.fac_schools')}</option>
+          <option value="health"> {t('data.fac_health')}</option>
+          <option value="education"> {t('data.fac_schools')}</option>
         </select>
       </div>
       <div><label className="label">{t('data.region')} *</label>

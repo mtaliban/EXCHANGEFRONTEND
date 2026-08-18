@@ -95,7 +95,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {user && (
               <>
                 <div className="text-sm font-semibold truncate text-brand-grey-900 dark:text-white">
-                  {user.full_name} {isAdmin && '👑'}
+                  {user.full_name}
                 </div>
                 <div className="text-xs truncate text-brand-grey-500 dark:text-brand-grey-400">
                   {user.phone_primary}

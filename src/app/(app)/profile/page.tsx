@@ -38,10 +38,10 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold text-brand-grey-900">
           {isAdmin ? t('profile.admin_title') : t('profile.title')}
-          {isAdmin && <span className="ml-2 align-middle inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-brand-gold-100 text-brand-gold-600">👑 {t('admin.admin_role')}</span>}
+          {isAdmin && <span className="ml-2 align-middle inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-brand-blue-50 text-brand-blue-700 border border-brand-blue-200">{t('admin.admin_role')}</span>}
         </h1>
         {mode === 'view' ? (
-          <button onClick={() => setMode('edit')} className="btn-primary text-xs px-3 py-1.5">✎ {t('profile.edit_button')}</button>
+          <button onClick={() => setMode('edit')} className="btn-primary text-xs px-3 py-1.5"> {t('profile.edit_button')}</button>
         ) : (
           <button onClick={() => setMode('view')} className="btn-outline text-xs px-3 py-1.5">{t('action.cancel')}</button>
         )}
@@ -78,13 +78,13 @@ function ViewAdminProfile({ profile }: any) {
   return (
     <>
       <div className="card border-brand-gold-200">
-        <h3 className="font-bold text-brand-grey-900 mb-3">👑 {t('profile.admin_identity')}</h3>
+        <h3 className="font-bold text-brand-grey-900 mb-3">{t('profile.admin_identity')}</h3>
         <div className="space-y-2 text-sm">
           <Row label={t('label.name')} value={profile.full_name} />
           <Row label={t('label.email')} value={profile.email} />
           <Row label={t('profile.email_verified')} value={profile.email_verified ? `${t('msg.yes')} ✓` : t('msg.no')} />
           <Row label={t('label.phone')} value={profile.phone_primary} />
-          <Row label={t('admin.role')} value="Administrator 👑" />
+          <Row label={t('admin.role')} value="Administrator" />
         </div>
       </div>
     </>
@@ -114,7 +114,7 @@ function EditAdminProfile({ profile, onSaved }: any) {
     <div className="space-y-4">
       {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-3">{error}</div>}
       <div className="card space-y-3">
-        <h3 className="font-bold">👑 {t('profile.admin_identity')}</h3>
+        <h3 className="font-bold">{t('profile.admin_identity')}</h3>
         <div><label className="label">{t('label.name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
         <div><label className="label">{t('profile.alt_phone')}</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder={t('msg.optional')} /></div>
         <div><label className="label">{t('label.email')}</label><input className="input" value={profile.email || ''} disabled /></div>
@@ -384,7 +384,7 @@ function EditProfile({ profile, onSaved }: any) {
                 <option value={0}>{t('profile.choose')}</option>
                 {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
-              <button onClick={() => delDest(i)} className="text-brand-red text-sm px-2">🗑</button>
+              <button onClick={() => delDest(i)} className="text-brand-red text-sm px-2"></button>
             </div>
             {d.region_id ? (
               <select className="input w-full" value={d.district_id || ''}

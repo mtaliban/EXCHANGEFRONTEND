@@ -15,8 +15,8 @@ import { getCadres, getSubjects, getDepartments } from '@/lib/api';
 import type { Cadre, Subject, Department } from '@/lib/api';
 
 const DEPARTMENTS: Department[] = [
-  { code: 'health', name: 'Afya', status: 'active', icon: '🏥' },
-  { code: 'education', name: 'Elimu', status: 'active', icon: '👩🏫' },
+  { code: 'health', name: 'Afya', status: 'active', icon: '' },
+  { code: 'education', name: 'Elimu', status: 'active', icon: '' },
 ];
 
 const HEALTH_CADRES: Cadre[] = [

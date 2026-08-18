@@ -294,7 +294,7 @@ export default function DashboardBoard() {
             )}
             {freshCount > 0 && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">
-                🆕 {freshCount} {t('board.new_arrivals')}
+                 {freshCount} {t('board.new_arrivals')}
               </span>
             )}
           </div>
@@ -556,7 +556,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now
             <span className="font-semibold text-brand-grey-900 dark:text-white break-words min-w-0 leading-snug text-[13px]">{c.full_name}</span>
             {fresh && (
               <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-white bg-brand-blue px-2 py-0.5 rounded-full shadow-sm animate-[newPulse_1s_ease-in-out_infinite] ring-1 ring-brand-blue/30">
-                🆕 {t('board.new_badge')}
+                 {t('board.new_badge')}
               </span>
             )}
             {c.online && <span className="text-[10px] font-bold text-green-600">● {t('board.live')}</span>}
@@ -610,7 +610,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now
         </a>
       )}
 
-      {/* MUDA WA JUU (relative): wapya wana "🆕 MPYA + muda", wengine 🕐 muda tu — siyo saa halisi */}
+      {/* MUDA WA JUU (relative): wapya wana " MPYA + muda", wengine  muda tu — siyo saa halisi */}
       <div className={`text-[11px] font-medium ${fresh ? 'text-brand-blue font-bold' : 'text-brand-grey-400'}`} title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
         {fresh ? (
           <span className="inline-flex items-center gap-1 animate-[newPulse_1s_ease-in-out_infinite]"><Zap size={11} className="text-brand-blue" /> {t('board.new_badge')} · {ago}</span>

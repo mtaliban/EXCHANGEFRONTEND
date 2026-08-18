@@ -28,7 +28,7 @@ export default function ContactStatCard({ icon, title, count, people, open, onTo
             <div key={p.user_id} className="flex items-center justify-between gap-2 text-xs">
               <div className="min-w-0">
                 <div className="font-semibold text-brand-grey-900 dark:text-white truncate">{p.full_name}</div>
-                <div className="text-brand-blue truncate">📞 {p.phone_primary}</div>
+                <div className="text-brand-blue truncate"> {p.phone_primary}</div>
               </div>
               <div className="flex flex-col items-end flex-shrink-0">
                 <span className="badge-gold">{p.count}×</span>

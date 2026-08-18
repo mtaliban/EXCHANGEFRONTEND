@@ -60,7 +60,7 @@ export function ConfirmHost() {
           <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
             opts.danger ? 'bg-brand-red-100 text-brand-red' : 'bg-brand-blue-100 text-brand-blue'
           }`}>
-            {opts.danger ? '🗑' : '❓'}
+            {opts.danger ? '⚠' : 'ℹ'}
           </div>
           <div className="min-w-0">
             <h3 className="font-bold text-brand-grey-900 dark:text-white text-base leading-snug">{opts.title}</h3>

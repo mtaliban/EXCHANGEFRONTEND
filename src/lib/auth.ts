@@ -57,7 +57,7 @@ export const useAuth = create<AuthState>()(
     }),
     {
       name: 'kv_auth',
-      // ⚠️ SECURITY: sessionStorage (sio localStorage) — session inaishi kwenye
+      //  SECURITY: sessionStorage (sio localStorage) — session inaishi kwenye
       // TAB HII TU. Kufungua tab mpya au browser nyingine → hakuna token →
       // unapelekwa login. (localStorage inaweza kurithishwa kwa tab nyingine
       // na kudumu hata browser ikiingizwa upya — hiyo ndiyo hatari.)
