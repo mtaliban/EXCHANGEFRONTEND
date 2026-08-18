@@ -30,7 +30,8 @@
   --brand-grey-500: 107 114 128;    /* #6B7280 */
   --brand-grey-700: 55 65 81;       /* #374151 */
   --brand-grey-900: 17 24 39;       /* #111827 */
-  --brand-grey-950: 3 7 18;         /* #030712 — dark surfaces (sidebar/footer) */
+  --brand-grey-950: 3 7 18;         /* #030712 — dark surfaces (sidebar) */
+  --brand-navy: 23 37 84;           /* #172554 — footer ya kisomi (si nyeusi) */
   --brand-gold: 245 158 11;         /* #F59E0B */
   --brand-gold-50: 255 251 235;     /* #FFFBEB */
   --brand-gold-100: 254 243 199;    /* #FEF3C7 */
@@ -69,6 +70,7 @@
   --brand-grey-700: 209 213 219;    /* #D1D5DB — labels */
   --brand-grey-900: 243 244 246;    /* #F3F4F6 — main text */
   --brand-grey-950: 3 7 18;         /* #030712 — stays dark */
+  --brand-navy: 15 23 42;           /* #0F172A — footer ya kisomi (dark mode) */
   --brand-gold: 245 158 11;         /* #F59E0B */
   --brand-gold-50: 69 26 3;         /* #451A03 */
   --brand-gold-100: 120 53 15;      /* #78350F */
