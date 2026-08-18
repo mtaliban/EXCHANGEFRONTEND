@@ -219,7 +219,7 @@ html.theme-switching * {
     @apply inline-flex items-center justify-center rounded-full bg-brand-orange px-4 py-1.5 text-xs font-semibold shadow-soft hover:bg-brand-orange-600 transition disabled:opacity-50;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-full border border-brand-grey-300 px-4 py-1.5 text-xs font-semibold text-brand-grey-600 hover:bg-brand-grey-100 transition;
+    @apply inline-flex items-center justify-center rounded-full border border-brand-grey-300 px-4 py-1.5 text-xs font-semibold text-brand-grey-700 hover:bg-brand-grey-100 transition;
   }
   .input {
     @apply w-full rounded-lg border border-brand-grey-300 bg-white px-3 py-2 text-sm text-brand-grey-900 placeholder-brand-grey-500 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent;
