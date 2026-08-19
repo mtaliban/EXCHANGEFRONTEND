@@ -24,7 +24,7 @@ function useLiveStatsRefresh(onEvent: (ev: any) => void) {
     let stopped = false;
     async function connect() {
       try {
-        const raw = sessionStorage.getItem('kv_auth');
+        const raw = localStorage.getItem('kv_auth');
         let token: string | null = null;
         try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
         aborter = new AbortController();

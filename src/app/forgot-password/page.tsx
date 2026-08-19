@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
     // Also try SSE for instant notification
     async function connectSSE() {
       try {
-        const raw = sessionStorage.getItem('kv_auth');
+        const raw = localStorage.getItem('kv_auth');
         let token: string | null = null;
         try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
         abortRef.current = new AbortController();

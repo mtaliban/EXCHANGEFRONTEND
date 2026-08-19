@@ -224,8 +224,18 @@ function EditProfile({ profile, onSaved }: any) {
     }
   }, [category, cadre_code, subjectLevel, dv]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => { if (region_id) getDistricts(region_id).then(setDistricts); }, [region_id]);
+  // Load districts/facilities on mount for the INITIAL values (not just on change)
+  useEffect(() => { if (region_id) getDistricts(region_id).then(setDistricts).catch(() => setDistricts([])); }, [region_id]);
   useEffect(() => { if (district_id) getFacilities(district_id, (category as 'health' | 'education') || 'health', subjectLevel).then(setFacilities).catch(() => setFacilities([])); }, [district_id, category, subjectLevel]);
+  // On mount: load districts if region_id already set
+  useEffect(() => {
+    if (profile.current_station?.region_id && !districts.length) {
+      getDistricts(profile.current_station.region_id).then(setDistricts).catch(() => {});
+    }
+    if (profile.current_station?.district_id && !facilities.length) {
+      getFacilities(profile.current_station.district_id, (category as 'health' | 'education') || 'health', subjectLevel).then(setFacilities).catch(() => {});
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     (destinations || []).forEach((d: any) => {
       if (d.region_id && !destDistricts[d.region_id]) {

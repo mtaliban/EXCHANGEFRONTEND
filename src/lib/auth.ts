@@ -57,13 +57,10 @@ export const useAuth = create<AuthState>()(
     }),
     {
       name: 'kv_auth',
-      //  SECURITY: sessionStorage (sio localStorage) — session inaishi kwenye
-      // TAB HII TU. Kufungua tab mpya au browser nyingine → hakuna token →
-      // unapelekwa login. (localStorage inaweza kurithishwa kwa tab nyingine
-      // na kudumu hata browser ikiingizwa upya — hiyo ndiyo hatari.)
-      storage: createJSONStorage(() => sessionStorage),
-      // On app load, wipe stale/expired sessions so a dead token never leaves
-      // the navbar showing "Fungua Dashibodi" for a session that is over.
+      // localStorage ili session idumu baada ya page refresh.
+      // Backend inathibitisha token kila request (JWT expiry) — usalama bado
+      // uko sawa.
+      storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state?.token && isTokenExpired(state.token)) {
           state.logout();

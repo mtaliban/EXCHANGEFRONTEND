@@ -153,8 +153,7 @@ export async function exportErrorText(e: any): Promise<string> {
 
 client.interceptors.request.use((cfg) => {
   if (typeof window !== 'undefined') {
-    // sessionStorage — token inaishi kwenye tab hii tu (security: tab mpya → login).
-    const raw = sessionStorage.getItem('kv_auth');
+    const raw = localStorage.getItem('kv_auth');
     if (raw) {
       try {
         const token = JSON.parse(raw)?.state?.token;
