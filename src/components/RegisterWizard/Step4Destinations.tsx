@@ -42,17 +42,24 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   }
 
   function update(idx: number, patch: Partial<DraftDest>) {
-    setDrafts((ds) => ds.map((d, i) => (i === idx ? { ...d, ...patch } : d)));
+    setDrafts((ds) => {
+      const next = ds.map((d, i) => (i === idx ? { ...d, ...patch } : d));
+      // AUTO-ADD: when user picks a region in the LAST row, add a new empty row
+      if (patch.region_id && typeof patch.region_id === 'number' && idx === ds.length - 1 && ds.length < 15) {
+        next.push({ region_id: '', district_id: null });
+      }
+      return next;
+    });
     if (patch.region_id && typeof patch.region_id === 'number') loadDistrictsFor(patch.region_id);
   }
 
-  function addRow() {
-    if (drafts.length >= 15) return;
-    setDrafts((ds) => [...ds, { region_id: '', district_id: null }]);
-  }
-
   function removeRow(idx: number) {
-    setDrafts((ds) => ds.filter((_, i) => i !== idx));
+    setDrafts((ds) => {
+      const next = ds.filter((_, i) => i !== idx);
+      // Keep at least one row
+      if (next.length === 0) next.push({ region_id: '', district_id: null });
+      return next;
+    });
   }
 
   async function submit(ev: React.FormEvent) {
@@ -85,6 +92,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
 
       {drafts.map((d, idx) => {
         const districts = d.region_id ? districtsMap[d.region_id] || [] : [];
+        const isLast = idx === drafts.length - 1;
+        const hasRegion = !!d.region_id;
         return (
           <div key={idx} className="relative p-3 rounded-xl border border-brand-grey-200 dark:border-brand-grey-600 bg-brand-grey-50 dark:bg-brand-grey-900">
             <div className="flex items-center justify-between mb-2">
@@ -98,24 +107,25 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <select className="input text-sm" value={d.region_id}
                 onChange={(e) => update(idx, { region_id: e.target.value ? Number(e.target.value) : '', district_id: null })}>
-                <option value="">— {t('step3.region')} —</option>
+                <option value="">Chagua Mkoa</option>
                 {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
               <select className="input text-sm" value={d.district_id || ''}
                 onChange={(e) => update(idx, { district_id: e.target.value ? Number(e.target.value) : null })}
                 disabled={!d.region_id}>
-                <option value="">— {t('msg.optional')} —</option>
+                <option value="">Wilaya (hiari)</option>
                 {districts.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
               </select>
             </div>
+            {/* HINT: ukichagua mkoa kwenye row ya mwisho, row mpya inaongezeka自动 */}
+            {isLast && hasRegion && drafts.length < 15 && (
+              <div className="text-[10px] text-brand-blue mt-1.5 font-medium animate-pulse">
+                + Chagua mkoa mwingine hapa chini kuongeza sehemu nyingine
+              </div>
+            )}
           </div>
         );
       })}
-
-      <button type="button" onClick={addRow} disabled={drafts.length >= 15}
-        className="w-full py-2 rounded-lg border border-dashed border-brand-grey-300 text-xs font-semibold text-brand-grey-600 hover:border-brand-blue hover:text-brand-blue transition disabled:opacity-50">
-        + {t('step4.add_more')} ({drafts.length}/15)
-      </button>
 
       {error && (
         <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-xs rounded-xl p-3">

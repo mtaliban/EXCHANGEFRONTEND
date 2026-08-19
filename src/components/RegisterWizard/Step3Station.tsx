@@ -76,7 +76,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       <div>
         <label className="label">{t('step3.region')} *</label>
         <select className="input" value={region_id} onChange={(e) => setRegionId(e.target.value ? Number(e.target.value) : '')} required>
-          <option value="">{t('step3.choose_region')}</option>
+          <option value="">Chagua Mkoa</option>
           {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
       </div>
@@ -85,7 +85,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
         <div>
           <label className="label">{t('step3.district')} *</label>
           <select className="input" value={district_id} onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : '')} required>
-            <option value="">{t('step3.choose_district')}</option>
+            <option value="">Chagua Wilaya</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </div>
