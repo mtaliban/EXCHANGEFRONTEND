@@ -24,6 +24,16 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
 
   const dv = useDataVersion();
+  // EVENT-DRIVEN: refetch data on focus (user rudi kutoka tab/kingine)
+  // na kila sekunde 30 (admin aweza kuongeza data kwenye kifaa kingine)
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const onFocus = () => setTick((t) => t + 1);
+    window.addEventListener('focus', onFocus);
+    const interval = setInterval(onFocus, 30000);
+    return () => { window.removeEventListener('focus', onFocus); clearInterval(interval); };
+  }, []);
+  const forceRefresh = dv + tick;
 
   useEffect(() => {
     getDepartments()
@@ -37,12 +47,12 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
         }
       })
       .catch(() => setError(t('step2.err_load_cadres')));
-  }, [dv]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!category) { setCadres([]); return; }
     getCadres(category).then(setCadres).catch(() => setError(t('step2.err_load_cadres')));
-  }, [category, dv]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [category, forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentCadre = cadres.find((c) => c.code === cadre_code);
   const needsSubjects = currentCadre?.requires_subjects;
@@ -66,7 +76,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
     } else if (!showSubjects) {
       setSubjects([]);
     }
-  }, [showSubjects, subjectLevel, dv]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSubjects, subjectLevel, forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSubject(code: string) {
     setSelectedSubjects((prev) =>
