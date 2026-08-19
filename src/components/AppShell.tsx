@@ -50,7 +50,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-brand-grey-50">
       {/* ═══ MOBILE TOP BAR (md:hidden) — FIXED, haipandi yote ═══ */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm"
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm"
         style={{ WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}>
         <div className="flex items-center justify-between gap-1 px-3 h-14">
           <MobileMenuButton links={links} user={user} onLogout={doLogout} />
@@ -156,7 +156,7 @@ function MobileMenuButton({ links, user, onLogout }: {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true">
           {/* Backdrop — bofya nje kufunga */}
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
           {/* Drower — kutoka kushoto, 85% ya upana wa skrini */}
@@ -299,7 +299,7 @@ function AvatarMenu({ name, onLogout }: { name?: string; onLogout: () => void })
         {initial}
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-64 max-w-[calc(100vw-1rem)] rounded-xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-900 shadow-xl z-50 p-3 space-y-1">
+        <div className="absolute right-0 top-full mt-1 w-64 max-w-[calc(100vw-1rem)] rounded-xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-900 shadow-xl z-[100] p-3 space-y-1">
           <div className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">
             {user?.full_name || name}
           </div>
