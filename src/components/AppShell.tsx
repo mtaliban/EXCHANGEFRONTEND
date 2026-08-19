@@ -11,7 +11,7 @@ import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
   BarChart3, Crown, Database, HandCoins, KeyRound, LayoutDashboard,
-  LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, User, Users, Wallet, X, Zap,
+  LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -127,101 +127,108 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** MOBILE TOP BAR — Hamburger icon + app name + lugha + drawer menu */
+/** MOBILE TOP BAR — Hamburger (kushoto) + avatar (kulia) + dropdown menus */
 function MobileTopBar({ links, user, onLogout }: {
   links: { href: string; label: string; icon: any }[];
   user: any;
   onLogout: () => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const pathname = usePathname();
   const t = useT();
   const initial = getInitial(user?.full_name);
 
+  // Funga dropdown zote
+  const closeAll = () => { setMenuOpen(false); setProfileOpen(false); };
+
   return (
     <>
-      {/* LEFT: Hamburger icon — Bofya = fungua drawer ZOTE */}
-      <button
-        onClick={() => setOpen(true)}
-        className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-200 hover:bg-brand-grey-200 dark:hover:bg-brand-grey-700 transition flex-shrink-0"
-        aria-label={t('nav.menu')}
-      >
-        <Menu size={22} strokeWidth={2.2} />
-      </button>
+      {/* ═══ LEFT: Hamburger icon — bofya = dropdown menu ═══ */}
+      <div className="relative flex-shrink-0">
+        <button
+          onClick={() => { setProfileOpen(false); setMenuOpen((v) => !v); }}
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-200 hover:bg-brand-grey-200 dark:hover:bg-brand-grey-700 transition"
+          aria-label={t('nav.menu')}
+        >
+          <Menu size={22} strokeWidth={2.2} />
+        </button>
 
-      {/* CENTER: App name + user initial */}
-      <div className="flex items-center gap-2 min-w-0 flex-1">
-        <span className="text-sm font-bold text-brand-blue truncate">Kubadilishana</span>
-        <div className="w-7 h-7 rounded-full bg-brand-blue text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-          {initial}
-        </div>
-      </div>
-
-      {/* RIGHT: Lugha tu — menu zote zipo kwenye drawer */}
-      <div className="flex items-center gap-1 flex-shrink-0">
-        <LangToggle />
-      </div>
-
-      {/* ═══ DRAWER — full menu from left ═══ */}
-      {open && (
-        <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-[85%] max-w-xs bg-white dark:bg-brand-grey-950 shadow-2xl flex flex-col animate-slide-in">
-            {/* Header: jina + close */}
-            <div className="flex items-center justify-between p-4 border-b border-brand-grey-100 dark:border-brand-grey-700">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
-                  {initial}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{user?.full_name}</div>
-                  <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">{user?.phone_primary}</div>
-                </div>
-              </div>
-              <button
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-500 hover:bg-brand-grey-200 dark:hover:bg-brand-grey-700 transition flex-shrink-0"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Links ZOTE — pamoja na dashboard, feedback, etc. */}
-            <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
+        {/* Dropdown menu — links ZOTE kama za chini */}
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-[99]" onClick={closeAll} />
+            <div className="absolute left-0 top-full mt-1 z-[100] w-56 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
               {links.map((l) => {
                 const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
                 return (
                   <Link
                     key={l.href}
                     href={l.href}
-                    onClick={() => setOpen(false)}
+                    onClick={closeAll}
                     className={clsx(
-                      'flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition',
+                      'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition',
                       active
                         ? 'bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40'
                         : 'text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800'
                     )}
                   >
-                    <l.icon size={19} strokeWidth={2.2} className="flex-shrink-0" />
+                    <l.icon size={18} strokeWidth={2.2} className="flex-shrink-0" />
                     <span className="truncate">{l.label}</span>
                   </Link>
                 );
               })}
-            </nav>
+            </div>
+          </>
+        )}
+      </div>
 
-            {/* Logout */}
-            <div className="p-3 border-t border-brand-grey-100 dark:border-brand-grey-700">
-              <button
-                onClick={() => { setOpen(false); onLogout(); }}
-                className="w-full flex items-center justify-center gap-2 text-xs border rounded-lg px-2 py-2.5 border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition font-semibold"
+      {/* ═══ CENTER: App name ═══ */}
+      <div className="flex items-center min-w-0 flex-1">
+        <span className="text-sm font-bold text-brand-blue truncate">Kubadilishana</span>
+      </div>
+
+      {/* ═══ RIGHT: Avatar — bofya = profile + logout ═══ */}
+      <div className="relative flex-shrink-0">
+        <button
+          onClick={() => { setMenuOpen(false); setProfileOpen((v) => !v); }}
+          className="w-9 h-9 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold hover:ring-2 hover:ring-brand-blue/30 transition"
+          aria-label="Profile"
+        >
+          {initial}
+        </button>
+
+        {/* Profile dropdown — wasifu + toka */}
+        {profileOpen && (
+          <>
+            <div className="fixed inset-0 z-[99]" onClick={closeAll} />
+            <div className="absolute right-0 top-full mt-1 z-[100] w-52 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
+              {/* User info */}
+              <div className="px-4 py-3 border-b border-brand-grey-100 dark:border-brand-grey-700">
+                <div className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{user?.full_name}</div>
+                <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">{user?.phone_primary}</div>
+              </div>
+              {/* Profile link */}
+              <Link
+                href="/profile"
+                onClick={closeAll}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition"
               >
-                <LogOut size={14} />
-                {t('nav.logout')}
+                <User size={18} strokeWidth={2.2} />
+                <span>{t('nav.profile')}</span>
+              </Link>
+              {/* Logout */}
+              <button
+                onClick={() => { closeAll(); onLogout(); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+              >
+                <LogOut size={18} strokeWidth={2.2} />
+                <span>{t('nav.logout')}</span>
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </>
   );
 }
