@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { forgotPassword, getPasswordResetStatus } from '@/lib/api';
-import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import { ArrowLeft, AlertCircle, CheckCircle2, Loader2, KeyRound, User, Phone, Clock, XCircle, Shield } from 'lucide-react';
 
@@ -19,10 +18,11 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('form');
   const [rejected, setRejected] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
   const retryRef = useRef<any>(null);
 
-  /* ── SSE listener: poll status every 3s until approved/rejected ── */
+  /* Poll status every 3s until approved/rejected.
+   * NOTE: The user is NOT logged in here (forgot password), so SSE (admin endpoint)
+   * won't work. Polling via public /auth/password-reset/status is the only option. */
   useEffect(() => {
     if (step !== 'waiting') return;
     let stopped = false;
@@ -33,7 +33,6 @@ export default function ForgotPasswordPage() {
         const data = await getPasswordResetStatus(phone);
         if (data.status === 'approved') {
           setStep('approved');
-          // Redirect to reset-password after 2s
           setTimeout(() => router.push(`/reset-password?phone=${encodeURIComponent(phone)}`), 2000);
           return;
         }
@@ -47,54 +46,8 @@ export default function ForgotPasswordPage() {
     }
     poll();
 
-    // Also try SSE for instant notification
-    async function connectSSE() {
-      try {
-        const raw = localStorage.getItem('kv_auth');
-        let token: string | null = null;
-        try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
-        abortRef.current = new AbortController();
-        const res = await fetch(`${API_URL}/admin/live-events`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          signal: abortRef.current.signal,
-        });
-        if (!res.ok || !res.body) return;
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        while (!stopped) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          let idx;
-          while ((idx = buffer.indexOf('\n\n')) !== -1) {
-            const chunk = buffer.slice(0, idx);
-            buffer = buffer.slice(idx + 2);
-            const line = chunk.split('\n').find((l) => l.startsWith('data: '));
-            if (line) {
-              try {
-                const ev = JSON.parse(line.slice(6));
-                if (ev?.event_type === 'user.password_reset_approved' && ev?.user_id) {
-                  setStep('approved');
-                  setTimeout(() => router.push(`/reset-password?phone=${encodeURIComponent(phone)}`), 2000);
-                  return;
-                }
-                if (ev?.event_type === 'user.password_reset_rejected' && ev?.user_id) {
-                  setStep('rejected');
-                  setRejected(true);
-                  return;
-                }
-              } catch {}
-            }
-          }
-        }
-      } catch {}
-    }
-    connectSSE();
-
     return () => {
       stopped = true;
-      abortRef.current?.abort();
       if (retryRef.current) clearTimeout(retryRef.current);
     };
   }, [step, phone, router]);
@@ -194,7 +147,7 @@ export default function ForgotPasswordPage() {
               <CheckCircle2 size={24} className="text-green-500" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-green-700 mb-1">Ombi Limekubaliwa! ✅</h2>
+              <h2 className="text-lg font-bold text-green-700 mb-1">Ombi Limekubaliwa!</h2>
               <p className="text-sm text-brand-grey-500">
                 Admin amekubali. Unaelekezwa kwenye fomu ya kuweka password mpya...
               </p>

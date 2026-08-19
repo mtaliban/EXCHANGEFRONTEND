@@ -237,11 +237,17 @@ function EditProfile({ profile, onSaved }: any) {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    (destinations || []).forEach((d: any) => {
-      if (d.region_id && !destDistricts[d.region_id]) {
-        getDistricts(d.region_id).then((list) => setDestDistricts((m) => ({ ...m, [d.region_id]: list })));
-      }
-    });
+    // PARALLEL: load districts for ALL destinations at once (not serial forEach)
+    const uncached = (destinations || []).filter((d: any) => d.region_id && !destDistricts[d.region_id]);
+    if (uncached.length) {
+      Promise.all(uncached.map((d: any) => getDistricts(d.region_id).then((list) => ({ id: d.region_id, list })))).then((results) => {
+        setDestDistricts((m) => {
+          const next = { ...m };
+          for (const { id, list } of results) next[id] = list;
+          return next;
+        });
+      }).catch(() => {});
+    }
   }, [destinations]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function saveProfile() {
