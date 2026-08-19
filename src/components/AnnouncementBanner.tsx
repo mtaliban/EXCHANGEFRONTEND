@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { getActiveAnnouncements, dismissAnnouncement, bustGetCache, type Announcement } from '@/lib/api';
+import { Megaphone, X, Clock, Users } from 'lucide-react';
+import { conversationTime } from '@/lib/dates';
 
 /**
- * Matangazo yaonekana pale juu kabisa (banner) — structure nzuri, maandishi
- * BOLD + NYEUSI (professional). Ujumbe mrefu hufunguka PALE PALE (Soma zaidi /
- * Funga) — hakuna kwenda page nyingine. Hubadilika live kupitia MQTT/WS.
+ * Matangazo yaonekana pale juu kabisa (banner) — FULL WIDTH, professional.
+ * Ujumbe mrefu hufunguka PALE PALE (Soma zaidi / Funga).
+ * Hubadilika live kupitia MQTT/WS.
  */
 export default function AnnouncementBanner() {
   const { user } = useAuth();
@@ -26,15 +28,15 @@ export default function AnnouncementBanner() {
   useEffect(() => { reload(); }, []);
   useEffect(() => {
     if (!messages.length) return;
-    bustGetCache(); // tangazo jipya lijitokeze FRESH
+    bustGetCache();
     reload();
   }, [messages.length]);
 
   if (!items.length) return null;
 
   async function dismiss(id: string) {
-    try { await dismissAnnouncement(id); } catch {}
     setItems((prev) => prev.filter((a) => a.announcement_id !== id));
+    try { await dismissAnnouncement(id); } catch {}
   }
 
   function toggle(id: string) {
@@ -42,46 +44,60 @@ export default function AnnouncementBanner() {
   }
 
   return (
-    <div className="space-y-1.5 px-3 pt-3">
+    <div className="space-y-3">
       {items.map((a) => {
         const isOpen = !!expanded[a.announcement_id];
         const long = (a.message || '').length > 160;
         return (
           <div key={a.announcement_id}
-            className="flex items-start gap-2.5 rounded-xl border-2 border-brand-grey-300 dark:border-brand-grey-600 bg-white dark:bg-brand-grey-900 px-3.5 py-3 shadow-sm">
-            <span className="text-lg leading-none mt-0.5 flex-shrink-0">📢</span>
-            <div className="flex-1 min-w-0">
-              {/* Kichwa — BOLD + NYEUSI */}
-              <div className="text-sm font-extrabold text-brand-grey-900 dark:text-white">
-                {a.title}
+            className="w-full rounded-xl border border-brand-blue-200 dark:border-brand-blue-800 bg-gradient-to-r from-brand-blue-50 to-white dark:from-brand-blue-950 dark:to-brand-grey-900 shadow-soft overflow-hidden">
+            {/* Header bar */}
+            <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-brand-blue/5 border-b border-brand-blue-100 dark:border-brand-blue-900">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-brand-blue flex items-center justify-center flex-shrink-0">
+                  <Megaphone size={16} className="text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-extrabold text-brand-grey-900 dark:text-white truncate">{a.title}</h3>
+                  <div className="flex items-center gap-2 text-[10px] text-brand-grey-500 flex-wrap">
+                    {a.created_by_name && (
+                      <span className="flex items-center gap-1">
+                        <Users size={9} /> {a.created_by_name}
+                      </span>
+                    )}
+                    {a.created_at && (
+                      <span className="flex items-center gap-1">
+                        <Clock size={9} /> {conversationTime(a.created_at)}
+                      </span>
+                    )}
+                    {a.recipient_count ? (
+                      <span className="font-semibold text-brand-blue">{a.recipient_count} walengwa</span>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-              {/* Ujumbe — bold kidogo, nyeusi, inakatwa nusu ikiwa mrefu (Soma zaidi inafungua) */}
-              <div className={`text-[13px] font-medium text-brand-grey-800 dark:text-brand-grey-200 mt-1 whitespace-pre-wrap break-words ${isOpen ? '' : 'line-clamp-1'}`}>
-                {a.message}
-              </div>
-              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                {long && (
-                  <button
-                    onClick={() => toggle(a.announcement_id)}
-                    className="text-[11px] font-bold text-brand-blue hover:underline"
-                  >
-                    {isOpen ? '▲ Funga' : '▼ Soma zaidi'}
-                  </button>
-                )}
-                <span className="text-[10px] text-brand-grey-400">
-                  {a.created_by_name ? `✍️ ${a.created_by_name} · ` : ''}
-                  {a.created_at ? new Date(a.created_at).toLocaleDateString('sw-TZ') : ''}
-                </span>
-              </div>
+              <button
+                onClick={() => dismiss(a.announcement_id)}
+                className="w-7 h-7 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-500 hover:bg-brand-red-50 hover:text-brand-red transition flex items-center justify-center flex-shrink-0"
+                title="Ondoa">
+                <X size={14} />
+              </button>
             </div>
-            <button
-              onClick={() => dismiss(a.announcement_id)}
-              className="text-brand-grey-400 hover:text-brand-red transition flex-shrink-0 leading-none px-1"
-              title="Funga tangazo"
-              aria-label="Funga tangazo"
-            >
-              ✕
-            </button>
+
+            {/* Message body */}
+            <div className="px-4 py-3">
+              <p className={`text-sm text-brand-grey-800 dark:text-brand-grey-200 whitespace-pre-wrap break-words leading-relaxed ${isOpen ? '' : 'line-clamp-2'}`}>
+                {a.message}
+              </p>
+              {long && (
+                <button
+                  onClick={() => toggle(a.announcement_id)}
+                  className="text-xs font-bold text-brand-blue hover:underline mt-2"
+                >
+                  {isOpen ? '▲ Funga' : '▼ Soma zaidi'}
+                </button>
+              )}
+            </div>
           </div>
         );
       })}
