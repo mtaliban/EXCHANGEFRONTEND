@@ -113,7 +113,7 @@ export default function AdminPasswordResetsPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
           <KeyRound size={22} className="text-brand-blue" />
-          Password Reset Requests
+          {t('pwdreset.title')}
         </h1>
         <div className="flex items-center gap-1.5 flex-wrap">
           {(['pending', 'approved', 'rejected'] as Status[]).map((s) => (
@@ -126,13 +126,13 @@ export default function AdminPasswordResetsPage() {
                   : 'bg-brand-grey-50 text-brand-grey-600 border-brand-grey-200 hover:bg-brand-grey-100'
               }`}>
               {s === 'pending' ? <Clock size={11} /> : s === 'approved' ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
-              {s === 'pending' ? 'Pending' : s === 'approved' ? 'Approved' : 'Rejected'}
+              {s === 'pending' ? t('pwdreset.pending') : s === 'approved' ? t('pwdreset.approved') : t('pwdreset.rejected')}
               <span className="text-[10px] opacity-70">({counts[s] || 0})</span>
             </button>
           ))}
           <button onClick={load}
             className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-grey-100 text-brand-grey-600 border border-brand-grey-200 font-semibold hover:bg-brand-grey-200 transition">
-            <RefreshCw size={11} /> Sasisha
+            <RefreshCw size={11} /> {t('pwdreset.refresh')}
           </button>
         </div>
       </div>

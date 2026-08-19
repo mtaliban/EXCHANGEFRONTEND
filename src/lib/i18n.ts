@@ -310,6 +310,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'data.facilities': 'Vituo', 'data.fac_health': 'Vituo vya Afya', 'data.fac_schools': 'Shule',
     'data.all_districts': 'Wilaya zote', 'data.fac_search': 'Tafuta kituo...',
     'data.add_facility': 'Ongeza Kituo', 'data.edit_facility': 'Hariri Kituo', 'data.fac_type': 'Aina',
+    /* ── Admin password resets ── */
+    'pwdreset.title': 'Ombi la Kubadilisha Nenosiri', 'pwdreset.pending': 'Inasubiri', 'pwdreset.approved': 'Imekubaliwa', 'pwdreset.rejected': 'Imekataliwa',
+    'pwdreset.refresh': 'Sasisha', 'pwdreset.approve': 'Kubali', 'pwdreset.reject': 'Kataa',
+    'pwdreset.approved_flash': 'Ombi limekubaliwa ✓', 'pwdreset.rejected_flash': 'Ombi limekataliwa',
     /* ── Admin payments ── */
     'adminpay.title': 'Michango — Uthibitisho wa Malipo',
     'adminpay.verifying': ' Inasindikwa', 'adminpay.approved': '✓ Imethibitishwa',
@@ -817,6 +821,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'data.facilities': 'Facilities', 'data.fac_health': 'Health Facilities', 'data.fac_schools': 'Schools',
     'data.all_districts': 'All districts', 'data.fac_search': 'Search facility...',
     'data.add_facility': 'Add Facility', 'data.edit_facility': 'Edit Facility', 'data.fac_type': 'Type',
+    /* ── Admin password resets ── */
+    'pwdreset.title': 'Password Reset Requests', 'pwdreset.pending': 'Pending', 'pwdreset.approved': 'Approved', 'pwdreset.rejected': 'Rejected',
+    'pwdreset.refresh': 'Refresh', 'pwdreset.approve': 'Approve', 'pwdreset.reject': 'Reject',
+    'pwdreset.approved_flash': 'Request approved ✓', 'pwdreset.rejected_flash': 'Request rejected',
     /* ── Admin payments ── */
     'adminpay.title': 'Donations — Payment Verification',
     'adminpay.verifying': ' Processing', 'adminpay.approved': '✓ Verified',
