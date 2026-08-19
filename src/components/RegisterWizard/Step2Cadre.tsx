@@ -62,9 +62,8 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
   useEffect(() => {
     if (showSubjects && subjectLevel) {
-      setLoadingSubjects(true);
-      setSubjects([]);
-      setSelectedSubjects([]);
+      // Only show loading spinner on FIRST load, not on silent background refresh
+      if (!subjects.length) setLoadingSubjects(true);
       getSubjects(subjectLevel)
         .then((list) => {
           setSubjects(list);
