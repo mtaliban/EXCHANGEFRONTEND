@@ -158,16 +158,25 @@ export default function AdminFeedbackPage() {
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Pagination — compact: page numbers + prev/next */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
+        <div className="flex items-center justify-center gap-1 pt-2 flex-wrap">
           <button disabled={page <= 1} onClick={() => setPage(page - 1)}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition text-sm font-semibold">
+            className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-brand-grey-200 text-brand-grey-600 disabled:opacity-30 hover:border-brand-blue hover:text-brand-blue transition text-[11px] font-bold">
             ←
           </button>
-          <span className="text-xs font-bold text-brand-grey-500 px-2">{page} / {totalPages}</span>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <button key={p} onClick={() => setPage(p)}
+              className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold transition ${
+                p === page
+                  ? 'bg-brand-blue text-white border border-brand-blue'
+                  : 'border border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue hover:text-brand-blue'
+              }`}>
+              {p}
+            </button>
+          ))}
           <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition text-sm font-semibold">
+            className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-brand-grey-200 text-brand-grey-600 disabled:opacity-30 hover:border-brand-blue hover:text-brand-blue transition text-[11px] font-bold">
             →
           </button>
         </div>

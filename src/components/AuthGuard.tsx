@@ -20,7 +20,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // Redirect only if truly no credentials (not on every navigation)
   useEffect(() => {
-    if (!token) router.replace('/login');
+    if (!token) {
+      // Save current path so login can redirect back
+      try { sessionStorage.setItem('kv_return_to', window.location.pathname); } catch {}
+      router.replace('/login');
+    }
   }, [token, router]);
 
   // Background refresh (once per session)

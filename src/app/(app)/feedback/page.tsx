@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { submitFeedback, myFeedback } from '@/lib/api';
 import { useLive } from '@/lib/liveSocket';
 import { useT, useI18n } from '@/lib/i18n';
 import { parseServerDate } from '@/lib/dates';
 import { timeAgo } from '@/lib/timeAgo';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, ArrowLeft } from 'lucide-react';
 import Spinner from '@/components/Spinner';
 
 export default function FeedbackPage() {
   const t = useT();
+  const router = useRouter();
   const lang = useI18n((s) => s.lang);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -64,12 +66,17 @@ export default function FeedbackPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
-          <ClipboardList size={20} className="text-brand-blue" />
-          {t('fb.title')}
-        </h1>
-        <p className="text-brand-grey-500 dark:text-brand-grey-400 text-xs mt-0.5">{t('fb.subtitle')}</p>
+      <div className="flex items-center gap-2">
+        <button onClick={() => router.push('/dashboard')} className="text-brand-grey-400 hover:text-brand-grey-700 transition p-1.5 rounded-lg hover:bg-brand-grey-100">
+          <ArrowLeft size={18} />
+        </button>
+        <div>
+          <h1 className="text-xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+            <ClipboardList size={20} className="text-brand-blue" />
+            {t('fb.title')}
+          </h1>
+          <p className="text-brand-grey-500 dark:text-brand-grey-400 text-xs mt-0.5">{t('fb.subtitle')}</p>
+        </div>
       </div>
 
       <div className="card space-y-3">
@@ -84,7 +91,7 @@ export default function FeedbackPage() {
         <div className="flex justify-end">
           <button onClick={submit} disabled={sending}
             className="text-xs px-4 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition disabled:opacity-40 inline-flex items-center gap-1.5">
-            {sending ? '…' : ''} {t('fb.send')}
+            {sending ? t('action.processing') : t('fb.send')}
           </button>
         </div>
       </div>

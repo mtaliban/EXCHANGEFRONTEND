@@ -425,7 +425,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'board.follow_added': 'Imechaguliwa ✓',
     'board.follow_removed': 'Imeondolewa ✓',
     'board.follow_already': 'Mikoa ya chanzo tayari imechaguliwa:',
-    'board.no_candidates': 'Hakuna wasafiri bado wanaoelekea mkoa wako.',
+    'board.no_candidates': 'Hakuna mtu bado anaokuja mkoni kwako.',
     'board.no_candidates_hint': 'Watakapojisajili na kuchagua mkoa wako, wataonekana hapa papo hapo.',
     'board.from': 'Wanakotoka', 'board.wants_go': 'Wanaoelekea',
     'board.score': 'mechi', 'board.live': 'Live',

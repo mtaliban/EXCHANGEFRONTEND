@@ -46,7 +46,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (token && !isTokenExpired(token)) {
-      router.replace((user as any)?.is_admin ? '/admin' : '/dashboard');
+      const returnTo = sessionStorage.getItem('kv_return_to');
+      if (returnTo) { sessionStorage.removeItem('kv_return_to'); router.replace(returnTo); }
+      else router.replace((user as any)?.is_admin ? '/admin' : '/dashboard');
     }
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -88,7 +90,10 @@ export default function LoginPage() {
         cadre_code: res.cadre_code,
         is_admin: res.is_admin,
       });
-      router.push(res.is_admin ? '/admin' : '/dashboard');
+      // Redirect to saved return URL if any, else dashboard/admin
+      const returnTo = sessionStorage.getItem('kv_return_to');
+      if (returnTo) { sessionStorage.removeItem('kv_return_to'); router.push(returnTo); }
+      else router.push(res.is_admin ? '/admin' : '/dashboard');
     } catch (err: any) {
       if (isErrorNetwork(err)) {
         setError(t('login.error_network'));
@@ -113,7 +118,9 @@ export default function LoginPage() {
         category: (res.category as 'health' | 'education') || undefined,
         cadre_code: res.cadre_code, is_admin: res.is_admin,
       });
-      router.push('/admin');
+      const returnTo = sessionStorage.getItem('kv_return_to');
+      if (returnTo) { sessionStorage.removeItem('kv_return_to'); router.push(returnTo); }
+      else router.push('/admin');
     } catch (err: any) {
       if (isErrorNetwork(err)) {
         setError(t('login.error_network'));

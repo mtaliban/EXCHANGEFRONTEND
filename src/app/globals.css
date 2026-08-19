@@ -89,7 +89,7 @@ body {
   color: var(--brand-grey-900);
   /* ── Mobile guards ─────────────────────────────────────────────── */
   /* Hakuna horizontal scroll kwenye device yoyote — content ina-constrain */
-  overflow-x: clip;
+  overflow-x: hidden;
   /* iOS haizoomi inputs automatically (font >= 16px kwenye focus) */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;

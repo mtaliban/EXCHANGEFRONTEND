@@ -10,7 +10,7 @@ import { parseServerDate } from '@/lib/dates';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
 import { useT } from '@/lib/i18n';
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff, ArrowLeft } from 'lucide-react';
 
 const COLOR_BG: Record<string, string> = {
   blue: 'bg-brand-blue-50 text-brand-blue border-brand-blue',
@@ -93,10 +93,15 @@ export default function NotificationsPage() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
-            <Bell size={24} strokeWidth={2.2} className="text-brand-blue" />
-            {t('notif.title')}
-          </h1>
+          <div className="flex items-center gap-2">
+            <button onClick={() => router.push('/dashboard')} className="text-brand-grey-400 hover:text-brand-grey-700 transition p-1.5 rounded-lg hover:bg-brand-grey-100">
+              <ArrowLeft size={18} />
+            </button>
+            <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
+              <Bell size={24} strokeWidth={2.2} className="text-brand-blue" />
+              {t('notif.title')}
+            </h1>
+          </div>
           <p className="text-brand-grey-500 text-sm mt-1">
             {t('notif.subtitle')}
           </p>

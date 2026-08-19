@@ -8,10 +8,12 @@ import { useAuth } from '@/lib/auth';
 import Spinner from '@/components/Spinner';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { Loader2 } from 'lucide-react';
+import { useLiveEvents } from '@/lib/useLiveEvents';
 
 export default function ProfilePage() {
   const t = useT();
   const { user } = useAuth();
+  const setUser = useAuth((s) => s.setUser);
   const [profile, setProfile] = useState<any>(null);
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [message, setMessage] = useState<string | null>(null);
@@ -55,6 +57,7 @@ export default function ProfilePage() {
         isAdmin ? (
           <EditAdminProfile profile={profile} onSaved={(p: any) => {
             setProfile(p);
+            setUser({ ...user!, full_name: p.full_name, phone_primary: p.phone_primary } as any);
             setMode('view');
             setMessage(t('msg.saved'));
             setTimeout(() => setMessage(null), 3000);
@@ -62,6 +65,7 @@ export default function ProfilePage() {
         ) : (
           <EditProfile profile={profile} onSaved={(p: any) => {
             setProfile(p);
+            setUser({ ...user!, full_name: p.full_name, phone_primary: p.phone_primary, category: p.category, cadre_code: p.cadre_code, cadre_display: p.cadre_display, current_station: p.current_station, desired_destinations: p.desired_destinations, subjects: p.subjects } as any);
             setMode('view');
             setMessage(t('msg.saved'));
             setTimeout(() => setMessage(null), 3000);

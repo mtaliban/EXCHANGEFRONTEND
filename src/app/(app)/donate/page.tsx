@@ -8,7 +8,7 @@ import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useT, useI18n } from '@/lib/i18n';
-import { Check, Copy, HandCoins, Phone, MessageCircle } from 'lucide-react';
+import { Check, Copy, HandCoins, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
 import SpringSpinner from '@/components/SpringSpinner';
 
 const ADMIN_CALL = '0763795801';
@@ -21,11 +21,11 @@ export default function DonatePage() {
   const { subscribe } = useLive();
   const [adminPhone, setAdminPhone] = useState('');
   const [currency, setCurrency] = useState('TZS');
-  const [amount, setAmount] = useState<number | ''>('');
+  const [amount, setAmount] = useState<number | ''>(2000);
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
-  const [status, setStatus] = useState<'idle' | 'processing' | 'confirmed' | 'rejected'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'processing' | 'pending' | 'confirmed' | 'rejected'>('idle');
   const [history, setHistory] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
@@ -63,7 +63,7 @@ export default function DonatePage() {
     if (status !== 'processing' || !order) return;
     const id = setTimeout(() => {
       // Bado haija-confirm — weka status = pending (inadumu mpaka admin athibitishe)
-      setStatus('idle');
+      setStatus('pending');
       loadHistory();
     }, 10000);
     return () => clearTimeout(id);
@@ -77,7 +77,8 @@ export default function DonatePage() {
     const id = setTimeout(() => {
       reset();
       loadHistory();
-    }, 3000);
+      router.push('/dashboard');
+    }, 2500);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
@@ -104,7 +105,7 @@ export default function DonatePage() {
     if (!amount || amount < 500) { setError('Weka kiasi chaTZS 500 au zaidi.'); return; }
     if (text.length < 3) { setError('Andika au nakili SMS yoyote uliyopata kutoka kwa mtandao wako.'); return; }
     submittingRef.current = true;
-    setStatus('processing');
+    setStatus('sending');
     try {
       const o = await submitDonation({ amount: amount as number, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
@@ -126,18 +127,23 @@ export default function DonatePage() {
     setOrder(null); setSmsText(''); setStatus('idle'); setError('');
   }
 
-  const busy = status === 'processing';
+  const busy = status === 'sending' || status === 'processing';
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
-          <HandCoins size={20} className="text-brand-red" />
-          {t('donate.title')}
-        </h1>
-        <p className="text-brand-grey-500 dark:text-brand-grey-400 text-xs mt-0.5">
-          {t('donate.subtitle')}
-        </p>
+      <div className="flex items-center gap-2">
+        <button onClick={() => router.push('/dashboard')} className="text-brand-grey-400 hover:text-brand-grey-700 transition p-1.5 rounded-lg hover:bg-brand-grey-100">
+          <ArrowLeft size={18} />
+        </button>
+        <div>
+          <h1 className="text-xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+            <HandCoins size={20} className="text-brand-red" />
+            {t('donate.title')}
+          </h1>
+          <p className="text-brand-grey-500 dark:text-brand-grey-400 text-xs mt-0.5">
+            {t('donate.subtitle')}
+          </p>
+        </div>
       </div>
 
       {/* Namba ya kuchangia — ndogo na kisomi */}
@@ -152,7 +158,41 @@ export default function DonatePage() {
         </button>
       </div>
 
+      {/* STATUS: confirmed / pending / rejected — show outside form */}
+      {status === 'confirmed' && (
+        <div className="card rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-100/20 px-3 py-2.5 text-center">
+          <div className="text-sm font-bold text-emerald-700">✓ {t('donate.confirmed_title')}</div>
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">{t('donate.confirmed_body')}</div>
+        </div>
+      )}
+      {status === 'pending' && (
+        <div className="card rounded-xl border border-brand-gold-400 bg-brand-gold-50 dark:bg-brand-gold-100/20 px-3 py-2.5">
+          <div className="text-sm font-bold text-brand-gold-600">⏳ Inasubiri Kuthibitishwa</div>
+          <div className="text-xs text-brand-gold-700 dark:text-brand-gold-500 mt-0.5">Malipo yako yamewasilishwa. Admin atathibitisha hivi karibuni.</div>
+          <div className="flex gap-2 mt-2">
+            <button onClick={() => { reset(); router.push('/dashboard'); }} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
+              {t('donate.back_dashboard')}
+            </button>
+          </div>
+        </div>
+      )}
+      {status === 'rejected' && (
+        <div className="card rounded-xl border border-brand-red-200 bg-brand-red-50 dark:bg-brand-red-100/20 px-3 py-2.5">
+          <div className="text-sm font-bold text-brand-red">✗ {t('donate.rejected_title')}</div>
+          <div className="text-xs text-brand-red-600 dark:text-brand-red-400 mt-0.5">{t('donate.rejected_body')}</div>
+          <div className="flex gap-2 mt-2">
+            <button onClick={reset} className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red font-semibold hover:bg-brand-red hover:text-white transition">
+              {t('donate.try_again')}
+            </button>
+            <button onClick={() => router.push('/dashboard')} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
+              {t('donate.back_dashboard')}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Form — rahisi: kiasi, namba, SMS + button ya kusubmit */}
+      {status === 'idle' && (
       <div className="card space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -180,44 +220,20 @@ export default function DonatePage() {
 
         {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
 
-        {/* Button ya kusubmit — inabadilika PALE PALE kwenye button yenyewe:
-            Tuma Uthibitisho → (click) → Processing (ring inazunguka ndani) →
-            Imekamilika (kijani) → inarudi kwenye Tuma Uthibitisho.
-            Hakuna card/box nyingine ya "processing" — yote iko kwenye button. */}
-        {status === 'confirmed' ? (
-          <button onClick={reset}
-            className="btn-primary w-full justify-center !bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700">
-            <span className="inline-flex items-center gap-2">
-              <Check size={16} /> {t('donate.confirmed_title')}
-            </span>
-          </button>
-        ) : status === 'rejected' ? (
-          <div className="rounded-xl border border-brand-red-200 bg-brand-red-50 dark:bg-brand-red-100/20 px-3 py-2.5">
-            <div className="text-sm font-bold text-brand-red">✗ {t('donate.rejected_title')}</div>
-            <div className="text-xs text-brand-red-600 dark:text-brand-red-400 mt-0.5">{t('donate.rejected_body')}</div>
-            <div className="flex gap-2 mt-2">
-              <button onClick={reset} className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red font-semibold hover:bg-brand-red hover:text-white transition">
-                {t('donate.try_again')}
-              </button>
-              <button onClick={() => router.push('/dashboard')} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
-                {t('donate.back_dashboard')}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button onClick={submit} disabled={busy}
-            className="btn-primary w-full justify-center disabled:opacity-60">
-            {busy ? (
-              <span className="inline-flex items-center gap-2">
-                <SpringSpinner size={16} className="text-white" />
-                {t('donate.processing_pill')}
-              </span>
-            ) : (
-              t('donate.submit')
-            )}
-          </button>
-        )}
+        <button onClick={submit} disabled={busy}
+          className="btn-primary w-full justify-center disabled:opacity-60">
+          {t('donate.submit')}
+        </button>
       </div>
+      )}
+
+      {/* SENDING / PROCESSING — spinner bar */}
+      {busy && (
+        <div className="card flex items-center justify-center gap-2 py-4">
+          <SpringSpinner size={20} className="text-brand-blue" />
+          <span className="text-sm font-semibold text-brand-grey-700">{status === 'sending' ? 'Inatuma…' : 'Inasindikwa…'}</span>
+        </div>
+      )}
 
       {history.length > 0 && <HistoryList history={history} />}
 
