@@ -675,8 +675,20 @@ function EditUserModal({ user, onClose, onSaved }: any) {
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, [dv]);
   useEffect(() => { getCadres(category).then(setCadres).catch(() => {}); }, [category, dv]);
   useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, [dv]);
-  useEffect(() => { if (region_id) getDistricts(Number(region_id)).then(setDistricts).catch(() => setDistricts([])); else setDistricts([]); }, [region_id]);
-  useEffect(() => { if (district_id) getFacilities(Number(district_id), (category as any) || 'health').then(setFacilities).catch(() => setFacilities([])); else setFacilities([]); }, [district_id, category]);
+  useEffect(() => {
+    if (region_id) {
+      getDistricts(Number(region_id)).then(setDistricts).catch(() => setDistricts([]));
+    } else {
+      setDistricts([]);
+    }
+  }, [region_id]);
+  useEffect(() => {
+    if (district_id) {
+      getFacilities(Number(district_id), (category as any) || 'health').then(setFacilities).catch(() => setFacilities([]));
+    } else {
+      setFacilities([]);
+    }
+  }, [district_id, category]);
 
   function updateDest(i: number, field: 'region_id' | 'district_id', v: number | '') {
     const copy = dests.map((d) => ({ ...d }));
@@ -849,11 +861,25 @@ function CreateUserModal({ onClose, onCreated }: any) {
   // PAPO HAPO bila refresh ya page (event-driven).
   const dv = useDataVersion();
 
-  useEffect(() => { getRegions().then(setRegions); }, [dv]);
+  useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, [dv]);
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, [dv]);
-  useEffect(() => { getCadres(category).then(setCadres); }, [category, dv]);
-  useEffect(() => { if (region_id) getDistricts(Number(region_id)).then(setDistricts); }, [region_id]);
-  useEffect(() => { if (district_id) getFacilities(Number(district_id), (category as 'health' | 'education') || 'health').then(setFacilities).catch(() => setFacilities([])); }, [district_id, category]);
+  useEffect(() => { getCadres(category).then(setCadres).catch(() => {}); }, [category, dv]);
+  useEffect(() => {
+    if (region_id) {
+      setDistricts([]); setDistrictId(''); setFacilityId('');
+      getDistricts(Number(region_id)).then(setDistricts).catch(() => setDistricts([]));
+    } else {
+      setDistricts([]);
+    }
+  }, [region_id]);
+  useEffect(() => {
+    if (district_id) {
+      setFacilities([]); setFacilityId('');
+      getFacilities(Number(district_id), (category as 'health' | 'education') || 'health').then(setFacilities).catch(() => setFacilities([]));
+    } else {
+      setFacilities([]);
+    }
+  }, [district_id, category]);
 
   function updateDest(i: number, field: 'region_id' | 'district_id', v: number | '') {
     const copy = dests.map((d) => ({ ...d }));
@@ -865,43 +891,44 @@ function CreateUserModal({ onClose, onCreated }: any) {
   async function submit() {
     setError(null); setSaving(true);
     try {
-      const region = regions.find((r) => r.id === Number(region_id))!;
-      const district = districts.find((d) => d.id === Number(district_id))!;
+      const region = regions.find((r) => r.id === Number(region_id));
+      const district = districts.find((d) => d.id === Number(district_id));
       const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
       const desired_destinations = dests
         .filter((d) => d.region_id !== '')
         .map((d) => {
-          const r = regions.find((x) => x.id === Number(d.region_id))!;
+          const r = regions.find((x) => x.id === Number(d.region_id));
           const dd = districts.find((x) => x.id === Number(d.district_id));
           return {
-            region_id: r.id, region_name: r.name,
+            region_id: r?.id ?? 0, region_name: r?.name ?? '',
             district_id: dd?.id ?? null, district_name: dd?.name ?? null,
           };
         });
-      await register({
+      const station: any = region ? {
+        region_id: region.id, region_name: region.name,
+        district_id: district?.id ?? 0, district_name: district?.name ?? '',
+        facility_id: facility ? String(facility.id || facility.code) : null,
+        facility_name: facility?.name ?? null,
+      } : null;
+      await adminCreateUser({
         full_name, phone_primary: phone, password,
         category, cadre_code, subjects,
-        current_station: {
-          region_id: region.id, region_name: region.name,
-          district_id: district.id, district_name: district.name,
-          facility_id: facility ? String(facility.id || facility.code) : null,
-          facility_name: facility ? facility.name : null,
-        },
-        desired_destinations: desired_destinations.length ? desired_destinations : [{ region_id: region.id, region_name: region.name }],
+        current_station: station,
+        desired_destinations: desired_destinations.length ? desired_destinations : undefined,
+        is_admin, status,
       });
-      // Set admin/status if needed (register always creates regular active user)
+      // Fetch real user with _id
       let createdUser: any = null;
-      if (is_admin || status !== 'active') {
+      try {
         const list = await adminUsers({ q: phone, limit: 5 });
-        createdUser = list.users.find((u: any) => u.phone_primary === phone);
-        if (createdUser) await adminUpdateUser(createdUser._id, { is_admin, status });
-      }
+        createdUser = list.users?.find((u: any) => u.phone_primary === phone);
+      } catch {}
       onCreated({
         ...(createdUser || {}),
         _id: createdUser?._id || 'new-' + Date.now(),
         full_name, phone_primary: phone, category, cadre_code, subjects,
         is_admin: !!is_admin, status: status || 'active',
-        current_station: region ? { region_id: region.id, region_name: region.name } : null,
+        current_station: station,
       });
     } catch (e: any) {
       setError(e?.response?.data?.detail || t('admin.failed'));
@@ -985,7 +1012,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
         </div>
         <div className="flex gap-2 pt-3 border-t">
           <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
-          <button onClick={submit} disabled={saving || !full_name || !phone || !region_id || !district_id} className="btn-primary px-5">
+          <button onClick={submit} disabled={saving || !full_name || !phone || !cadre_code} className="btn-primary px-5">
             {saving ? t('admin.creating') : t('admin.create')}
           </button>
         </div>
