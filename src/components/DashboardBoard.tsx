@@ -130,7 +130,8 @@ export default function DashboardBoard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [regionSel, destRegionIds, regions]);
 
-  // Cascading: wilaya za mkoa mmoja uliochagua
+  // Cascading: wilaya za mkoa mmoja uliochagua — district cache iko
+  // localStorage (siku 24), kwa hivyo kurudi kwenye mkoa ule ule ni INSTANT.
   useEffect(() => {
     if (singleRegion !== undefined) {
       getDistricts(singleRegion).then(setDistricts).catch(() => setDistricts([]));
@@ -142,7 +143,8 @@ export default function DashboardBoard() {
     setFacilityId(undefined);
   }, [singleRegion]);
 
-  // Cascading: vituo vya wilaya iliyochaguliwa
+  // Cascading: vituo vya wilaya iliyochaguliwa — facility cache iko
+  // localStorage (siku 24), instatn pale unapoamua wilaya.
   useEffect(() => {
     if (districtId !== undefined) {
       getFacilities(districtId, (myCategory as any) || 'health').then(setFacilities).catch(() => setFacilities([]));
@@ -540,7 +542,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName }: { c: any; now
             const matched = mySubjects.includes(s);
             return (
               <span key={s} title={matched ? t('board.subject_match') : undefined}
-                className={`px-1.5 py-0.5 rounded-full font-semibold ${anySubjectMatch ? 'bg-brand-blue text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
+                className={`px-1.5 py-0.5 rounded-full font-semibold ${matched ? 'bg-brand-blue text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
                 {s}{matched ? ' ✓' : ''}
               </span>
             );

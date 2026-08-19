@@ -24,14 +24,13 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
 
   const dv = useDataVersion();
-  // EVENT-DRIVEN: refetch data on focus (user rudi kutoka tab/kingine)
-  // na kila sekunde 30 (admin aweza kuongeza data kwenye kifaa kingine)
+  // EVENT-DRIVEN: refetch on focus (user rudi kutoka tab/kingine) + emitDataChanged
+  // (admin anapoongeza/badilisha data). Hakuna polling ya 30s — inasababisha flicker.
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const onFocus = () => setTick((t) => t + 1);
     window.addEventListener('focus', onFocus);
-    const interval = setInterval(onFocus, 30000);
-    return () => { window.removeEventListener('focus', onFocus); clearInterval(interval); };
+    return () => { window.removeEventListener('focus', onFocus); };
   }, []);
   const forceRefresh = dv + tick;
 
