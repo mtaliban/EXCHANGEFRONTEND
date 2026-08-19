@@ -43,12 +43,12 @@ describe('useAuth store', () => {
     expect(useAuth.getState().user).toBeNull();
   });
 
-  it('persists auth to sessionStorage (per-tab — tab mpya = login)', () => {
+  it('persists auth to localStorage (session idumu baada ya page refresh)', () => {
     act(() => useAuth.getState().setAuth('persisted-token', USER));
-    const stored = JSON.parse(sessionStorage.getItem('kv_auth') || '{}');
+    const stored = JSON.parse(localStorage.getItem('kv_auth') || '{}');
     expect(stored?.state?.token).toBe('persisted-token');
-    // Hakikisha token HAIISHI kwenye localStorage — hiyo ndiyo hatari.
-    expect(localStorage.getItem('kv_auth')).toBeNull();
+    // Hakikisha token HAIISHI kwenye sessionStorage.
+    expect(sessionStorage.getItem('kv_auth')).toBeNull();
   });
 });
 
