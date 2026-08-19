@@ -234,6 +234,7 @@ export interface AuthResponse {
   cadre_code?: string;
   cadre_display?: string;
   is_admin?: boolean;
+  is_verified?: boolean;
   access_token: string;
   token_type: string;
 }

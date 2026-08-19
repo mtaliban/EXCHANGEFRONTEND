@@ -372,12 +372,16 @@ function EditProfile({ profile, onSaved }: any) {
       <div className="card space-y-3">
         <h3 className="font-bold">{t('profile.station')}</h3>
         <div><label className="label">{t('step3.region')}</label>
-          <select className="input" value={region_id} onChange={(e) => { setRegionId(Number(e.target.value)); setDistrictId(0 as any); setFacilityId(''); }}>
+          <select className="input" value={region_id || ''} onChange={(e) => { setRegionId(Number(e.target.value)); setDistrictId(0 as any); setFacilityId(''); }}>
+            {!regions.length && region_id ? <option value={region_id}>{t('msg.loading')}</option> : null}
+            {!regions.length && !region_id ? <option value="">— Chagua Mkoa —</option> : null}
             {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </div>
         <div><label className="label">{t('step3.district')}</label>
-          <select className="input" value={district_id} onChange={(e) => { setDistrictId(Number(e.target.value)); setFacilityId(''); }}>
+          <select className="input" value={district_id || ''} onChange={(e) => { setDistrictId(Number(e.target.value)); setFacilityId(''); }}>
+            {!districts.length && district_id ? <option value={district_id}>{t('msg.loading')}</option> : null}
+            <option value="">— Chagua Wilaya —</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </div>

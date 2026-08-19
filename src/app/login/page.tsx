@@ -98,6 +98,7 @@ export default function LoginPage() {
         category: (res.category as 'health' | 'education') || undefined,
         cadre_code: res.cadre_code,
         is_admin: res.is_admin,
+        is_verified: res.is_verified,
       });
       // Redirect to saved return URL if any, else dashboard/admin
       const returnTo = sessionStorage.getItem('kv_return_to');
@@ -126,6 +127,7 @@ export default function LoginPage() {
         phone_primary: res.phone_primary || twoFA!.email,
         category: (res.category as 'health' | 'education') || undefined,
         cadre_code: res.cadre_code, is_admin: res.is_admin,
+        is_verified: res.is_verified,
       });
       const returnTo = sessionStorage.getItem('kv_return_to');
       if (returnTo) { sessionStorage.removeItem('kv_return_to'); router.push(returnTo); }
@@ -200,10 +202,10 @@ export default function LoginPage() {
             {/* ═══ SEHEMU MOJA: button au code input — pale pale ═══ */}
             {!twoFA ? (
               /* BUTTON YA KAWAIDA — "Ingia" */
-              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+              <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-brand-blue-700 active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading ? (
                   <>
-                    <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                    <span className="inline-block w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
                     {t('login.logging_in')}
                   </>
                 ) : (
@@ -236,12 +238,13 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-brand-grey-500 mt-3">
-            <Link href="/forgot-password" className="text-brand-blue hover:underline">{t('login.forgot')}</Link>
+            <Link href="/forgot-password" className="text-brand-blue hover:underline font-medium">{t('login.forgot')}</Link>
           </p>
-          <p className="text-center text-sm text-brand-grey-500 mt-3">
-            {t('login.no_account')}{' '}
-            <Link href="/register" className="text-brand-blue font-semibold hover:underline">{t('login.register_now')}</Link>
-          </p>
+          <div className="mt-4">
+            <Link href="/register" className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-brand-blue/30 px-5 py-3 text-sm font-bold text-brand-blue hover:bg-brand-blue-50 active:scale-[0.98] transition">
+              {t('login.register_now')}
+            </Link>
+          </div>
         </div>
       </div>
     </div>

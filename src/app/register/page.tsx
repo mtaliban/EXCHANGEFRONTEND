@@ -77,11 +77,11 @@ export default function RegisterPage() {
 
           <Link
             href={`/login?phone=${encodeURIComponent(registeredPhone)}`}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-brand-blue-700 transition w-full"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue px-6 py-4 text-sm font-bold text-white shadow-lg hover:bg-brand-blue-700 active:scale-[0.98] transition w-full"
           >
-            <User size={16} />
+            <User size={18} />
             Ngingia Sasa
-            <ArrowRight size={14} />
+            <ArrowRight size={16} />
           </Link>
         </div>
       )}
