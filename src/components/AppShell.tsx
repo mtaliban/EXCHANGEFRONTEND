@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -53,11 +53,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm"
         style={{ WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}>
         <div className="flex items-center justify-between gap-1 px-3 h-14">
-          <MobileMenuButton links={links} user={user} onLogout={doLogout} />
-          <div className="flex items-center gap-0.5 flex-shrink-0">
-            <LangToggle />
-            <AvatarMenu name={user?.full_name} onLogout={doLogout} />
-          </div>
+          <MobileTopBar links={links} user={user} onLogout={doLogout} />
         </div>
       </div>
 
@@ -131,11 +127,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Hamburger menu ya SIMU — inafungua DROWER kamili na menyu ZOTE.
- *  Desktop ina sidebar yenye links zote; simu kabla ilikuwa na bottom nav
- *  ya tabs 5 tu → admin hakupata Matangazo/Malipo/Ripoti/Maoni kwenye simu.
- *  Sasa hamburger inaonesha kila kitu (kama sidebar ya desktop). */
-function MobileMenuButton({ links, user, onLogout }: {
+/** MOBILE TOP BAR — MOJA KWA MOJA: hamburger + avatar + lugha + drawer.
+ *  Hamburger na avatar ZIMEUNGANISHWA — hakuna confused touch tena. */
+function MobileTopBar({ links, user, onLogout }: {
   links: { href: string; label: string; icon: any }[];
   user: any;
   onLogout: () => void;
@@ -147,23 +141,29 @@ function MobileMenuButton({ links, user, onLogout }: {
 
   return (
     <>
+      {/* LEFT: Avatar ndogo (initial) — Bofya = fungua drawer ZOTE */}
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center justify-center w-9 h-9 rounded-lg border border-brand-grey-200 dark:border-brand-grey-700 text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition"
+        className="flex items-center justify-center w-10 h-10 rounded-full bg-brand-blue text-white font-bold text-sm shadow-sm hover:bg-brand-blue-700 transition flex-shrink-0"
         aria-label={t('nav.menu')}
       >
-        <Menu size={20} strokeWidth={2.2} />
+        {initial}
       </button>
 
+      {/* RIGHT: Lugha tu — menu zote zipo kwenye drawer */}
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <LangToggle />
+      </div>
+
+      {/* ═══ DRAWER — full menu from left ═══ */}
       {open && (
         <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true">
-          {/* Backdrop — bofya nje kufunga */}
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
-          {/* Drower — kutoka kushoto, 85% ya upana wa skrini */}
-          <div className="absolute left-0 top-0 bottom-0 w-[85%] max-w-xs bg-white dark:bg-brand-grey-950 shadow-2xl flex flex-col">
+          <div className="absolute left-0 top-0 bottom-0 w-[85%] max-w-xs bg-white dark:bg-brand-grey-950 shadow-2xl flex flex-col animate-slide-in">
+            {/* Header: jina + close */}
             <div className="flex items-center justify-between p-4 border-b border-brand-grey-100 dark:border-brand-grey-700">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-full bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40 dark:text-brand-blue-500 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
                   {initial}
                 </div>
                 <div className="min-w-0">
@@ -173,13 +173,13 @@ function MobileMenuButton({ links, user, onLogout }: {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center w-8 h-8 rounded-lg text-brand-grey-500 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition flex-shrink-0"
-                aria-label="Funga menyu"
+                className="flex items-center justify-center w-9 h-9 rounded-lg text-brand-grey-500 hover:bg-brand-grey-100 dark:hover:bg-brand-grey-800 transition flex-shrink-0"
               >
                 <X size={20} />
               </button>
             </div>
 
+            {/* Links ZOTE — pamoja na dashboard, feedback, etc. */}
             <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
               {links.map((l) => {
                 const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
@@ -202,10 +202,11 @@ function MobileMenuButton({ links, user, onLogout }: {
               })}
             </nav>
 
+            {/* Logout */}
             <div className="p-3 border-t border-brand-grey-100 dark:border-brand-grey-700">
               <button
                 onClick={() => { setOpen(false); onLogout(); }}
-                className="w-full flex items-center justify-center gap-2 text-xs border rounded-lg px-2 py-2 border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition"
+                className="w-full flex items-center justify-center gap-2 text-xs border rounded-lg px-2 py-2.5 border-brand-red text-brand-red hover:bg-brand-red hover:text-white transition font-semibold"
               >
                 <LogOut size={14} />
                 {t('nav.logout')}
@@ -217,6 +218,7 @@ function MobileMenuButton({ links, user, onLogout }: {
     </>
   );
 }
+
 
 /** Bottom navigation — mobile app style: icons + labels, safe-area aware. */
 function MobileBottomNav({ pathname, isAdmin }: {
@@ -271,57 +273,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
   );
 }
 
-/** Avatar + menu ya user (mobile) — jina, simu, kada, logout. */
-function AvatarMenu({ name, onLogout }: { name?: string; onLogout: () => void }) {
-  const t = useT();
-  const { user } = useAuth();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [open]);
-
-  const initial = getInitial(name);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm transition bg-brand-blue-50 text-brand-blue hover:bg-brand-blue-100"
-        aria-label="Menu ya akaunti"
-      >
-        {initial}
-      </button>
-      {open && (
-        <div className="absolute right-0 top-full mt-1 w-64 max-w-[calc(100vw-1rem)] rounded-xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-900 shadow-xl z-[100] p-3 space-y-1">
-          <div className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">
-            {user?.full_name || name}
-          </div>
-          <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">{user?.phone_primary}</div>
-          {!((user as any)?.is_admin) && user?.cadre_display && (
-            <div className="text-xs text-brand-blue truncate">{user.cadre_display}</div>
-          )}
-          <div className="border-t border-brand-grey-100 dark:border-brand-grey-700 pt-1 mt-1 space-y-0.5">
-            <Link href="/profile" onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition">
-              <User size={16} /> {t('nav.profile')}
-            </Link>
-            <button onClick={() => { setOpen(false); onLogout(); }}
-              className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-brand-red hover:bg-brand-red-50 dark:hover:bg-brand-red-900/20 transition">
-              <LogOut size={16} /> {t('nav.logout')}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /** Always-visible real-time (WebSocket) status pill — kila page. */
 function WsStatus() {
