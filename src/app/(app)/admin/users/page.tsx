@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
   adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
-  register, getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
+  getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
   adminUserMatches,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
