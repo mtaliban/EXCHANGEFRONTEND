@@ -49,7 +49,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <h1 className="text-2xl font-extrabold text-brand-grey-900 mb-2">
-              Usajili Umekamilika! 🎉
+              Usajili Umekamilika!
             </h1>
             <p className="text-sm text-brand-grey-500 leading-relaxed">
               Akaunti yako imetengenezwa kwa mafanikio.
