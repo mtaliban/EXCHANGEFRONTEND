@@ -127,8 +127,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** MOBILE TOP BAR — MOJA KWA MOJA: hamburger + avatar + lugha + drawer.
- *  Hamburger na avatar ZIMEUNGANISHWA — hakuna confused touch tena. */
+/** MOBILE TOP BAR — Hamburger icon + app name + lugha + drawer menu */
 function MobileTopBar({ links, user, onLogout }: {
   links: { href: string; label: string; icon: any }[];
   user: any;
@@ -141,14 +140,22 @@ function MobileTopBar({ links, user, onLogout }: {
 
   return (
     <>
-      {/* LEFT: Avatar ndogo (initial) — Bofya = fungua drawer ZOTE */}
+      {/* LEFT: Hamburger icon — Bofya = fungua drawer ZOTE */}
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-brand-blue text-white font-bold text-sm shadow-sm hover:bg-brand-blue-700 transition flex-shrink-0"
+        className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-200 hover:bg-brand-grey-200 dark:hover:bg-brand-grey-700 transition flex-shrink-0"
         aria-label={t('nav.menu')}
       >
-        {initial}
+        <Menu size={22} strokeWidth={2.2} />
       </button>
+
+      {/* CENTER: App name + user initial */}
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <span className="text-sm font-bold text-brand-blue truncate">Kubadilishana</span>
+        <div className="w-7 h-7 rounded-full bg-brand-blue text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+          {initial}
+        </div>
+      </div>
 
       {/* RIGHT: Lugha tu — menu zote zipo kwenye drawer */}
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -173,7 +180,7 @@ function MobileTopBar({ links, user, onLogout }: {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-brand-grey-500 hover:bg-brand-grey-100 dark:hover:bg-brand-grey-800 transition flex-shrink-0"
+                className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-500 hover:bg-brand-grey-200 dark:hover:bg-brand-grey-700 transition flex-shrink-0"
               >
                 <X size={20} />
               </button>
@@ -226,14 +233,15 @@ function MobileBottomNav({ pathname, isAdmin }: {
   isAdmin?: boolean;
 }) {
   const t = useT();
-  // Chagua tabs muhimu zaidi (5 max) kwa simu — sidebar ina zote kwa desktop
+  // Admin: links muhimu zaidi kwa simu (6 max) — zaidi ziko drawer
   const mobileLinks = isAdmin
     ? [
-        { href: '/admin', label: t('nav.admin'), icon: Crown },
-        { href: '/admin/users', label: t('nav.users'), icon: Users },
-        { href: '/admin/data', label: t('nav.data'), icon: Database },
-        { href: '/admin/events', label: t('nav.events'), icon: Zap },
-        { href: '/profile', label: t('nav.profile'), icon: User },
+        { href: '/admin', label: 'Ofaa', icon: Crown },
+        { href: '/admin/users', label: 'Watu', icon: Users },
+        { href: '/admin/data', label: 'Data', icon: Database },
+        { href: '/admin/payments', label: 'Malipo', icon: Wallet },
+        { href: '/admin/feedback', label: 'Maoni', icon: ClipboardList },
+        { href: '/profile', label: 'Wasifu', icon: User },
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
@@ -256,15 +264,15 @@ function MobileBottomNav({ pathname, isAdmin }: {
               key={l.href}
               href={l.href}
               className={clsx(
-                'flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[56px] px-0.5 transition min-w-0',
+                'flex-1 flex flex-col items-center justify-center gap-0 py-1 min-h-[52px] px-0 transition min-w-0',
                 active
                   ? 'text-brand-blue'
                   : 'text-brand-grey-500 dark:text-brand-grey-400'
               )}
             >
-              <l.icon size={21} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0" />
-              <span className={clsx('text-[10px] font-semibold leading-tight text-center truncate w-full max-w-full px-0.5', active && 'font-bold')}>{l.label}</span>
-              {active && <span className="w-4 h-0.5 rounded-full bg-brand-blue mt-0.5" />}
+              <l.icon size={20} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0" />
+              <span className={clsx('text-[9px] font-semibold leading-tight text-center truncate w-full max-w-full px-0.5 mt-0.5', active && 'font-bold')}>{l.label}</span>
+              {active && <span className="w-3 h-0.5 rounded-full bg-brand-blue mt-0.5" />}
             </Link>
           );
         })}

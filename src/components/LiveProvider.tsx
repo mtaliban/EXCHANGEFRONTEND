@@ -10,7 +10,7 @@ import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } 
 import { playPingSound, playArrivalSound, isSoundEnabled } from '@/lib/sound';
 import { parseServerDate } from '@/lib/dates';
 import { getMe, emitDataChanged } from '@/lib/api';
-import { Handshake, Phone, Bell, ShieldAlert, Trash2, UserCog } from 'lucide-react';
+import { Handshake, Phone, Bell, ShieldAlert, Trash2, UserCog, CheckCircle2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -145,6 +145,18 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     // admin → dropdowns zote za watumiaji (usajili, profile, filters) zijirefresh
     // PAPO HAPO bila refresh ya page (event-driven kama WebSocket).
     const unsubData = subscribe('data.changed', () => emitDataChanged());
+    // REAL-TIME: malipo yamethibitishwa → is_verified=True → session inasasishwa
+    // PAPO HAPO (mtu anaweza kuona namba za simu bila refresh ya page).
+    const unsubVerified = subscribe('user.verified', (p: any) => {
+      if (p.user_id && p.user_id !== uid) return;
+      getMe().then((me) => setUser(me)).catch(() => {});
+      showToast({
+        icon: CheckCircle2,
+        color: 'green' as any,
+        title: 'Malipo Yamedhibitishwa! ✅',
+        body: p.message || 'Sasa unaweza kuona namba za simu za washirika wako.',
+      });
+    });
     // Notifications center (payments, profile updates, registrations…)
     const unsub4 = subscribe('notification', (p) => {
       if (p.type === 'match.found' || p.type === 'message.sent' || p.type === 'call.initiated') return;
@@ -159,7 +171,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         ago: p.occurred_at,
       });
     });
-    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsub4(); };
+    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsubVerified(); unsub4(); };
   }, [user, subscribe, router, pathname, logout, setUser]);
 
   return <>{children}</>;
