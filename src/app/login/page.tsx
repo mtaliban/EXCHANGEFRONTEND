@@ -52,7 +52,20 @@ export default function LoginPage() {
     }
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-fill phone from URL param (after registration)
+  const [searchPhone, setSearchPhone] = useState('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('phone');
+      if (p) setSearchPhone(decodeURIComponent(p));
+    }
+  }, []);
   const [identifier, setIdentifier] = useState('');
+  // Set identifier from URL param once
+  useEffect(() => {
+    if (searchPhone && !identifier) setIdentifier(searchPhone);
+  }, [searchPhone]);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(true);
 

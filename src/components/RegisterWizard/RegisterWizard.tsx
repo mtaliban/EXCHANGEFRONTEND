@@ -14,7 +14,7 @@ import { useT } from '@/lib/i18n';
 type WizardData = Partial<RegisterPayload> & { subjects: string[] };
 
 interface Props {
-  onComplete: () => void;
+  onComplete: (data?: any) => void;
 }
 
 export default function RegisterWizard({ onComplete }: Props) {
@@ -41,8 +41,8 @@ export default function RegisterWizard({ onComplete }: Props) {
     setError(null);
     try {
       await register(merged as RegisterPayload);
-      // Usajili umekamilika — elekeza kwenye login page.
-      onComplete();
+      // Usajili umekamilika — success screen + elekeza login.
+      onComplete(merged);
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       setError(
