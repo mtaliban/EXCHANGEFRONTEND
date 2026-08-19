@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useT } from '@/lib/i18n';
-import { AlertCircle, Phone, MessageCircle, User, LockKeyhole, type LucideIcon } from 'lucide-react';
+import { checkPhone } from '@/lib/api';
+import { AlertCircle, Phone, MessageCircle, User, LockKeyhole, Loader2, CheckCircle2, type LucideIcon } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -59,12 +60,32 @@ export default function Step1Identity({ initial, onNext }: Props) {
   const [showPw, setShowPw] = useState(true);
   const [showPw2, setShowPw2] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // PHONE CHECK: real-time availability check (debounced)
+  const [phoneCheck, setPhoneCheck] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const phoneTimer = useRef<any>(null);
+
+  // Debounced phone check — 500ms baada ya user kuacha kuandika
+  useEffect(() => {
+    if (!phone_primary || phone_primary.length < 10) { setPhoneCheck('idle'); return; }
+    const cleaned = phone_primary.replace(/[\s-]/g, '');
+    if (!/^(\+?255|0)\d{9}$/.test(cleaned)) { setPhoneCheck('idle'); return; }
+    setPhoneCheck('checking');
+    if (phoneTimer.current) clearTimeout(phoneTimer.current);
+    phoneTimer.current = setTimeout(() => {
+      checkPhone(cleaned).then((r) => {
+        setPhoneCheck(r.available ? 'available' : 'taken');
+      }).catch(() => setPhoneCheck('idle'));
+    }, 500);
+    return () => { if (phoneTimer.current) clearTimeout(phoneTimer.current); };
+  }, [phone_primary]);
 
   function validate() {
     const e: Record<string, string> = {};
     if (full_name.trim().length < 3) e.full_name = t('step1.err_name');
     if (!/^(\+?255|0)\d{9}$/.test(phone_primary.replace(/[\s-]/g, ''))) {
       e.phone_primary = t('step1.err_phone');
+    } else if (phoneCheck === 'taken') {
+      e.phone_primary = 'Namba hii tayari inatumiwa';
     }
     // WhatsApp namba ni LAZIMA — kama haijawekwa, button ya WhatsApp haifanyi kazi.
     if (!phone_alt) {
@@ -101,7 +122,24 @@ export default function Step1Identity({ initial, onNext }: Props) {
 
       <div>
         <FieldLabel icon={Phone}>{t('step1.phone_normal')} *</FieldLabel>
-        <input className="input" value={phone_primary} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" />
+        <div className="relative">
+          <input className={`input pr-9 ${phoneCheck === 'taken' ? '!border-brand-red focus:!ring-brand-red' : phoneCheck === 'available' ? '!border-green-500 focus:!ring-green-500' : ''}`} value={phone_primary} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" />
+          <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+            {phoneCheck === 'checking' && <Loader2 size={14} className="animate-spin text-brand-grey-400" />}
+            {phoneCheck === 'available' && <CheckCircle2 size={14} className="text-green-500" />}
+            {phoneCheck === 'taken' && <AlertCircle size={14} className="text-brand-red" />}
+          </div>
+        </div>
+        {phoneCheck === 'taken' && (
+          <p className="flex items-center gap-1 text-brand-red text-xs mt-1 font-medium">
+            <AlertCircle size={11} /> Namba hii tayari inatumiwa na mtu mwingine
+          </p>
+        )}
+        {phoneCheck === 'available' && (
+          <p className="flex items-center gap-1 text-green-600 text-xs mt-1 font-medium">
+            <CheckCircle2 size={11} /> Namba hii ipo huru
+          </p>
+        )}
         <FieldError msg={errors.phone_primary} />
       </div>
 
