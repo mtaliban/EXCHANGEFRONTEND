@@ -44,13 +44,9 @@ export default function LoginPage() {
   const setAuth = useAuth((s) => s.setAuth);
   const { token, user } = useAuth();
 
-  useEffect(() => {
-    if (token && !isTokenExpired(token)) {
-      const returnTo = sessionStorage.getItem('kv_return_to');
-      if (returnTo) { sessionStorage.removeItem('kv_return_to'); router.replace(returnTo); }
-      else router.replace((user as any)?.is_admin ? '/admin' : '/dashboard');
-    }
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  // NOTE: login page does NOT auto-redirect on existing token —
+  // that caused redirect loops. Redirect only happens AFTER successful login
+  // in onSubmit / submitTwoFA below.
 
   // Auto-fill phone from URL param (after registration)
   const [searchPhone, setSearchPhone] = useState('');

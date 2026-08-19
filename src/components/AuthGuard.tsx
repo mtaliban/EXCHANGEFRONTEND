@@ -21,8 +21,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // Redirect only if truly no credentials (not on every navigation)
   useEffect(() => {
     if (!token) {
-      // Save current path so login can redirect back
-      try { sessionStorage.setItem('kv_return_to', window.location.pathname); } catch {}
+      const path = window.location.pathname;
+      // Don't save /login as return URL (causes redirect loop)
+      if (path && path !== '/login' && path !== '/register' && path !== '/forgot-password' && path !== '/reset-password') {
+        try { sessionStorage.setItem('kv_return_to', path); } catch {}
+      }
       router.replace('/login');
     }
   }, [token, router]);
