@@ -37,8 +37,8 @@ export default function HomePage() {
             <div className="relative rounded-2xl overflow-hidden shadow-lg ring-1 ring-brand-grey-200 dark:ring-brand-grey-600 grid grid-cols-2">
               <div className="relative h-52 sm:h-72">
                 <Image
-                  src="/images/hospital.jpg"
-                  alt="Kituo cha Afya Tanzania"
+                  src="/images/benjamin-mkapa-hospital.jpg"
+                  alt="Hospitali ya Benjamin Mkapa"
                   fill
                   priority
                   unoptimized
@@ -47,15 +47,15 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-grey-950/80 via-transparent to-transparent" />
                 <div className="absolute bottom-2.5 left-2.5 right-2.5 flex justify-center">
-                  <span className="text-[10px] sm:text-[11px] font-semibold bg-white text-brand-grey-900 px-2.5 py-1 rounded-full shadow whitespace-nowrap">
-                    Vituo vya Afya 14,000+
+                  <span className="text-[9px] sm:text-[10px] font-semibold bg-white text-brand-grey-900 px-2 py-1 rounded-full shadow text-center leading-tight">
+                    Hospitali ya<br className="sm:hidden" /> Benjamin Mkapa
                   </span>
                 </div>
               </div>
               <div className="relative h-52 sm:h-72">
                 <Image
-                  src="/images/school-classroom.jpg"
-                  alt="Shule za Tanzania"
+                  src="/images/elboru-school.jpg"
+                  alt="Shule ya Elboru"
                   fill
                   unoptimized
                   className="object-cover"
@@ -63,8 +63,8 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-grey-950/80 via-transparent to-transparent" />
                 <div className="absolute bottom-2.5 left-2.5 right-2.5 flex justify-center">
-                  <span className="text-[10px] sm:text-[11px] font-semibold bg-white text-brand-grey-900 px-2.5 py-1 rounded-full shadow whitespace-nowrap">
-                    Shule 25,000+
+                  <span className="text-[9px] sm:text-[10px] font-semibold bg-white text-brand-grey-900 px-2 py-1 rounded-full shadow text-center leading-tight">
+                    Shule ya Elboru
                   </span>
                 </div>
               </div>
