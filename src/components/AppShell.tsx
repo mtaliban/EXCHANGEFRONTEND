@@ -49,8 +49,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-brand-grey-50">
-      {/* ═══ MOBILE TOP BAR (md:hidden) — hamburger + lugha + avatar ═══ */}
-      <div className="md:hidden sticky top-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm">
+      {/* ═══ MOBILE TOP BAR (md:hidden) — FIXED, haipandi yote ═══ */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm"
+        style={{ WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}>
         <div className="flex items-center justify-between gap-1 px-3 h-14">
           <MobileMenuButton links={links} user={user} onLogout={doLogout} />
           <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -117,7 +118,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
-        <main className="flex-1 min-w-0 pb-20 md:pb-0">
+        <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
           {children}
         </main>
       </div>
