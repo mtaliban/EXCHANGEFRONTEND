@@ -95,7 +95,7 @@ export default function ServicesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {[
             { n: '01', title: 'Jisajili', desc: 'Ingiza taarifa zako: jina, simu, kada, na kituo chako' },
-            { n: '02', title: 'Pata Mdahalo', desc: ' mfumo unakupata mtu anayetaka kubadilishana na wewe' },
+            { n: '02', title: 'Tafuta Mwenza', desc: 'mfumo unakuletea mtu anayetaka kubadilishana na wewe' },
             { n: '03', title: 'Kubaliana', desc: 'Ongea naye, kubaliana, na badilishana kwa urahisi' },
           ].map((step) => (
             <div key={step.n} className="text-center p-6 rounded-xl border border-brand-grey-200 dark:border-brand-grey-600 bg-white dark:bg-brand-grey-900">
