@@ -1,8 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useT } from '@/lib/i18n';
-import { Target, AlertTriangle, Lightbulb, GraduationCap, Award, Phone, MapPin } from 'lucide-react';
+import { Target, AlertTriangle, Lightbulb, GraduationCap, Award, Phone, MapPin, ArrowRight, Users, Heart } from 'lucide-react';
 
 export default function AboutPage() {
   const t = useT();
@@ -36,7 +37,7 @@ export default function AboutPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Kichwa */}
+      {/* ═══ HERO ═══ */}
       <div className="text-center mb-10">
         <span className="inline-flex items-center rounded-full bg-brand-blue-50 border border-brand-blue-100 px-3 py-1 text-xs font-semibold text-brand-blue mb-3">
           {t('about.badge')}
@@ -46,45 +47,61 @@ export default function AboutPage() {
         </h1>
       </div>
 
-      {/* Picha za kisomi — hospitali na shule */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-        <div className="relative rounded-2xl overflow-hidden shadow-lg ring-1 ring-brand-grey-200 dark:ring-brand-grey-600">
-          <Image
-            src="/images/hospital.jpg"
-            alt="Kituo cha Afya Tanzania"
-            width={1200}
-            height={751}
-            className="w-full h-56 sm:h-64 object-cover"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-grey-950/80 via-brand-grey-950/10 to-transparent" />
-          <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between gap-2">
-            <span className="text-white font-semibold text-sm">Vituo vya Afya 14,000+</span>
-            <span className="text-[10px] font-bold uppercase tracking-wide bg-white text-brand-blue px-2.5 py-1 rounded-full">
-              Idara ya Afya
-            </span>
+      {/* ═══ PICHA — Hospitali + Shule (professional) ═══ */}
+      <div className="relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-brand-grey-200 dark:ring-brand-grey-600 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2">
+          <div className="relative h-64 sm:h-80 group overflow-hidden">
+            <Image
+              src="/images/benjamin-mkapa-hospital.jpg"
+              alt="Hospitali ya Benjamin Mkapa"
+              width={1200}
+              height={751}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              unoptimized
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Heart size={14} className="text-red-400" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">Idara ya Afya</span>
+              </div>
+              <h3 className="text-white font-bold text-lg leading-tight">Hospitali ya Benjamin Mkapa</h3>
+              <p className="text-white/70 text-xs mt-1">Moja ya hospitali kubwa Tanzania — inahudumia maelfu kwa siku</p>
+            </div>
+          </div>
+          <div className="relative h-64 sm:h-80 group overflow-hidden">
+            <Image
+              src="/images/elboru-school.jpg"
+              alt="Shule ya Elboru"
+              width={1200}
+              height={847}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4">
+              <div className="flex items-center gap-2 mb-1.5">
+                <GraduationCap size={14} className="text-blue-300" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">Idara ya Elimu</span>
+              </div>
+              <h3 className="text-white font-bold text-lg leading-tight">Shule ya Elboru</h3>
+              <p className="text-white/70 text-xs mt-1">Shule ya sekondari inayotoa elimu bora kwa vijana</p>
+            </div>
           </div>
         </div>
-        <div className="relative rounded-2xl overflow-hidden shadow-lg ring-1 ring-brand-grey-200 dark:ring-brand-grey-600">
-          <Image
-            src="/images/school-classroom.jpg"
-            alt="Shule ya Tanzania"
-            width={1200}
-            height={847}
-            className="w-full h-56 sm:h-64 object-cover"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-grey-950/80 via-brand-grey-950/10 to-transparent" />
-          <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between gap-2">
-            <span className="text-white font-semibold text-sm">Shule 25,000+</span>
-            <span className="text-[10px] font-bold uppercase tracking-wide bg-white text-brand-blue px-2.5 py-1 rounded-full">
-              Idara ya Elimu
-            </span>
-          </div>
+        {/* Stats overlay */}
+        <div className="absolute top-4 right-4 flex gap-2">
+          <span className="bg-white/90 backdrop-blur-sm text-brand-grey-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+            14,000+ Vituo vya Afya
+          </span>
+          <span className="bg-white/90 backdrop-blur-sm text-brand-grey-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+            25,000+ Shule
+          </span>
         </div>
       </div>
 
-      {/* Nia / Tatizo / Suluhisho */}
+      {/* ═══ NIA / TATIZO / SULUHISHO ═══ */}
       <div className="space-y-5 mb-12">
         <div className="card">
           <div className="flex items-center gap-3 mb-3">
@@ -98,7 +115,7 @@ export default function AboutPage() {
 
         <div className="card">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-brand-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center flex-shrink-0">
               <AlertTriangle size={20} />
             </div>
             <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white">{t('about.problem_title')}</h2>
@@ -106,7 +123,7 @@ export default function AboutPage() {
           <ul className="space-y-2.5">
             {[1, 2, 3, 4].map((i) => (
               <li key={i} className="flex items-start gap-2.5 text-brand-grey-600 dark:text-brand-grey-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-blue mt-2 flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-2 flex-shrink-0" />
                 <span>{t(`about.problem${i}`)}</span>
               </li>
             ))}
@@ -115,7 +132,7 @@ export default function AboutPage() {
 
         <div className="card">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-brand-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0">
               <Lightbulb size={20} />
             </div>
             <h2 className="text-xl font-bold text-brand-grey-900 dark:text-white">{t('about.solution_title')}</h2>
@@ -124,7 +141,7 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Timu */}
+      {/* ═══ TIMU ═══ */}
       <div>
         <div className="text-center mb-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-brand-grey-900 dark:text-white mb-2">
