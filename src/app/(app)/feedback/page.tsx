@@ -9,6 +9,7 @@ import { parseServerDate } from '@/lib/dates';
 import { timeAgo } from '@/lib/timeAgo';
 import { ClipboardList, ArrowLeft } from 'lucide-react';
 import Spinner from '@/components/Spinner';
+import { useUnreadStore } from '@/lib/unreadStore';
 
 export default function FeedbackPage() {
   const t = useT();
@@ -32,6 +33,8 @@ export default function FeedbackPage() {
   }
 
   useEffect(() => { reload(); }, []);
+  // Ondoa badge ya /feedback pale inapofunguliwa
+  useEffect(() => { useUnreadStore.getState().clear('/feedback'); }, []);
 
   // REAL-TIME: jibu la admin linafika PAPO HAPO bila refresh (WebSocket).
   useEffect(() => {

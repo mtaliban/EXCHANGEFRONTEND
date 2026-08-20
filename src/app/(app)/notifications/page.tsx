@@ -25,8 +25,8 @@ export default function NotificationsPage() {
   const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [total, setTotal] = useState(0);
   const [unread, setUnread] = useState(0);
-  const unreadStoreSet = useUnreadStore((s) => s.set);
-  const unreadStoreRefresh = useUnreadStore((s) => s.refresh);
+  const clearRoute = useUnreadStore((s) => s.clear);
+  const refreshStore = useUnreadStore((s) => s.refresh);
   const { messages } = useLiveEvents(user ? ['notification'] : []);
 
   async function load() {
@@ -35,20 +35,19 @@ export default function NotificationsPage() {
       setNotifs(data.notifications);
       setTotal(data.total);
       // NOTE: page hii inasoma arifa zote kiotomatiki → unread ni 0 kila wakati.
-      // (Kusoma count hapa kungepiga race na markAllNotificationsRead.)
-      setUnread(0);
-      unreadStoreSet(0);
+      // (Kusoma count hapa kungepiga race na markAllNotificationsRead.)    setUnread(0);
+    clearRoute('/notifications');
+    refreshStore();
     } catch {}
   }
 
   useEffect(() => {
     load();
-    // Fungua page = arifa ZOTE zinasomwa kiotomatiki (hakuna haja ya kubofya
-    // "Soma zote") — badge juu inatoweka papo hapo. Hii ndiyo uliyoiomba!
+    // Fungua page = arifa ZOTE zinasomwa kiotomatiki — badge inatoweka papo hapo.
     markAllNotificationsRead().then(() => {
       setUnread(0);
-      unreadStoreSet(0);
-      unreadStoreRefresh();
+      clearRoute('/notifications');
+      refreshStore();
       // Arifa zote kwenye orodha ziwe 'read' (blue dots zinatoweka pia)
       setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
     }).catch(() => {});
@@ -59,7 +58,7 @@ export default function NotificationsPage() {
     load();
     // Arifa mpya inapofika ukiwa kwenye page → inasomwa pia (badge haina mabaki)
     markAllNotificationsRead().then(() => {
-      setUnread(0); unreadStoreSet(0); unreadStoreRefresh();
+      setUnread(0); clearRoute('/notifications'); refreshStore();
       setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
     }).catch(() => {});
     /* eslint-disable-next-line */
@@ -71,7 +70,7 @@ export default function NotificationsPage() {
       await markNotificationRead(n.notification_id).catch(() => {});
       setNotifs((prev) => prev.map((x) => (x.notification_id === n.notification_id ? { ...x, read: true } : x)));
       setUnread((u) => Math.max(0, u - 1));
-      unreadStoreRefresh(); // kengele juu ipungue mara moja
+      refreshStore();
     }
     const dest = notificationRoute(n.type, n.data, isAdmin);
     if (dest.startsWith('tel:')) {
@@ -85,7 +84,7 @@ export default function NotificationsPage() {
   async function readAll() {
     await markAllNotificationsRead().catch(() => {});
     setUnread(0);
-    unreadStoreSet(0); // kengele juu isifanye "9+" tena
+    clearRoute('/notifications'); refreshStore();
     setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
   }
 

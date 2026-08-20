@@ -236,8 +236,14 @@ function MobileBottomNav({ pathname, isAdmin }: {
   isAdmin?: boolean;
 }) {
   const t = useT();
-  const unreadCount = useUnreadStore((s) => s.count);
-  // Admin: links muhimu zaidi kwa simu (6 max) — zaidi ziko drawer
+  const routeCounts = useUnreadStore((s) => s.counts);
+  const clearRoute = useUnreadStore((s) => s.clear);
+
+  // Clear badge ya route unayofungua
+  useEffect(() => {
+    if (pathname && routeCounts[pathname] > 0) clearRoute(pathname);
+  }, [pathname, routeCounts, clearRoute]);
+  // Admin: links muhimu zaidi kwa simu (max 6) — zaidi ziko drawer
   const mobileLinks = isAdmin
     ? [
         { href: '/admin', label: 'Ofaa', icon: Crown },
@@ -245,13 +251,11 @@ function MobileBottomNav({ pathname, isAdmin }: {
         { href: '/admin/data', label: 'Data', icon: Database },
         { href: '/admin/payments', label: 'Malipo', icon: Wallet },
         { href: '/admin/feedback', label: 'Maoni', icon: ClipboardList },
-        { href: '/notifications', label: t('nav.arifa', 'Arifa'), icon: Bell },
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
         { href: '/donate', label: t('nav.donate'), icon: HandCoins },
-        { href: '/feedback', label: t('nav.feedback'), icon: ClipboardList },
-        { href: '/notifications', label: t('nav.arifa', 'Arifa'), icon: Bell },
+        { href: '/feedback', label: t('nav.feedback', 'Maoni'), icon: ClipboardList },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 
@@ -277,9 +281,9 @@ function MobileBottomNav({ pathname, isAdmin }: {
             >
               <div className="relative">
                 <l.icon size={20} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0" />
-                {unreadCount > 0 && l.href === '/notifications' && (
+                {(routeCounts[l.href] || 0) > 0 && (
                   <span className="absolute -top-1 -right-1.5 w-4 h-4 rounded-full bg-brand-red text-white text-[8px] font-bold flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
+                    {routeCounts[l.href] > 9 ? '9+' : routeCounts[l.href]}
                   </span>
                 )}
               </div>

@@ -25,8 +25,8 @@ export const DEFAULT_NOTIFICATION_ICON: LucideIcon = Bell;
 export function notificationRoute(type: string, data: any, isAdmin?: boolean): string {
   switch (type) {
     // Mgeni mpya / match → dashboard juu (mgeni anaonekana kwenye grid ya LIVE)
-    case 'match.found':
-    case 'user.registered': return '/dashboard';
+    case 'match.found': return '/dashboard';
+    case 'user.registered': return isAdmin ? '/admin/users' : '/dashboard';
     // Simu → MPIGIE MOJA KWA MOJA (tel:) ikiwa namba iko kwenye notification;
     // vinginevyo dashboard (namba zinaonekana kwenye cards).
     case 'call.initiated':

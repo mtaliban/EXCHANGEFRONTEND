@@ -164,9 +164,10 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         onClick: () => router.push(notificationRoute(p.type, p.data, (user as any)?.is_admin)),
         ago: p.occurred_at,
       });
-      // Fresh unread count — kengele ya chini ionyeshe idadi mpya
+      // Badge ya route husika — ongeza 1 kwenye menu item inayofaa
       import('@/lib/unreadStore').then(({ useUnreadStore }) => {
-        useUnreadStore.getState().refresh();
+        const route = notificationRoute(p.type, p.data, (user as any)?.is_admin);
+        if (!route.startsWith('tel:')) useUnreadStore.getState().bump(route);
       });
     });
     return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsubVerified(); unsub4(); };
