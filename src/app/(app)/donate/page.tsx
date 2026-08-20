@@ -103,8 +103,8 @@ export default function DonatePage() {
   async function submit() {
     setError('');
     const text = smsText.trim();
-    if (!amount || amount < 500) { setError('Weka kiasi cha TZS 500 au zaidi.'); return; }
-    if (text.length < 3) { setError('Andika au nakili SMS yoyote uliyopata kutoka kwa mtandao wako.'); return; }
+    if (!amount || amount < 500) { setError(t('donate.err_amount')); return; }
+    if (text.length < 3) { setError(t('donate.err_sms')); return; }
     setStatus('sending');
     try {
       const o = await submitDonation({ amount: amount as number, phone, sms_text: text, purpose: 'donation' });
@@ -113,7 +113,7 @@ export default function DonatePage() {
       setStatus('sent');
     } catch (err: any) {
       setStatus('idle');
-      setError(err?.response?.data?.detail || 'Kosa la mtandao. Jaribu tena.');
+      setError(err?.response?.data?.detail || t('donate.err_network'));
     }
   }
 
@@ -199,11 +199,11 @@ export default function DonatePage() {
         {status === 'sending' ? (
           <button disabled className="btn-primary w-full justify-center opacity-70">
             <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin mr-2" />
-            Inatuma...
+            {t('donate.sending')}
           </button>
         ) : status === 'sent' ? (
           <button disabled className="btn-primary w-full justify-center opacity-70">
-            ✓ Imetumwa
+            {t('donate.sent')}
           </button>
         ) : (
           <button onClick={submit} disabled={busy}
@@ -287,7 +287,7 @@ function HistoryList({ history, allHistory, filter, setFilter }: {
                 <HistoryRow key={p.order_id} p={p} index={i} />
               ))}
               {history.length === 0 && (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-brand-grey-400 text-xs">Hakuna malipo katika kichujio hiki.</td></tr>
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-brand-grey-400 text-xs">{t('donate.empty_filter')}</td></tr>
               )}
             </tbody>
           </table>
@@ -379,7 +379,7 @@ function HistoryRow({ p, index }: { p: any; index: number }) {
           </div>
           {/* Rejection reason */}
           {p.status === 'rejected' && p.note && !chatOpen && (
-            <div className="text-[10px] text-brand-red mt-1 text-right">Sababu: {p.note}</div>
+            <div className="text-[10px] text-brand-red mt-1 text-right">{t('donate.reason_label')} {p.note}</div>
           )}
         </td>
       </tr>
@@ -391,7 +391,7 @@ function HistoryRow({ p, index }: { p: any; index: number }) {
               {/* Rejection reason (kama ipo) */}
               {p.status === 'rejected' && p.note && (
                 <div className="bg-brand-red-50 dark:bg-brand-red-100/20 border border-brand-red-200 rounded-lg px-3 py-2 text-xs text-brand-red">
-                  <span className="font-semibold">Admin:</span> {p.note}
+                  <span className="font-semibold">{t('donate.admin_label')}</span> {p.note}
                 </div>
               )}
               {/* Messages */}
@@ -402,20 +402,20 @@ function HistoryRow({ p, index }: { p: any; index: number }) {
                       ? 'bg-brand-blue-50 dark:bg-brand-blue-950/40 text-brand-blue-700 dark:text-brand-blue-300 border border-brand-blue/20'
                       : 'bg-white dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-300 border border-brand-grey-200 dark:border-brand-grey-600'
                   }`}>
-                    <div className="font-semibold text-[10px] mb-0.5">{m.sender_name}</div>
+                    <div className="font-semibold text-[10px] mb-0.5">{m.sender === 'admin' ? t('donate.admin_label') : m.sender_name}</div>
                     <div>{m.message}</div>
                     <div className="text-[9px] text-brand-grey-400 mt-1">{m.created_at ? timeAgo(parseServerDate(m.created_at)?.getTime() || 0, lang) : ''}</div>
                   </div>
                 </div>
               ))}
               {messages.length === 0 && (
-                <div className="text-[11px] text-brand-grey-400 text-center">Hakuna bado. Andika ujumbe wa kwanza kwa admin.</div>
+                <div className="text-[11px] text-brand-grey-400 text-center">{t('donate.chat_empty')}</div>
               )}
               {/* Input */}
               <div className="flex gap-1.5">
                 <input
                   className="input text-xs py-1.5 flex-1"
-                  placeholder="Andika ujumbe kwa admin..."
+                  placeholder={t('donate.chat_ph')}
                   value={chatText}
                   onChange={(e) => setChatText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }}

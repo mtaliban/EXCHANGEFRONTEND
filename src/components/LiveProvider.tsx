@@ -181,13 +181,17 @@ function showToast(opts: {
   const container = ensureToastContainer();
   const el = document.createElement('div');
   // SAWA NA guide toast: rounded-lg, border-brand-blue/30, bg-brand-blue-50, text-[11px]
-  el.className = 'pointer-events-auto cursor-pointer w-fit max-w-xs rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-md';
+  el.className = 'pointer-events-auto cursor-pointer w-fit min-w-[180px] max-w-[340px] rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-md';
   const emoji = opts.emoji || '🔔';
-  el.textContent = `${emoji} ${opts.title}`;
+  // Title line
+  const titleEl = document.createElement('div');
+  titleEl.className = 'font-bold text-brand-blue-800 dark:text-brand-blue-200';
+  titleEl.textContent = `${emoji} ${opts.title}`;
+  el.appendChild(titleEl);
   if (opts.body) {
-    const bodyEl = document.createElement('span');
-    bodyEl.className = ' text-brand-blue-500 dark:text-brand-blue-400 font-normal';
-    bodyEl.textContent = ` — ${opts.body}`;
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'text-brand-blue-500 dark:text-brand-blue-400 font-normal mt-0.5 leading-snug';
+    bodyEl.textContent = opts.body;
     el.appendChild(bodyEl);
   }
   const close = () => {

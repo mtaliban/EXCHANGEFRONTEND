@@ -101,7 +101,7 @@ export default function AdminPaymentsPage() {
       await adminReplyPayment(orderId, text);
       setChatText((prev) => ({ ...prev, [orderId]: '' }));
       await loadChat(orderId);
-      setFlash({ type: 'success', msg: 'Jibu limetumwa kwa mchangiaji' });
+      setFlash({ type: 'success', msg: t('donate.admin_reply_sent') });
     } catch (e: any) {
       setFlash({ type: 'error', msg: e?.response?.data?.detail || 'Imeshindikana' });
     }
@@ -110,7 +110,7 @@ export default function AdminPaymentsPage() {
 
   if (!data) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
 
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 3;
   const counts: Record<string, number> = data.counts || { verifying: 0, approved: 0, rejected: 0, all: data.payments.length };
   const visiblePayments = (data.payments || []).filter((p: any) => !status || p.status === status);
   const totalPages = Math.max(1, Math.ceil(visiblePayments.length / PAGE_SIZE));
@@ -145,7 +145,7 @@ export default function AdminPaymentsPage() {
         <div className="rounded-xl border-l-4 border-brand-blue bg-brand-blue-50 p-3 flex items-center gap-3 animate-slide-in">
           <CreditCard size={18} className="text-brand-blue flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-brand-grey-900">Mchango mpya unahitaji uthibitisho</div>
+            <div className="text-sm font-bold text-brand-grey-900">{t('donate.admin_new_donation')}</div>
             <div className="text-xs text-brand-grey-600 mt-0.5">
               TZS {(newDonation.data?.amount || 0).toLocaleString()} — angalia SMS chini na uthibitishe
             </div>
@@ -283,17 +283,22 @@ export default function AdminPaymentsPage() {
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination — numbers + Next */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
-            <ChevronLeft size={16} />
-          </button>
-          <span className="text-xs font-bold text-brand-grey-500 px-2">{page} / {totalPages}</span>
+        <div className="flex items-center justify-center gap-1 pt-2 flex-wrap">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+            <button key={n} onClick={() => setPage(n)}
+              className={`inline-flex items-center justify-center min-w-[32px] h-8 rounded-full text-xs font-bold transition ${
+                n === page
+                  ? 'bg-brand-blue text-white border border-brand-blue'
+                  : 'border border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue hover:text-brand-blue'
+              }`}>
+              {n}
+            </button>
+          ))}
           <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
-            <ChevronRight size={16} />
+            className="inline-flex items-center justify-center h-8 px-3 rounded-full border border-brand-grey-200 text-brand-grey-600 text-xs font-bold disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition gap-1">
+            {t('board.next')} <ChevronRight size={14} />
           </button>
         </div>
       )}
@@ -322,12 +327,12 @@ export default function AdminPaymentsPage() {
               {/* Chat with donor */}
               <div className="mt-3 border-t border-brand-grey-100 pt-2.5">
                 <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-brand-grey-500 font-bold mb-2">
-                  <MessageSquare size={11} /> Ongea na Mchangiaji
+                  <MessageSquare size={11} /> {t('donate.admin_chat_title')}
                 </div>
                 {/* Messages */}
                 <div className="space-y-1.5 max-h-40 overflow-y-auto mb-2">
                   {msgs.length === 0 && (
-                    <div className="text-[11px] text-brand-grey-400 text-center py-2">Hakuna bado.</div>
+                    <div className="text-[11px] text-brand-grey-400 text-center py-2">{t('donate.chat_empty')}</div>
                   )}
                   {msgs.map((m: any, i: number) => (
                     <div key={i} className={`flex ${m.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
@@ -346,7 +351,7 @@ export default function AdminPaymentsPage() {
                 <div className="flex gap-1.5">
                   <input
                     className="input text-xs py-1.5 flex-1"
-                    placeholder="Andika jibu kwa mchangiaji..."
+                    placeholder={t('donate.admin_chat_ph')}
                     value={chatText[p.order_id] || ''}
                     onChange={(e) => setChatText((prev) => ({ ...prev, [p.order_id]: e.target.value }))}
                     onKeyDown={(e) => { if (e.key === 'Enter') sendReply(p.order_id); }}
