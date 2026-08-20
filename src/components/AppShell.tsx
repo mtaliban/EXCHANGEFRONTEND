@@ -183,52 +183,47 @@ function MobileTopBar({ links, user, onLogout }: {
         )}
       </div>
 
-      {/* ═══ CENTER: App name ═══ */}
+      {/* ═══ CENTER: Avatar — kama ya board cards ═══ */}
       <div className="flex items-center min-w-0 flex-1">
-        <span className="text-sm font-bold text-brand-blue truncate">Kubadilishana</span>
-      </div>
-
-      {/* ═══ RIGHT: Avatar — bofya = profile + logout ═══ */}
-      <div className="relative flex-shrink-0">
         <button
           onClick={() => { setMenuOpen(false); setProfileOpen((v) => !v); }}
-          className="w-9 h-9 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold hover:ring-2 hover:ring-brand-blue/30 transition"
-          aria-label="Profile"
+          className="flex items-center gap-2 min-w-0"
         >
-          {initial}
+          <div className="w-8 h-8 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-xs font-bold text-brand-grey-900 dark:text-white flex-shrink-0">
+            {initial}
+          </div>
+          <span className="text-sm font-semibold text-brand-grey-900 dark:text-white truncate">{user?.full_name}</span>
         </button>
-
-        {/* Profile dropdown — wasifu + toka */}
-        {profileOpen && (
-          <>
-            <div className="fixed inset-0 z-[99]" onClick={closeAll} />
-            <div className="absolute right-0 top-full mt-1 z-[100] w-52 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
-              {/* User info */}
-              <div className="px-4 py-3 border-b border-brand-grey-100 dark:border-brand-grey-700">
-                <div className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{user?.full_name}</div>
-                <div className="text-xs text-brand-grey-500 dark:text-brand-grey-400 truncate">{user?.phone_primary}</div>
-              </div>
-              {/* Profile link */}
-              <Link
-                href="/profile"
-                onClick={closeAll}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition"
-              >
-                <User size={18} strokeWidth={2.2} />
-                <span>{t('nav.profile')}</span>
-              </Link>
-              {/* Logout */}
-              <button
-                onClick={() => { closeAll(); onLogout(); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-              >
-                <LogOut size={18} strokeWidth={2.2} />
-                <span>{t('nav.logout')}</span>
-              </button>
-            </div>
-          </>
-        )}
       </div>
+
+      {/* ═══ RIGHT: Language toggle ═══ */}
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <LangToggle />
+      </div>
+
+      {/* ═══ Profile dropdown — bofya avatar ═══ */}
+      {profileOpen && (
+        <>
+          <div className="fixed inset-0 z-[99]" onClick={closeAll} />
+          <div className="absolute right-0 top-full mt-1 z-[100] w-52 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
+            <Link
+              href="/profile"
+              onClick={closeAll}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition"
+            >
+              <User size={18} strokeWidth={2.2} />
+              <span>{t('nav.profile')}</span>
+            </Link>
+            <button
+              onClick={() => { closeAll(); onLogout(); }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+            >
+              <LogOut size={18} strokeWidth={2.2} />
+              <span>{t('nav.logout')}</span>
+            </button>
+          </div>
+        </>
+      )}
     </>
   );
 }

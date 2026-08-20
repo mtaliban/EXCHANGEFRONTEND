@@ -468,7 +468,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   async function onCall() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showGuide('Changia kwanza ili kuona namba za simu na kuwasiliana.');
+      showGuide('Changia kiasi cha TZS 2,000 ili kuona namba za simu na kuwasiliana.');
       return;
     }
     showGuide('Piga simu kwa namba hiyo. Mazungumzo yawe mafupi — muambie mnataka kubadilishana vituo.');
@@ -479,7 +479,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   function onSMS() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showGuide('Changia kwanza ili kuona namba za simu na kuwasiliana.');
+      showGuide('Changia kiasi cha TZS 2,000 ili kuona namba za simu na kuwasiliana.');
       return;
     }
     showGuide('SMS itatuma ujumbe wa kujitambulisha. Angalia ujumbe kabla ya kutuma.');
@@ -489,7 +489,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   function onWhatsApp() {
     if (!c.phone_alt) return;
     if (!isVerified) {
-      showGuide('Changia kwanza ili kuona namba za simu na kuwasiliana.');
+      showGuide('Changia kiasi cha TZS 2,000 ili kuona namba za simu na kuwasiliana.');
       return;
     }
     showGuide('WhatsApp inafunguka na ujumbe wa kujitambulisha. Tuma na usubiri jibu.');
@@ -594,7 +594,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       {/* GUIDE TOAST — maelekezo fupi yanapoibuka */}
       {guideToast && (
         <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
-          💡 {guideToast}
+          💳 {guideToast}
         </div>
       )}
 
