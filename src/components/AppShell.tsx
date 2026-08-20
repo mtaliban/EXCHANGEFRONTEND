@@ -183,21 +183,20 @@ function MobileTopBar({ links, user, onLogout }: {
         )}
       </div>
 
-      {/* ═══ CENTER: Avatar — kama ya board cards ═══ */}
+      {/* ═══ CENTER: Jina tu ═══ */}
       <div className="flex items-center min-w-0 flex-1">
-        <button
-          onClick={() => { setMenuOpen(false); setProfileOpen((v) => !v); }}
-          className="flex items-center gap-2 min-w-0"
-        >
-          <div className="w-8 h-8 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-xs font-bold text-brand-grey-900 dark:text-white flex-shrink-0">
-            {initial}
-          </div>
-          <span className="text-sm font-semibold text-brand-grey-900 dark:text-white truncate">{user?.full_name}</span>
-        </button>
+        <span className="text-sm font-semibold text-brand-grey-900 dark:text-white truncate">{user?.full_name}</span>
       </div>
 
-      {/* ═══ RIGHT: Language toggle ═══ */}
-      <div className="flex items-center gap-1 flex-shrink-0">
+      {/* ═══ RIGHT: Avatar + Language toggle ═══ */}
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        <button
+          onClick={() => { setMenuOpen(false); setProfileOpen((v) => !v); }}
+          className="w-8 h-8 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-xs font-bold text-brand-grey-900 dark:text-white flex-shrink-0"
+          aria-label="Profile"
+        >
+          {initial}
+        </button>
         <LangToggle />
       </div>
 
@@ -306,31 +305,29 @@ function WsStatus() {
   );
 }
 
-/** Language switcher — BUTTONS MBILI WAZI: "Kiswahili" na "English".
- *  Kila moja inaweka lugha yake MOJA KWA MOJA (setLang) — hakuna toggle
- *  inayoweza kuchanganya. Inayotumika sasa inaonekana wazi (rangi). */
+/** Language switcher — ndogo: SW / EN tu bila flags, isijifiche jina */
 function LangToggle() {
   const currentLang = useI18n((s) => s.lang);
   const setLang = useI18n((s) => s.setLang);
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-brand-blue/30 p-0.5 flex-shrink-0" title="Badilisha lugha / Switch language">
+    <div className="flex items-center rounded-lg border border-brand-blue/20 flex-shrink-0" title="Badilisha lugha">
       <button
         onClick={() => setLang('sw')}
         aria-pressed={currentLang === 'sw'}
-        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold transition ${
+        className={`px-2 py-1 rounded-l-lg text-[10px] font-bold transition ${
           currentLang === 'sw' ? 'bg-brand-blue text-white' : 'text-brand-blue hover:bg-brand-blue-50'
         }`}
       >
-        🇹🇿 Kiswahili
+        SW
       </button>
       <button
         onClick={() => setLang('en')}
         aria-pressed={currentLang === 'en'}
-        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold transition ${
+        className={`px-2 py-1 rounded-r-lg text-[10px] font-bold transition ${
           currentLang === 'en' ? 'bg-brand-blue text-white' : 'text-brand-blue hover:bg-brand-blue-50'
         }`}
       >
-        🇬🇧 English
+        EN
       </button>
     </div>
   );

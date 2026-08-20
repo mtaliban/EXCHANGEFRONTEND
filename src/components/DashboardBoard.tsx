@@ -359,8 +359,8 @@ export default function DashboardBoard() {
             )}
           </div>
 
-          {/* Kichujio cha masomo — wote / yote mawili / moja / wasio match + search */}
-          {isEdu && (
+          {/* Kichujio cha masomo — onyeshwa tu kwa mwenye subjects */}
+          {isEdu && mySubjects.length > 0 && (
             <div className="mt-2 space-y-1.5">
               <div className="flex items-center gap-1 flex-wrap">
                 <span className="text-[11px] font-semibold text-brand-grey-600 dark:text-brand-grey-300 mr-1">{t('board.subjects')}:</span>

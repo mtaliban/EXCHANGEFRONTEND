@@ -124,6 +124,7 @@ export default function NotificationsPage() {
         {notifs.map((n) => {
           const meta = NOTIFICATION_TYPE_META[n.type];
           const Icon = meta?.icon || DEFAULT_NOTIFICATION_ICON;
+          const emoji = meta?.emoji || '🔔';
           const bg = (meta && COLOR_BG[meta.color]) || 'bg-brand-grey-100 text-brand-grey-500 border-brand-grey-300';
           return (
             <button
@@ -136,7 +137,7 @@ export default function NotificationsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-2">
-                  <span className="font-semibold text-brand-grey-900 text-sm break-words min-w-0 flex-1">{n.title}</span>
+                  <span className="font-semibold text-brand-grey-900 text-sm break-words min-w-0 flex-1">{emoji} {n.title}</span>
                   {!n.read && <span className="w-2 h-2 rounded-full bg-brand-blue flex-shrink-0 mt-1.5" />}
                 </div>
                 <div className="text-xs text-brand-grey-500 mt-0.5 line-clamp-2">{n.body}</div>

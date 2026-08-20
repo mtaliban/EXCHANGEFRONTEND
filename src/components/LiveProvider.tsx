@@ -162,10 +162,11 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.type === 'match.found' || p.type === 'message.sent' || p.type === 'call.initiated') return;
       if (isSoundEnabled()) playPingSound(); // 📣 arifa mpya → ipige sauti!
       const meta = NOTIFICATION_TYPE_META[p.type] || { icon: DEFAULT_NOTIFICATION_ICON, color: 'blue' };
+      const emoji = meta.emoji || '🔔';
       showToast({
         icon: meta.icon || Bell,
         color: meta.color as 'blue' | 'orange' | 'red' | 'gold',
-        title: p.title || 'Arifa mpya',
+        title: `${emoji} ${p.title || 'Arifa mpya'}`,
         body: p.body || '',
         onClick: () => router.push(notificationRoute(p.type, p.data, (user as any)?.is_admin)),
         ago: p.occurred_at,
