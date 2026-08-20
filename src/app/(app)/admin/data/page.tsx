@@ -363,9 +363,9 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  // bypass wakati level imechaguliwa — dropdown ibadilike mara moja (fresh).
-  async function load() {
-    try { setData(await adminListSubjects(level || undefined, !!level)); } catch (e) { flash(await errText(e), false); }
+  // bypass wakati level imechaguliwa au tick (SSE event) inabadilika
+  async function load(bypass = false) {
+    try { setData(await adminListSubjects(level || undefined, bypass || !!level)); } catch (e) { flash(await errText(e), false); }
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [level, tick]);
 
@@ -484,10 +484,10 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  async function load() {
-    try { setData(await adminListCadres()); } catch (e) { flash(await errText(e), false); }
+  async function load(bypass = false) {
+    try { setData(await adminListCadres(undefined, bypass)); } catch (e) { flash(await errText(e), false); }
   }
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [tick]);
+  useEffect(() => { load(true); /* eslint-disable-next-line */ }, [tick]);
 
   if (!data) return <div className="p-6"><Spinner /></div>;
 
@@ -625,10 +625,10 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  async function load() {
-    try { setData(await adminListRegions()); } catch (e) { flash(await errText(e), false); }
+  async function load(bypass = false) {
+    try { setData(await adminListRegions(bypass)); } catch (e) { flash(await errText(e), false); }
   }
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [tick]);
+  useEffect(() => { load(true); /* eslint-disable-next-line */ }, [tick]);
 
   if (!data) return <div className="p-6"><Spinner /></div>;
 
@@ -710,13 +710,13 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  // bypass wakati mkoa umechaguliwa — dropdown ibadilike mara moja (fresh).
-  async function load() {
-    try { setData(await adminListDistricts(regionFilter || undefined, !!regionFilter)); }
+  // bypass wakati mkoa umechaguliwa au tick (SSE event) inabadilika
+  async function load(bypass = false) {
+    try { setData(await adminListDistricts(regionFilter || undefined, bypass || !!regionFilter)); }
     catch (e) { flash(await errText(e), false); }
   }
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [regionFilter, tick]);
-  useEffect(() => { adminListRegions().then(setRegions).catch(() => {}); }, [tick]);
+  useEffect(() => { load(true); /* eslint-disable-next-line */ }, [regionFilter, tick]);
+  useEffect(() => { adminListRegions(true).then(setRegions).catch(() => {}); }, [tick]);
 
   if (!data) return <div className="p-6"><Spinner /></div>;
 
@@ -857,19 +857,19 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  async function load() {
+  async function load(bypass = false) {
     try {
       const r = await adminListFacilities({
         category,
         region_id: regionFilter || undefined,
         district_id: districtFilter || undefined,
         q: q || undefined,
-      }, !!(regionFilter || districtFilter || q));
+      }, bypass || !!(regionFilter || districtFilter || q));
       setData(r.items || []);
     } catch (e) { flash(await errText(e), false); }
   }
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [category, regionFilter, districtFilter, q, tick]);
-  useEffect(() => { adminListRegions().then(setRegions).catch(() => {}); }, [tick]);
+  useEffect(() => { load(true); /* eslint-disable-next-line */ }, [category, regionFilter, districtFilter, q, tick]);
+  useEffect(() => { adminListRegions(true).then(setRegions).catch(() => {}); }, [tick]);
   useEffect(() => {
     if (regionFilter) adminListDistricts(regionFilter, true).then(setDistricts).catch(() => setDistricts([]));
     else setDistricts([]);

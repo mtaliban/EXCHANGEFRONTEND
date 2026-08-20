@@ -24,8 +24,8 @@ export default function AdminFeedbackPage() {
 
   const { subscribe } = useLive();
 
-  async function load() {
-    try { setData(await adminListFeedback(status, q)); } catch {}
+  async function load(bypass = false) {
+    try { setData(await adminListFeedback(status, q, bypass)); } catch {}
   }
   useEffect(() => { load(); }, [status, q]);
   useEffect(() => { setPage(1); }, [status, q]);
@@ -35,7 +35,7 @@ export default function AdminFeedbackPage() {
       if (p.type === 'feedback.new') {
         setFlash({ type: 'success', msg: 'Maoni mapya yamefika' });
         setTimeout(() => setFlash(null), 4000);
-        load();
+        load(true);
       }
     });
     return () => un();

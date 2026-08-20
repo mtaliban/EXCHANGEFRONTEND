@@ -89,11 +89,11 @@ export default function AdminUsersPage() {
   const [live, setLive] = useState(false);
   const lastEvent = useRef(0);
 
-  async function load() {
+  async function load(bypass = false) {
     const params: any = { limit: 200 };
     if (q) params.q = q;
     if (category) params.category = category;
-    setData(await adminUsers(params));
+    setData(await adminUsers(params, bypass));
   }
 
   async function loadTrash() {
@@ -119,7 +119,7 @@ export default function AdminUsersPage() {
     lastEvent.current = now;
     const et = ev?.event_type || '';
     if (et.startsWith('user.') || et.startsWith('data.')) {
-      load();
+      load(true);
       loadTrash();
       // Data ya reference (masomo/kada/mikoa) imebadilika — pickers na modals
       // wajirefresh PAPO HAPO (event-driven, hakuna refresh ya page).

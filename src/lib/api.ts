@@ -365,8 +365,8 @@ export const submitFeedback = (body: { subject: string; message: string }) =>
   client.post(`${ADMIN}/feedback`, body).then((r) => r.data);
 export const myFeedback = () =>
   client.get(`${ADMIN}/feedback/my`, { bypassCache: true } as any).then((r) => r.data);
-export const adminListFeedback = (status = '', q = '') =>
-  client.get(`${ADMIN}/feedback/admin/all`, { params: { status, q }, ttl: _ADMIN_TTL, bypassCache: true } as any).then((r) => r.data);
+export const adminListFeedback = (status = '', q = '', bypass = false) =>
+  client.get(`${ADMIN}/feedback/admin/all`, { params: { status, q }, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminReplyFeedback = (feedback_id: string, reply: string) =>
   client.post(`${ADMIN}/feedback/admin/${feedback_id}/reply`, { reply }).then((r) => r.data);
 export const adminDeleteFeedback = (feedback_id: string) =>
@@ -415,7 +415,7 @@ export const adminTrashPurgeBulk = (user_ids: string[]) =>
 
 /* ── Admin: data management (idara/masomo/kada/mikoa/wilaya/vituo) ── */
 export const adminListDepartments = (bypass = false) =>
-  client.get(`${ADMIN}/admin/data/departments`, { bypassCache: bypass } as any).then((r) => r.data);
+  client.get(`${ADMIN}/admin/data/departments`, { ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddDepartment = (body: { code: string; name: string; status: string; icon?: string }) =>
   client.post(`${ADMIN}/admin/data/departments`, body).then((r) => r.data);
 export const adminUpdateDepartment = (code: string, body: { code: string; name: string; status: string; icon?: string }) =>
@@ -423,23 +423,23 @@ export const adminUpdateDepartment = (code: string, body: { code: string; name: 
 export const adminDeleteDepartment = (code: string) =>
   client.delete(`${ADMIN}/admin/data/departments/${code}`).then((r) => r.data);
 export const adminListSubjects = (level?: string, bypass = false) =>
-  client.get(`${ADMIN}/admin/data/subjects`, { params: level ? { level } : {}, bypassCache: bypass } as any).then((r) => r.data);
+  client.get(`${ADMIN}/admin/data/subjects`, { params: level ? { level } : {}, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddSubject = (body: { code: string; name: string; level: string }) =>
   client.post(`${ADMIN}/admin/data/subjects`, body).then((r) => r.data);
 export const adminUpdateSubject = (code: string, body: { code: string; name: string; level: string }) =>
   client.patch(`${ADMIN}/admin/data/subjects/${code}`, body).then((r) => r.data);
 export const adminDeleteSubject = (code: string) =>
   client.delete(`${ADMIN}/admin/data/subjects/${code}`).then((r) => r.data);
-export const adminListCadres = (category?: string) =>
-  client.get(`${ADMIN}/admin/data/cadres`, { params: category ? { category } : {} }).then((r) => r.data);
+export const adminListCadres = (category?: string, bypass = false) =>
+  client.get(`${ADMIN}/admin/data/cadres`, { params: category ? { category } : {}, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddCadre = (body: any) =>
   client.post(`${ADMIN}/admin/data/cadres`, body).then((r) => r.data);
 export const adminUpdateCadre = (code: string, body: any) =>
   client.patch(`${ADMIN}/admin/data/cadres/${code}`, body).then((r) => r.data);
 export const adminDeleteCadre = (code: string) =>
   client.delete(`${ADMIN}/admin/data/cadres/${code}`).then((r) => r.data);
-export const adminListRegions = () =>
-  client.get(`${ADMIN}/admin/data/regions`).then((r) => r.data);
+export const adminListRegions = (bypass = false) =>
+  client.get(`${ADMIN}/admin/data/regions`, { ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddRegion = (body: { id: number; name: string }) =>
   client.post(`${ADMIN}/admin/data/regions`, body).then((r) => r.data);
 export const adminUpdateRegion = (id: number, body: { id: number; name: string }) =>
@@ -447,7 +447,7 @@ export const adminUpdateRegion = (id: number, body: { id: number; name: string }
 export const adminDeleteRegion = (id: number) =>
   client.delete(`${ADMIN}/admin/data/regions/${id}`).then((r) => r.data);
 export const adminListDistricts = (region_id?: number, bypass = false) =>
-  client.get(`${ADMIN}/admin/data/districts`, { params: region_id ? { region_id } : {}, bypassCache: bypass } as any).then((r) => r.data);
+  client.get(`${ADMIN}/admin/data/districts`, { params: region_id ? { region_id } : {}, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddDistrict = (body: { id: number; region_id: number; name: string }) =>
   client.post(`${ADMIN}/admin/data/districts`, body).then((r) => r.data);
 export const adminUpdateDistrict = (id: number, body: { id: number; region_id: number; name: string }) =>
@@ -466,7 +466,7 @@ export interface FacilityBody {
   ownership?: string;
 }
 export const adminListFacilities = (params: { category?: string; region_id?: number; district_id?: number; q?: string } = {}, bypass = false) =>
-  client.get(`${ADMIN}/admin/data/facilities`, { params, bypassCache: bypass } as any).then((r) => r.data);
+  client.get(`${ADMIN}/admin/data/facilities`, { params, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminAddFacility = (body: FacilityBody) =>
   client.post(`${ADMIN}/admin/data/facilities`, body).then((r) => r.data);
 export const adminUpdateFacility = (facility_id: string | number, body: FacilityBody) =>
@@ -510,8 +510,8 @@ export const adminRejectDonation = (order_id: string, note?: string) =>
   client.post(`${API}/payments/admin/${order_id}/reject`, { note }).then((r) => r.data);
 
 /* ── Admin: Password Reset Requests ─────────────── */
-export const adminListPasswordResets = (status = 'pending') =>
-  client.get<{ items: any[]; counts: Record<string, number> }>(`${ADMIN}/admin/password-resets`, { params: { status }, bypassCache: true } as any).then((r) => r.data);
+export const adminListPasswordResets = (status = 'pending', bypass = false) =>
+  client.get<{ items: any[]; counts: Record<string, number> }>(`${ADMIN}/admin/password-resets`, { params: { status }, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminApprovePasswordReset = (resetId: string) =>
   client.post(`${ADMIN}/admin/password-resets/${resetId}/approve`).then((r) => r.data);
 export const adminRejectPasswordReset = (resetId: string) =>

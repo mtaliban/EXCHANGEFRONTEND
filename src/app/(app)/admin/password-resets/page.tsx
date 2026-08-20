@@ -23,9 +23,9 @@ export default function AdminPasswordResetsPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [flash, setFlash] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
-  async function load() {
+  async function load(bypass = false) {
     try {
-      const data = await adminListPasswordResets(status);
+      const data = await adminListPasswordResets(status, bypass);
       setItems(data.items || []);
       setCounts(data.counts || {});
     } catch {}
@@ -66,7 +66,7 @@ export default function AdminPasswordResetsPage() {
               try {
                 const ev = JSON.parse(line.slice(6));
                 if (ev?.event_type?.startsWith('user.password_reset')) {
-                  load(); // refresh list papo hapo
+                  load(true); // bust cache + refresh list papo hapo
                 }
               } catch {}
             }
@@ -130,7 +130,7 @@ export default function AdminPasswordResetsPage() {
               <span className="text-[10px] opacity-70">({counts[s] || 0})</span>
             </button>
           ))}
-          <button onClick={load}
+          <button onClick={() => load(true)}
             className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-grey-100 text-brand-grey-600 border border-brand-grey-200 font-semibold hover:bg-brand-grey-200 transition">
             <RefreshCw size={11} /> {t('pwdreset.refresh')}
           </button>
