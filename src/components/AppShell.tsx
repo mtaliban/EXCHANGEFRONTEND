@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
+import { useUnreadStore } from '@/lib/unreadStore';
 import { useLive } from '@/lib/liveSocket';
 import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
@@ -46,6 +47,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     logout();
     router.replace('/login');
   }
+
+  // Load unread count mara ya kwanza
+  useEffect(() => { useUnreadStore.getState().refresh(); }, []);
 
   return (
     <div className="min-h-screen bg-brand-grey-50">
@@ -232,6 +236,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
   isAdmin?: boolean;
 }) {
   const t = useT();
+  const unreadCount = useUnreadStore((s) => s.count);
   // Admin: links muhimu zaidi kwa simu (6 max) — zaidi ziko drawer
   const mobileLinks = isAdmin
     ? [
@@ -269,7 +274,14 @@ function MobileBottomNav({ pathname, isAdmin }: {
                   : 'text-brand-grey-500 dark:text-brand-grey-400'
               )}
             >
-              <l.icon size={20} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0" />
+              <div className="relative">
+                <l.icon size={20} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0" />
+                {unreadCount > 0 && l.href === '/feedback' && (
+                  <span className="absolute -top-1 -right-1.5 w-4 h-4 rounded-full bg-brand-red text-white text-[8px] font-bold flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </div>
               <span className={clsx('text-[9px] font-semibold leading-tight text-center truncate w-full max-w-full px-0.5 mt-0.5', active && 'font-bold')}>{l.label}</span>
               {active && <span className="w-3 h-0.5 rounded-full bg-brand-blue mt-0.5" />}
             </Link>

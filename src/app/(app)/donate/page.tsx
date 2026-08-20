@@ -100,8 +100,6 @@ export default function DonatePage() {
   async function submit() {
     setError('');
     const text = smsText.trim();
-    // SMS YOYOTE inakubaliwa (maneno/namba yoyote ya uthibitisho uliopata) —
-    // hakuna hitaji la "nakili SMS nzima" kwa fomati maalum.
     if (!amount || amount < 500) { setError('Weka kiasi chaTZS 500 au zaidi.'); return; }
     if (text.length < 3) { setError('Andika au nakili SMS yoyote uliyopata kutoka kwa mtandao wako.'); return; }
     submittingRef.current = true;
@@ -110,6 +108,7 @@ export default function DonatePage() {
       const o = await submitDonation({ amount: amount as number, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
       orderRef.current = o;
+      setStatus('pending');
     } catch (err: any) {
       submittingRef.current = false;
       setStatus('idle');
@@ -191,8 +190,8 @@ export default function DonatePage() {
         </div>
       )}
 
-      {/* Form — rahisi: kiasi, namba, SMS + button ya kusubmit */}
-      {status === 'idle' && (
+      {/* Form — inaonekana daima, button inabadilika tu */}
+      {status !== 'confirmed' && status !== 'rejected' && (
       <div className="card space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -220,20 +219,24 @@ export default function DonatePage() {
 
         {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
 
-        <button onClick={submit} disabled={busy}
-          className="btn-primary w-full justify-center disabled:opacity-60">
-          {t('donate.submit')}
-        </button>
+        {status === 'sending' ? (
+          <button disabled className="btn-primary w-full justify-center opacity-70">
+            ✓ Imetumwa
+          </button>
+        ) : status === 'pending' ? (
+          <button disabled className="btn-primary w-full justify-center opacity-70">
+            ⏳ Inasubiri — pending
+          </button>
+        ) : (
+          <button onClick={submit} disabled={busy}
+            className="btn-primary w-full justify-center disabled:opacity-60">
+            {t('donate.submit')}
+          </button>
+        )}
       </div>
       )}
 
-      {/* SENDING / PROCESSING — spinner bar */}
-      {busy && (
-        <div className="card flex items-center justify-center gap-2 py-4">
-          <SpringSpinner size={20} className="text-brand-blue" />
-          <span className="text-sm font-semibold text-brand-grey-700">{status === 'sending' ? 'Inatuma…' : 'Inasindikwa…'}</span>
-        </div>
-      )}
+
 
       {history.length > 0 && <HistoryList history={history} />}
 

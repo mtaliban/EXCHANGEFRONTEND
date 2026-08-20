@@ -154,7 +154,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     // Notifications center (payments, profile updates, registrations…)
     const unsub4 = subscribe('notification', (p) => {
       if (p.type === 'match.found' || p.type === 'message.sent' || p.type === 'call.initiated') return;
-      if (isSoundEnabled()) playPingSound(); // 📣 arifa mpya → ipige sauti!
+      if (isSoundEnabled()) playPingSound();
       const meta = NOTIFICATION_TYPE_META[p.type] || { icon: DEFAULT_NOTIFICATION_ICON, color: 'blue' };
       const emoji = meta.emoji || '🔔';
       showToast({
@@ -163,6 +163,10 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         body: p.body || '',
         onClick: () => router.push(notificationRoute(p.type, p.data, (user as any)?.is_admin)),
         ago: p.occurred_at,
+      });
+      // Fresh unread count — kengele ya chini ionyeshe idadi mpya
+      import('@/lib/unreadStore').then(({ useUnreadStore }) => {
+        useUnreadStore.getState().refresh();
       });
     });
     return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsubVerified(); unsub4(); };
