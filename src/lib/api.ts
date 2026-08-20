@@ -509,6 +509,14 @@ export const adminApproveDonation = (order_id: string, note?: string) =>
 export const adminRejectDonation = (order_id: string, note?: string) =>
   client.post(`${API}/payments/admin/${order_id}/reject`, { note }).then((r) => r.data);
 
+/* ── Payment messages (customer ↔ admin chat) ── */
+export const sendPaymentMessage = (order_id: string, message: string) =>
+  client.post(`${API}/payments/${order_id}/message`, { message }).then((r) => r.data);
+export const adminReplyPayment = (order_id: string, reply: string) =>
+  client.post(`${API}/payments/admin/${order_id}/reply`, { reply }).then((r) => r.data);
+export const getPaymentMessages = (order_id: string) =>
+  client.get<{ messages: any[] }>(`${API}/payments/${order_id}/messages`).then((r) => r.data);
+
 /* ── Admin: Password Reset Requests ─────────────── */
 export const adminListPasswordResets = (status = 'pending', bypass = false) =>
   client.get<{ items: any[]; counts: Record<string, number> }>(`${ADMIN}/admin/password-resets`, { params: { status }, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);

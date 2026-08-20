@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { adminAllDonations, adminApproveDonation, adminRejectDonation } from '@/lib/api';
+import { adminAllDonations, adminApproveDonation, adminRejectDonation, adminReplyPayment, getPaymentMessages } from '@/lib/api';
 import { parseServerDate } from '@/lib/dates';
 import { useLive } from '@/lib/liveSocket';
 import { useT } from '@/lib/i18n';
@@ -9,6 +9,7 @@ import Spinner from '@/components/Spinner';
 import {
   CreditCard, CheckCircle2, XCircle, Clock, Eye, EyeOff,
   AlertTriangle, Banknote, Users, TrendingUp, ChevronLeft, ChevronRight,
+  Send, MessageSquare,
 } from 'lucide-react';
 
 type Status = '' | 'verifying' | 'approved' | 'rejected';
@@ -28,6 +29,10 @@ export default function AdminPaymentsPage() {
   const [flash, setFlash] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [newDonation, setNewDonation] = useState<any>(null);
   const [page, setPage] = useState(1);
+  const [chatOpen, setChatOpen] = useState<Record<string, boolean>>({});
+  const [chatMessages, setChatMessages] = useState<Record<string, any[]>>({});
+  const [chatText, setChatText] = useState<Record<string, string>>({});
+  const [replying, setReplying] = useState('');
 
   const { subscribe } = useLive();
 
@@ -79,6 +84,28 @@ export default function AdminPaymentsPage() {
       setFlash({ type: 'error', msg: e?.response?.data?.detail || t('adminpay.error') });
     }
     setBusy('');
+  }
+
+  async function loadChat(orderId: string) {
+    try {
+      const d = await getPaymentMessages(orderId);
+      setChatMessages((prev) => ({ ...prev, [orderId]: d.messages }));
+    } catch {}
+  }
+
+  async function sendReply(orderId: string) {
+    const text = (chatText[orderId] || '').trim();
+    if (!text) return;
+    setReplying(orderId);
+    try {
+      await adminReplyPayment(orderId, text);
+      setChatText((prev) => ({ ...prev, [orderId]: '' }));
+      await loadChat(orderId);
+      setFlash({ type: 'success', msg: 'Jibu limetumwa kwa mchangiaji' });
+    } catch (e: any) {
+      setFlash({ type: 'error', msg: e?.response?.data?.detail || 'Imeshindikana' });
+    }
+    setReplying('');
   }
 
   if (!data) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
@@ -198,6 +225,17 @@ export default function AdminPaymentsPage() {
                     </span>
                   </td>
                   <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                    {/* Chat — onyeshwa pale kunapo rejection au messages */}
+                    {(p.status === 'rejected' || (p.messages && p.messages.length > 0)) && (
+                      <button onClick={() => {
+                        const next = !expanded[p.order_id];
+                        setExpanded((e) => ({ ...e, [p.order_id]: next }));
+                        if (next && !chatMessages[p.order_id]) loadChat(p.order_id);
+                      }}
+                        className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue font-medium hover:bg-brand-blue-100 transition mr-1">
+                        <MessageSquare size={11} /> {(chatMessages[p.order_id] || p.messages || []).length || ''}
+                      </button>
+                    )}
                     {/* View SMS */}
                     <button onClick={() => setExpanded((e) => ({ ...e, [p.order_id]: !isOpen }))}
                       className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-600 font-medium hover:bg-brand-grey-200 transition mr-1">
@@ -260,10 +298,12 @@ export default function AdminPaymentsPage() {
         </div>
       )}
 
-      {/* SMS ya mchangiaji — inline chini ya table */}
+      {/* SMS + Chat — inline chini ya table */}
       {Object.keys(expanded).some((k) => expanded[k]) && (
         <div className="space-y-2">
-          {visiblePayments.filter((p: any) => expanded[p.order_id]).map((p: any) => (
+          {visiblePayments.filter((p: any) => expanded[p.order_id]).map((p: any) => {
+            const msgs = chatMessages[p.order_id] || p.messages || [];
+            return (
             <div key={p.order_id} className="bg-white rounded-xl border border-brand-grey-200 p-3">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] uppercase tracking-wide text-brand-grey-500 font-bold flex items-center gap-1">
@@ -279,8 +319,48 @@ export default function AdminPaymentsPage() {
                   <AlertTriangle size={11} /> {t('adminpay.note')} {p.note}
                 </div>
               )}
+              {/* Chat with donor */}
+              <div className="mt-3 border-t border-brand-grey-100 pt-2.5">
+                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-brand-grey-500 font-bold mb-2">
+                  <MessageSquare size={11} /> Ongea na Mchangiaji
+                </div>
+                {/* Messages */}
+                <div className="space-y-1.5 max-h-40 overflow-y-auto mb-2">
+                  {msgs.length === 0 && (
+                    <div className="text-[11px] text-brand-grey-400 text-center py-2">Hakuna bado.</div>
+                  )}
+                  {msgs.map((m: any, i: number) => (
+                    <div key={i} className={`flex ${m.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] rounded-lg px-2.5 py-1.5 text-xs ${
+                        m.sender === 'admin'
+                          ? 'bg-brand-blue text-white'
+                          : 'bg-brand-grey-100 text-brand-grey-700'
+                      }`}>
+                        <div className="font-semibold text-[10px] opacity-70">{m.sender_name}</div>
+                        <div>{m.message}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Reply input */}
+                <div className="flex gap-1.5">
+                  <input
+                    className="input text-xs py-1.5 flex-1"
+                    placeholder="Andika jibu kwa mchangiaji..."
+                    value={chatText[p.order_id] || ''}
+                    onChange={(e) => setChatText((prev) => ({ ...prev, [p.order_id]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === 'Enter') sendReply(p.order_id); }}
+                    disabled={replying === p.order_id}
+                  />
+                  <button onClick={() => sendReply(p.order_id)} disabled={replying === p.order_id || !(chatText[p.order_id] || '').trim()}
+                    className="btn-primary text-xs px-3 py-1.5">
+                    {replying === p.order_id ? '...' : <Send size={12} />}
+                  </button>
+                </div>
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

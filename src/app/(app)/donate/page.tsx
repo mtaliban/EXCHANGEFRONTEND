@@ -2,17 +2,19 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getDonationInfo, submitDonation, myDonations } from '@/lib/api';
+import { getDonationInfo, submitDonation, myDonations, sendPaymentMessage, getPaymentMessages } from '@/lib/api';
 import { parseServerDate } from '@/lib/dates';
 import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
+import { useUnreadStore } from '@/lib/unreadStore';
 import { useT, useI18n } from '@/lib/i18n';
-import { Check, Copy, HandCoins, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
-import SpringSpinner from '@/components/SpringSpinner';
+import { Check, Copy, HandCoins, Phone, MessageCircle, ArrowLeft, Send, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 
 const ADMIN_CALL = '0763795801';
 const ADMIN_WHATSAPP = '255625607088';
+
+type HistoryStatus = '' | 'verifying' | 'approved' | 'rejected';
 
 export default function DonatePage() {
   const { user } = useAuth();
@@ -25,10 +27,12 @@ export default function DonatePage() {
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
-  const [status, setStatus] = useState<'idle' | 'sending' | 'pending' | 'confirmed' | 'rejected'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [history, setHistory] = useState<any[]>([]);
+  const [historyFilter, setHistoryFilter] = useState<HistoryStatus>('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
+  const [flash, setFlash] = useState<{ type: 'success' | 'info'; msg: string } | null>(null);
   const orderRef = useRef<any>(null);
 
   useEffect(() => {
@@ -41,16 +45,31 @@ export default function DonatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  // Ondoa badge ya /donate pale inapofunguliwa
+  useEffect(() => { useUnreadStore.getState().clear('/donate'); }, []);
+
   // REAL-TIME: admin approve/reject via WebSocket.
   useEffect(() => {
     const un = subscribe('notification', (p: any) => {
       const oid = orderRef.current?.order_id;
-      if (!oid) return;
-      if (p.type === 'payment.approved' && p.data?.order_id === oid) {
-        setStatus('confirmed');
+      if (p.type === 'payment.approved') {
+        setFlash({ type: 'success', msg: p.body || 'Malipo yako yamethibitishwa!' });
         loadHistory();
-      } else if (p.type === 'payment.rejected' && p.data?.order_id === oid) {
-        setStatus('rejected');
+        if (oid && p.data?.order_id === oid) {
+          setTimeout(() => { setFlash(null); }, 5000);
+        }
+      } else if (p.type === 'payment.rejected') {
+        const reason = p.body || 'Malipo yako yamekataliwa.';
+        setFlash({ type: 'info', msg: reason });
+        loadHistory();
+        if (oid && p.data?.order_id === oid) {
+          setTimeout(() => { setFlash(null); }, 8000);
+        }
+      } else if (p.type === 'payment.reply') {
+        setFlash({ type: 'info', msg: p.body || 'Admin amejibu kuhusu malipo yako.' });
+        loadHistory();
+        setTimeout(() => { setFlash(null); }, 6000);
+      } else if (p.type === 'payment.submitted') {
         loadHistory();
       }
     });
@@ -58,28 +77,13 @@ export default function DonatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe]);
 
-  // Baada ya kuthibitisha (submit) → onyesha "✓ Imetumwa" kwa sekunde 2,
-  // kisha RUDI kwenye form (reset) — mchango utaonekana kwenye history kama
-  // 'verifying' mpaka admin athibitishe/katae. Hakuna "pending" inayodumu.
+  // Baada ya submit → onyesha "✓ Imetumwa" kwa sekunde 2, kisha reset form
   useEffect(() => {
-    if (status !== 'pending' || !order) return;
+    if (status !== 'sent') return;
     const id = setTimeout(() => {
       reset();
       loadHistory();
     }, 2000);
-    return () => clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, order]);
-
-  // Imehakikiwa → button inaonyesha "Imekamilika ✓" kwa sekunde 3, kisha
-  // inarudi PALE PALE kwenye "Tuma Uthibitisho" (reset) — haisubiri refresh.
-  useEffect(() => {
-    if (status !== 'confirmed') return;
-    const id = setTimeout(() => {
-      reset();
-      loadHistory();
-      router.push('/dashboard');
-    }, 2500);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
@@ -96,30 +100,21 @@ export default function DonatePage() {
     });
   }
 
-  const submittingRef = useRef(false);
-
   async function submit() {
     setError('');
     const text = smsText.trim();
-    if (!amount || amount < 500) { setError('Weka kiasi chaTZS 500 au zaidi.'); return; }
+    if (!amount || amount < 500) { setError('Weka kiasi cha TZS 500 au zaidi.'); return; }
     if (text.length < 3) { setError('Andika au nakili SMS yoyote uliyopata kutoka kwa mtandao wako.'); return; }
-    submittingRef.current = true;
     setStatus('sending');
     try {
       const o = await submitDonation({ amount: amount as number, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
       orderRef.current = o;
-      setStatus('pending');
+      setStatus('sent');
     } catch (err: any) {
-      submittingRef.current = false;
       setStatus('idle');
       setError(err?.response?.data?.detail || 'Kosa la mtandao. Jaribu tena.');
     }
-  }
-
-  function onSmsChange(v: string) {
-    setSmsText(v);
-    setError('');
   }
 
   function reset() {
@@ -128,6 +123,10 @@ export default function DonatePage() {
   }
 
   const busy = status === 'sending';
+
+  const filteredHistory = historyFilter
+    ? history.filter((p) => p.status === historyFilter)
+    : history;
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
@@ -146,7 +145,18 @@ export default function DonatePage() {
         </div>
       </div>
 
-      {/* Namba ya kuchangia — ndogo na kisomi */}
+      {/* Flash notification (admin approve/reject/reply) */}
+      {flash && (
+        <div className={`rounded-lg border px-3 py-2 text-sm font-medium animate-slide-in ${
+          flash.type === 'success'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            : 'border-brand-blue/30 bg-brand-blue-50 text-brand-blue-700'
+        }`}>
+          {flash.msg}
+        </div>
+      )}
+
+      {/* Namba ya kuchangia */}
       <div className="card flex items-center justify-between gap-3 px-4 py-3">
         <div className="min-w-0">
           <div className="text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400 font-semibold">{t('donate.pay_to')}</div>
@@ -158,41 +168,7 @@ export default function DonatePage() {
         </button>
       </div>
 
-      {/* STATUS: confirmed / pending / rejected — show outside form */}
-      {status === 'confirmed' && (
-        <div className="card rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-100/20 px-3 py-2.5 text-center">
-          <div className="text-sm font-bold text-emerald-700">✓ {t('donate.confirmed_title')}</div>
-          <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">{t('donate.confirmed_body')}</div>
-        </div>
-      )}
-      {status === 'pending' && (
-        <div className="card rounded-xl border border-brand-gold-400 bg-brand-gold-50 dark:bg-brand-gold-100/20 px-3 py-2.5">
-          <div className="text-sm font-bold text-brand-gold-600">⏳ Inasubiri Kuthibitishwa</div>
-          <div className="text-xs text-brand-gold-700 dark:text-brand-gold-500 mt-0.5">Malipo yako yamewasilishwa. Admin atathibitisha hivi karibuni.</div>
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => { reset(); router.push('/dashboard'); }} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
-              {t('donate.back_dashboard')}
-            </button>
-          </div>
-        </div>
-      )}
-      {status === 'rejected' && (
-        <div className="card rounded-xl border border-brand-red-200 bg-brand-red-50 dark:bg-brand-red-100/20 px-3 py-2.5">
-          <div className="text-sm font-bold text-brand-red">✗ {t('donate.rejected_title')}</div>
-          <div className="text-xs text-brand-red-600 dark:text-brand-red-400 mt-0.5">{t('donate.rejected_body')}</div>
-          <div className="flex gap-2 mt-2">
-            <button onClick={reset} className="text-xs px-3 py-1.5 rounded-lg border border-brand-red text-brand-red font-semibold hover:bg-brand-red hover:text-white transition">
-              {t('donate.try_again')}
-            </button>
-            <button onClick={() => router.push('/dashboard')} className="text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
-              {t('donate.back_dashboard')}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Form — inaonekana daima, button inabadilika tu */}
-      {status !== 'confirmed' && status !== 'rejected' && (
       <div className="card space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -213,7 +189,7 @@ export default function DonatePage() {
             className="input min-h-[90px] resize-y"
             placeholder="C2H8MZ3JX1 Confirmed. You have received TZS 5,000.00 from JOHN KAMWENDA - 0712345678..."
             value={smsText}
-            onChange={(e) => onSmsChange(e.target.value)}
+            onChange={(e) => { setSmsText(e.target.value); setError(''); }}
             disabled={busy}
           />
         </div>
@@ -222,11 +198,12 @@ export default function DonatePage() {
 
         {status === 'sending' ? (
           <button disabled className="btn-primary w-full justify-center opacity-70">
-            ✓ Imetumwa
+            <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin mr-2" />
+            Inatuma...
           </button>
-        ) : status === 'pending' ? (
+        ) : status === 'sent' ? (
           <button disabled className="btn-primary w-full justify-center opacity-70">
-            ✓ Imetumwa — inasubiri admin
+            ✓ Imetumwa
           </button>
         ) : (
           <button onClick={submit} disabled={busy}
@@ -235,13 +212,13 @@ export default function DonatePage() {
           </button>
         )}
       </div>
+
+      {/* History — kama malipo */}
+      {history.length > 0 && (
+        <HistoryList history={filteredHistory} allHistory={history} filter={historyFilter} setFilter={setHistoryFilter} />
       )}
 
-
-
-      {history.length > 0 && <HistoryList history={history} />}
-
-      {/* Namba za admin — maswali/matatizo, ndogo na kisomi */}
+      {/* Namba za admin */}
       <div className="rounded-2xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-950 px-4 py-3">
         <div className="text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400 font-semibold mb-2">{t('donate.help_title')}</div>
         <div className="flex flex-col sm:flex-row gap-2 text-sm">
@@ -257,78 +234,202 @@ export default function DonatePage() {
   );
 }
 
-function HistoryList({ history }: { history: any[] }) {
+
+/* ── HistoryList — kwa filters + chat ── */
+function HistoryList({ history, allHistory, filter, setFilter }: {
+  history: any[]; allHistory: any[]; filter: HistoryStatus; setFilter: (s: HistoryStatus) => void;
+}) {
   const t = useT();
   const lang = useI18n((s) => s.lang);
+
+  const counts = {
+    all: allHistory.length,
+    verifying: allHistory.filter((p) => p.status === 'verifying').length,
+    approved: allHistory.filter((p) => p.status === 'approved').length,
+    rejected: allHistory.filter((p) => p.status === 'rejected').length,
+  };
+
   return (
-    <div className="card overflow-hidden">
-      <div className="px-4 pt-3 pb-2.5 border-b border-brand-grey-100 dark:border-brand-grey-200 flex items-center justify-between">
-        <h3 className="font-bold text-brand-grey-900 dark:text-white text-sm">{t('donate.history')}</h3>
-        <span className="text-xs font-semibold text-brand-grey-500 dark:text-brand-grey-400">{history.length} {t('donate.history_count')}</span>
+    <div className="space-y-3">
+      {/* Filters */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {([
+          ['', t('donate.filter_all', 'Zote'), counts.all],
+          ['verifying', t('donate.st_verifying', 'Inasubiri'), counts.verifying],
+          ['approved', t('donate.st_approved', 'Imekamilika'), counts.approved],
+          ['rejected', t('donate.st_rejected', 'Imekataliwa'), counts.rejected],
+        ] as const).map(([val, label, count]) => (
+          <button key={val} onClick={() => setFilter(val)}
+            className={`px-2.5 py-1 rounded-full border text-[11px] font-semibold transition ${
+              filter === val
+                ? 'border-brand-blue bg-brand-blue text-white'
+                : 'border-brand-grey-300 text-brand-grey-600 hover:border-brand-blue dark:border-brand-grey-600 dark:text-brand-grey-300'
+            }`}>
+            {label} ({count})
+          </button>
+        ))}
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[560px]">
-          <thead className="bg-brand-grey-50 dark:bg-brand-grey-100 text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400">
-            <tr>
-              <th className="px-4 py-2 text-left font-semibold w-10">#</th>
-              <th className="px-4 py-2 text-left font-semibold">{t('donate.history_amount')}</th>
-              <th className="px-4 py-2 text-left font-semibold">{t('donate.history_date')}</th>
-              <th className="px-4 py-2 text-left font-semibold hidden sm:table-cell">{t('donate.paid_at')}</th>
-              <th className="px-4 py-2 text-right font-semibold">{t('donate.history_status')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
-            {history.map((p, i) => {
-              const ts = parseServerDate(p.created_at);
-              const paidTs = parseServerDate(p.status === 'approved' ? p.approved_at : p.status === 'rejected' ? p.rejected_at : null);
-              const full = (d: Date | null) => d
-                ? d.toLocaleDateString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                  + ' ' + d.toLocaleTimeString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
-                : '—';
-              return (
-                <tr key={p.order_id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 transition">
-                  <td className="px-4 py-2.5 text-xs font-bold text-brand-grey-400 dark:text-brand-grey-500 tabular-nums">{i + 1}</td>
-                  <td className="px-4 py-2.5 font-bold text-brand-grey-900 dark:text-white tabular-nums whitespace-nowrap">
-                    {p.amount?.toLocaleString()} <span className="text-xs font-semibold text-brand-grey-500">TZS</span>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <div className="text-brand-grey-900 dark:text-white font-medium whitespace-nowrap">{ts ? timeAgo(ts.getTime(), lang) : '—'}</div>
-                    <div className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 whitespace-nowrap">{full(ts)}</div>
-                  </td>
-                  <td className="px-4 py-2.5 hidden sm:table-cell">
-                    {paidTs ? (
-                      <>
-                        <div className="text-brand-grey-700 dark:text-brand-grey-300 font-medium whitespace-nowrap">
-                          {p.status === 'approved' ? '✓' : '✗'} {timeAgo(paidTs.getTime(), lang)}
-                        </div>
-                        <div className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 whitespace-nowrap">{full(paidTs)}</div>
-                      </>
-                    ) : (
-                      <span className="text-brand-grey-400 dark:text-brand-grey-500 text-xs">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5 text-right">
-                    {p.status === 'approved' ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 whitespace-nowrap">
-                        ✓ {t('donate.st_approved')}
-                      </span>
-                    ) : p.status === 'rejected' ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-red-100 text-brand-red whitespace-nowrap">
-                        ✗ {t('donate.st_rejected')}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-gold-100 text-brand-gold-600 whitespace-nowrap">
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-gold-500 animate-pulse" />
-                        {t('donate.st_verifying')}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+
+      {/* Table */}
+      <div className="card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
+            <thead className="bg-brand-grey-50 dark:bg-brand-grey-100 text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400">
+              <tr>
+                <th className="px-4 py-2 text-left font-semibold w-10">#</th>
+                <th className="px-4 py-2 text-left font-semibold">{t('donate.history_amount')}</th>
+                <th className="px-4 py-2 text-left font-semibold">{t('donate.history_date')}</th>
+                <th className="px-4 py-2 text-right font-semibold">{t('donate.history_status')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-brand-grey-100 dark:divide-brand-grey-200">
+              {history.map((p, i) => (
+                <HistoryRow key={p.order_id} p={p} index={i} />
+              ))}
+              {history.length === 0 && (
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-brand-grey-400 text-xs">Hakuna malipo katika kichujio hiki.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
+  );
+}
+
+
+/* ── HistoryRow — kila malipo + chat panel ── */
+function HistoryRow({ p, index }: { p: any; index: number }) {
+  const t = useT();
+  const lang = useI18n((s) => s.lang);
+  const { subscribe } = useLive();
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<any[]>(p.messages || []);
+  const [chatText, setChatText] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const ts = parseServerDate(p.created_at);
+  const full = (d: Date | null) => d
+    ? d.toLocaleDateString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      + ' ' + d.toLocaleTimeString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+    : '—';
+
+  // Listen for new messages via WS
+  useEffect(() => {
+    if (!chatOpen) return;
+    const un = subscribe('notification', (notif: any) => {
+      if ((notif.type === 'payment.reply' || notif.type === 'payment.message') && notif.data?.order_id === p.order_id) {
+        getPaymentMessages(p.order_id).then((d) => setMessages(d.messages)).catch(() => {});
+      }
+    });
+    return () => { un(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatOpen, p.order_id]);
+
+  async function sendMessage() {
+    const text = chatText.trim();
+    if (!text) return;
+    setSending(true);
+    try {
+      await sendPaymentMessage(p.order_id, text);
+      setChatText('');
+      const d = await getPaymentMessages(p.order_id);
+      setMessages(d.messages);
+    } catch {}
+    setSending(false);
+  }
+
+  return (
+    <>
+      <tr className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-100/50 transition">
+        <td className="px-4 py-2.5 text-xs font-bold text-brand-grey-400 dark:text-brand-grey-500 tabular-nums">{index + 1}</td>
+        <td className="px-4 py-2.5 font-bold text-brand-grey-900 dark:text-white tabular-nums whitespace-nowrap">
+          {p.amount?.toLocaleString()} <span className="text-xs font-semibold text-brand-grey-500">TZS</span>
+        </td>
+        <td className="px-4 py-2.5">
+          <div className="text-brand-grey-900 dark:text-white font-medium whitespace-nowrap">{ts ? timeAgo(ts.getTime(), lang) : '—'}</div>
+          <div className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 whitespace-nowrap">{full(ts)}</div>
+        </td>
+        <td className="px-4 py-2.5 text-right">
+          <div className="flex items-center justify-end gap-1.5">
+            {p.status === 'approved' ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 whitespace-nowrap">
+                ✓ {t('donate.st_approved')}
+              </span>
+            ) : p.status === 'rejected' ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-red-100 text-brand-red whitespace-nowrap">
+                ✗ {t('donate.st_rejected')}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-gold-100 text-brand-gold-600 whitespace-nowrap">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-gold-500 animate-pulse" />
+                {t('donate.st_verifying')}
+              </span>
+            )}
+            {/* Chat toggle — onyeshwa pale kunapo sababu ya kukanusha au messages */}
+            {(p.status === 'rejected' || p.note || messages.length > 0) && (
+              <button onClick={() => { setChatOpen(!chatOpen); if (!chatOpen && messages.length === 0) {
+                getPaymentMessages(p.order_id).then((d) => setMessages(d.messages)).catch(() => {});
+              }}}
+                className="text-[10px] text-brand-blue hover:underline inline-flex items-center gap-0.5 ml-1" title="Ongea na admin kuhusu malipo hii">
+                <MessageSquare size={11} />
+                {chatOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+              </button>
+            )}
+          </div>
+          {/* Rejection reason */}
+          {p.status === 'rejected' && p.note && !chatOpen && (
+            <div className="text-[10px] text-brand-red mt-1 text-right">Sababu: {p.note}</div>
+          )}
+        </td>
+      </tr>
+      {/* Chat panel — inline chini ya row */}
+      {chatOpen && (
+        <tr>
+          <td colSpan={4} className="px-4 py-3 bg-brand-grey-50 dark:bg-brand-grey-100/30">
+            <div className="space-y-2">
+              {/* Rejection reason (kama ipo) */}
+              {p.status === 'rejected' && p.note && (
+                <div className="bg-brand-red-50 dark:bg-brand-red-100/20 border border-brand-red-200 rounded-lg px-3 py-2 text-xs text-brand-red">
+                  <span className="font-semibold">Admin:</span> {p.note}
+                </div>
+              )}
+              {/* Messages */}
+              {messages.map((m, i) => (
+                <div key={i} className={`flex ${m.sender === 'customer' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] rounded-lg px-3 py-2 text-xs ${
+                    m.sender === 'admin'
+                      ? 'bg-brand-blue-50 dark:bg-brand-blue-950/40 text-brand-blue-700 dark:text-brand-blue-300 border border-brand-blue/20'
+                      : 'bg-white dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-300 border border-brand-grey-200 dark:border-brand-grey-600'
+                  }`}>
+                    <div className="font-semibold text-[10px] mb-0.5">{m.sender_name}</div>
+                    <div>{m.message}</div>
+                    <div className="text-[9px] text-brand-grey-400 mt-1">{m.created_at ? timeAgo(parseServerDate(m.created_at)?.getTime() || 0, lang) : ''}</div>
+                  </div>
+                </div>
+              ))}
+              {messages.length === 0 && (
+                <div className="text-[11px] text-brand-grey-400 text-center">Hakuna bado. Andika ujumbe wa kwanza kwa admin.</div>
+              )}
+              {/* Input */}
+              <div className="flex gap-1.5">
+                <input
+                  className="input text-xs py-1.5 flex-1"
+                  placeholder="Andika ujumbe kwa admin..."
+                  value={chatText}
+                  onChange={(e) => setChatText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }}
+                  disabled={sending}
+                />
+                <button onClick={sendMessage} disabled={sending || !chatText.trim()}
+                  className="btn-primary text-xs px-3 py-1.5">
+                  <Send size={12} />
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
