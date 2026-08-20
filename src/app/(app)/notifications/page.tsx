@@ -107,7 +107,7 @@ export default function NotificationsPage() {
           </p>
         </div>
         {unread > 0 && (
-          <button onClick={readAll} className="btn-primary text-sm">{t('notif.mark_all')} ({unread})</button>
+          <button onClick={readAll} className="btn-primary">{t('notif.mark_all')} ({unread})</button>
         )}
       </div>
 

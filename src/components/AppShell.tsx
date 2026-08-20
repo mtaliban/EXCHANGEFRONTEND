@@ -183,10 +183,8 @@ function MobileTopBar({ links, user, onLogout }: {
         )}
       </div>
 
-      {/* ═══ CENTER: Jina tu ═══ */}
-      <div className="flex items-center min-w-0 flex-1">
-        <span className="text-sm font-semibold text-brand-grey-900 dark:text-white truncate">{user?.full_name}</span>
-      </div>
+      {/* ═══ CENTER: tupu — jina limeondolewa ═══ */}
+      <div className="flex-1" />
 
       {/* ═══ RIGHT: Avatar + Language toggle ═══ */}
       <div className="flex items-center gap-1.5 flex-shrink-0">

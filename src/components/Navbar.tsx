@@ -87,8 +87,8 @@ export default function Navbar() {
             {/* Public pages: Register/Login tu — hakuna buttons za dashibodi/logout.
                 Mtu aliyeshaingia anarudi dashibodi kwa kubofya logo (au /login ina
                 redirect automatic kwa authed users). */}
-            <Link href="/login" className="btn-outline text-sm py-2">{t('nav.login')}</Link>
-            <Link href="/register" className="btn-primary text-sm py-2">{t('nav.register')}</Link>
+            <Link href="/login" className="btn-outline">{t('nav.login')}</Link>
+            <Link href="/register" className="btn-primary">{t('nav.register')}</Link>
           </div>
 
           <div className="md:hidden flex items-center gap-1">
@@ -143,10 +143,10 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="flex gap-2 pt-3 border-t border-brand-grey-100 mt-3 sticky bottom-0 bg-white pb-1">
-                <Link href="/login" onClick={() => setOpen(false)} className="btn-outline flex-1 text-sm py-2">
+                <Link href="/login" onClick={() => setOpen(false)} className="btn-outline flex-1">
                   {t('nav.login')}
                 </Link>
-                <Link href="/register" onClick={() => setOpen(false)} className="btn-primary flex-1 text-sm py-2">
+                <Link href="/register" onClick={() => setOpen(false)} className="btn-primary flex-1">
                   {t('nav.register')}
                 </Link>
               </div>
