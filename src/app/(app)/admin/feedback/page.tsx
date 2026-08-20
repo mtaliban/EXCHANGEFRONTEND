@@ -10,7 +10,7 @@ import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
 
 type Status = '' | 'open' | 'replied';
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 3;
 
 export default function AdminFeedbackPage() {
   const t = useT();
