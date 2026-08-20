@@ -8,11 +8,17 @@ import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useT, useI18n } from '@/lib/i18n';
-import { Check, Copy, HandCoins, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Check, Copy, HandCoins, Phone, MessageCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import SpringSpinner from '@/components/SpringSpinner';
 
 const ADMIN_CALL = '0763795801';
 const ADMIN_WHATSAPP = '255625607088';
+
+/** Ficha namba: "0763795801" → "0763 *** 5801" */
+function maskPhone(p: string) {
+  if (!p || p.length < 7) return p;
+  return p.slice(0, 4) + ' *** ' + p.slice(-4);
+}
 
 export default function DonatePage() {
   const { user } = useAuth();
@@ -21,7 +27,6 @@ export default function DonatePage() {
   const { subscribe } = useLive();
   const [adminPhone, setAdminPhone] = useState('');
   const [currency, setCurrency] = useState('TZS');
-  const [amount, setAmount] = useState<number | ''>(2000);
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
@@ -29,6 +34,7 @@ export default function DonatePage() {
   const [history, setHistory] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
   const orderRef = useRef<any>(null);
 
   useEffect(() => {
@@ -62,7 +68,6 @@ export default function DonatePage() {
   useEffect(() => {
     if (status !== 'processing' || !order) return;
     const id = setTimeout(() => {
-      // Bado haija-confirm — weka status = pending (inadumu mpaka admin athibitishe)
       setStatus('pending');
       loadHistory();
     }, 10000);
@@ -70,8 +75,6 @@ export default function DonatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, order]);
 
-  // Imehakikiwa → button inaonyesha "Imekamilika ✓" kwa sekunde 3, kisha
-  // inarudi PALE PALE kwenye "Tuma Uthibitisho" (reset) — haisubiri refresh.
   useEffect(() => {
     if (status !== 'confirmed') return;
     const id = setTimeout(() => {
@@ -100,14 +103,12 @@ export default function DonatePage() {
   async function submit() {
     setError('');
     const text = smsText.trim();
-    // SMS YOYOTE inakubaliwa (maneno/namba yoyote ya uthibitisho uliopata) —
-    // hakuna hitaji la "nakili SMS nzima" kwa fomati maalum.
-    if (!amount || amount < 500) { setError('Weka kiasi chaTZS 500 au zaidi.'); return; }
     if (text.length < 3) { setError('Andika au nakili SMS yoyote uliyopata kutoka kwa mtandao wako.'); return; }
     submittingRef.current = true;
     setStatus('sending');
     try {
-      const o = await submitDonation({ amount: amount as number, phone, sms_text: text, purpose: 'donation' });
+      // Amount default 2000 (haina field tena — mtumiaji alipa kiasi yoyote)
+      const o = await submitDonation({ amount: 2000, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
       orderRef.current = o;
     } catch (err: any) {
@@ -146,16 +147,34 @@ export default function DonatePage() {
         </div>
       </div>
 
-      {/* Namba ya kuchangia — ndogo na kisomi */}
+      {/* Namba ya kuchangia — hidden kwa default, reveal kwa bofya */}
       <div className="card flex items-center justify-between gap-3 px-4 py-3">
         <div className="min-w-0">
           <div className="text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400 font-semibold">{t('donate.pay_to')}</div>
-          <div className="text-xl font-bold text-brand-blue tracking-wide">{adminPhone}</div>
+          <div className="text-xl font-bold text-brand-blue tracking-wide font-mono">
+            {phoneRevealed ? adminPhone : maskPhone(adminPhone)}
+          </div>
         </div>
-        <button onClick={copyPhone} className={`btn-outline text-xs px-3 py-1.5 inline-flex items-center gap-1.5 flex-shrink-0 ${copied ? '!border-brand-blue !bg-brand-blue !text-white' : ''}`}>
-          {copied ? <Check size={13} /> : <Copy size={13} />}
-          {copied ? t('donate.copied') : t('donate.copy')}
-        </button>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <button onClick={() => setPhoneRevealed((v) => !v)}
+            className="btn-outline text-xs px-2.5 py-1.5 inline-flex items-center gap-1" title={phoneRevealed ? 'Ficha namba' : 'Onyesha namba'}>
+            {phoneRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
+          </button>
+          <button onClick={copyPhone} className={`btn-outline text-xs px-3 py-1.5 inline-flex items-center gap-1.5 flex-shrink-0 ${copied ? '!border-brand-blue !bg-brand-blue !text-white' : ''}`}>
+            {copied ? <Check size={13} /> : <Copy size={13} />}
+            {copied ? t('donate.copied') : t('donate.copy')}
+          </button>
+        </div>
+      </div>
+
+      {/* Hatua: jinsi ya kulipa — maelekezo ya kisomi */}
+      <div className="rounded-xl border border-brand-blue/20 bg-brand-blue-50 dark:bg-brand-blue-900/20 px-4 py-3">
+        <div className="text-[11px] font-bold text-brand-blue mb-1.5">Jinsi ya Kulipa</div>
+        <ol className="text-xs text-brand-grey-700 dark:text-brand-grey-300 space-y-1 list-decimal list-inside">
+          <li>Lipa kwa namba hapo juu (M-Pesa, Tigo Pesa, Airtel Money, Halopesa)</li>
+          <li>Nakili SMS ya uthibitisha uliopata kutoka kwa mtandao wako</li>
+          <li>Bandika SMS hapo chini na ubofye &ldquo;Thibitisha&rdquo;</li>
+        </ol>
       </div>
 
       {/* STATUS: confirmed / pending / rejected — show outside form */}
@@ -191,20 +210,13 @@ export default function DonatePage() {
         </div>
       )}
 
-      {/* Form — rahisi: kiasi, namba, SMS + button ya kusubmit */}
+      {/* Form — SMS tu (kiasi ni default 2000, mtumiaji alipa kiasi yoyote) */}
       {status === 'idle' && (
       <div className="card space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="label">{t('donate.amount')} ({currency})</label>
-            <input type="number" className="input" min={500} step={500}
-              value={amount} onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))} placeholder="2000" disabled={busy} />
-          </div>
-          <div>
-            <label className="label">{t('donate.phone_label')}</label>
-            <input type="tel" className="input" value={phone}
-              onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" disabled={busy} />
-          </div>
+        <div>
+          <label className="label">{t('donate.phone_label')}</label>
+          <input type="tel" className="input" value={phone}
+            onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" disabled={busy} />
         </div>
 
         <div>
@@ -237,16 +249,19 @@ export default function DonatePage() {
 
       {history.length > 0 && <HistoryList history={history} />}
 
-      {/* Namba za admin — maswali/matatizo, ndogo na kisomi */}
+      {/* Namba za admin — onyesha kama mask, GUIDE badala ya direct link */}
       <div className="rounded-2xl border border-brand-grey-100 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-950 px-4 py-3">
         <div className="text-[10px] uppercase tracking-wide text-brand-grey-500 dark:text-brand-grey-400 font-semibold mb-2">{t('donate.help_title')}</div>
-        <div className="flex flex-col sm:flex-row gap-2 text-sm">
-          <a href={`tel:${ADMIN_CALL}`} className="inline-flex items-center gap-2 text-brand-grey-700 dark:text-brand-grey-300 hover:text-brand-blue transition">
-            <Phone size={14} className="text-brand-blue" /> {ADMIN_CALL}
-          </a>
-          <a href={`https://wa.me/${ADMIN_WHATSAPP}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-brand-grey-700 dark:text-brand-grey-300 hover:text-brand-green transition">
-            <MessageCircle size={14} className="text-emerald-600" /> +255 {ADMIN_WHATSAPP.slice(1, 4)} {ADMIN_WHATSAPP.slice(4, 7)} {ADMIN_WHATSAPP.slice(7)}
-          </a>
+        <div className="space-y-2 text-xs text-brand-grey-600 dark:text-brand-grey-400">
+          <div className="flex items-center gap-2">
+            <Phone size={13} className="text-brand-blue flex-shrink-0" />
+            <span>Simu: <span className="font-mono font-bold text-brand-grey-800 dark:text-brand-grey-200">{maskPhone(ADMIN_CALL)}</span> — Piga kwa maswali yoyote</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MessageCircle size={13} className="text-emerald-600 flex-shrink-0" />
+            <span>WhatsApp: <span className="font-mono font-bold text-brand-grey-800 dark:text-brand-grey-200">+255 {ADMIN_WHATSAPP.slice(1, 4)} *** {ADMIN_WHATSAPP.slice(7)}</span> — Tuma ujumbe kwa msaada</span>
+          </div>
+          <p className="text-[10px] text-brand-grey-400 dark:text-brand-grey-500 mt-1">💡 Kabla ya kupiga simu, hakikisha umepata SMS ya uthibitisho na kuibandika hapo juu.</p>
         </div>
       </div>
     </div>

@@ -447,28 +447,52 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   const from = c.current_station;
   const to = c.desired_destinations?.[0];
   const createdTs = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? now) : now;
-  const ago = timeAgo(createdTs, lang); // Muda wa JUUI: "dakika 2 zilizopita", "jana" — sio saa halisi
+  const ago = timeAgo(createdTs, lang);
   const fresh = now - createdTs < FRESH_MS;
   const isEdu = c.category !== 'health';
-  // SOMO MOJA likifanana → mtu huyu ni "match" wa masomo — chips zote dhahabu
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
+  const [guideToast, setGuideToast] = useState<string | null>(null);
+
+  /** Ficha namba: "0712345678" → "0712 *** 5678" */
+  function maskPhone(p: string) {
+    if (!p || p.length < 7) return p;
+    return p.slice(0, 4) + ' *** ' + p.slice(-4);
+  }
+
+  function showGuide(msg: string) {
+    setGuideToast(msg);
+    setTimeout(() => setGuideToast(null), 5000);
+  }
 
   async function onCall() {
     if (!c.phone_primary) return;
+    if (!isVerified) {
+      showGuide('Changia kwanza ili kuona namba za simu na kuwasiliana.');
+      return;
+    }
+    showGuide('Piga simu kwa namba hiyo. Mazungumzo yawe mafupi — muambie mnataka kubadilishana vituo.');
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
 
-  // SMS ya kawaida — sms: inafungua app ya SMS na ujumbe wa kutambulishana.
   function onSMS() {
     if (!c.phone_primary) return;
+    if (!isVerified) {
+      showGuide('Changia kwanza ili kuona namba za simu na kuwasiliana.');
+      return;
+    }
+    showGuide('SMS itatuma ujumbe wa kujitambulisha. Angalia ujumbe kabla ya kutuma.');
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
-  // WHATSAPP: namba ya WhatsApp ndiyo aliyoiweka kama phone_alt (ya WhatsApp).
-  // Kama hajaweka namba ya WhatsApp → hakuna button ya WhatsApp (2 tu: simu + SMS).
   function onWhatsApp() {
     if (!c.phone_alt) return;
+    if (!isVerified) {
+      showGuide('Changia kwanza ili kuona namba za simu na kuwasiliana.');
+      return;
+    }
+    showGuide('WhatsApp inafunguka na ujumbe wa kujitambulisha. Tuma na usubiri jibu.');
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
@@ -551,9 +575,11 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       )}
 
       {c.phone_primary && isVerified && (
-        <a href={`tel:${c.phone_primary}`} className="text-[11px] sm:text-xs text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0">
-          <Phone size={12} /> {c.phone_primary}
-        </a>
+        <button onClick={() => setPhoneRevealed((v) => !v)}
+          className="text-[11px] sm:text-xs text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0 text-left">
+          <Phone size={12} /> {phoneRevealed ? c.phone_primary : maskPhone(c.phone_primary)}
+          <span className="text-brand-grey-400 text-[10px] ml-0.5">{phoneRevealed ? '▲' : '▼'}</span>
+        </button>
       )}
 
       {/* MUDA WA JUU (relative): wapya wana " MPYA + muda", wengine  muda tu — siyo saa halisi */}
@@ -565,36 +591,33 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
         )}
       </div>
 
-      {/* VIFUNGO VYA KUWASILIANA */}
-      {isVerified ? (
-        /* Mtumiaji amelipia — onyesha buttons zote (simu, SMS, WhatsApp) */
-        <div className="flex gap-1.5 mt-auto pt-1">
-          <button onClick={onCall} disabled={!c.phone_primary} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
-            title={t('dash.call')}>
-            <Phone size={12} /> <span className="hidden min-[360px]:inline">{t('dash.call')}</span>
-          </button>
-          <button onClick={onSMS} disabled={!c.phone_primary} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
-            title={t('board.sms_btn')}>
-            <MessageSquare size={12} /> <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
-          </button>
-          {c.phone_alt && (
-            <button onClick={onWhatsApp} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
-              title={t('board.wa_btn')}>
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0 fill-current" aria-hidden="true">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              <span className="hidden min-[360px]:inline">{t('board.wa_btn')}</span>
-            </button>
-          )}
+      {/* GUIDE TOAST — maelekezo fupi yanapoibuka */}
+      {guideToast && (
+        <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
+          💡 {guideToast}
         </div>
-      ) : (
-        /* Mtumiaji hajalipia — onyesha CTA ya kuchangia ili apate namba */
-        <a href="/donate" className="mt-auto pt-1">
-          <div className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-brand-blue to-brand-blue-700 text-white text-[10px] sm:text-xs px-3 py-2 font-bold hover:from-brand-blue-700 hover:to-brand-blue-800 transition shadow-sm">
-            💳 Changia TZS 2,000 Kuona Namba za Simu
-          </div>
-        </a>
       )}
+
+      {/* VIFUNGO VYA KUWASILIANA — buttons zote daima zipo, guide inaonyesha kwa wasio verified */}
+      <div className="flex gap-1.5 mt-auto pt-1">
+        <button onClick={onCall} disabled={!c.phone_primary} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
+          title={t('dash.call')}>
+          <Phone size={12} /> <span className="hidden min-[360px]:inline">{t('dash.call')}</span>
+        </button>
+        <button onClick={onSMS} disabled={!c.phone_primary} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 disabled:opacity-40 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
+          title={t('board.sms_btn')}>
+          <MessageSquare size={12} /> <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
+        </button>
+        {c.phone_alt && (
+          <button onClick={onWhatsApp} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
+            title={t('board.wa_btn')}>
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0 fill-current" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            <span className="hidden min-[360px]:inline">{t('board.wa_btn')}</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }
