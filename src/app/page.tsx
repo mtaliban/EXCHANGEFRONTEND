@@ -69,7 +69,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
                   href="/register"
-                  className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm sm:text-base font-bold text-brand-navy shadow-xl shadow-black/20 hover:shadow-2xl hover:bg-brand-grey-50 transition-all duration-200"
+                  className="group inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-1.5 text-xs font-bold text-brand-navy shadow-lg hover:shadow-xl hover:bg-brand-grey-50 transition-all duration-200"
                 >
                   <IconRocket />
                   {t('landing.cta')}
@@ -77,7 +77,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   href="/services"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-white/25 px-7 py-3.5 text-sm sm:text-base font-semibold text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
                 >
                   <IconServices />
                   {t('landing.services')}
@@ -184,7 +184,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/register"
-            className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-3.5 text-sm sm:text-base text-brand-navy font-bold shadow-xl shadow-black/20 hover:shadow-2xl hover:bg-brand-grey-50 transition-all duration-200"
+            className="group inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-1.5 text-xs text-brand-navy font-bold shadow-lg hover:shadow-xl hover:bg-brand-grey-50 transition-all duration-200"
           >
             <IconRocket />
             {t('landing.register_now')}

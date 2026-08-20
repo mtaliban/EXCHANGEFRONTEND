@@ -129,7 +129,7 @@ export default function ServicesPage() {
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-3 text-sm sm:text-base text-brand-blue font-bold shadow-xl hover:bg-brand-grey-50 transition"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-1.5 text-xs text-brand-blue font-bold shadow-lg hover:bg-brand-grey-50 transition"
             >
               <Users size={18} />
               {t('landing.register_now')}
