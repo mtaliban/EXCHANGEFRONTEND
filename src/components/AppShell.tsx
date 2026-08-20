@@ -11,7 +11,7 @@ import { useLive } from '@/lib/liveSocket';
 import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
-  BarChart3, Crown, Database, HandCoins, KeyRound, LayoutDashboard,
+  BarChart3, Bell, Crown, Database, HandCoins, KeyRound, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
@@ -245,12 +245,13 @@ function MobileBottomNav({ pathname, isAdmin }: {
         { href: '/admin/data', label: 'Data', icon: Database },
         { href: '/admin/payments', label: 'Malipo', icon: Wallet },
         { href: '/admin/feedback', label: 'Maoni', icon: ClipboardList },
-        { href: '/profile', label: 'Wasifu', icon: User },
+        { href: '/notifications', label: t('nav.arifa', 'Arifa'), icon: Bell },
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
         { href: '/donate', label: t('nav.donate'), icon: HandCoins },
         { href: '/feedback', label: t('nav.feedback'), icon: ClipboardList },
+        { href: '/notifications', label: t('nav.arifa', 'Arifa'), icon: Bell },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 
@@ -276,7 +277,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
             >
               <div className="relative">
                 <l.icon size={20} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0" />
-                {unreadCount > 0 && l.href === '/feedback' && (
+                {unreadCount > 0 && l.href === '/notifications' && (
                   <span className="absolute -top-1 -right-1.5 w-4 h-4 rounded-full bg-brand-red text-white text-[8px] font-bold flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import {
   getBoard, getRegions, getDistricts, getFacilities, logCall, bustGetCache,
@@ -107,12 +107,15 @@ export default function DashboardBoard() {
       if (facilityId !== undefined) params.facility_id = facilityId;
       if (subjectFilter !== 'off') params.subject_filter = subjectFilter;
       if (subjectQ.trim()) params.subject_q = subjectQ.trim();
+      bustGetCache(); // FUSHA frontend cache — data lazima iwe FRESH kila filter inapobadilika
       const b = await getBoard(params, forceFresh);
       setBoard(b);
     } finally {
       setLoading(false);
     }
   }, [effectiveRegionIds, districtId, facilityId, subjectFilter, subjectQ]);
+
+
 
   // Load regions kwa dropdown ya chanzo
   // REAL-TIME: admin akibadilisha mikoa (Data Management) → dropdown hii
@@ -154,7 +157,7 @@ export default function DashboardBoard() {
     setFacilityId(undefined);
   }, [districtId, myCategory]);
 
-  useEffect(() => { loadBoard(); }, [loadBoard]);
+  useEffect(() => { loadBoard(true); }, [loadBoard]);  // ALWAYS force fresh — filter/cache hazipaswi kuzuia data mpya
 
   // Auto-refresh on live events — FRESH data (bust cache) + sauti + kurudi page 1
   useEffect(() => {

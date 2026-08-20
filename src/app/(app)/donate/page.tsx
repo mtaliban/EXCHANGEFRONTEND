@@ -25,7 +25,7 @@ export default function DonatePage() {
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
-  const [status, setStatus] = useState<'idle' | 'sending' | 'processing' | 'pending' | 'confirmed' | 'rejected'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'pending' | 'confirmed' | 'rejected'>('idle');
   const [history, setHistory] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
@@ -58,14 +58,15 @@ export default function DonatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe]);
 
-  // AUTO-PROCESS: kama admin hayupo, mchango unaprocessed baada ya sekunde 10 → pending
+  // Baada ya kuthibitisha (submit) → onyesha "✓ Imetumwa" kwa sekunde 2,
+  // kisha RUDI kwenye form (reset) — mchango utaonekana kwenye history kama
+  // 'verifying' mpaka admin athibitishe/katae. Hakuna "pending" inayodumu.
   useEffect(() => {
-    if (status !== 'processing' || !order) return;
+    if (status !== 'pending' || !order) return;
     const id = setTimeout(() => {
-      // Bado haija-confirm — weka status = pending (inadumu mpaka admin athibitishe)
-      setStatus('pending');
+      reset();
       loadHistory();
-    }, 10000);
+    }, 2000);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, order]);
@@ -126,7 +127,7 @@ export default function DonatePage() {
     setOrder(null); setSmsText(''); setStatus('idle'); setError('');
   }
 
-  const busy = status === 'sending' || status === 'processing';
+  const busy = status === 'sending';
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
@@ -225,7 +226,7 @@ export default function DonatePage() {
           </button>
         ) : status === 'pending' ? (
           <button disabled className="btn-primary w-full justify-center opacity-70">
-            ⏳ Inasubiri — pending
+            ✓ Imetumwa — inasubiri admin
           </button>
         ) : (
           <button onClick={submit} disabled={busy}
