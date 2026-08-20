@@ -10,7 +10,7 @@ import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } 
 import { playPingSound, playArrivalSound, isSoundEnabled } from '@/lib/sound';
 import { parseServerDate } from '@/lib/dates';
 import { getMe, emitDataChanged } from '@/lib/api';
-import { Handshake, Phone, Bell, ShieldAlert, Trash2, UserCog, CheckCircle2 } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -77,8 +77,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       // sauti (🔇) asipate sauti hapa pia — sambamba na handlers wengine.
       if (isSoundEnabled() && !pathname?.startsWith('/dashboard')) playArrivalSound();
       showToast({
-        icon: Handshake,
-        color: 'blue',
+        emoji: '🤝',
         title: 'Mtu Mpya wa Kubadilishana Nawe!',
         body: `${c.full_name} (${c.cadre_display || 'Mtumishi'}) — ${c.current_station?.district_name || ''}, ${c.current_station?.region_name || ''}`,
         onClick: () => router.push('/dashboard'),
@@ -89,8 +88,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.to_user_id !== uid) return;
       if (isSoundEnabled()) playPingSound();
       showToast({
-        icon: Phone,
-        color: 'red',
+        emoji: '📞',
         title: `${p.from_full_name || 'Mtu'} amekupigia`,
         body: 'Simu iliyoshindwa — mpigie sasa',
         onClick: () => router.push('/dashboard'),
@@ -106,8 +104,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.user_id && p.user_id !== uid) return;
       if (isSoundEnabled()) playPingSound();
       showToast({
-        icon: ShieldAlert,
-        color: 'red',
+        emoji: '🚫',
         title: 'Akaunti imesitishwa',
         body: p.message || 'Akaunti yako imesitishwa na admin — wasiliana naye.',
       });
@@ -117,8 +114,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     const unsubDel = subscribe('account.deleted', (p) => {
       if (p.user_id && p.user_id !== uid) return;
       showToast({
-        icon: Trash2,
-        color: 'red',
+        emoji: '🗑️',
         title: 'Akaunti imefutwa',
         body: p.message || 'Akaunti yako imefutwa na admin.',
       });
@@ -132,8 +128,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       const fields = (p.changed_fields || []).filter((f: string) => f !== 'status');
       if (fields.length > 0) {
         showToast({
-          icon: UserCog,
-          color: 'blue',
+          emoji: '✏️',
           title: 'Taarifa zako zimesasishwa',
           body: 'Admin amebadilisha taarifa zako — sasa zinaonekana mpya.',
           onClick: () => router.push('/profile'),
@@ -151,9 +146,8 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.user_id && p.user_id !== uid) return;
       getMe().then((me) => setUser(me)).catch(() => {});
       showToast({
-        icon: CheckCircle2,
-        color: 'green' as any,
-        title: 'Malipo Yamedhibitishwa! ✅',
+        emoji: '✅',
+        title: 'Malipo Yamedhibitishwa!',
         body: p.message || 'Sasa unaweza kuona namba za simu za washirika wako.',
       });
     });
@@ -164,9 +158,8 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       const meta = NOTIFICATION_TYPE_META[p.type] || { icon: DEFAULT_NOTIFICATION_ICON, color: 'blue' };
       const emoji = meta.emoji || '🔔';
       showToast({
-        icon: meta.icon || Bell,
-        color: meta.color as 'blue' | 'orange' | 'red' | 'gold',
-        title: `${emoji} ${p.title || 'Arifa mpya'}`,
+        emoji,
+        title: p.title || 'Arifa mpya',
         body: p.body || '',
         onClick: () => router.push(notificationRoute(p.type, p.data, (user as any)?.is_admin)),
         ago: p.occurred_at,
@@ -176,56 +169,29 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
   }, [user, subscribe, router, pathname, logout, setUser]);
 
   return <>{children}</>;
-}
-
-/* ── in-memory toast implementation ────────────────────── */
-const TOAST_ICON_BG: Record<string, string> = {
-  blue: 'bg-brand-blue text-white',
-  orange: 'bg-brand-orange text-white',
-  red: 'bg-brand-red text-white',
-  gold: 'bg-brand-gold-500 text-white',
-};
-
+}/* ── in-memory toast — kama guide toast (blue card slide-in) ────── */
 function showToast(opts: {
-  icon: LucideIcon; color: 'blue' | 'orange' | 'red' | 'gold';
-  title: string; body: string; onClick?: () => void; ago?: string;
+  icon?: LucideIcon; emoji?: string; color?: string; title: string; body?: string; onClick?: () => void; ago?: string;
 }) {
   const container = ensureToastContainer();
   const el = document.createElement('div');
-  const ago = opts.ago
-    ? formatDistanceToNowStrict(parseServerDate(opts.ago) || new Date(), { addSuffix: true })
-    : 'sasa hivi';
-
-  el.className = `pointer-events-auto cursor-pointer w-full sm:w-80 rounded-xl shadow-lg border-l-4 border-brand-${opts.color} bg-white p-3 flex items-start gap-3 animate-slide-in transition hover:shadow-xl max-w-full`;
-  const iconEl = document.createElement('div');
-  iconEl.className = `w-10 h-10 rounded-full ${TOAST_ICON_BG[opts.color] || 'bg-brand-blue text-white'} flex items-center justify-center flex-shrink-0`;
-  const iconRoot = createRoot(iconEl);
-  iconRoot.render(createElement(opts.icon, { size: 20, strokeWidth: 2.4 }));
-  const bodyEl = document.createElement('div');
-  bodyEl.className = 'flex-1 min-w-0';
-  const titleEl = document.createElement('div');
-  titleEl.className = 'font-semibold text-brand-grey-900 text-sm truncate';
-  titleEl.textContent = opts.title;
-  const bodyTextEl = document.createElement('div');
-  bodyTextEl.className = 'text-xs text-brand-grey-500 mt-0.5 line-clamp-2';
-  bodyTextEl.textContent = opts.body;
-  const agoEl = document.createElement('div');
-  agoEl.className = 'text-[10px] text-brand-grey-400 mt-1';
-  agoEl.textContent = ago;
-  bodyEl.append(titleEl, bodyTextEl, agoEl);
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'text-brand-grey-400 hover:text-brand-grey-700 text-lg leading-none';
-  closeBtn.setAttribute('aria-label', 'Funga');
-  closeBtn.textContent = '×';
-  el.append(iconEl, bodyEl, closeBtn);
+  el.className = 'pointer-events-auto cursor-pointer w-full sm:w-80 rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-md max-w-full';
+  // Emoji / icon + title + body
+  const emoji = opts.emoji || '🔔';
+  el.textContent = `${emoji} ${opts.title}`;
+  if (opts.body) {
+    const bodyEl = document.createElement('span');
+    bodyEl.className = ' text-brand-blue-500 dark:text-brand-blue-400 font-normal';
+    bodyEl.textContent = ` — ${opts.body}`;
+    el.appendChild(bodyEl);
+  }
   const close = () => {
     el.style.opacity = '0';
-    setTimeout(() => { iconRoot.unmount(); el.remove(); }, 200);
+    setTimeout(() => el.remove(), 200);
   };
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); close(); });
-  if (opts.onClick) el.addEventListener('click', () => { opts.onClick!(); close(); });
+  el.addEventListener('click', () => { opts.onClick?.(); close(); });
   container.appendChild(el);
-  setTimeout(close, 8000);
+  setTimeout(close, 6000);
 }
 
 function ensureToastContainer(): HTMLElement {

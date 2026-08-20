@@ -18,7 +18,7 @@ import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
 import {
   Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
-  Stethoscope, GraduationCap, Zap, Filter,
+  Stethoscope, GraduationCap, Zap, Filter, HandCoins,
 } from 'lucide-react';
 
 const FRESH_MS = 30 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya NUSU SAA (30min)
@@ -279,10 +279,10 @@ export default function DashboardBoard() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0 flex-wrap">
             <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-            <span className="text-brand-blue">Wanakotoka</span>
+            <span className="text-brand-blue">{t('board.source_label')}</span>
             <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">{activeSourceRegionName || t('board.all_regions')}</span>
             <span className="text-brand-grey-400 dark:text-brand-grey-500 flex-shrink-0">→</span>
-            <span className="text-brand-blue">Wanaokuja</span>
+            <span className="text-brand-blue">{t('board.dest_label')}</span>
             <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">{myStation.region_name || ''}</span>
           </h2>
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -594,7 +594,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       {/* GUIDE TOAST — maelekezo fupi yanapoibuka */}
       {guideToast && (
         <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
-          💰 {guideToast}
+          <HandCoins size={14} className="inline -mt-0.5" /> {guideToast}
         </div>
       )}
 
