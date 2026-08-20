@@ -594,7 +594,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       {/* GUIDE TOAST — maelekezo fupi yanapoibuka */}
       {guideToast && (
         <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
-          💳 {guideToast}
+          💰 {guideToast}
         </div>
       )}
 
