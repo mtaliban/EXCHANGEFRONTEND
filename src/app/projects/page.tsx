@@ -75,7 +75,7 @@ export default function ProjectsPage() {
             href={TLM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-blue px-6 py-3 text-sm font-semibold text-white shadow-soft hover:bg-brand-blue-700 transition"
+            className="btn-primary"
           >
             {t('proj.tlm_btn')}
             <ArrowRight size={16} />
