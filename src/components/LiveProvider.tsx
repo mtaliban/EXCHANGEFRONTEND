@@ -169,14 +169,14 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
   }, [user, subscribe, router, pathname, logout, setUser]);
 
   return <>{children}</>;
-}/* ── in-memory toast — kama guide toast (blue card slide-in) ────── */
+}/* ── in-memory toast — SAWA NA GUIDE TOAST (blue card slide-in) ── */
 function showToast(opts: {
   icon?: LucideIcon; emoji?: string; color?: string; title: string; body?: string; onClick?: () => void; ago?: string;
 }) {
   const container = ensureToastContainer();
   const el = document.createElement('div');
-  el.className = 'pointer-events-auto cursor-pointer w-full sm:w-80 rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-md max-w-full';
-  // Emoji / icon + title + body
+  // SAWA NA guide toast: rounded-lg, border-brand-blue/30, bg-brand-blue-50, text-[11px]
+  el.className = 'pointer-events-auto cursor-pointer rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-md';
   const emoji = opts.emoji || '🔔';
   el.textContent = `${emoji} ${opts.title}`;
   if (opts.body) {
