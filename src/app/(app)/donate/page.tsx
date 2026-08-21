@@ -56,6 +56,10 @@ export default function DonatePage() {
         setFlash({ type: 'success', msg: '✓ Malipo yamethibitishwa' });
         bustGetCache();
         loadHistory();
+        // SASISHA SESSION — is_verified=True → mtu aweze kupiga SMS/WA
+        import('@/lib/api').then(({ getMe }) => {
+          getMe().then((me: any) => useAuth.getState().setUser(me)).catch(() => {});
+        });
         if (oid && p.data?.order_id === oid) {
           setTimeout(() => { setFlash(null); }, 5000);
         }
