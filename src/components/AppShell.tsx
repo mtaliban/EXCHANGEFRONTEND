@@ -293,10 +293,10 @@ function MobileBottomNav({ pathname, isAdmin }: {
               key={l.href}
               href={l.href}
               className={clsx(
-                'flex-1 flex flex-col items-center justify-center gap-0 py-1 min-h-[52px] px-0 transition-all duration-200 ease-out active:scale-95 min-w-0',
+                'flex-1 flex flex-col items-center justify-center gap-0 py-1 min-h-[52px] px-0 transition-all duration-200 ease-out active:scale-95 min-w-0 rounded-lg',
                 active
-                  ? 'text-brand-blue'
-                  : 'text-brand-grey-500 dark:text-brand-grey-400'
+                  ? 'text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950/30'
+                  : 'text-brand-grey-500 dark:text-brand-grey-400 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800/50'
               )}
             >
               <div className="relative transition-transform duration-200 ease-out">
