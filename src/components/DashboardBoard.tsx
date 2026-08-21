@@ -471,7 +471,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       showCardToast('🤝', 'Jiunge nasi kuchangia');
       return;
     }
-    showCardToast('📞', `Piga ${c.full_name}`);
+    showCardToast('🤝', `Piga ${c.full_name}`);
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
@@ -482,7 +482,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       showCardToast('🤝', 'Jiunge nasi kuchangia');
       return;
     }
-    showCardToast('💬', `SMS kwa ${c.full_name}`);
+    showCardToast('🤝', `SMS kwa ${c.full_name}`);
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
@@ -492,7 +492,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       showCardToast('🤝', 'Jiunge nasi kuchangia');
       return;
     }
-    showCardToast('📱', `WhatsApp kwa ${c.full_name}`);
+    showCardToast('🤝', `WhatsApp kwa ${c.full_name}`);
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }

@@ -82,7 +82,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.to_user_id !== uid) return;
       if (isSoundEnabled()) playPingSound();
       showToast({
-        emoji: '📞',
+        emoji: '🤝',
         title: `${p.from_full_name || 'Mtu'} — amekupigia`,
         onClick: () => router.push('/dashboard'),
       });
@@ -96,7 +96,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.user_id && p.user_id !== uid) return;
       if (isSoundEnabled()) playPingSound();
       showToast({
-        emoji: '🚫',
+        emoji: '🤝',
         title: 'Akaunti imesitishwa',
       });
       logout();
@@ -105,7 +105,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     const unsubDel = subscribe('account.deleted', (p) => {
       if (p.user_id && p.user_id !== uid) return;
       showToast({
-        emoji: '🗑️',
+        emoji: '🤝',
         title: 'Akaunti imefutwa',
       });
       logout();
@@ -117,7 +117,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       const fields = (p.changed_fields || []).filter((f: string) => f !== 'status');
       if (fields.length > 0) {
         showToast({
-          emoji: '✏️',
+          emoji: '🤝',
           title: 'Taarifa zimesasishwa',
           onClick: () => router.push('/profile'),
         });
@@ -133,7 +133,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.user_id && p.user_id !== uid) return;
       getMe().then((me) => setUser(me)).catch(() => {});
       showToast({
-        emoji: '✅',
+        emoji: '🤝',
         title: 'Malipo yamethibitishwa',
       });
     });

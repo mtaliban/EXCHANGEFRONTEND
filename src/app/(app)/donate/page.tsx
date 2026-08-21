@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useUnreadStore } from '@/lib/unreadStore';
 import { useT, useI18n } from '@/lib/i18n';
-import { Check, Copy, Heart, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Check, Copy, HandCoins, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
 
 const ADMIN_CALL = '0763795801';
 const ADMIN_WHATSAPP = '255625607088';
@@ -139,7 +139,7 @@ export default function DonatePage() {
         </button>
         <div>
           <h1 className="text-xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
-            <Heart size={20} className="text-brand-red" />
+            <HandCoins size={20} className="text-brand-red" />
             {t('donate.title')}
           </h1>
           <p className="text-brand-grey-500 dark:text-brand-grey-400 text-xs mt-0.5">

@@ -8,19 +8,19 @@ import type { LucideIcon } from 'lucide-react';
 
 export const NOTIFICATION_TYPE_META: Record<string, { icon: LucideIcon; color: string; emoji?: string }> = {
   'match.found': { icon: Handshake, color: 'blue', emoji: '🤝' },
-  'message.sent': { icon: MessageCircle, color: 'blue', emoji: '💬' },
-  'call.initiated': { icon: Phone, color: 'blue', emoji: '📞' },
-  'payment.submitted': { icon: Wallet, color: 'blue', emoji: '💰' },
-  'payment.approved': { icon: BadgeCheck, color: 'blue', emoji: '✅' },
-  'payment.rejected': { icon: Ban, color: 'red', emoji: '❌' },
-  'user.registered': { icon: UserPlus, color: 'blue', emoji: '👤' },
-  'user.profile_updated': { icon: UserCog, color: 'blue', emoji: '✏️' },
-  'announcement': { icon: Megaphone, color: 'blue', emoji: '📢' },
-  'feedback.new': { icon: ClipboardList, color: 'blue', emoji: '📝' },
-  'feedback.replied': { icon: ClipboardList, color: 'blue', emoji: '💬' },
-  'payment.message': { icon: MessageCircle, color: 'blue', emoji: '💬' },
-  'payment.reply': { icon: MessageCircle, color: 'blue', emoji: '💬' },
-  'password_reset.new': { icon: Bell, color: 'blue', emoji: '🔑' },
+  'message.sent': { icon: MessageCircle, color: 'blue', emoji: '🤝' },
+  'call.initiated': { icon: Phone, color: 'blue', emoji: '🤝' },
+  'payment.submitted': { icon: Wallet, color: 'blue', emoji: '🤝' },
+  'payment.approved': { icon: BadgeCheck, color: 'blue', emoji: '🤝' },
+  'payment.rejected': { icon: Ban, color: 'red', emoji: '🤝' },
+  'user.registered': { icon: UserPlus, color: 'blue', emoji: '🤝' },
+  'user.profile_updated': { icon: UserCog, color: 'blue', emoji: '🤝' },
+  'announcement': { icon: Megaphone, color: 'blue', emoji: '🤝' },
+  'feedback.new': { icon: ClipboardList, color: 'blue', emoji: '🤝' },
+  'feedback.replied': { icon: ClipboardList, color: 'blue', emoji: '🤝' },
+  'payment.message': { icon: MessageCircle, color: 'blue', emoji: '🤝' },
+  'payment.reply': { icon: MessageCircle, color: 'blue', emoji: '🤝' },
+  'password_reset.new': { icon: Bell, color: 'blue', emoji: '🤝' },
 };
 
 export const DEFAULT_NOTIFICATION_ICON: LucideIcon = Bell;
