@@ -9,7 +9,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { NOTIFICATION_TYPE_META, DEFAULT_NOTIFICATION_ICON, notificationRoute } from '@/lib/notifications';
 import { playPingSound, playArrivalSound, isSoundEnabled } from '@/lib/sound';
 import { parseServerDate } from '@/lib/dates';
-import { getMe, emitDataChanged } from '@/lib/api';
+import { getMe, emitDataChanged, bustGetCache } from '@/lib/api';
 import { Bell } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -131,6 +131,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     // PAPO HAPO (mtu anaweza kuona namba za simu bila refresh ya page).
     const unsubVerified = subscribe('user.verified', (p: any) => {
       if (p.user_id && p.user_id !== uid) return;
+      bustGetCache(); // FUSHA cache — getMe() lazima ipate is_verified mpya
       getMe().then((me) => setUser(me)).catch(() => {});
       showToast({
         emoji: '✅',
