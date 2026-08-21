@@ -15,10 +15,11 @@ import { getInitial } from '@/lib/initials';
 import { timeAgo } from '@/lib/timeAgo';
 import { parseServerDate } from '@/lib/dates';
 import { playArrivalSound } from '@/lib/sound';
+import { showToast } from '@/lib/toast';
 import Spinner from '@/components/Spinner';
 import {
   Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
-  Zap, Filter, HandCoins,
+  Zap, Filter,
 } from 'lucide-react';
 
 const FRESH_MS = 30 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya NUSU SAA (30min)
@@ -455,7 +456,6 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   const isEdu = c.category !== 'health';
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
   const [phoneRevealed, setPhoneRevealed] = useState(false);
-  const [guideToast, setGuideToast] = useState<string | null>(null);
 
   /** Ficha namba: "0712345678" → "0712 *** 5678" */
   function maskPhone(p: string) {
@@ -463,18 +463,13 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
     return p.slice(0, 4) + ' *** ' + p.slice(-4);
   }
 
-  function showGuide(msg: string) {
-    setGuideToast(msg);
-    setTimeout(() => setGuideToast(null), 5000);
-  }
-
   async function onCall() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showGuide('Changia kiasi cha TZS 2,000 ili kuona namba za simu na kuwasiliana.');
+      showToast({ emoji: '💰', title: 'Changia TZS 2,000 ili kuona namba' });
       return;
     }
-    showGuide('Piga simu kwa namba hiyo. Mazungumzo yawe mafupi — muambie mnataka kubadilishana vituo.');
+    showToast({ emoji: '📞', title: `Piga ${c.full_name}` });
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
@@ -482,20 +477,20 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   function onSMS() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showGuide('Changia kiasi cha TZS 2,000 ili kuona namba za simu na kuwasiliana.');
+      showToast({ emoji: '💰', title: 'Changia TZS 2,000 ili kuona namba' });
       return;
     }
-    showGuide('SMS itatuma ujumbe wa kujitambulisha. Angalia ujumbe kabla ya kutuma.');
+    showToast({ emoji: '💬', title: `SMS kwa ${c.full_name}` });
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
   function onWhatsApp() {
     if (!c.phone_alt) return;
     if (!isVerified) {
-      showGuide('Changia kiasi cha TZS 2,000 ili kuona namba za simu na kuwasiliana.');
+      showToast({ emoji: '💰', title: 'Changia TZS 2,000 ili kuona namba' });
       return;
     }
-    showGuide('WhatsApp inafunguka na ujumbe wa kujitambulisha. Tuma na usubiri jibu.');
+    showToast({ emoji: '📱', title: `WhatsApp kwa ${c.full_name}` });
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
@@ -593,13 +588,6 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
           <span className="inline-flex items-center gap-1"><Clock size={11} /> {ago}</span>
         )}
       </div>
-
-      {/* GUIDE TOAST — maelekezo fupi yanapoibuka */}
-      {guideToast && (
-        <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
-          <HandCoins size={14} className="inline -mt-0.5" /> {guideToast}
-        </div>
-      )}
 
       {/* VIFUNGO VYA KUWASILIANA — buttons zote daima zipo, guide inaonyesha kwa wasio verified */}
       <div className="flex gap-1.5 mt-auto pt-1">
