@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { forgotPassword, getPasswordResetStatus } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import { ArrowLeft, AlertCircle, CheckCircle2, Loader2, KeyRound, User, Phone, Clock, XCircle, Shield } from 'lucide-react';
+import { ArrowLeft, AlertCircle, CheckCircle2, KeyRound, User, Phone, Clock, XCircle, Shield, Loader2 } from 'lucide-react';
 
 type Step = 'form' | 'waiting' | 'approved' | 'rejected';
 
@@ -32,8 +32,7 @@ export default function ForgotPasswordPage() {
       try {
         const data = await getPasswordResetStatus(phone);
         if (data.status === 'approved') {
-          setStep('approved');
-          setTimeout(() => router.push(`/reset-password?phone=${encodeURIComponent(phone)}`), 2000);
+          router.push(`/reset-password?phone=${encodeURIComponent(phone)}`);
           return;
         }
         if (data.status === 'rejected') {
@@ -123,19 +122,15 @@ export default function ForgotPasswordPage() {
         {/* ── WAITING FOR ADMIN ── */}
         {step === 'waiting' && (
           <div className="text-center py-6 space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center">
-              <Clock size={24} className="text-orange-500 animate-pulse" />
+            <div className="w-14 h-14 mx-auto rounded-full bg-brand-blue-50 border border-brand-blue-200 flex items-center justify-center">
+              <Clock size={24} className="text-brand-blue" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-brand-grey-900 mb-1">Ombi limetumwa!</h2>
+              <h2 className="text-lg font-bold text-brand-grey-900 mb-1">Ombi Limetumwa!</h2>
               <p className="text-sm text-brand-grey-500">
                 Subiri <span className="font-semibold text-brand-grey-700">admin</span> akubali ombi lako.
-                Utapata taarifa papo hapo akiamua.
               </p>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-xs text-orange-600 bg-orange-50 rounded-full px-3 py-2 border border-orange-200">
-              <Loader2 size={12} className="animate-spin" />
-              Inasubiri... (inapitia kila sekunde 3)
+              <p className="text-xs text-brand-grey-400 mt-2">Utaelekezwa automatiski pale admin anapokubali.</p>
             </div>
           </div>
         )}
