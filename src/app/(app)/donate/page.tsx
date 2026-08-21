@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getDonationInfo, submitDonation, myDonations, sendPaymentMessage, getPaymentMessages, bustGetCache } from '@/lib/api';
+import { getDonationInfo, submitDonation, myDonations, bustGetCache } from '@/lib/api';
 import { parseServerDate } from '@/lib/dates';
 import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
 import { useLive } from '@/lib/liveSocket';
 import { useUnreadStore } from '@/lib/unreadStore';
 import { useT, useI18n } from '@/lib/i18n';
-import { Check, Copy, HandCoins, Phone, MessageCircle, ArrowLeft, Send, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, Copy, HandCoins, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
 
 const ADMIN_CALL = '0763795801';
 const ADMIN_WHATSAPP = '255625607088';
@@ -301,46 +301,16 @@ function HistoryList({ history, allHistory, filter, setFilter }: {
 }
 
 
-/* ── HistoryRow — kila malipo + chat panel ── */
+/* ── HistoryRow — kila malipo (hakuna chat — Contact Admin tu) ── */
 function HistoryRow({ p, index }: { p: any; index: number }) {
   const t = useT();
   const lang = useI18n((s) => s.lang);
-  const { subscribe } = useLive();
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<any[]>(p.messages || []);
-  const [chatText, setChatText] = useState('');
-  const [sending, setSending] = useState(false);
 
   const ts = parseServerDate(p.created_at);
   const full = (d: Date | null) => d
     ? d.toLocaleDateString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
       + ' ' + d.toLocaleTimeString(lang === 'sw' ? 'sw-TZ' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
     : '—';
-
-  // Listen for new messages via WS
-  useEffect(() => {
-    if (!chatOpen) return;
-    const un = subscribe('notification', (notif: any) => {
-      if ((notif.type === 'payment.reply' || notif.type === 'payment.message') && notif.data?.order_id === p.order_id) {
-        getPaymentMessages(p.order_id).then((d) => setMessages(d.messages)).catch(() => {});
-      }
-    });
-    return () => { un(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatOpen, p.order_id]);
-
-  async function sendMessage() {
-    const text = chatText.trim();
-    if (!text) return;
-    setSending(true);
-    try {
-      await sendPaymentMessage(p.order_id, text);
-      setChatText('');
-      const d = await getPaymentMessages(p.order_id);
-      setMessages(d.messages);
-    } catch {}
-    setSending(false);
-  }
 
   return (
     <>
@@ -369,70 +339,16 @@ function HistoryRow({ p, index }: { p: any; index: number }) {
                 {t('donate.st_verifying')}
               </span>
             )}
-            {/* Chat toggle — onyeshwa pale kunapo sababu ya kukanusha au messages */}
-            {(p.status === 'rejected' || p.note || messages.length > 0) && (
-              <button onClick={() => { setChatOpen(!chatOpen); if (!chatOpen && messages.length === 0) {
-                getPaymentMessages(p.order_id).then((d) => setMessages(d.messages)).catch(() => {});
-              }}}
-                className="text-[10px] text-brand-blue hover:underline inline-flex items-center gap-0.5 ml-1" title="Ongea na admin kuhusu malipo hii">
-                <MessageSquare size={11} />
-                {chatOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-              </button>
-            )}
           </div>
-          {/* Rejection reason */}
-          {p.status === 'rejected' && p.note && !chatOpen && (
-            <div className="text-[10px] text-brand-red mt-1 text-right">{t('donate.reason_label')} {p.note}</div>
+          {/* Rejection reason + Contact Admin */}
+          {p.status === 'rejected' && p.note && (
+            <div className="mt-1.5 text-right">
+              <div className="text-[10px] text-brand-red">{p.note}</div>
+              <a href="tel:0763795801" className="text-[10px] text-brand-blue font-semibold hover:underline">Wasiliana na Admin →</a>
+            </div>
           )}
         </td>
       </tr>
-      {/* Chat panel — inline chini ya row */}
-      {chatOpen && (
-        <tr>
-          <td colSpan={4} className="px-4 py-3 bg-brand-grey-50 dark:bg-brand-grey-100/30">
-            <div className="space-y-2">
-              {/* Rejection reason (kama ipo) */}
-              {p.status === 'rejected' && p.note && (
-                <div className="bg-brand-red-50 dark:bg-brand-red-100/20 border border-brand-red-200 rounded-lg px-3 py-2 text-xs text-brand-red">
-                  <span className="font-semibold">{t('donate.admin_label')}</span> {p.note}
-                </div>
-              )}
-              {/* Messages */}
-              {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.sender === 'customer' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-lg px-3 py-2 text-xs ${
-                    m.sender === 'admin'
-                      ? 'bg-brand-blue-50 dark:bg-brand-blue-950/40 text-brand-blue-700 dark:text-brand-blue-300 border border-brand-blue/20'
-                      : 'bg-white dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-300 border border-brand-grey-200 dark:border-brand-grey-600'
-                  }`}>
-                    <div className="font-semibold text-[10px] mb-0.5">{m.sender === 'admin' ? t('donate.admin_label') : m.sender_name}</div>
-                    <div>{m.message}</div>
-                    <div className="text-[9px] text-brand-grey-400 mt-1">{m.created_at ? timeAgo(parseServerDate(m.created_at)?.getTime() || 0, lang) : ''}</div>
-                  </div>
-                </div>
-              ))}
-              {messages.length === 0 && (
-                <div className="text-[11px] text-brand-grey-400 text-center">{t('donate.chat_empty')}</div>
-              )}
-              {/* Input */}
-              <div className="flex gap-1.5">
-                <input
-                  className="input text-xs py-1.5 flex-1"
-                  placeholder={t('donate.chat_ph')}
-                  value={chatText}
-                  onChange={(e) => setChatText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }}
-                  disabled={sending}
-                />
-                <button onClick={sendMessage} disabled={sending || !chatText.trim()}
-                  className="btn-primary text-xs px-3 py-1.5">
-                  <Send size={12} />
-                </button>
-              </div>
-            </div>
-          </td>
-        </tr>
-      )}
     </>
   );
 }
