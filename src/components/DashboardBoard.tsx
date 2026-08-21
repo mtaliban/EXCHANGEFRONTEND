@@ -615,9 +615,9 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
 
       {/* TOAST — ndani ya card, chini ya buttons — emoji + arrow */}
       {myToast && (
-        <a href="/donate" className="flex items-center gap-2 rounded-lg bg-brand-blue-50 dark:bg-brand-blue-950/40 border border-brand-blue/20 px-3 py-2 text-[11px] font-semibold text-brand-blue-800 dark:text-brand-blue-200 animate-slide-in hover:bg-brand-blue-100 dark:hover:bg-brand-blue-900/60 transition">
+        <a href="/donate" className="flex items-center gap-2 rounded-lg bg-brand-blue-50 dark:bg-brand-blue-950/40 border border-brand-blue/20 px-3 py-2.5 text-[12px] font-semibold text-brand-blue-800 dark:text-brand-blue-200 animate-slide-in hover:bg-brand-blue-100 dark:hover:bg-brand-blue-900/60 transition">
           <span className="flex-1 min-w-0 truncate">{myToast.msg}</span>
-          <span className="text-brand-blue font-bold text-[10px] flex-shrink-0">→</span>
+          <span className="text-brand-blue font-bold text-sm flex-shrink-0 bg-brand-blue/10 rounded-md px-2 py-0.5">Changia →</span>
         </a>
       )}
     </div>
