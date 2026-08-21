@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { getNotifications, markNotificationRead, bustGetCache } from '@/lib/api';
+import { getNotifications, markNotificationRead, markAllNotificationsRead, bustGetCache } from '@/lib/api';
 import { notificationRoute } from '@/lib/notifications';
 
 /**
@@ -53,8 +53,15 @@ export const useUnreadStore = create<RouteUnreadState>((set, get) => ({
     set({ counts: c });
   },
 
+  /**
+   * Login = fresh start — SOMA ZOTE kwenye backend kabla ya kuhesabu.
+   * Hii inahakikisha mtu akiingia tena hana badges za kale.
+   */
   refresh: async () => {
     try {
+      // Soma ZOTE kwanza kabla ya kuhesabu — hakuna badges za kale
+      await markAllNotificationsRead().catch(() => {});
+      bustGetCache();
       const data = await getNotifications(100, true);
       const counts: Record<string, number> = {};
       const routeNotifIds: Record<string, string[]> = {};
