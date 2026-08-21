@@ -201,7 +201,7 @@ export default function DonatePage() {
 
         {status === 'sent' ? (
           <button disabled className="btn-primary w-full justify-center opacity-70">
-            ✓ {t('donate.sent')}
+            {t('donate.sent')}
           </button>
         ) : (
           <button onClick={submit} disabled={busy}
