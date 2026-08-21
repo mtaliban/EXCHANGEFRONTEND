@@ -455,10 +455,12 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   const isEdu = c.category !== 'health';
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
   const [cardToast, setCardToast] = useState<{ emoji: string; msg: string } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function showCardToast(emoji: string, msg: string) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
     setCardToast({ emoji, msg });
-    setTimeout(() => setCardToast(null), 4000);
+    toastTimer.current = setTimeout(() => setCardToast(null), 4000);
   }
 
 
@@ -466,7 +468,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   async function onCall() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('💰', 'Changia TZS 2,000 ili kuona namba');
+      showCardToast('🤝', 'Jiunge nasi kuchangia');
       return;
     }
     showCardToast('📞', `Piga ${c.full_name}`);
@@ -477,7 +479,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   function onSMS() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('💰', 'Changia TZS 2,000 ili kuona namba');
+      showCardToast('🤝', 'Jiunge nasi kuchangia');
       return;
     }
     showCardToast('💬', `SMS kwa ${c.full_name}`);
@@ -487,7 +489,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   function onWhatsApp() {
     if (!c.phone_alt) return;
     if (!isVerified) {
-      showCardToast('💰', 'Changia TZS 2,000 ili kuona namba');
+      showCardToast('🤝', 'Jiunge nasi kuchangia');
       return;
     }
     showCardToast('📱', `WhatsApp kwa ${c.full_name}`);
@@ -572,12 +574,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
         </div>
       )}
 
-      {c.phone_primary && (
-        <button
-          className="text-[11px] sm:text-xs text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0 text-left">
-          <Phone size={12} /> {c.phone_primary}
-        </button>
-      )}
+
 
       {/* MUDA WA JUU (relative): wapya wana " MPYA + muda", wengine  muda tu — siyo saa halisi */}
       <div className={`text-[11px] font-medium ${fresh ? 'text-brand-blue font-bold' : 'text-brand-grey-400'}`} title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
