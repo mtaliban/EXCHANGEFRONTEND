@@ -73,7 +73,6 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       const c = p.candidate || {};
       if (isSoundEnabled() && !pathname?.startsWith('/dashboard')) playArrivalSound();
       showToast({
-        emoji: '🤝',
         title: `${c.full_name || 'Mtu'} — ${c.current_station?.region_name || 'Kumefika'}`,
         onClick: () => router.push('/dashboard'),
       });
@@ -82,7 +81,6 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.to_user_id !== uid) return;
       if (isSoundEnabled()) playPingSound();
       showToast({
-        emoji: '🤝',
         title: `${p.from_full_name || 'Mtu'} — amekupigia`,
         onClick: () => router.push('/dashboard'),
       });
@@ -96,7 +94,6 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.user_id && p.user_id !== uid) return;
       if (isSoundEnabled()) playPingSound();
       showToast({
-        emoji: '🤝',
         title: 'Akaunti imesitishwa',
       });
       logout();
@@ -105,7 +102,6 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     const unsubDel = subscribe('account.deleted', (p) => {
       if (p.user_id && p.user_id !== uid) return;
       showToast({
-        emoji: '🤝',
         title: 'Akaunti imefutwa',
       });
       logout();
@@ -117,7 +113,6 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       const fields = (p.changed_fields || []).filter((f: string) => f !== 'status');
       if (fields.length > 0) {
         showToast({
-          emoji: '🤝',
           title: 'Taarifa zimesasishwa',
           onClick: () => router.push('/profile'),
         });
@@ -133,7 +128,6 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.user_id && p.user_id !== uid) return;
       getMe().then((me) => setUser(me)).catch(() => {});
       showToast({
-        emoji: '🤝',
         title: 'Malipo yamethibitishwa',
       });
     });
@@ -141,10 +135,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     const unsub4 = subscribe('notification', (p) => {
       if (p.type === 'match.found' || p.type === 'message.sent' || p.type === 'call.initiated') return;
       if (isSoundEnabled()) playPingSound();
-      const meta = NOTIFICATION_TYPE_META[p.type] || { icon: DEFAULT_NOTIFICATION_ICON, color: 'blue' };
-      const emoji = meta.emoji || '🔔';
       showToast({
-        emoji,
         title: p.title || 'Arifa mpya',
         onClick: () => router.push(notificationRoute(p.type, p.data, (user as any)?.is_admin)),
       });
@@ -166,11 +157,10 @@ function showToast(opts: {
   const el = document.createElement('div');
   // FUPI: Title tu — body imeondolewa kwa notifications fupi
   el.className = 'pointer-events-auto cursor-pointer w-fit min-w-[180px] max-w-[280px] rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-md';
-  const emoji = opts.emoji || '🔔';
-  // Title line — FUPI: emoji + title tu
+  // Title line — text tu, hakuna emoji
   const titleEl = document.createElement('div');
   titleEl.className = 'font-bold text-brand-blue-800 dark:text-brand-blue-200 leading-snug';
-  titleEl.textContent = `${emoji} ${opts.title}`;
+  titleEl.textContent = opts.title;
   el.appendChild(titleEl);
   const close = () => {
     el.style.opacity = '0';
