@@ -258,18 +258,19 @@ export default function AdminAnnouncementsPage() {
       ) : (
         <div className="space-y-2">
           {list.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE).map((a) => (
-            <div key={a.announcement_id} className="bg-white rounded-xl border border-brand-grey-200 p-4">
+            <div key={a.announcement_id} className="bg-white dark:bg-brand-grey-900 rounded-xl border border-brand-grey-200 dark:border-brand-grey-700 p-4 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
+                    <Megaphone size={14} className="text-brand-grey-400 flex-shrink-0" />
                     <span className="font-bold text-brand-grey-900 dark:text-white text-sm">{a.title}</span>
-                    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 font-semibold border border-brand-blue-200">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-600 dark:text-brand-grey-300 font-semibold">
                       {audienceLabel(a.audience)}
                     </span>
                   </div>
-                  <p className="text-xs text-brand-grey-600 dark:text-brand-grey-300 mt-1.5 whitespace-pre-wrap break-words leading-relaxed">{a.message}</p>
-                  <div className="flex items-center gap-3 flex-wrap mt-2.5 text-[11px] text-brand-grey-500 dark:text-brand-grey-400">
-                    <span className="inline-flex items-center gap-1"><Users size={11} /> {t('ann.to_people')}: <b className="text-brand-blue">{a.recipient_count}</b></span>
+                  <p className="text-[13px] text-brand-grey-700 dark:text-brand-grey-300 mt-2 whitespace-pre-wrap break-words leading-relaxed">{a.message}</p>
+                  <div className="flex items-center gap-3 flex-wrap mt-3 text-[11px] text-brand-grey-500 dark:text-brand-grey-400">
+                    <span className="inline-flex items-center gap-1"><Users size={11} /> {t('ann.to_people')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{a.recipient_count}</b></span>
                     <span className="inline-flex items-center gap-1"><User size={11} /> {a.created_by_name || '—'}</span>
                     <span className="inline-flex items-center gap-1"><Clock size={11} /> {conversationTime(a.created_at)}</span>
                   </div>
