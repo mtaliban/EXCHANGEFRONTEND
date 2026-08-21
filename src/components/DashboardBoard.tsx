@@ -78,6 +78,15 @@ export default function DashboardBoard() {
   // aonekane PAPO HAPO bila refresh ya page.
   const liveOnline = useLive((s) => s.onlineUserIds);
 
+  // GLOBAL TOAST — moja tu kwa wakati, kila click inareplace
+  const [cardToast, setCardToast] = useState<{ emoji: string; msg: string } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function showCardToast(emoji: string, msg: string) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setCardToast({ emoji, msg });
+    toastTimer.current = setTimeout(() => setCardToast(null), 4000);
+  }
+
   // Re-render "muda uliopita" kila sekunde 30
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -417,7 +426,7 @@ export default function DashboardBoard() {
               simu ya kawaida = 2 col, desktop = 3 col. Hakuna kujibana tena! */}
           <div className="grid grid-cols-[repeat(auto-fit,minmax(165px,1fr))] gap-2.5 md:gap-3">
             {pageItems.map((c: any) => (
-              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} me={user as any} myRegionName={myStation.region_name || ''} isVerified={!!(user as any)?.is_verified} />
+              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} me={user as any} myRegionName={myStation.region_name || ''} isVerified={!!(user as any)?.is_verified} showCardToast={showCardToast} />
             ))}
           </div>
 
@@ -440,11 +449,18 @@ export default function DashboardBoard() {
           )}
         </>
       )}
+
+      {/* GLOBAL TOAST — moja tu, inareplace kila click */}
+      {cardToast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] rounded-xl shadow-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-4 py-2.5 text-[12px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
+          {cardToast.emoji} {cardToast.msg}
+        </div>
+      )}
     </div>
   );
 }
 
-function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string; isVerified?: boolean }) {
+function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, showCardToast }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string; isVerified?: boolean; showCardToast: (emoji: string, msg: string) => void }) {
   const t = useT();
   const initial = getInitial(c.full_name);
   const from = c.current_station;
@@ -454,14 +470,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   const fresh = now - createdTs < FRESH_MS;
   const isEdu = c.category !== 'health';
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
-  const [cardToast, setCardToast] = useState<{ emoji: string; msg: string } | null>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function showCardToast(emoji: string, msg: string) {
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    setCardToast({ emoji, msg });
-    toastTimer.current = setTimeout(() => setCardToast(null), 4000);
-  }
 
 
 
@@ -606,13 +615,6 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
           </button>
         )}
       </div>
-
-      {/* INLINE TOAST — ndani ya card, chini ya buttons */}
-      {cardToast && (
-        <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-1.5 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
-          {cardToast.emoji} {cardToast.msg}
-        </div>
-      )}
     </div>
   );
 }
