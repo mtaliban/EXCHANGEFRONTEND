@@ -79,11 +79,11 @@ export default function DashboardBoard() {
   const liveOnline = useLive((s) => s.onlineUserIds);
 
   // GLOBAL TOAST — moja tu kwa wakati, inareplace kila click
-  const [cardToast, setCardToast] = useState<{ emoji: string; msg: string; uid: string } | null>(null);
+  const [cardToast, setCardToast] = useState<{ msg: string; uid: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function showCardToast(emoji: string, msg: string, uid: string) {
+  function showCardToast(msg: string, uid: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    setCardToast({ emoji, msg, uid });
+    setCardToast({ msg, uid });
     toastTimer.current = setTimeout(() => setCardToast(null), 2500);
   }
 
@@ -454,7 +454,7 @@ export default function DashboardBoard() {
   );
 }
 
-function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, showCardToast, myToast }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string; isVerified?: boolean; showCardToast: (emoji: string, msg: string, uid: string) => void; myToast: { emoji: string; msg: string } | null }) {
+function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, showCardToast, myToast }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string; isVerified?: boolean; showCardToast: (msg: string, uid: string) => void; myToast: { msg: string } | null }) {
   const t = useT();
   const initial = getInitial(c.full_name);
   const from = c.current_station;
@@ -471,10 +471,10 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   async function onCall() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('🤲', 'Ili kupata namba na kuwasiliana, tunakuomba uchangie kiasi cha 2000/=', c.user_id);
+      showCardToast('Changia TZS 2,000 upate namba', c.user_id);
       return;
     }
-    showCardToast('🤲', `Piga ${c.full_name}`, c.user_id);
+    showCardToast(`Piga ${c.full_name}`, c.user_id);
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
@@ -482,20 +482,20 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   function onSMS() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('🤲', 'Ili kupata namba na kuwasiliana, tunakuomba uchangie kiasi cha 2000/=', c.user_id);
+      showCardToast('Changia TZS 2,000 upate namba', c.user_id);
       return;
     }
-    showCardToast('🤲', `SMS kwa ${c.full_name}`, c.user_id);
+    showCardToast(`SMS kwa ${c.full_name}`, c.user_id);
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
   function onWhatsApp() {
     if (!c.phone_alt) return;
-    if (!isVerified) {      showCardToast('🤲', 'Ili kupata namba na kuwasiliana, tunakuomba uchangie kiasi cha 2000/=', c.user_id);
+    if (!isVerified) {      showCardToast('Changia TZS 2,000 upate namba', c.user_id);
       return;
     }
 
-    showCardToast('🤲', `WhatsApp kwa ${c.full_name}`, c.user_id);
+    showCardToast(`WhatsApp kwa ${c.full_name}`, c.user_id);
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
@@ -610,13 +610,10 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
         )}
       </div>
 
-      {/* TOAST — ndani ya card, chini ya buttons */}
+      {/* TOAST — ndani ya card, chini ya buttons — clear */}
       {myToast && (
-        <div className="rounded-lg border border-brand-blue/20 bg-brand-blue-50/80 dark:bg-brand-blue-950/30 px-3 py-2 text-[11px] animate-slide-in">
-          <div className="flex items-center gap-2">
-            <HandCoins size={12} className="text-brand-blue flex-shrink-0" />
-            <span className="text-brand-grey-800 dark:text-brand-grey-200 font-medium truncate flex-1 min-w-0">{myToast.msg}</span>
-          </div>
+        <div className="rounded-lg bg-brand-blue-50 dark:bg-brand-blue-950/40 border border-brand-blue/20 px-3 py-2 text-[11px] font-semibold text-brand-blue-800 dark:text-brand-blue-200 animate-slide-in">
+          {myToast.msg}
         </div>
       )}
     </div>
