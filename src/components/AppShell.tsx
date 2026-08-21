@@ -88,10 +88,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   key={l.href}
                   href={l.href}
                   className={clsx(
-                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-out',
+                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-out active:scale-[0.97]',
                     active
-                      ? 'bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40'
-                      : 'text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-200/60'
+                      ? 'bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40 shadow-sm'
+                      : 'text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-200/60 hover:shadow-sm'
                   )}
                 >
                   <l.icon size={18} strokeWidth={2.2} className="flex-shrink-0" />
@@ -186,9 +186,9 @@ function MobileTopBar({ links, user, onLogout }: {
                     href={l.href}
                     onClick={closeAll}
                     className={clsx(
-                      'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition',
+                      'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-150 ease-out active:scale-[0.97]',
                       active
-                        ? 'bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40'
+                        ? 'bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40 shadow-sm'
                         : 'text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800'
                     )}
                   >
@@ -293,7 +293,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
               key={l.href}
               href={l.href}
               className={clsx(
-                'flex-1 flex flex-col items-center justify-center gap-0 py-1 min-h-[52px] px-0 transition min-w-0',
+                'flex-1 flex flex-col items-center justify-center gap-0 py-1 min-h-[52px] px-0 transition-all duration-200 ease-out active:scale-95 min-w-0',
                 active
                   ? 'text-brand-blue'
                   : 'text-brand-grey-500 dark:text-brand-grey-400'

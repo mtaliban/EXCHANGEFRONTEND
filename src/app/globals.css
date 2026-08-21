@@ -220,6 +220,10 @@ html.theme-switching * {
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  /* Smooth nav active indicator — mshale wa bluu unapungua */
+  .nav-active-bar {
+    transition: width 0.2s ease-out, opacity 0.2s ease-out;
+  }
 }
 
 @layer components {
