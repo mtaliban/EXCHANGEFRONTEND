@@ -19,6 +19,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'nav.users': 'Watumiaji', 'nav.payments': 'Malipo', 'nav.events': 'Events',
     'nav.reports': 'Ripoti', 'nav.announcements': 'Matangazo', 'nav.data': 'Data', 'nav.settings': 'Mipangilio',
     'nav.feedback': 'Maoni na Malalamiko',
+    'nav.feedback_short': 'Maoni',
     /* ── Maoni na Malalamiko (user) ── */
     'fb.title': 'Maoni na Malalamiko', 'fb.subtitle': 'Tuma maoni au malalamiko yako moja kwa moja kwa admin — utajibiwa hapa.',
     'fb.subject_label': 'Kichwa', 'fb.subject_ph': 'Mfano: Tatizo la kuanguka kwa mfumo',
@@ -540,6 +541,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'nav.users': 'Users', 'nav.payments': 'Payments', 'nav.events': 'Events',
     'nav.reports': 'Reports', 'nav.announcements': 'Announcements', 'nav.data': 'Data', 'nav.settings': 'Settings',
     'nav.feedback': 'Feedback & Complaints',
+    'nav.feedback_short': 'Feedback',
     /* ── Feedback (user) ── */
     'fb.title': 'Feedback & Complaints', 'fb.subtitle': 'Send your feedback or complaint directly to the admin — replies appear here.',
     'fb.subject_label': 'Subject', 'fb.subject_ph': 'e.g. System issue',

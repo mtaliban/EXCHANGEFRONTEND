@@ -88,7 +88,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   key={l.href}
                   href={l.href}
                   className={clsx(
-                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition',
+                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-out',
                     active
                       ? 'bg-brand-blue-50 text-brand-blue dark:bg-brand-blue-100/40'
                       : 'text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-200/60'
@@ -176,7 +176,7 @@ function MobileTopBar({ links, user, onLogout }: {
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-[99]" onClick={closeAll} />
-            <div className="absolute left-0 top-full mt-1 z-[100] w-56 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
+            <div className="absolute left-0 top-full mt-1 z-[100] w-56 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in transition-all duration-200">
               {links.map((l) => {
                 const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
                 const badge = routeCounts[l.href] || 0;
@@ -263,19 +263,19 @@ function MobileBottomNav({ pathname, isAdmin }: {
   useEffect(() => {
     if (pathname && routeCounts[pathname] > 0) clearRoute(pathname);
   }, [pathname, routeCounts, clearRoute]);
-  // Admin: links muhimu zaidi kwa simu (max 6) — zaidi ziko drawer
+  // Admin: links muhimu zaidi kwa simu (max 5) — zaidi ziko drawer
   const mobileLinks = isAdmin
     ? [
-        { href: '/admin', label: 'Ofaa', icon: Crown },
-        { href: '/admin/users', label: 'Watu', icon: Users },
-        { href: '/admin/data', label: 'Data', icon: Database },
-        { href: '/admin/payments', label: 'Malipo', icon: Wallet },
-        { href: '/admin/feedback', label: 'Maoni', icon: ClipboardList },
+        { href: '/admin', label: t('nav.admin'), icon: Crown },
+        { href: '/admin/users', label: t('nav.users'), icon: Users },
+        { href: '/admin/data', label: t('nav.data'), icon: Database },
+        { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
+        { href: '/admin/feedback', label: t('nav.feedback_short', 'Maoni'), icon: ClipboardList },
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
         { href: '/donate', label: t('nav.donate'), icon: HandCoins },
-        { href: '/feedback', label: t('nav.feedback', 'Maoni'), icon: ClipboardList },
+        { href: '/feedback', label: t('nav.feedback_short', 'Maoni'), icon: ClipboardList },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 
@@ -299,15 +299,15 @@ function MobileBottomNav({ pathname, isAdmin }: {
                   : 'text-brand-grey-500 dark:text-brand-grey-400'
               )}
             >
-              <div className="relative">
-                <l.icon size={20} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0" />
+              <div className="relative transition-transform duration-200 ease-out">
+                <l.icon size={20} strokeWidth={active ? 2.4 : 2} className="flex-shrink-0 transition-all duration-200" />
                 {(routeCounts[l.href] || 0) > 0 && (
                   <span className="absolute -top-1 -right-1.5 w-4 h-4 rounded-full bg-brand-red text-white text-[8px] font-bold flex items-center justify-center">
                     {routeCounts[l.href] > 9 ? '9+' : routeCounts[l.href]}
                   </span>
                 )}
               </div>
-              <span className={clsx('text-[9px] font-semibold leading-tight text-center truncate w-full max-w-full px-0.5 mt-0.5', active && 'font-bold')}>{l.label}</span>
+              <span className={clsx('text-[9px] font-semibold leading-tight text-center truncate w-full max-w-full px-0.5 mt-0.5 transition-colors duration-200', active && 'font-bold')}>{l.label}</span>
               {active && <span className="w-3 h-0.5 rounded-full bg-brand-blue mt-0.5" />}
             </Link>
           );
