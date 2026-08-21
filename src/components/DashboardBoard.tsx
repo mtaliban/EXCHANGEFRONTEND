@@ -84,7 +84,7 @@ export default function DashboardBoard() {
   function showCardToast(emoji: string, msg: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setCardToast({ emoji, msg });
-    toastTimer.current = setTimeout(() => setCardToast(null), 4000);
+    toastTimer.current = setTimeout(() => setCardToast(null), 2500);
   }
 
   // Re-render "muda uliopita" kila sekunde 30
@@ -450,15 +450,12 @@ export default function DashboardBoard() {
         </>
       )}
 
-      {/* GLOBAL TOAST — moja tu, inareplace kila click, fixed chini */}
+      {/* GLOBAL TOAST — ndogo, haraka, haibadilishi layout */}
       {cardToast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] max-w-sm w-[90%] rounded-xl shadow-xl border border-brand-blue/20 bg-white dark:bg-brand-grey-900 px-4 py-3 animate-slide-in">
-          <div className="flex items-center gap-3">
-            <HandCoins size={18} className="text-brand-blue flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[12px] font-bold text-brand-grey-900 dark:text-white leading-snug">{cardToast.msg}</div>
-              <a href="/donate" className="text-[11px] text-brand-blue font-semibold hover:underline mt-0.5 inline-block">Nenda Changia →</a>
-            </div>
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] max-w-[260px] rounded-lg shadow-md border border-brand-blue/20 bg-white dark:bg-brand-grey-900 px-3 py-2 text-[11px] animate-slide-in">
+          <div className="flex items-center gap-2">
+            <HandCoins size={13} className="text-brand-blue flex-shrink-0" />
+            <span className="text-brand-grey-800 dark:text-brand-grey-200 font-medium truncate">{cardToast.msg}</span>
           </div>
         </div>
       )}
