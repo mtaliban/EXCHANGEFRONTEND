@@ -83,8 +83,11 @@ export default function DashboardBoard() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showCardToast(msg: string, uid: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    setCardToast({ msg, uid });
-    toastTimer.current = setTimeout(() => setCardToast(null), 2500);
+    setCardToast(null); // futa kwanza ili "inatokea upya" kila click
+    setTimeout(() => {
+      setCardToast({ msg, uid });
+      toastTimer.current = setTimeout(() => setCardToast(null), 3000);
+    }, 50); // ndogo ili React iscreenshot state mpya
   }
 
   // Re-render "muda uliopita" kila sekunde 30
@@ -610,11 +613,13 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
         )}
       </div>
 
-      {/* TOAST — ndani ya card, chini ya buttons — clear */}
+      {/* TOAST — ndani ya card, chini ya buttons — emoji + arrow */}
       {myToast && (
-        <div className="rounded-lg bg-brand-blue-50 dark:bg-brand-blue-950/40 border border-brand-blue/20 px-3 py-2 text-[11px] font-semibold text-brand-blue-800 dark:text-brand-blue-200 animate-slide-in">
-          {myToast.msg}
-        </div>
+        <a href="/donate" className="flex items-center gap-2 rounded-lg bg-brand-blue-50 dark:bg-brand-blue-950/40 border border-brand-blue/20 px-3 py-2 text-[11px] font-semibold text-brand-blue-800 dark:text-brand-blue-200 animate-slide-in hover:bg-brand-blue-100 dark:hover:bg-brand-blue-900/60 transition">
+          <span className="text-sm">🤲</span>
+          <span className="flex-1 min-w-0 truncate">{myToast.msg}</span>
+          <span className="text-brand-blue font-bold text-[10px] flex-shrink-0">→</span>
+        </a>
       )}
     </div>
   );
