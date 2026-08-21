@@ -15,7 +15,6 @@ import { getInitial } from '@/lib/initials';
 import { timeAgo } from '@/lib/timeAgo';
 import { parseServerDate } from '@/lib/dates';
 import { playArrivalSound } from '@/lib/sound';
-import { showToast } from '@/lib/toast';
 import Spinner from '@/components/Spinner';
 import {
   Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
@@ -456,6 +455,12 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   const isEdu = c.category !== 'health';
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
   const [phoneRevealed, setPhoneRevealed] = useState(false);
+  const [cardToast, setCardToast] = useState<{ emoji: string; msg: string } | null>(null);
+
+  function showCardToast(emoji: string, msg: string) {
+    setCardToast({ emoji, msg });
+    setTimeout(() => setCardToast(null), 4000);
+  }
 
   /** Ficha namba: "0712345678" → "0712 *** 5678" */
   function maskPhone(p: string) {
@@ -466,10 +471,10 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   async function onCall() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showToast({ emoji: '💰', title: 'Changia TZS 2,000 ili kuona namba' });
+      showCardToast('💰', 'Changia TZS 2,000 ili kuona namba');
       return;
     }
-    showToast({ emoji: '📞', title: `Piga ${c.full_name}` });
+    showCardToast('📞', `Piga ${c.full_name}`);
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
@@ -477,20 +482,20 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   function onSMS() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showToast({ emoji: '💰', title: 'Changia TZS 2,000 ili kuona namba' });
+      showCardToast('💰', 'Changia TZS 2,000 ili kuona namba');
       return;
     }
-    showToast({ emoji: '💬', title: `SMS kwa ${c.full_name}` });
+    showCardToast('💬', `SMS kwa ${c.full_name}`);
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
   function onWhatsApp() {
     if (!c.phone_alt) return;
     if (!isVerified) {
-      showToast({ emoji: '💰', title: 'Changia TZS 2,000 ili kuona namba' });
+      showCardToast('💰', 'Changia TZS 2,000 ili kuona namba');
       return;
     }
-    showToast({ emoji: '📱', title: `WhatsApp kwa ${c.full_name}` });
+    showCardToast('📱', `WhatsApp kwa ${c.full_name}`);
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
@@ -599,6 +604,12 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
           title={t('board.sms_btn')}>
           <MessageSquare size={12} /> <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
         </button>
+      {/* INLINE TOAST — karibu na buttons, siyo chini kwenye screen */}
+      {cardToast && (
+        <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-1.5 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
+          {cardToast.emoji} {cardToast.msg}
+        </div>
+      )}
         {c.phone_alt && (
           <button onClick={onWhatsApp} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
             title={t('board.wa_btn')}>
