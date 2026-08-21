@@ -187,7 +187,7 @@ export default function DashboardBoard() {
       return () => clearTimeout(tId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages.length]);
+  }, [messages.length, loadBoard]);
 
   const clearFilters = () => {
     setRegionSel(destRegionIds.length > 1 ? '__all__' : destRegionIds.length === 1 ? String(destRegionIds[0]) : '');
