@@ -572,11 +572,11 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
         </div>
       )}
 
-      {c.phone_primary && isVerified && (
+      {c.phone_primary && (
         <button onClick={() => setPhoneRevealed((v) => !v)}
           className="text-[11px] sm:text-xs text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0 text-left">
-          <Phone size={12} /> {phoneRevealed ? c.phone_primary : maskPhone(c.phone_primary)}
-          <span className="text-brand-grey-400 text-[10px] ml-0.5">{phoneRevealed ? '▲' : '▼'}</span>
+          <Phone size={12} /> {fresh || phoneRevealed || isVerified ? c.phone_primary : maskPhone(c.phone_primary)}
+          {!fresh && !phoneRevealed && isVerified && <span className="text-brand-grey-400 text-[10px] ml-0.5">▼</span>}
         </button>
       )}
 

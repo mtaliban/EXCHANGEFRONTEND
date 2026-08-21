@@ -840,6 +840,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
   const t = useT();
   const [full_name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [phone_alt, setPhoneAlt] = useState('');
   const [password, setPassword] = useState('changeme123');
   const [category, setCategory] = useState<string>('health');
   const [cadre_code, setCadre] = useState('');
@@ -911,7 +912,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
         facility_name: facility?.name ?? null,
       } : null;
       await adminCreateUser({
-        full_name, phone_primary: phone, password,
+        full_name, phone_primary: phone, phone_alt: phone_alt || undefined, password,
         category, cadre_code, subjects,
         current_station: station,
         desired_destinations: desired_destinations.length ? desired_destinations : undefined,
@@ -941,9 +942,10 @@ function CreateUserModal({ onClose, onCreated }: any) {
         <h2 className="text-xl font-bold flex items-center gap-2"><Plus size={18} /> {t('admin.create_title')}</h2>
         {error && <div className="bg-brand-red-50 text-brand-red text-sm rounded-lg p-2">{error}</div>}
         <div className="grid grid-cols-2 gap-3">
-          <div><label className="label">{t('admin.full_name')}</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} /></div>
-          <div><label className="label">{t('admin.phone')}</label><input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" /></div>
-          <div><label className="label">{t('admin.password')}</label><input className="input" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+          <div className="col-span-2"><label className="label">{t('admin.full_name')} *</label><input className="input" value={full_name} onChange={(e) => setName(e.target.value)} placeholder="Juma Kiswili" /></div>
+          <div><label className="label">{t('admin.phone')} *</label><input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" /></div>
+          <div><label className="label">{t('admin.phone')} WhatsApp</label><input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0755666777" /></div>
+          <div><label className="label">{t('admin.password')} *</label><input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
           <div><label className="label">{t('admin.department')}</label>
             <select className="input" value={category} onChange={(e) => { setCategory(e.target.value); setCadre(''); }}>
               {departments.length === 0 && <option value="health">{t('admin.health')}</option>}
