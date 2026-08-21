@@ -58,7 +58,7 @@ export default function DonatePage() {
         loadHistory();
         // SASISHA SESSION — is_verified=True → mtu aweze kupiga SMS/WA
         import('@/lib/api').then(({ getMe }) => {
-          getMe().then((me: any) => useAuth.getState().setUser(me)).catch(() => {});
+          getMe(true).then((me: any) => useAuth.getState().setUser(me)).catch(() => {}); // fresh=true
         });
         if (oid && p.data?.order_id === oid) {
           setTimeout(() => { setFlash(null); }, 5000);

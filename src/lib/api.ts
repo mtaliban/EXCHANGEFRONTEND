@@ -330,7 +330,7 @@ export const getFollowedRegions = () =>
 export const updateFollowedRegions = (region_ids: number[]) =>
   client.put<{ region_ids: number[] }>(`${USER}/users/me/followed-regions`, { region_ids }).then((r) => r.data);
 
-export const getMe = () => client.get(`${AUTH}/auth/me`).then((r) => r.data);
+export const getMe = (fresh = false) => client.get(`${AUTH}/auth/me`, { params: fresh ? { _t: Date.now() } : undefined, bypassCache: fresh } as any).then((r) => r.data);
 export const checkPhone = (phone: string) =>
   client.get<{ available: boolean; phone_normalized?: string; reason?: string }>(
     `${AUTH}/auth/check-phone/${encodeURIComponent(phone)}`

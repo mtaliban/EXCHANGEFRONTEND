@@ -131,9 +131,8 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     // PAPO HAPO (mtu anaweza kuona namba za simu bila refresh ya page).
     const unsubVerified = subscribe('user.verified', (p: any) => {
       if (p.user_id && p.user_id !== uid) return;
-      bustGetCache(); // FUSHA cache — getMe() lazima ipate is_verified mpya
-      getMe().then((me) => setUser(me)).catch(() => {});
-      // Toast inatoka kupitia MQTT notification (payment.approved) — usitume duplicate
+      bustGetCache();
+      getMe(true).then((me) => setUser(me)).catch(() => {}); // fresh=true → bypass cache
     });
     // Notifications center (payments, profile updates, registrations…)
     const unsub4 = subscribe('notification', (p) => {
