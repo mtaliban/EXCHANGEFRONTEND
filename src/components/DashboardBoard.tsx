@@ -454,7 +454,6 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   const fresh = now - createdTs < FRESH_MS;
   const isEdu = c.category !== 'health';
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
-  const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [cardToast, setCardToast] = useState<{ emoji: string; msg: string } | null>(null);
 
   function showCardToast(emoji: string, msg: string) {
@@ -462,11 +461,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
     setTimeout(() => setCardToast(null), 4000);
   }
 
-  /** Ficha namba: "0712345678" → "0712 *** 5678" */
-  function maskPhone(p: string) {
-    if (!p || p.length < 7) return p;
-    return p.slice(0, 4) + ' *** ' + p.slice(-4);
-  }
+
 
   async function onCall() {
     if (!c.phone_primary) return;
@@ -578,10 +573,9 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       )}
 
       {c.phone_primary && (
-        <button onClick={() => setPhoneRevealed((v) => !v)}
+        <button
           className="text-[11px] sm:text-xs text-brand-blue font-semibold hover:underline inline-flex items-center gap-1 break-all min-w-0 text-left">
-          <Phone size={12} /> {fresh || phoneRevealed || isVerified ? c.phone_primary : maskPhone(c.phone_primary)}
-          {!fresh && !phoneRevealed && isVerified && <span className="text-brand-grey-400 text-[10px] ml-0.5">▼</span>}
+          <Phone size={12} /> {c.phone_primary}
         </button>
       )}
 
@@ -604,12 +598,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
           title={t('board.sms_btn')}>
           <MessageSquare size={12} /> <span className="hidden min-[360px]:inline">{t('board.sms_btn')}</span>
         </button>
-      {/* INLINE TOAST — karibu na buttons, siyo chini kwenye screen */}
-      {cardToast && (
-        <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-1.5 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
-          {cardToast.emoji} {cardToast.msg}
-        </div>
-      )}
+
         {c.phone_alt && (
           <button onClick={onWhatsApp} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
             title={t('board.wa_btn')}>
@@ -620,6 +609,13 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
           </button>
         )}
       </div>
+
+      {/* INLINE TOAST — ndani ya card, chini ya buttons */}
+      {cardToast && (
+        <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-1.5 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
+          {cardToast.emoji} {cardToast.msg}
+        </div>
+      )}
     </div>
   );
 }
