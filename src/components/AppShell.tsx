@@ -20,8 +20,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, logout } = useAuth();
   const t = useT();
+  const routeCounts = useUnreadStore((s) => s.counts);
+  const clearRoute = useUnreadStore((s) => s.clear);
 
   const isAdmin = (user as any)?.is_admin;
+
+  // Clear badge ya route unayofungua
+  useEffect(() => {
+    if (pathname && routeCounts[pathname] > 0) clearRoute(pathname);
+  }, [pathname, routeCounts, clearRoute]);
 
   const links = isAdmin
     ? [
@@ -75,6 +82,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <nav className="p-2 flex md:flex-col overflow-x-auto md:overflow-visible">
             {links.map((l) => {
               const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
+              const badge = routeCounts[l.href] || 0;
               return (
                 <Link
                   key={l.href}
@@ -88,6 +96,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 >
                   <l.icon size={18} strokeWidth={2.2} className="flex-shrink-0" />
                   <span>{l.label}</span>
+                  {badge > 0 && (
+                    <span className="ml-auto w-5 h-5 rounded-full bg-brand-red text-white text-[10px] font-bold flex items-center justify-center">
+                      {badge > 9 ? '9+' : badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -142,6 +155,7 @@ function MobileTopBar({ links, user, onLogout }: {
   const pathname = usePathname();
   const t = useT();
   const initial = getInitial(user?.full_name);
+  const routeCounts = useUnreadStore((s) => s.counts);
 
   // Funga dropdown zote
   const closeAll = () => { setMenuOpen(false); setProfileOpen(false); };
@@ -165,6 +179,7 @@ function MobileTopBar({ links, user, onLogout }: {
             <div className="absolute left-0 top-full mt-1 z-[100] w-56 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
               {links.map((l) => {
                 const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
+                const badge = routeCounts[l.href] || 0;
                 return (
                   <Link
                     key={l.href}
@@ -179,6 +194,11 @@ function MobileTopBar({ links, user, onLogout }: {
                   >
                     <l.icon size={18} strokeWidth={2.2} className="flex-shrink-0" />
                     <span className="truncate">{l.label}</span>
+                    {badge > 0 && (
+                      <span className="ml-auto w-5 h-5 rounded-full bg-brand-red text-white text-[10px] font-bold flex items-center justify-center">
+                        {badge > 9 ? '9+' : badge}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
