@@ -78,12 +78,12 @@ export default function DashboardBoard() {
   // aonekane PAPO HAPO bila refresh ya page.
   const liveOnline = useLive((s) => s.onlineUserIds);
 
-  // GLOBAL TOAST — moja tu kwa wakati, kila click inareplace
-  const [cardToast, setCardToast] = useState<{ emoji: string; msg: string } | null>(null);
+  // GLOBAL TOAST — moja tu kwa wakati, inareplace kila click
+  const [cardToast, setCardToast] = useState<{ emoji: string; msg: string; userId: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function showCardToast(emoji: string, msg: string) {
+  function showCardToast(emoji: string, msg: string, userId: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    setCardToast({ emoji, msg });
+    setCardToast({ emoji, msg, userId });
     toastTimer.current = setTimeout(() => setCardToast(null), 4000);
   }
 
@@ -426,7 +426,7 @@ export default function DashboardBoard() {
               simu ya kawaida = 2 col, desktop = 3 col. Hakuna kujibana tena! */}
           <div className="grid grid-cols-[repeat(auto-fit,minmax(165px,1fr))] gap-2.5 md:gap-3">
             {pageItems.map((c: any) => (
-              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} me={user as any} myRegionName={myStation.region_name || ''} isVerified={!!(user as any)?.is_verified} showCardToast={showCardToast} />
+              <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} me={user as any} myRegionName={myStation.region_name || ''} isVerified={!!(user as any)?.is_verified} showCardToast={showCardToast} myToast={cardToast?.userId === c.user_id ? cardToast : null} />
             ))}
           </div>
 
@@ -450,17 +450,11 @@ export default function DashboardBoard() {
         </>
       )}
 
-      {/* GLOBAL TOAST — moja tu, inareplace kila click */}
-      {cardToast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] rounded-xl shadow-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-4 py-2.5 text-[12px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
-          {cardToast.emoji} {cardToast.msg}
-        </div>
-      )}
     </div>
   );
 }
 
-function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, showCardToast }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string; isVerified?: boolean; showCardToast: (emoji: string, msg: string) => void }) {
+function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, showCardToast, myToast }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string; isVerified?: boolean; showCardToast: (emoji: string, msg: string, userId: string) => void; myToast: { emoji: string; msg: string } | null }) {
   const t = useT();
   const initial = getInitial(c.full_name);
   const from = c.current_station;
@@ -477,10 +471,10 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   async function onCall() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('💰', 'Jiunge nasi kuchangia');
+      showCardToast('💰', 'Ili kuona namba, nenda Changia', c.user_id);
       return;
     }
-    showCardToast('📞', `Piga ${c.full_name}`);
+    showCardToast('📞', `Piga ${c.full_name}`, c.user_id);
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
@@ -488,20 +482,20 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   function onSMS() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('💰', 'Jiunge nasi kuchangia');
+      showCardToast('💰', 'Ili kuona namba, nenda Changia', c.user_id);
       return;
     }
-    showCardToast('💬', `SMS kwa ${c.full_name}`);
+    showCardToast('💬', `SMS kwa ${c.full_name}`, c.user_id);
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
   function onWhatsApp() {
     if (!c.phone_alt) return;
-    if (!isVerified) {      showCardToast('💰', 'Jiunge nasi kuchangia');
+    if (!isVerified) {      showCardToast('💰', 'Ili kuona namba, nenda Changia', c.user_id);
       return;
     }
 
-    showCardToast('📱', `WhatsApp kwa ${c.full_name}`);
+    showCardToast('📱', `WhatsApp kwa ${c.full_name}`, c.user_id);
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
@@ -615,6 +609,19 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
           </button>
         )}
       </div>
+
+      {/* TOAST — ndani ya card, chini ya buttons */}
+      {myToast && (
+        <div className="rounded-xl bg-brand-gold-100 dark:bg-brand-gold-900/30 border border-brand-gold-300 dark:border-brand-gold-700 px-3 py-2.5 text-[12px] font-medium animate-slide-in">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{myToast.emoji}</span>
+            <div className="flex-1">
+              <span className="text-brand-gold-700 dark:text-brand-gold-300 font-bold">{myToast.msg}</span>
+              <a href="/donate" className="block text-[11px] text-brand-blue font-semibold mt-1 hover:underline">Nenda Changia →</a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
