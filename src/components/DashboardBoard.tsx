@@ -454,12 +454,12 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   const fresh = now - createdTs < FRESH_MS;
   const isEdu = c.category !== 'health';
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
-  const [cardToast, setCardToast] = useState<{ msg: string } | null>(null);
+  const [cardToast, setCardToast] = useState<{ emoji: string; msg: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function showCardToast(msg: string) {
+  function showCardToast(emoji: string, msg: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    setCardToast({ msg });
+    setCardToast({ emoji, msg });
     toastTimer.current = setTimeout(() => setCardToast(null), 4000);
   }
 
@@ -468,10 +468,10 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   async function onCall() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('Jiunge nasi kuchangia');
+      showCardToast('💰', 'Jiunge nasi kuchangia');
       return;
     }
-    showCardToast(`Piga ${c.full_name}`);
+    showCardToast('📞', `Piga ${c.full_name}`);
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
@@ -479,20 +479,20 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
   function onSMS() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('Jiunge nasi kuchangia');
+      showCardToast('💰', 'Jiunge nasi kuchangia');
       return;
     }
-    showCardToast(`SMS kwa ${c.full_name}`);
+    showCardToast('💬', `SMS kwa ${c.full_name}`);
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
   function onWhatsApp() {
     if (!c.phone_alt) return;
-    if (!isVerified) {      showCardToast('Jiunge nasi kuchangia');
+    if (!isVerified) {      showCardToast('💰', 'Jiunge nasi kuchangia');
       return;
     }
 
-    showCardToast(`WhatsApp kwa ${c.full_name}`);
+    showCardToast('📱', `WhatsApp kwa ${c.full_name}`);
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
@@ -610,7 +610,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
       {/* INLINE TOAST — ndani ya card, chini ya buttons */}
       {cardToast && (
         <div className="rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-1.5 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in">
-          {cardToast.msg}
+          {cardToast.emoji} {cardToast.msg}
         </div>
       )}
     </div>
