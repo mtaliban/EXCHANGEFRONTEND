@@ -133,10 +133,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.user_id && p.user_id !== uid) return;
       bustGetCache(); // FUSHA cache — getMe() lazima ipate is_verified mpya
       getMe().then((me) => setUser(me)).catch(() => {});
-      showToast({
-        emoji: '✅',
-        title: 'Malipo yamethibitishwa',
-      });
+      // Toast inatoka kupitia MQTT notification (payment.approved) — usitume duplicate
     });
     // Notifications center (payments, profile updates, registrations…)
     const unsub4 = subscribe('notification', (p) => {
