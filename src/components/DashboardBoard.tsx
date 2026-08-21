@@ -18,7 +18,7 @@ import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
 import {
   Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
-  Zap, Filter,
+  Zap, Filter, HandCoins,
 } from 'lucide-react';
 
 const FRESH_MS = 30 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya NUSU SAA (30min)
@@ -471,10 +471,10 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   async function onCall() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('💰', 'Ili kuona namba, nenda Changia', c.user_id);
+      showCardToast('🤲', 'Jiunge nasi kuchangia upate namba', c.user_id);
       return;
     }
-    showCardToast('📞', `Piga ${c.full_name}`, c.user_id);
+    showCardToast('🤲', `Piga ${c.full_name}`, c.user_id);
     try { await logCall(c.user_id, 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
@@ -482,20 +482,20 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   function onSMS() {
     if (!c.phone_primary) return;
     if (!isVerified) {
-      showCardToast('💰', 'Ili kuona namba, nenda Changia', c.user_id);
+      showCardToast('🤲', 'Jiunge nasi kuchangia upate namba', c.user_id);
       return;
     }
-    showCardToast('💬', `SMS kwa ${c.full_name}`, c.user_id);
+    showCardToast('🤲', `SMS kwa ${c.full_name}`, c.user_id);
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
   function onWhatsApp() {
     if (!c.phone_alt) return;
-    if (!isVerified) {      showCardToast('💰', 'Ili kuona namba, nenda Changia', c.user_id);
+    if (!isVerified) {      showCardToast('🤲', 'Jiunge nasi kuchangia upate namba', c.user_id);
       return;
     }
 
-    showCardToast('📱', `WhatsApp kwa ${c.full_name}`, c.user_id);
+    showCardToast('🤲', `WhatsApp kwa ${c.full_name}`, c.user_id);
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
@@ -610,14 +610,14 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
         )}
       </div>
 
-      {/* TOAST — ndani ya card, chini ya buttons */}
+      {/* TOAST — ndani ya card, chini ya buttons — official style */}
       {myToast && (
-        <div className="rounded-xl bg-brand-gold-100 dark:bg-brand-gold-900/30 border border-brand-gold-300 dark:border-brand-gold-700 px-3 py-2.5 text-[12px] font-medium animate-slide-in">
+        <div className="rounded-lg border border-brand-blue/20 bg-brand-blue-50/80 dark:bg-brand-blue-950/30 px-3 py-2 text-[11px] font-medium animate-slide-in">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{myToast.emoji}</span>
-            <div className="flex-1">
-              <span className="text-brand-gold-700 dark:text-brand-gold-300 font-bold">{myToast.msg}</span>
-              <a href="/donate" className="block text-[11px] text-brand-blue font-semibold mt-1 hover:underline">Nenda Changia →</a>
+            <HandCoins size={14} className="text-brand-blue flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-brand-grey-800 dark:text-brand-grey-200 font-semibold block truncate">{myToast.msg}</span>
+              <a href="/donate" className="text-[10px] text-brand-blue font-bold hover:underline">Nenda Changia →</a>
             </div>
           </div>
         </div>

@@ -163,12 +163,11 @@ function showToast(opts: {
 }) {
   const container = ensureToastContainer();
   const el = document.createElement('div');
-  el.className = 'pointer-events-auto cursor-pointer w-fit min-w-[180px] max-w-[280px] rounded-xl shadow-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2.5 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-xl';
-  // Emoji + title — kama ilivyokuwa zamani
-  const emoji = opts.emoji || '🔔';
+  el.className = 'pointer-events-auto cursor-pointer w-fit min-w-[180px] max-w-[280px] rounded-lg shadow-md border border-brand-blue/20 bg-white dark:bg-brand-grey-900 px-3 py-2.5 text-[11px] text-brand-grey-800 dark:text-brand-grey-200 font-medium animate-slide-in transition hover:shadow-lg';
+  // Official style — line ya juu = title, line ya chini = sub-title
   const titleEl = document.createElement('div');
-  titleEl.className = 'font-bold text-brand-blue-800 dark:text-brand-blue-200 leading-snug';
-  titleEl.textContent = `${emoji} ${opts.title}`;
+  titleEl.className = 'font-bold text-brand-grey-900 dark:text-white leading-snug text-[12px]';
+  titleEl.textContent = opts.title;
   el.appendChild(titleEl);
   const close = () => {
     el.style.opacity = '0';
