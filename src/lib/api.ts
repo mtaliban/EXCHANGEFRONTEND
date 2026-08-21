@@ -39,25 +39,70 @@ function _lsWrite(key: string, val: { at: number; payload: any }) {
 }
 
 const _origGet = client.get.bind(client);
+/**
+ * Stale-while-revalidate cache:
+ *  1. Cache HIT (ndani ya TTL) → return mara moja (hakuna fetch).
+ *  2. Cache STALE (imepita TTL lakini data bado ipo) → return data ya zamani
+ *     MARA MOJA + fetch data mpya nyuma (background revalidation).
+ *  3. Cache MISS (hakuna data) → fetch + spinner.
+ *
+ * Hii inafanya pages ziwe FAST (data ya zamani = zero wait) na data mpya
+ * ijayo automatically baada ya second.
+ */
+const _pendingFetches = new Map<string, Promise<any>>();
 (client.get as any) = (url: string, config?: any) => {
   const key = url + '|' + JSON.stringify(config?.params || {});
-  // config.ttl hufanya data tuli (mikoa/wilaya/vituo) ihifadhiwe siku nzima —
-  // kurudi kwenye pages hakupigi API tena; pages zinajitokeza INSTANT.
   const ttl = config?.ttl ?? _GET_TTL;
   const isStatic = ttl === _STATIC_TTL;
+  const isFresh = (hit: { at: number }) => Date.now() - hit.at < ttl;
+
   if (!config?.bypassCache) {
+    // 1. CACHE HIT — data bado ni mpya
     const hit = _getCache.get(key);
-    if (hit && Date.now() - hit.at < ttl) return Promise.resolve(hit.data);
+    if (hit && isFresh(hit)) return Promise.resolve(hit.data);
+
+    // 2. STALE — data ipo lakini imepita TTL → return zamani + revalidate background
+    if (hit) {
+      // Return stale data immediately (fast page load)
+      const staleResult = Promise.resolve(hit.data);
+      // Background revalidation — fetch fresh na uweke kwenye cache
+      if (!_pendingFetches.has(key)) {
+        const freshening = _origGet(url, config).then((res: any) => {
+          _getCache.set(key, { at: Date.now(), data: res });
+          if (isStatic) _lsWrite(key, { at: Date.now(), payload: res.data });
+          return res;
+        }).finally(() => _pendingFetches.delete(key));
+        _pendingFetches.set(key, freshening);
+      }
+      return staleResult;
+    }
+
+    // Static data: localStorage hit
     if (isStatic) {
-      // First fetch ipo kwenye localStorage? Tuma mara moja (hakuna spinner!).
       const saved = _lsRead(key);
       if (saved && Date.now() - saved.at < ttl) {
         const restored = { data: saved.payload };
         _getCache.set(key, { at: saved.at, data: restored });
         return Promise.resolve(restored);
       }
+      // Stale localStorage data — return + revalidate
+      if (saved) {
+        const restored = { data: saved.payload };
+        _getCache.set(key, { at: saved.at, data: restored });
+        if (!_pendingFetches.has(key)) {
+          const freshening = _origGet(url, config).then((res: any) => {
+            _getCache.set(key, { at: Date.now(), data: res });
+            _lsWrite(key, { at: Date.now(), payload: res.data });
+            return res;
+          }).finally(() => _pendingFetches.delete(key));
+          _pendingFetches.set(key, freshening);
+        }
+        return Promise.resolve(restored);
+      }
     }
   }
+
+  // 3. CACHE MISS — fetch fresh data (spinner onyeshwa)
   return _origGet(url, config).then((res: any) => {
     _getCache.set(key, { at: Date.now(), data: res });
     if (isStatic) _lsWrite(key, { at: Date.now(), payload: res.data });
