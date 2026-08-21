@@ -71,17 +71,11 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     const uid = (user as any)?.user_id;
     const unsub1 = subscribe('match.found', (p) => {
       const c = p.candidate || {};
-      // Sauti ya ARRIVAL: DashboardBoard inaipiga kwenye /dashboard; kwenye pages
-      // NYINGINE inapigwa hapa (ila tupige moja tu — siyo mara mbili kwenye
-      // dashboard wakati board iko wazi). HESHEMU MUTE: ikiwa mtumiaji amezima
-      // sauti (🔇) asipate sauti hapa pia — sambamba na handlers wengine.
       if (isSoundEnabled() && !pathname?.startsWith('/dashboard')) playArrivalSound();
       showToast({
         emoji: '🤝',
-        title: 'Mtu Mpya wa Kubadilishana Nawe!',
-        body: `${c.full_name} (${c.cadre_display || 'Mtumishi'}) — ${c.current_station?.district_name || ''}, ${c.current_station?.region_name || ''}`,
+        title: `${c.full_name || 'Mtu'} — ${c.current_station?.region_name || 'Kumefika'}`,
         onClick: () => router.push('/dashboard'),
-        ago: p.occurred_at,
       });
     });
     const unsub2 = subscribe('call.initiated', (p) => {
@@ -89,10 +83,8 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (isSoundEnabled()) playPingSound();
       showToast({
         emoji: '📞',
-        title: `${p.from_full_name || 'Mtu'} amekupigia`,
-        body: 'Simu iliyoshindwa — mpigie sasa',
+        title: `${p.from_full_name || 'Mtu'} — amekupigia`,
         onClick: () => router.push('/dashboard'),
-        ago: p.initiated_at,
       });
     });
     // REAL-TIME ACCOUNT CONTROL (admin):
@@ -106,7 +98,6 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       showToast({
         emoji: '🚫',
         title: 'Akaunti imesitishwa',
-        body: p.message || 'Akaunti yako imesitishwa na admin — wasiliana naye.',
       });
       logout();
       router.replace('/login');
@@ -116,23 +107,19 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       showToast({
         emoji: '🗑️',
         title: 'Akaunti imefutwa',
-        body: p.message || 'Akaunti yako imefutwa na admin.',
       });
       logout();
       router.replace('/login');
     });
     const unsubUpd = subscribe('user.updated_by_admin', (p) => {
       if (p.user_id && p.user_id !== uid) return;
-      // Session inasasishwa PAPO HAPO kutoka server (taarifa kamili) — bila refresh.
       getMe().then((me) => setUser(me)).catch(() => {});
       const fields = (p.changed_fields || []).filter((f: string) => f !== 'status');
       if (fields.length > 0) {
         showToast({
           emoji: '✏️',
-          title: 'Taarifa zako zimesasishwa',
-          body: 'Admin amebadilisha taarifa zako — sasa zinaonekana mpya.',
+          title: 'Taarifa zimesasishwa',
           onClick: () => router.push('/profile'),
-          ago: p.occurred_at,
         });
       }
     });
@@ -147,8 +134,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       getMe().then((me) => setUser(me)).catch(() => {});
       showToast({
         emoji: '✅',
-        title: 'Malipo Yamedhibitishwa!',
-        body: p.message || 'Sasa unaweza kuona namba za simu za washirika wako.',
+        title: 'Malipo yamethibitishwa',
       });
     });
     // Notifications center (payments, profile updates, registrations…)
@@ -160,9 +146,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       showToast({
         emoji,
         title: p.title || 'Arifa mpya',
-        body: p.body || '',
         onClick: () => router.push(notificationRoute(p.type, p.data, (user as any)?.is_admin)),
-        ago: p.occurred_at,
       });
       // Badge ya route husika — ongeza 1 kwenye menu item inayofaa
       import('@/lib/unreadStore').then(({ useUnreadStore }) => {
@@ -180,27 +164,21 @@ function showToast(opts: {
 }) {
   const container = ensureToastContainer();
   const el = document.createElement('div');
-  // SAWA NA guide toast: rounded-lg, border-brand-blue/30, bg-brand-blue-50, text-[11px]
-  el.className = 'pointer-events-auto cursor-pointer w-fit min-w-[180px] max-w-[340px] rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-md';
+  // FUPI: Title tu — body imeondolewa kwa notifications fupi
+  el.className = 'pointer-events-auto cursor-pointer w-fit min-w-[180px] max-w-[280px] rounded-lg border border-brand-blue/30 bg-brand-blue-50 dark:bg-brand-blue-950/40 px-3 py-2 text-[11px] text-brand-blue-700 dark:text-brand-blue-300 font-medium animate-slide-in transition hover:shadow-md';
   const emoji = opts.emoji || '🔔';
-  // Title line
+  // Title line — FUPI: emoji + title tu
   const titleEl = document.createElement('div');
-  titleEl.className = 'font-bold text-brand-blue-800 dark:text-brand-blue-200';
+  titleEl.className = 'font-bold text-brand-blue-800 dark:text-brand-blue-200 leading-snug';
   titleEl.textContent = `${emoji} ${opts.title}`;
   el.appendChild(titleEl);
-  if (opts.body) {
-    const bodyEl = document.createElement('div');
-    bodyEl.className = 'text-brand-blue-500 dark:text-brand-blue-400 font-normal mt-0.5 leading-snug';
-    bodyEl.textContent = opts.body;
-    el.appendChild(bodyEl);
-  }
   const close = () => {
     el.style.opacity = '0';
     setTimeout(() => el.remove(), 200);
   };
   el.addEventListener('click', () => { opts.onClick?.(); close(); });
   container.appendChild(el);
-  setTimeout(close, 6000);
+  setTimeout(close, 5000);
 }
 
 function ensureToastContainer(): HTMLElement {

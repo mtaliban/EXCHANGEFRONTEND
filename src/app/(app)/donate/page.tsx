@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getDonationInfo, submitDonation, myDonations, sendPaymentMessage, getPaymentMessages } from '@/lib/api';
+import { getDonationInfo, submitDonation, myDonations, sendPaymentMessage, getPaymentMessages, bustGetCache } from '@/lib/api';
 import { parseServerDate } from '@/lib/dates';
 import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
@@ -53,23 +53,26 @@ export default function DonatePage() {
     const un = subscribe('notification', (p: any) => {
       const oid = orderRef.current?.order_id;
       if (p.type === 'payment.approved') {
-        setFlash({ type: 'success', msg: p.body || 'Malipo yako yamethibitishwa!' });
+        setFlash({ type: 'success', msg: '✓ Malipo yamethibitishwa' });
+        bustGetCache();
         loadHistory();
         if (oid && p.data?.order_id === oid) {
           setTimeout(() => { setFlash(null); }, 5000);
         }
       } else if (p.type === 'payment.rejected') {
-        const reason = p.body || 'Malipo yako yamekataliwa.';
-        setFlash({ type: 'info', msg: reason });
+        setFlash({ type: 'info', msg: '✗ Malipo yamekataliwa' });
+        bustGetCache();
         loadHistory();
         if (oid && p.data?.order_id === oid) {
           setTimeout(() => { setFlash(null); }, 8000);
         }
       } else if (p.type === 'payment.reply') {
-        setFlash({ type: 'info', msg: p.body || 'Admin amejibu kuhusu malipo yako.' });
+        setFlash({ type: 'info', msg: 'Admin amejibu' });
+        bustGetCache();
         loadHistory();
         setTimeout(() => { setFlash(null); }, 6000);
       } else if (p.type === 'payment.submitted') {
+        bustGetCache();
         loadHistory();
       }
     });

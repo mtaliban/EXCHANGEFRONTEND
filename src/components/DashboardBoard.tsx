@@ -18,7 +18,7 @@ import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
 import {
   Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
-  Stethoscope, Zap, Filter, HandCoins, BookOpen,
+  Zap, Filter, HandCoins,
 } from 'lucide-react';
 
 const FRESH_MS = 30 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya NUSU SAA (30min)
@@ -537,7 +537,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified }: {
           {/* NI NANI: idara (Afya/Elimu) + kada — majina yote yanaonekana (hakuna kukata) */}
           <div className="flex items-center gap-1 flex-wrap mt-0.5">
             <span className="text-[10px] font-semibold text-brand-blue-600 dark:text-brand-blue-400">
-              {isEdu ? <BookOpen size={11} className="inline" /> : <Stethoscope size={11} className="inline" />} {isEdu ? t('label.category_education') : t('label.category_health')}
+              {isEdu ? t('label.category_education') : t('label.category_health')}
             </span>
             <span className="text-[11px] font-medium text-brand-grey-600 dark:text-brand-grey-300 break-words min-w-0 leading-snug">
               {c.cadre_display || c.cadre_code}

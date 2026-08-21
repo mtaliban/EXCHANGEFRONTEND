@@ -20,6 +20,7 @@ export const NOTIFICATION_TYPE_META: Record<string, { icon: LucideIcon; color: s
   'feedback.replied': { icon: ClipboardList, color: 'blue', emoji: '💬' },
   'payment.message': { icon: MessageCircle, color: 'blue', emoji: '💬' },
   'payment.reply': { icon: MessageCircle, color: 'blue', emoji: '💬' },
+  'password_reset.new': { icon: Bell, color: 'blue', emoji: '🔑' },
 };
 
 export const DEFAULT_NOTIFICATION_ICON: LucideIcon = Bell;
@@ -43,6 +44,7 @@ export function notificationRoute(type: string, data: any, isAdmin?: boolean): s
     case 'feedback.replied': return '/feedback';
     case 'payment.message': return isAdmin ? '/admin/payments' : '/donate';
     case 'payment.reply': return '/donate';
+    case 'password_reset.new': return isAdmin ? '/admin/password-resets' : '/dashboard';
     default: return '/dashboard';
   }
 }
