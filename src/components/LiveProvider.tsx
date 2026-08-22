@@ -166,10 +166,10 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       import('@/lib/unreadStore').then(({ useUnreadStore }) => {
         const route = notificationRoute(p.type, p.data, (user as any)?.is_admin);
         if (!route.startsWith('tel:')) useUnreadStore.getState().bump(route);
-        // Admin: kila notification pia ibebe badge kwenye /admin/events + /admin (Statistics)
-        if ((user as any)?.is_admin) {
-          if (route !== '/admin/events') useUnreadStore.getState().bump('/admin/events');
-          if (route !== '/admin') useUnreadStore.getState().bump('/admin');
+        // Admin: kila notification pia ibebe badge kwenye /admin/events
+        // (sio /admin/Statistics — user haitaki badge pale)
+        if ((user as any)?.is_admin && route !== '/admin/events') {
+          useUnreadStore.getState().bump('/admin/events');
         }
       });
     });

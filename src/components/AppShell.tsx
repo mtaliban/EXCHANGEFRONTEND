@@ -55,8 +55,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     router.replace('/login');
   }
 
-  // Load unread count mara ya kwanza
-  useEffect(() => { useUnreadStore.getState().refresh(); }, []);
+  // Load unread count mara ya kwanza + poll kila 30s (ili badges zipatikane
+  // hata mtu akiwa offline na kurejea online)
+  useEffect(() => {
+    useUnreadStore.getState().refresh();
+    const interval = setInterval(() => {
+      useUnreadStore.getState().refresh();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-brand-grey-50">

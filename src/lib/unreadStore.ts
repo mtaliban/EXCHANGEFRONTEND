@@ -54,21 +54,38 @@ export const useUnreadStore = create<RouteUnreadState>((set, get) => ({
   },
 
   /**
-   * Login = fresh start — SOMA ZOTE kwenye backend kabla ya kuhesabu.
-   * Hii inahakikisha mtu akiingia tena hana badges za kale.
+   * Login / offline→online — SOMA notifications zilizosomwa (unread)
+   * na hesabu kwa kila route. HATUFUTI notifications (markAllRead) —
+   * mtumiaji aone badges pale ANAPOINGIA kwenye page husika.
+   * Hii inahakikisha mtu akiingia tena ANAONA badges za arifa ambazo
+   * hajawahi kusoma hata kama alikuwa offline.
    */
   refresh: async () => {
     try {
-      // Soma ZOTE kwanza kabla ya kuhesabu — hakuna badges za kale
-      await markAllNotificationsRead().catch(() => {});
       bustGetCache();
+      // is_admin? — tunahitaji kujua ili notificationRoute itumie route sahihi
+      let isAdmin = false;
+      try {
+        const raw = localStorage.getItem('kv_auth');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          isAdmin = !!parsed?.state?.user?.is_admin;
+        }
+      } catch {}
       const data = await getNotifications(100, true);
+      // BADGE-ABLE routes tu — hizi ndizo zinapaswa kuonyesha namba kwenye menu
+      const badgeRoutes = new Set([
+        '/admin/users', '/admin/payments', '/admin/feedback',
+        '/admin/password-resets', '/admin/events',
+        '/dashboard', '/donate', '/feedback',
+      ]);
       const counts: Record<string, number> = {};
       const routeNotifIds: Record<string, string[]> = {};
       for (const n of data.notifications) {
         if (n.read) continue;
-        const route = notificationRoute(n.type, n.data, false);
+        const route = notificationRoute(n.type, n.data, isAdmin);
         if (route.startsWith('tel:')) continue;
+        if (!badgeRoutes.has(route)) continue;
         counts[route] = (counts[route] || 0) + 1;
         if (!routeNotifIds[route]) routeNotifIds[route] = [];
         routeNotifIds[route].push(n.notification_id);

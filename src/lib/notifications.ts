@@ -51,8 +51,19 @@ export function notificationRoute(type: string, data: any, isAdmin?: boolean): s
       case 'data.subject_added':
       case 'data.cadre_added':
       case 'data.region_added':
-      case 'data.district_added': return '/admin/data';
-      case 'announcement': return '/admin/announcements';
+      case 'data.district_added':
+      case 'data.department_added':
+      case 'data.department_updated':
+      case 'data.cadre_updated':
+      case 'data.subject_updated':
+      case 'data.region_updated':
+      case 'data.district_updated':
+      case 'data.department_deleted':
+      case 'data.cadre_deleted':
+      case 'data.subject_deleted':
+      case 'data.region_deleted':
+      case 'data.district_deleted':
+      case 'announcement': return '/admin';
       default: return '/admin';
     }
   }
