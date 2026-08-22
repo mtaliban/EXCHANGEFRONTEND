@@ -22,6 +22,8 @@ export default function FeedbackPage() {
   const [ok, setOk] = useState('');
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fbPage, setFbPage] = useState(1);
+  const FB_PAGE = 2;
 
   const { subscribe } = useLive();
 
@@ -110,30 +112,56 @@ export default function FeedbackPage() {
           <div className="text-sm text-brand-grey-500 dark:text-brand-grey-400">{t('fb.empty')}</div>
         ) : (
           <div className="space-y-2">
-            {items.map((f) => {
-              const created = parseServerDate(f.created_at);
+            {(() => {
+              const fbTotal = Math.max(1, Math.ceil(items.length / FB_PAGE));
+              const fbSafe = Math.min(fbPage, fbTotal);
+              const fbItems = items.slice((fbSafe - 1) * FB_PAGE, fbSafe * FB_PAGE);
               return (
-                <div key={f.id} className="card">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      f.status === 'replied' ? 'bg-green-100 text-green-700' : 'bg-brand-gold-100 text-brand-gold-600'
-                    }`}>
-                      {f.status === 'replied' ? '✓ ' + t('fb.replied') : t('fb.open')}
-                    </span>
-                    <span className="text-[11px] text-brand-grey-400">
-                      {created ? timeAgo(created.getTime(), lang) : ''}
-                    </span>
-                  </div>
-                  <p className="text-sm text-brand-grey-700 dark:text-brand-grey-300 whitespace-pre-wrap break-words">{f.message}</p>
-                  {f.admin_reply && (
-                    <div className="mt-2 rounded-lg bg-brand-blue-50 dark:bg-brand-blue-100/10 p-2.5">
-                      <div className="text-[10px] font-bold text-brand-blue uppercase tracking-wide mb-0.5">{t('fb.admin_reply')}</div>
-                      <div className="text-sm text-brand-grey-800 dark:text-brand-grey-200 whitespace-pre-wrap break-words">{f.admin_reply}</div>
+                <>
+                  {fbItems.map((f) => {
+                    const created = parseServerDate(f.created_at);
+                    return (
+                      <div key={f.id} className="card">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            f.status === 'replied' ? 'bg-green-100 text-green-700' : 'bg-brand-gold-100 text-brand-gold-600'
+                          }`}>
+                            {f.status === 'replied' ? '✓ ' + t('fb.replied') : t('fb.open')}
+                          </span>
+                          <span className="text-[11px] text-brand-grey-400">
+                            {created ? timeAgo(created.getTime(), lang) : ''}
+                          </span>
+                        </div>
+                        <p className="text-sm text-brand-grey-700 dark:text-brand-grey-300 whitespace-pre-wrap break-words">{f.message}</p>
+                        {f.admin_reply && (
+                          <div className="mt-2 rounded-lg bg-brand-blue-50 dark:bg-brand-blue-100/10 p-2.5">
+                            <div className="text-[10px] font-bold text-brand-blue uppercase tracking-wide mb-0.5">{t('fb.admin_reply')}</div>
+                            <div className="text-sm text-brand-grey-800 dark:text-brand-grey-200 whitespace-pre-wrap break-words">{f.admin_reply}</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {items.length > FB_PAGE && (
+                    <div className="flex items-center justify-center gap-3 pt-1">
+                      <button type="button" disabled={fbSafe <= 1}
+                        onClick={() => setFbPage(fbSafe - 1)}
+                        className="min-w-[44px] min-h-[44px] px-3 rounded-xl border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition active:scale-95">
+                        ← Rudi
+                      </button>
+                      <span className="text-sm font-bold text-brand-grey-500 px-2">
+                        {fbSafe} / {fbTotal}
+                      </span>
+                      <button type="button" disabled={fbSafe >= fbTotal}
+                        onClick={() => setFbPage(fbSafe + 1)}
+                        className="min-w-[44px] min-h-[44px] px-3 rounded-xl border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition active:scale-95">
+                        Endelea →
+                      </button>
                     </div>
                   )}
-                </div>
+                </>
               );
-            })}
+            })()}
           </div>
         )}
       </div>
