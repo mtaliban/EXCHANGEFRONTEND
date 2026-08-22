@@ -114,9 +114,9 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
         </div>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4">
-        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none py-3 px-6 text-base font-bold">{t('wizard.back')}</button>
-        <button type="submit" className="btn-primary flex-1 sm:flex-none py-3 px-6 text-base font-bold">{t('wizard.next')}</button>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
+        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary flex-1 sm:flex-none">{t('wizard.next')}</button>
       </div>
     </form>
   );

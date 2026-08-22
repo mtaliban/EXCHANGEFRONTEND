@@ -211,8 +211,8 @@ export default function Step1Identity({ initial, onNext }: Props) {
         </div>
       </div>
 
-      <div className="flex justify-end pt-3">
-        <button type="submit" className="btn-primary py-3 px-8 text-base font-bold">{t('wizard.next')}</button>
+      <div className="flex justify-end pt-2">
+        <button type="submit" className="btn-primary">{t('wizard.next')}</button>
       </div>
     </form>
   );
