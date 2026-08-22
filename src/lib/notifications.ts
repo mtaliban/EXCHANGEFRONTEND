@@ -27,7 +27,6 @@ export const DEFAULT_NOTIFICATION_ICON: LucideIcon = Bell;
 
 export function notificationRoute(type: string, data: any, isAdmin?: boolean): string {
   if (isAdmin) {
-    // ADMIN: kila notification inaonekana kwenye menu husika (isipokuwa wasifu/ripoti/matangazo)
     switch (type) {
       case 'user.registered':
       case 'user.profile_updated':
@@ -35,7 +34,8 @@ export function notificationRoute(type: string, data: any, isAdmin?: boolean): s
       case 'user.destination_changed':
       case 'user.updated_by_admin':
       case 'user.deleted':
-      case 'match.found': return '/admin';
+      case 'match.found':
+      case 'call.initiated': return '/admin/users';
       case 'payment.submitted':
       case 'payment.approved':
       case 'payment.rejected':
@@ -52,7 +52,6 @@ export function notificationRoute(type: string, data: any, isAdmin?: boolean): s
       case 'data.cadre_added':
       case 'data.region_added':
       case 'data.district_added': return '/admin/data';
-      case 'call.initiated': return '/admin';
       case 'announcement': return '/admin/announcements';
       default: return '/admin';
     }
