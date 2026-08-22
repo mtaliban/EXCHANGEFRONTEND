@@ -153,7 +153,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'step2.title': 'Hatua 2: Kada Yako', 'step2.department': 'Idara',
     'step2.health': 'Idara ya Afya', 'step2.education': 'Idara ya Elimu',
     'step2.cadre': 'Kada / Cheo Chako', 'step2.choose_cadre': '-- Chagua kada --',
-    'step2.subject': 'Somo Unalofundisha (chagua yote yanayohusika)',
+    'step2.subject': 'Somo Unalofundisha',
     'step2.subject_optional': '(Hiari) — chagua masomo unayofundisha ili kupata mwenza sahihi zaidi.',
     'step2.err_choose': 'Tafadhali chagua idara na kada.',
     'step2.err_subject': 'Chagua angalau somo moja.',

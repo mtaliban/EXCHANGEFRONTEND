@@ -97,7 +97,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
     if (!category || !cadre_code) { setError(t('step2.err_choose')); return; }
-    if (showSubjects && selectedSubjects.length < 1) { setError('Chagua angalau somo moja (masomo ni lazima).'); return; }
+    if (showSubjects && selectedSubjects.length < 1) { setError('Chagua somo unalofundisha — ni lazima.'); return; }
     onNext({ category, cadre_code, subjects: selectedSubjects });
   }
 
@@ -129,7 +129,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
         <div>
           <label className="label flex items-center gap-1.5">
             {t('step2.subject')} <span className="text-brand-red text-xs">*</span>
-            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">(chagua masomo — lazima angalau 1)</span>
+            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">(lazima angalau somo 1)</span>
           </label>
 
           {loadingSubjects ? (
@@ -139,7 +139,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
             </div>
           ) : (
             <div className="space-y-1">
-              <p className="text-xs text-brand-grey-500 mb-2">Chagua angalau somo moja (max 2)</p>
+              <p className="text-xs text-brand-grey-500 mb-2">Chagua somo unalofundisha</p>
               {subjects.map((s) => {
                 const checked = selectedSubjects.includes(s.code);
                 const disabled = !checked && selectedSubjects.length >= 2;

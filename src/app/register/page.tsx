@@ -5,22 +5,37 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import RegisterWizard from '@/components/RegisterWizard/RegisterWizard';
+import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 
 export default function RegisterPage() {
   const t = useT();
   const router = useRouter();
+  const setAuth = useAuth((s) => s.setAuth);
   const toastShown = useRef(false);
 
   function onComplete(data?: any) {
-    const phone = data?.phone_primary || '';
-    // Show official toast — moja tu
+    if (!data?.access_token) {
+      // Fallback: kama hakuna token, elekeza login
+      router.push(`/login?phone=${encodeURIComponent(data?.phone_primary || '')}`);
+      return;
+    }
+    // AUTO-LOGIN — mtu amesajiliwa, aingie moja kwa moja
     if (!toastShown.current) {
       toastShown.current = true;
       showRegToast();
     }
-    // Redirect to login immediately — phone auto-fill
-    router.push(`/login?phone=${encodeURIComponent(phone)}`);
+    setAuth(data.access_token, {
+      user_id: data.user_id,
+      full_name: data.full_name || '',
+      phone_primary: data.phone_primary || '',
+      category: data.category,
+      cadre_code: data.cadre_code,
+      is_admin: false,
+      is_verified: false,
+    });
+    // Redirect dashboard mara moja
+    router.push('/dashboard');
   }
 
   return (
@@ -53,17 +68,30 @@ export default function RegisterPage() {
   );
 }
 
+/** Toast — centered, kisomi, ya kiserikali */
 function showRegToast() {
   let c = document.getElementById('kv-toasts');
   if (!c) {
     c = document.createElement('div');
     c.id = 'kv-toasts';
-    c.className = 'fixed bottom-24 left-3 sm:left-auto sm:right-4 sm:top-3 sm:bottom-auto z-[100] flex flex-col items-end gap-2 pointer-events-none';
+    c.className = 'fixed inset-x-0 top-6 z-[100] flex justify-center pointer-events-none';
     document.body.appendChild(c);
   }
   const el = document.createElement('div');
-  el.className = 'pointer-events-auto w-fit min-w-[200px] max-w-[300px] rounded-lg shadow-md border border-green-300 bg-white dark:bg-brand-grey-900 px-4 py-3 text-[12px] font-medium animate-slide-in';
-  el.innerHTML = '<div class="font-bold text-green-700 dark:text-green-400">Usajili umefanikiwa — karibu!</div><div class="text-brand-grey-500 mt-0.5">Unaelekezwa kwenye login...</div>';
+  el.className = 'pointer-events-auto w-fit max-w-sm rounded-xl shadow-lg border border-green-300 bg-white dark:bg-brand-grey-900 px-5 py-3.5 text-sm animate-slide-in';
+  el.innerHTML = `
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div>
+        <div class="font-bold text-green-700 dark:text-green-400">Usajili umefanikiwa</div>
+        <div class="text-brand-grey-500 text-xs mt-0.5">Unaelekezwa kwenye dashibodi...</div>
+      </div>
+    </div>
+  `;
   c.appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3000);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 2500);
 }

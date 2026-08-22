@@ -40,9 +40,9 @@ export default function RegisterWizard({ onComplete }: Props) {
     setSubmitting(true);
     setError(null);
     try {
-      await register(merged as RegisterPayload);
-      // Usajili umekamilika — success screen + elekeza login.
-      onComplete(merged);
+      const res = await register(merged as RegisterPayload);
+      // Backend inareturn access_token — tumia ku-auto-login
+      onComplete({ ...merged, access_token: res.access_token, user_id: res.user_id });
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       setError(
