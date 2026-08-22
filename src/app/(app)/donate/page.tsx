@@ -27,7 +27,7 @@ export default function DonatePage() {
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
-  const [status, setStatus] = useState<'idle' | 'sent'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [history, setHistory] = useState<any[]>([]);
   const [historyFilter, setHistoryFilter] = useState<HistoryStatus>('');
   const [copied, setCopied] = useState(false);
@@ -112,12 +112,12 @@ export default function DonatePage() {
     const text = smsText.trim();
     if (!amount || amount < 500) { setError(t('donate.err_amount')); return; }
     if (text.length < 3) { setError(t('donate.err_sms')); return; }
-    // Moja kwa moja "Sent" — hakuna spinner/processing
-    setStatus('sent');
+    setStatus('sending');
     try {
       const o = await submitDonation({ amount: amount as number, phone, sms_text: text, purpose: 'donation' });
       setOrder(o);
       orderRef.current = o;
+      setStatus('sent');
     } catch (err: any) {
       setStatus('idle');
       setError(err?.response?.data?.detail || t('donate.err_network'));
@@ -129,7 +129,7 @@ export default function DonatePage() {
     setOrder(null); setSmsText(''); setStatus('idle'); setError('');
   }
 
-  const busy = status === 'sent';
+  const busy = status === 'sending' || status === 'sent';
 
   const filteredHistory = historyFilter
     ? history.filter((p) => p.status === historyFilter)
@@ -203,7 +203,11 @@ export default function DonatePage() {
 
         {error && <div className="bg-brand-red-50 dark:bg-brand-red-100/20 text-brand-red rounded-lg p-2 text-sm">{error}</div>}
 
-        {status === 'sent' ? (
+        {status === 'sending' ? (
+          <button disabled className="btn-primary w-full justify-center opacity-70">
+            {t('donate.sending')}
+          </button>
+        ) : status === 'sent' ? (
           <button disabled className="btn-primary w-full justify-center opacity-70">
             {t('donate.sent')}
           </button>
