@@ -17,6 +17,7 @@ export default function FeedbackPage() {
   const lang = useI18n((s) => s.lang);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
   const [err, setErr] = useState('');
   const [ok, setOk] = useState('');
   const [items, setItems] = useState<any[]>([]);
@@ -59,7 +60,9 @@ export default function FeedbackPage() {
       await submitFeedback({ subject, message: text });
       setOk('✓ Maoni yako yametumwa kwa admin — utajibiwa hivi karibuni.');
       setMessage('');
+      setSent(true);
       reload();
+      setTimeout(() => setSent(false), 2000);
     } catch (e: any) {
       setErr(e?.response?.data?.detail || 'Imeshindikana kutuma — jaribu tena.');
     } finally { setSending(false); }
@@ -94,7 +97,7 @@ export default function FeedbackPage() {
         <div className="flex justify-end">
           <button onClick={submit} disabled={sending}
             className="text-xs px-4 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition disabled:opacity-40 inline-flex items-center gap-1.5">
-            {sending ? t('action.processing') : t('fb.send')}
+            {sending ? t('action.processing') : sent ? t('action.sent') : t('fb.send')}
           </button>
         </div>
       </div>
