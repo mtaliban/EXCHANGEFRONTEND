@@ -16,6 +16,7 @@ import { timeAgo } from '@/lib/timeAgo';
 import { parseServerDate } from '@/lib/dates';
 import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
+import { getMe } from '@/lib/api';
 import {
   Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
   Zap, Filter, HandCoins,
@@ -72,6 +73,12 @@ export default function DashboardBoard() {
   const [now, setNow] = useState(Date.now());
   const [page, setPage] = useState(1);
   const [lastArrivalKey, setLastArrivalKey] = useState<string | null>(null);
+
+  // REFRESH user data on mount — is_verified + contact_enabled lazima ziwe FRESH
+  // ili canContact isome data halisi, sio stale ya auth store.
+  useEffect(() => {
+    getMe(true).then((me: any) => useAuth.getState().setUser(me)).catch(() => {});
+  }, []);
   const { messages, connected } = useLiveEvents(['match.found', 'user.registered', 'user.profile_updated', 'user.changed', 'user.removed']);
   // ONLINE status LIVE: presence events (WS) zinabroadcast kwa wote — board
   // inatumia hii (sio `c.online` stale ya fetch) ili mtu akitoka/kuingia

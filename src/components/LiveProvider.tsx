@@ -134,6 +134,11 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       bustGetCache();
       getMe(true).then((me) => setUser(me)).catch(() => {}); // fresh=true → bypass cache
     });
+    // REAL-TIME: admin amebadilisha contact_enabled → session inasasishwa PAPO HAPO
+    const unsubContact = subscribe('contact.toggled', (p: any) => {
+      if (p.user_id && p.user_id !== uid) return;
+      getMe(true).then((me) => setUser(me)).catch(() => {});
+    });
     // REAL-TIME: admin amekubali password reset → user apate form ya kuweka password mpya
     const unsubResetApproved = subscribe('user.password_reset_approved', (p: any) => {
       if (p.user_id && p.user_id !== uid) return;
@@ -173,7 +178,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         }
       });
     });
-    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsubVerified(); unsubResetApproved(); unsubResetRejected(); unsub4(); };
+    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsubVerified(); unsubContact(); unsubResetApproved(); unsubResetRejected(); unsub4(); };
   }, [user, subscribe, router, pathname, logout, setUser]);
 
   return <>{children}</>;
