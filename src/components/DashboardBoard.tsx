@@ -468,12 +468,17 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   const isEdu = c.category !== 'health';
   const anySubjectMatch = (c.subjects || []).some((s: string) => mySubjects.includes(s));
 
-
-
+  // CONTACT PERMISSION: canContact = True pale ambapo:
+  //   - require_payment_for_contact = False (admin amezima kwa wote), AU
+  //   - is_verified = True (mtumiaji amelipa), AU
+  //   - contact_enabled = True (admin amemruhusu mtu huyu binafsi)
+  const requirePayment = !!(me as any)?.require_payment_for_contact;
+  const contactEnabled = !!(me as any)?.contact_enabled;
+  const canContact = !requirePayment || !!isVerified || contactEnabled;
 
   async function onCall() {
     if (!c.phone_primary) return;
-    if (!isVerified) {
+    if (!canContact) {
       showCardToast('Changia TZS 2,000 upate namba', c.user_id);
       return;
     }
@@ -484,7 +489,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
 
   function onSMS() {
     if (!c.phone_primary) return;
-    if (!isVerified) {
+    if (!canContact) {
       showCardToast('Changia TZS 2,000 upate namba', c.user_id);
       return;
     }
@@ -494,10 +499,10 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
 
   function onWhatsApp() {
     if (!c.phone_alt) return;
-    if (!isVerified) {      showCardToast('Changia TZS 2,000 upate namba', c.user_id);
+    if (!canContact) {
+      showCardToast('Changia TZS 2,000 upate namba', c.user_id);
       return;
     }
-
     showCardToast(`WhatsApp kwa ${c.full_name}`, c.user_id);
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');

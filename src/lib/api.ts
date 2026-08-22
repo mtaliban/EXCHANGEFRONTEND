@@ -570,6 +570,14 @@ export const adminApprovePasswordReset = (resetId: string) =>
 export const adminRejectPasswordReset = (resetId: string) =>
   client.post(`${ADMIN}/admin/password-resets/${resetId}/reject`).then((r) => r.data);
 
+/* ── Admin: Contact Permission Settings ─────────────── */
+export const getContactSettings = () =>
+  client.get<{ require_payment: boolean }>(`${ADMIN}/admin/settings/contact`).then((r) => r.data);
+export const updateContactSettings = (require_payment: boolean) =>
+  client.put<{ ok: boolean; require_payment: boolean }>(`${ADMIN}/admin/settings/contact`, { require_payment }).then((r) => r.data);
+export const toggleUserContact = (user_id: string) =>
+  client.patch<{ ok: boolean; contact_enabled: boolean }>(`${ADMIN}/admin/users/${user_id}/contact-toggle`).then((r) => r.data);
+
 /* ── Notifications center ────────────────────────── */
 export interface AppNotification {
   notification_id: string;

@@ -17,6 +17,8 @@ export interface AuthUser {
   email_verified?: boolean;
   is_admin?: boolean;
   is_verified?: boolean;
+  contact_enabled?: boolean;
+  require_payment_for_contact?: boolean;
 }
 
 interface AuthState {

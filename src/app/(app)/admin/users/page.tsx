@@ -1,18 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import {
-  adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
+import { useEffect, useRef, useState } from 'react';import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
   adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
   getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
-  adminUserMatches,
+  adminUserMatches, toggleUserContact,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
 import {
   Users, Shield, ShieldCheck, Trash2, Eye, Pencil, Plus, Ban, CheckCircle2,
   Search, Filter, Download, AlertTriangle, RotateCcw, XCircle, Phone, Mail,
   MapPin, Building2, BookOpen, UserCheck, UserX, Clock, Info, ChevronDown,
-  RefreshCw, Database, Settings, Loader2,
+  RefreshCw, Database, Settings, Loader2, HandCoins,
 } from 'lucide-react';
 import { API_URL } from '@/lib/config';
 import { conversationTime } from '@/lib/dates';
@@ -207,6 +205,18 @@ export default function AdminUsersPage() {
     setTimeout(() => setMessage(null), 3000);
   }
 
+  async function toggleContact(u: any) {
+    try {
+      const r = await toggleUserContact(u._id);
+      setMessage(`${u.full_name}: ${r.contact_enabled ? 'Ameruhusiwa kupiga simu/SMS bila malipo' : 'Hakuruhusiwa tena'}`);
+      setData((prev: any) => prev ? { ...prev, users: prev.users.map((x: any) => x._id === u._id ? { ...x, contact_enabled: r.contact_enabled } : x) } : prev);
+      setTimeout(() => setMessage(null), 3000);
+    } catch (e: any) {
+      setMessage(e?.response?.data?.detail || t('admin.failed'));
+      setTimeout(() => setMessage(null), 3000);
+    }
+  }
+
   async function del(u: any) {
     // Delete sasa ni SOFT DELETE → akaunti inaenda TRASH (inaweza kurudishwa).
     const ok = await askConfirm({
@@ -342,6 +352,11 @@ export default function AdminUsersPage() {
                   {!u.is_admin && (
                     <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium hover:bg-orange-100 transition">
                       {u.status === 'disabled' ? <><CheckCircle2 size={11} /> {t('admin.unsuspend_btn')}</> : <><Ban size={11} /> {t('admin.suspend_btn')}</>}
+                    </button>
+                  )}
+                  {!u.is_admin && !u.is_verified && (
+                    <button onClick={() => toggleContact(u)} className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium transition ${u.contact_enabled ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200'}`}>
+                      <Phone size={11} /> {u.contact_enabled ? 'Ame-Ruhusu' : 'Ruhusu Piga'}
                     </button>
                   )}
                   {!u.is_admin && (
