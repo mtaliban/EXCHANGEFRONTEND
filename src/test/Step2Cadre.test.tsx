@@ -80,7 +80,6 @@ describe('Step2Cadre', () => {
     await waitFor(() =>
       expect(onNext).toHaveBeenCalledWith({ category: 'health', cadre_code: 'CO', subjects: [] })
     );
-    expect(screen.queryByText('Mathematics')).not.toBeInTheDocument();
   });
 
   it('submits for teachers with subjects and passes chosen subjects', async () => {
@@ -95,18 +94,26 @@ describe('Step2Cadre', () => {
     fireEvent.change(selects[0], { target: { value: 'education' } });
     await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
 
-    // Wait for cadre select to update
+    // Select TEACHER_SECONDARY cadre
     await waitFor(() => {
       const updatedSelects = screen.getAllByRole('combobox');
       fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
     });
 
-    expect(await screen.findByText('Mathematics')).toBeInTheDocument();
+    // Wait for subject selects to appear
+    await waitFor(() => {
+      const allSelects = screen.getAllByRole('combobox');
+      expect(allSelects.length).toBeGreaterThanOrEqual(3); // dept + cadre + subject1 + subject2
+    });
+
     expect(getSubjects).toHaveBeenCalled();
 
-    // Select both subjects (required for teachers)
-    fireEvent.click(screen.getByText('Mathematics'));
-    fireEvent.click(screen.getByText('Biology'));
+    // Select both subjects via dropdowns
+    const allSelects = screen.getAllByRole('combobox');
+    const subjectSelect1 = allSelects[2]; // somo la kwanza
+    const subjectSelect2 = allSelects[3]; // somo la pili
+    fireEvent.change(subjectSelect1, { target: { value: 'MATH' } });
+    fireEvent.change(subjectSelect2, { target: { value: 'BIO' } });
     fireEvent.click(screen.getByText('Endelea →'));
 
     await waitFor(() =>
@@ -116,7 +123,7 @@ describe('Step2Cadre', () => {
     );
   });
 
-  it('passes chosen subjects when a teacher selects them', async () => {
+  it('passes chosen subjects when a teacher selects one subject', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
     const onNext = vi.fn();
@@ -132,8 +139,15 @@ describe('Step2Cadre', () => {
       fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
     });
 
-    expect(await screen.findByText('Mathematics')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Mathematics'));
+    // Wait for subject selects
+    await waitFor(() => {
+      const allSelects = screen.getAllByRole('combobox');
+      expect(allSelects.length).toBeGreaterThanOrEqual(3);
+    });
+
+    // Select only one subject
+    const allSelects = screen.getAllByRole('combobox');
+    fireEvent.change(allSelects[2], { target: { value: 'MATH' } });
     fireEvent.click(screen.getByText('Endelea →'));
 
     await waitFor(() =>
@@ -143,7 +157,7 @@ describe('Step2Cadre', () => {
     );
   });
 
-  it('toggles subject selection', async () => {
+  it('allows selecting two subjects via dropdowns', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
     const onNext = vi.fn();
@@ -159,45 +173,49 @@ describe('Step2Cadre', () => {
       fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
     });
 
-    const mathBtn = await screen.findByText('Mathematics');
-    fireEvent.click(mathBtn);
-    fireEvent.click(mathBtn); // toggle off
-    fireEvent.click(screen.getByText('Biology'));
-    fireEvent.click(screen.getByText('Endelea →'));
-
-    await waitFor(() =>
-      expect(onNext).toHaveBeenCalledWith({
-        category: 'education', cadre_code: 'TEACHER_SECONDARY', subjects: ['BIO'],
-      })
-    );
-  });
-
-  it('does not allow more than 2 subjects', async () => {
-    vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
-    vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
-    const onNext = vi.fn();
-    render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
-
-    await waitFor(() => expect(getCadres).toHaveBeenCalled());
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[0], { target: { value: 'education' } });
-    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
-
+    // Wait for subject selects
     await waitFor(() => {
-      const updatedSelects = screen.getAllByRole('combobox');
-      fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
+      const allSelects = screen.getAllByRole('combobox');
+      expect(allSelects.length).toBeGreaterThanOrEqual(3);
     });
 
-    await screen.findByText('Mathematics');
-    fireEvent.click(screen.getByText('Mathematics'));
-    fireEvent.click(screen.getByText('Biology'));
-
-    // Both selected — clicking again shouldn't add a third
+    const allSelects = screen.getAllByRole('combobox');
+    fireEvent.change(allSelects[2], { target: { value: 'MATH' } });
+    fireEvent.change(allSelects[3], { target: { value: 'BIO' } });
     fireEvent.click(screen.getByText('Endelea →'));
 
     await waitFor(() => {
       const call = vi.mocked(onNext).mock.calls[0]?.[0];
-      expect(call.subjects.length).toBeLessThanOrEqual(2);
+      expect(call.subjects).toEqual(['MATH', 'BIO']);
     });
+  });
+
+  it('shows selected subject count', async () => {
+    vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
+    vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
+    render(<Step2Cadre initial={{}} onBack={() => {}} onNext={() => {}} />);
+
+    await waitFor(() => expect(getCadres).toHaveBeenCalled());
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: 'education' } });
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
+
+    await waitFor(() => {
+      const updatedSelects = screen.getAllByRole('combobox');
+      fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
+    });
+
+    // Wait for subject selects
+    await waitFor(() => {
+      const allSelects = screen.getAllByRole('combobox');
+      expect(allSelects.length).toBeGreaterThanOrEqual(3);
+    });
+
+    const allSelects = screen.getAllByRole('combobox');
+    fireEvent.change(allSelects[2], { target: { value: 'MATH' } });
+    expect(await screen.findByText(/Umepata: 1 somo/)).toBeInTheDocument();
+
+    fireEvent.change(allSelects[3], { target: { value: 'BIO' } });
+    expect(await screen.findByText(/Umepata: 2 somo/)).toBeInTheDocument();
   });
 });
