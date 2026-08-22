@@ -4,7 +4,16 @@ import { useEffect, useState } from 'react';
 import { getCadres, getDepartments, getSubjects, type Cadre, type Department, type Subject } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Heart, GraduationCap, BookOpen, Briefcase } from 'lucide-react';
+
+/** Icon mapping kwa department codes — tumia lucide icons, sio emojis */
+const DEPT_ICONS: Record<string, React.ReactNode> = {
+  health: <Heart size={16} className="text-red-500" />,
+  education: <GraduationCap size={16} className="text-blue-500" />,
+};
+function DeptIcon({ code }: { code: string }) {
+  return <>{DEPT_ICONS[code] || <Briefcase size={16} className="text-brand-grey-500" />}</>;
+}
 
 interface Props {
   initial: any;
@@ -97,13 +106,19 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step2.title')}</h2>
 
       <div>
-        <label className="label">{t('step2.department')} *</label>
-        <select className="input text-base py-3" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }} required>
+        <label className="label">{t('step2.department')} *</label>          <select className="input text-base py-3" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }} required>
           <option value="">-- Chagua Idara --</option>
           {departments.map((d) => (
-            <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
+            <option key={d.code} value={d.code}>{d.name}</option>
           ))}
         </select>
+        {/* Onyesha icon ya idara iliyochaguliwa */}
+        {category && (
+          <div className="flex items-center gap-2 mt-1.5 text-xs text-brand-grey-500">
+            <DeptIcon code={category} />
+            <span>{departments.find((d) => d.code === category)?.name || category}</span>
+          </div>
+        )}
       </div>
 
       {category && (
@@ -116,13 +131,11 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
             ))}
           </select>
         </div>
-      )}
-
-      {showSubjects && (
+      )}          {showSubjects && (
         <div>
           <label className="label flex items-center gap-1.5">
             {t('step2.subject')} <span className="text-brand-red text-xs">*</span>
-            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">(chagua masomo 2 pekee)</span>
+            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">(chagua masomo — lazima angalau 1)</span>
           </label>
 
           {loadingSubjects ? (
@@ -131,14 +144,36 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
               <span className="text-sm">{t('msg.loading')}</span>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {subjects.map((s) => (
-                <button key={s.code} type="button" onClick={() => toggleSubject(s.code)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition whitespace-nowrap ${selectedSubjects.includes(s.code) ? 'bg-brand-blue text-white border-brand-blue' : 'bg-white text-brand-grey-700 border-brand-grey-300 hover:border-brand-blue'}`}>
-                  {s.name}
-                </button>
-              ))}
-            </div>
+            <>
+              {/* Dropdown ya somo la kwanza */}
+              <select className="input text-base py-3 mb-2" value={selectedSubjects[0] || ''} onChange={(e) => {
+                const val = e.target.value;
+                if (val) setSelectedSubjects((prev) => [val, prev[1] || ''].filter(Boolean));
+                else setSelectedSubjects((prev) => prev.slice(1));
+              }}>
+                <option value="">-- Somo la kwanza --</option>
+                {subjects.map((s) => (
+                  <option key={s.code} value={s.code}>{s.name}</option>
+                ))}
+              </select>
+              {/* Dropdown ya somo la pili (hiari) */}
+              <select className="input text-base py-3" value={selectedSubjects[1] || ''} onChange={(e) => {
+                const val = e.target.value;
+                if (val) setSelectedSubjects((prev) => [prev[0] || '', val].filter(Boolean));
+                else setSelectedSubjects((prev) => [prev[0]].filter(Boolean));
+              }}>
+                <option value="">-- Somo la pili (hiari) --</option>
+                {subjects.filter((s) => s.code !== selectedSubjects[0]).map((s) => (
+                  <option key={s.code} value={s.code}>{s.name}</option>
+                ))}
+              </select>
+              {selectedSubjects.length > 0 && (
+                <div className="flex items-center gap-2 mt-1.5 text-xs text-green-600">
+                  <BookOpen size={12} />
+                  <span>Umepata: {selectedSubjects.length} somo{selectedSubjects.length > 1 ? 'i' : ''}</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
