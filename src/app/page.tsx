@@ -136,7 +136,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute bottom-2 left-2 right-2">
                     <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
-                      🏫 Watumishi wa Umma
+                      🏫 Afisa Elimu
                     </span>
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute bottom-2 left-2 right-2">
                     <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
-                      🌾 Wafanyakazi wa Vijijini
+                      🌾 Afisa Kilimo
                     </span>
                   </div>
                 </div>

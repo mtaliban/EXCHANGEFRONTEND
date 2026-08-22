@@ -47,46 +47,35 @@ export default function AboutPage() {
         </h1>
       </div>
 
-      {/* ═══ PICHA — Hospitali + Shule (professional) ═══ */}
+      {/* ═══ PICHA — Watumishi wa Serikali ═══ */}
       <div className="relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-brand-grey-200 dark:ring-brand-grey-600 mb-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2">
-          <div className="relative h-64 sm:h-80 group overflow-hidden">
-            <Image
-              src="/images/benjamin-mkapa-hospital.jpg"
-              alt="Hospitali ya Benjamin Mkapa"
-              width={1200}
-              height={751}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              unoptimized
-              priority
-            />
+        <div className="grid grid-cols-2">
+          <div className="relative h-56 sm:h-72 group overflow-hidden">
+            <Image src="/images/benjamin-mkapa-hospital.jpg" alt="Hospitali" fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="50vw" priority />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Heart size={14} className="text-red-400" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">Idara ya Afya</span>
-              </div>
-              <h3 className="text-white font-bold text-lg leading-tight">Hospitali ya Benjamin Mkapa</h3>
-              <p className="text-white/70 text-xs mt-1">Moja ya hospitali kubwa Tanzania — inahudumia maelfu kwa siku</p>
+            <div className="absolute bottom-3 left-3 right-3">
+              <span className="text-[10px] sm:text-[11px] font-bold bg-white/95 text-brand-navy px-3 py-1.5 rounded-lg shadow-lg block text-center">🏥 Afisa Afya</span>
             </div>
           </div>
-          <div className="relative h-64 sm:h-80 group overflow-hidden">
-            <Image
-              src="/images/elboru-school.jpg"
-              alt="Shule ya Elboru"
-              width={1200}
-              height={847}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              unoptimized
-            />
+          <div className="relative h-56 sm:h-72 group overflow-hidden">
+            <Image src="/images/elboru-school.jpg" alt="Shule" fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="50vw" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <GraduationCap size={14} className="text-blue-300" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">Idara ya Elimu</span>
-              </div>
-              <h3 className="text-white font-bold text-lg leading-tight">Shule ya Elboru</h3>
-              <p className="text-white/70 text-xs mt-1">Shule ya sekondari inayotoa elimu bora kwa vijana</p>
+            <div className="absolute bottom-3 left-3 right-3">
+              <span className="text-[10px] sm:text-[11px] font-bold bg-white/95 text-brand-navy px-3 py-1.5 rounded-lg shadow-lg block text-center">📚 Mwalimu</span>
+            </div>
+          </div>
+          <div className="relative h-40 sm:h-52 group overflow-hidden">
+            <Image src="/images/school.jpg" alt="Shule" fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="50vw" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-2 left-2 right-2">
+              <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center">🏫 Afisa Elimu</span>
+            </div>
+          </div>
+          <div className="relative h-40 sm:h-52 group overflow-hidden">
+            <Image src="/images/hospital.jpg" alt="Kituo cha Afya" fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="50vw" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-2 left-2 right-2">
+              <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center">🌾 Afisa Kilimo</span>
             </div>
           </div>
         </div>
