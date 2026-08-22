@@ -36,6 +36,24 @@ function ResetPasswordInner() {
     }
   }, [searchParams]);
 
+  // AUTO-POLL: pending status — kila 5 second, angalia kama admin amekubali
+  useEffect(() => {
+    if (status !== 'pending' || !phone) return;
+    const interval = setInterval(async () => {
+      try {
+        const data = await getPasswordResetStatus(phone);
+        if (data.status === 'approved') {
+          setStatus('approved');
+          clearInterval(interval);
+        } else if (data.status === 'rejected') {
+          setStatus('rejected');
+          clearInterval(interval);
+        }
+      } catch {}
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [status, phone]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null); setMessage(null);

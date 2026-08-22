@@ -607,6 +607,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
             </span>)}
           {row(t('admin.verified'), user.is_verified ? <span className="text-green-600 font-semibold"><CheckCircle2 size={13} className="inline" /> {t('admin.verified')}</span> : <span className="text-brand-grey-500"><XCircle size={13} className="inline" /> {t('admin.not_verified')}</span>)}
           {row(t('admin.role'), user.is_admin ? <span className="text-brand-blue font-semibold"><ShieldCheck size={13} className="inline" /> {t('admin.admin_role')}</span> : t('admin.user_role'))}
+          {!user.is_admin && row('Contact', user.contact_enabled ? <span className="text-green-600 font-semibold"><CheckCircle2 size={13} className="inline" /> Ruhusiwa kupiga</span> : <span className="text-brand-grey-500"><Ban size={13} className="inline" /> Hajaruhusiwa</span>)}
           {row(t('admin.created_at'), conversationTime(user.created_at))}
         </div>
 
