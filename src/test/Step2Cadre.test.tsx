@@ -6,7 +6,6 @@ vi.mock('@/lib/api', () => ({
   getCadres: vi.fn(),
   getSubjects: vi.fn(),
   getDepartments: vi.fn(),
-  // Data-change bus (useDataVersion inajiajiri nayo) — mock rahisi tu.
   onDataChanged: vi.fn(() => () => {}),
   dataVersion: () => 0,
 }));
@@ -46,12 +45,13 @@ describe('Step2Cadre', () => {
     vi.mocked(getCadres).mockResolvedValue(HEALTH_CADRES);
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={() => {}} />);
 
-    // Idara zinapakuliwa kutoka server (dynamic) — 'Afya' ndiyo ya kwanza, imechaguliwa moja kwa moja.
     await waitFor(() => expect(getDepartments).toHaveBeenCalled());
     await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health'));
-    const select = screen.getByRole('combobox');
-    expect(select).toHaveTextContent('Clinical Officer');
-    expect(select).toHaveTextContent('Nursing Officer (NO)');
+
+    const selects = screen.getAllByRole('combobox');
+    const cadreSelect = selects[1];
+    expect(cadreSelect).toHaveTextContent('Clinical Officer');
+    expect(cadreSelect).toHaveTextContent('Nursing Officer (NO)');
   });
 
   it('blocks submission without a cadre', async () => {
@@ -60,8 +60,6 @@ describe('Step2Cadre', () => {
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
     await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health'));
-    // The select is `required`, so native validation blocks a real browser submit.
-    // Dispatch the submit event directly to exercise our own validation logic.
     const form = screen.getByText('Endelea →').closest('form')!;
     fireEvent.submit(form);
 
@@ -75,37 +73,45 @@ describe('Step2Cadre', () => {
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
     await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health'));
-    const select = await screen.findByRole('combobox');
-    fireEvent.change(select, { target: { value: 'CO' } });
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[1], { target: { value: 'CO' } });
     fireEvent.click(screen.getByText('Endelea →'));
 
     await waitFor(() =>
       expect(onNext).toHaveBeenCalledWith({ category: 'health', cadre_code: 'CO', subjects: [] })
     );
-    // No subject picker for cadres that don't need subjects.
     expect(screen.queryByText('Mathematics')).not.toBeInTheDocument();
   });
 
-  it('submits for teachers with subjects (optional) and passes chosen subjects', async () => {
+  it('submits for teachers with subjects and passes chosen subjects', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
     const onNext = vi.fn();
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
-    fireEvent.click(await screen.findByRole('button', { name: /Elimu/ }));
+    // Wait for initial load, then change department to education
+    await waitFor(() => expect(getCadres).toHaveBeenCalled());
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: 'education' } });
     await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
-    const select = await screen.findByRole('combobox');
-    fireEvent.change(select, { target: { value: 'TEACHER_SECONDARY' } });
+
+    // Wait for cadre select to update
+    await waitFor(() => {
+      const updatedSelects = screen.getAllByRole('combobox');
+      fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
+    });
 
     expect(await screen.findByText('Mathematics')).toBeInTheDocument();
     expect(getSubjects).toHaveBeenCalled();
 
-    // Subjects are OPTIONAL — a teacher can continue without choosing any.
+    // Select both subjects (required for teachers)
+    fireEvent.click(screen.getByText('Mathematics'));
+    fireEvent.click(screen.getByText('Biology'));
     fireEvent.click(screen.getByText('Endelea →'));
 
     await waitFor(() =>
       expect(onNext).toHaveBeenCalledWith({
-        category: 'education', cadre_code: 'TEACHER_SECONDARY', subjects: [],
+        category: 'education', cadre_code: 'TEACHER_SECONDARY', subjects: ['MATH', 'BIO'],
       })
     );
   });
@@ -116,10 +122,15 @@ describe('Step2Cadre', () => {
     const onNext = vi.fn();
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
-    fireEvent.click(await screen.findByRole('button', { name: /Elimu/ }));
+    await waitFor(() => expect(getCadres).toHaveBeenCalled());
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: 'education' } });
     await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
-    const select = await screen.findByRole('combobox');
-    fireEvent.change(select, { target: { value: 'TEACHER_SECONDARY' } });
+
+    await waitFor(() => {
+      const updatedSelects = screen.getAllByRole('combobox');
+      fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
+    });
 
     expect(await screen.findByText('Mathematics')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Mathematics'));
@@ -138,10 +149,15 @@ describe('Step2Cadre', () => {
     const onNext = vi.fn();
     render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
 
-    fireEvent.click(await screen.findByRole('button', { name: /Elimu/ }));
+    await waitFor(() => expect(getCadres).toHaveBeenCalled());
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: 'education' } });
     await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
-    const select = await screen.findByRole('combobox');
-    fireEvent.change(select, { target: { value: 'TEACHER_SECONDARY' } });
+
+    await waitFor(() => {
+      const updatedSelects = screen.getAllByRole('combobox');
+      fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
+    });
 
     const mathBtn = await screen.findByText('Mathematics');
     fireEvent.click(mathBtn);
@@ -154,5 +170,34 @@ describe('Step2Cadre', () => {
         category: 'education', cadre_code: 'TEACHER_SECONDARY', subjects: ['BIO'],
       })
     );
+  });
+
+  it('does not allow more than 2 subjects', async () => {
+    vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
+    vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
+    const onNext = vi.fn();
+    render(<Step2Cadre initial={{}} onBack={() => {}} onNext={onNext} />);
+
+    await waitFor(() => expect(getCadres).toHaveBeenCalled());
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: 'education' } });
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
+
+    await waitFor(() => {
+      const updatedSelects = screen.getAllByRole('combobox');
+      fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
+    });
+
+    await screen.findByText('Mathematics');
+    fireEvent.click(screen.getByText('Mathematics'));
+    fireEvent.click(screen.getByText('Biology'));
+
+    // Both selected — clicking again shouldn't add a third
+    fireEvent.click(screen.getByText('Endelea →'));
+
+    await waitFor(() => {
+      const call = vi.mocked(onNext).mock.calls[0]?.[0];
+      expect(call.subjects.length).toBeLessThanOrEqual(2);
+    });
   });
 });
