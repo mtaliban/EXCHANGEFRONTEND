@@ -104,7 +104,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute bottom-3 left-2.5 right-2.5">
                     <span className="text-[10px] sm:text-[11px] font-bold bg-white/95 text-brand-navy px-3 py-1.5 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
-                      🏥 Afya
+                      🏥 Wafya
                     </span>
                   </div>
                 </div>
@@ -120,7 +120,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute bottom-3 left-2.5 right-2.5">
                     <span className="text-[10px] sm:text-[11px] font-bold bg-white/95 text-brand-navy px-3 py-1.5 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
-                      📚 Elimu
+                      📚 Walimu
                     </span>
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute bottom-2 left-2 right-2">
                     <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
-                      🌾 Afisa Kilimo
+                      🌾 Kilimo
                     </span>
                   </div>
                 </div>

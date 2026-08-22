@@ -47,29 +47,29 @@ export default function AboutPage() {
       </div>
 
       {/* ═══ HUDUMA ZETU — Aina za Watumishi ═══ */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-        {/* Afya */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+        {/* Walimu */}
+        <div className="card flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
+            <GraduationCap size={24} />
+          </div>
+          <div>
+            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Walimu</h3>
+            <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
+              Walimu wa elimu ya msingi na sekondari — lugha, hisabati, sayansi, na masomo mengine. Wanachagua shule wanazotaka kuhamia na kuweka somo wanalofundisha.
+            </p>
+          </div>
+        </div>
+
+        {/* Wafya / Watumishi wa Afya */}
         <div className="card flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0">
             <Stethoscope size={24} />
           </div>
           <div>
-            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Afya</h3>
+            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Watumishi wa Afya</h3>
             <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
-              Wataalamu wa afya kama madaktari, wauguzi, wataalamu wa maabara, na watoa huduma za dawa. Wanatumia mfumo huu kuchangia na kuchagua vituo vya afya wanavyotaka kuhamia.
-            </p>
-          </div>
-        </div>
-
-        {/* Elimu */}
-        <div className="card flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
-            <BookOpen size={24} />
-          </div>
-          <div>
-            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Elimu</h3>
-            <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
-              Walimu wa elimu ya msingi na sekondari, pamoja na wataalamu wengine wa elimu. Wanachagua shule wanazotaka kuhamia na kuweka utaalamu wao.
+              Madaktari, wauguzi, wataalamu wa maabara, na watoa huduma za dawa. Wanachagua vituo vya afya wanavyotaka kuhamia.
             </p>
           </div>
         </div>
@@ -82,20 +82,20 @@ export default function AboutPage() {
           <div>
             <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Watumishi wa Umma</h3>
             <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
-              Maafisa na watumishi wa serikali katika idara mbalimbali — uhasibu, TEHAMA, utawala, na nyingine. Wanachagua mikoa na wilaya wanazotaka kuhamia.
+              Maafisa na watumishi wa serikali — uhasibu, TEHAMA, utawala, na nyingine. Wanachagua mikoa na wilaya wanazotaka kuhamia.
             </p>
           </div>
         </div>
 
-        {/* Afisa Kilimo */}
+        {/* Wafanyazi wa Kilimo */}
         <div className="card flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
             <Wheat size={24} />
           </div>
           <div>
-            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Afisa Kilimo</h3>
+            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Wafanyakazi wa Kilimo</h3>
             <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
-              Maafisa kilimo, wakulima wa kitaalamu, na wataalamu wa mifugo. Wanachagua mikoa na wilaya wanazotaka kuhamia ili kuboresha kilimo na ufugaji.
+              Maafisa kilimo, wakulima wa kitaalamu, na wataalamu wa mifugo. Wanachagua mikoa na wilaya wanazotaka kuhamia.
             </p>
           </div>
         </div>
