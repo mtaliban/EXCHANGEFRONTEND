@@ -902,14 +902,9 @@ function EditUserModal({ user, onClose, onSaved }: any) {
                         <option value="">{t('step4.any_district')}</option>
                         {d.region_id && districts.filter((x) => x.region_id === Number(d.region_id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
                       </select>
-                      {dests.length > 1 && (
-                        <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2"><Trash2 size={14} /></button>
-                      )}
                     </div>
                   ))}
                 </div>
-                <button type="button" onClick={() => setDests([...dests, { region_id: '', district_id: '' }])}
-                  className="text-brand-blue text-sm mt-1.5">{t('step4.add_more')}</button>
               </div>
             </>
           )}
@@ -1093,14 +1088,9 @@ function CreateUserModal({ onClose, onCreated }: any) {
                     <option value="">{t('step4.any_district')}</option>
                     {d.region_id && districts.filter((x) => x.region_id === Number(d.region_id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
                   </select>
-                  {dests.length > 1 && (
-                    <button type="button" onClick={() => setDests(dests.filter((_, idx) => idx !== i))} className="text-brand-red text-sm px-2"><Trash2 size={14} /></button>
-                  )}
                 </div>
               ))}
             </div>
-            <button type="button" onClick={() => setDests([...dests, { region_id: '', district_id: '' }])}
-              className="text-brand-blue text-sm mt-1.5">{t('step4.add_more')}</button>
           </div>
         </div>
         <div className="flex gap-2 pt-3 border-t">
