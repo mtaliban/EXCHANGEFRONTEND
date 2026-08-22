@@ -87,14 +87,38 @@ export default function AdminUsersPage() {
   const [live, setLive] = useState(false);
   const lastEvent = useRef(0);
   const [regionFilter, setRegionFilter] = useState<number | ''>('');
+  const [districtFilter, setDistrictFilter] = useState<number | ''>('');
+  const [facilityFilter, setFacilityFilter] = useState<string>('');
+  const [subjectFilter, setSubjectFilter] = useState<string>('');
   const [regions, setRegions] = useState<Region[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [facilities, setFacilities] = useState<any[]>([]);
+  const [allSubjects, setAllSubjects] = useState<Subject[]>([]);
 
   useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, []);
+  useEffect(() => {
+    if (regionFilter) getDistricts(Number(regionFilter)).then(setDistricts).catch(() => setDistricts([]));
+    else setDistricts([]);
+    setDistrictFilter(''); setFacilityFilter('');
+  }, [regionFilter]);
+  useEffect(() => {
+    if (districtFilter) getFacilities(Number(districtFilter), (category || 'health') as 'health' | 'education').then(setFacilities).catch(() => setFacilities([]));
+    else setFacilities([]);
+    setFacilityFilter('');
+  }, [districtFilter, category]);
+  useEffect(() => {
+    const lvl = category === 'education' ? 'Primary' : 'Secondary';
+    getSubjects(lvl).then(setAllSubjects).catch(() => setAllSubjects([]));
+  }, [category]);
 
   async function load(bypass = false) {
     const params: any = { limit: 200 };
     if (q) params.q = q;
     if (category) params.category = category;
+    if (regionFilter) params.region_id = regionFilter;
+    if (districtFilter) params.district_id = districtFilter;
+    if (facilityFilter) params.facility_id = facilityFilter;
+    if (subjectFilter) params.subject = subjectFilter;
     setData(await adminUsers(params, bypass));
   }
 
@@ -106,7 +130,7 @@ export default function AdminUsersPage() {
     } catch {}
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, category]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, category, regionFilter, districtFilter, facilityFilter, subjectFilter]);
   // Trash ifunguke na iwe IMEJAA data tangu mwanzo (mtu akifutwa, aonekane
   // hapo papo hapo) — bila hii, trash inaonekana tupu mpaka tukio lingine
   // litokee. Event-driven: delete → SSE user.deleted → loadTrash pia.
@@ -136,7 +160,7 @@ export default function AdminUsersPage() {
   // Chaguzi huisha wakati filters zinabadilika — orodha yenyewe imebadilika.
   useEffect(() => { setSelected(new Set()); }, [q, category, regionFilter]);
 
-  const visibleUsers = ((data?.users || []) as any[]).filter((u: any) => !regionFilter || u.current_station?.region_id === regionFilter);
+  const visibleUsers = (data?.users || []) as any[];
   const allVisibleSelected = visibleUsers.length > 0 && visibleUsers.every((u) => selected.has(u._id));
 
   function toggleOne(id: string) {
@@ -287,18 +311,36 @@ export default function AdminUsersPage() {
 
       {message && <div className="bg-brand-blue-50 text-brand-blue text-sm rounded-lg p-3">{message}</div>}
 
-      <div className="flex flex-col sm:flex-row gap-2">
-        <input className="input flex-1 min-w-0" placeholder={t('admin.search_ph')}
-          value={q} onChange={(e) => setQ(e.target.value)} />
-        <select className="input sm:w-auto" value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="">{t('admin.all_depts')}</option>
-          <option value="health">{t('admin.health')}</option>
-          <option value="education">{t('admin.education')}</option>
-        </select>
-        <select className="input sm:w-auto" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
-          <option value="">{t('admin.filter_all_regions')}</option>
-          {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
-        </select>
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input className="input flex-1 min-w-0" placeholder={t('admin.search_ph')}
+            value={q} onChange={(e) => setQ(e.target.value)} />
+          <select className="input sm:w-auto" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="">{t('admin.all_depts')}</option>
+            <option value="health">{t('admin.health')}</option>
+            <option value="education">{t('admin.education')}</option>
+          </select>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <select className="input sm:flex-1" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
+            <option value="">Mkoa wote</option>
+            {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
+          </select>
+          <select className="input sm:flex-1" value={districtFilter} onChange={(e) => setDistrictFilter(Number(e.target.value) || '')} disabled={!regionFilter}>
+            <option value="">Wilaya zote</option>
+            {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+          <select className="input sm:flex-1" value={facilityFilter} onChange={(e) => setFacilityFilter(e.target.value)} disabled={!districtFilter}>
+            <option value="">Vituo vyote</option>
+            {facilities.map((f: any) => <option key={f.id || f.code} value={String(f.id || f.code)}>{f.name}</option>)}
+          </select>
+          {allSubjects.length > 0 && (
+            <select className="input sm:flex-1" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
+              <option value="">Masomo yote</option>
+              {allSubjects.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+            </select>
+          )}
+        </div>
       </div>
 
       <div className="text-xs text-brand-grey-500">{t('admin.total')} {data?.total ?? '...'}</div>
@@ -588,7 +630,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         </div>
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
-          {row('Password', <span className="text-brand-grey-600 font-semibold">●●●●●● (imesetiwa)</span>)}
+          {row('Password', user.has_password ? <span className="text-green-600 font-semibold">✓ Imewekwa</span> : <span className="text-brand-red font-semibold">✗ Haijawekwa</span>)}
           {user.phone_alt && row('WhatsApp', (
             <a href={`https://wa.me/${user.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}`}
               target="_blank" rel="noreferrer"
