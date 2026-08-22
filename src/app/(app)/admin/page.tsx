@@ -7,7 +7,7 @@ import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 import {
   Users, ShieldCheck, MapPin, Building2, BookOpen, BarChart3,
-  UsersRound, Search, Eye, Pencil,
+  UsersRound, Search, Eye, Pencil, Bell, Zap, UserPlus, Wallet, ClipboardList, KeyRound,
 } from 'lucide-react';
 
 type Tab = 'overview' | 'users';
@@ -146,6 +146,9 @@ export default function AdminPage() {
         <Big color="green" label={t('admin.regions_total')} value={reports?.regions_total ?? '—'} />
       </div>
 
+      {/* RECENT ACTIVITY — matukio ya hivi karibuni real-time */}
+      <RecentActivity />
+
       {/* Tabs */}
       <div className="flex gap-2 border-b border-brand-grey-200 flex-wrap">
         {(['overview', 'users'] as Tab[]).map((tb) => (
@@ -170,6 +173,52 @@ function Big({ color, label, value, sub }: { color: string; label: string; value
       </div>
       <div className="text-xs text-brand-grey-500 mt-1">{label}</div>
       {sub && <div className="text-[10px] text-brand-grey-400 mt-1">{sub}</div>}
+    </div>
+  );
+}
+
+/** Recent Activity — matukio ya hivi karibuni kwenye mfumo (real-time). */
+function RecentActivity() {
+  const t = useT();
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import('@/lib/api').then(({ getNotifications }) =>
+      getNotifications(10, true).then((d) => {
+        setEvents(d.notifications || []);
+        setLoading(false);
+      }).catch(() => setLoading(false))
+    );
+  }, []);
+
+  const iconFor = (type: string) => {
+    switch (type) {
+      case 'user.registered': return <UserPlus size={14} className="text-blue-500" />;
+      case 'payment.submitted': case 'payment.approved': case 'payment.rejected': return <Wallet size={14} className="text-green-500" />;
+      case 'feedback.new': case 'feedback.replied': return <ClipboardList size={14} className="text-orange-500" />;
+      case 'password_reset.new': return <KeyRound size={14} className="text-purple-500" />;
+      case 'data.changed': return <Zap size={14} className="text-yellow-500" />;
+      default: return <Bell size={14} className="text-brand-grey-400" />;
+    }
+  };
+
+  if (loading || events.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-2xl border border-brand-grey-100 p-4">
+      <h3 className="font-bold text-brand-grey-900 mb-2 flex items-center gap-1.5">
+        <Bell size={15} /> Matukio ya Hivi Karibuni
+      </h3>
+      <div className="space-y-1.5">
+        {events.slice(0, 6).map((e: any) => (
+          <div key={e.notification_id} className="flex items-center gap-2 py-1.5 border-b border-brand-grey-50 last:border-0">
+            {iconFor(e.type)}
+            <span className="flex-1 text-xs font-medium text-brand-grey-700 truncate">{e.title}</span>
+            <span className="text-[10px] text-brand-grey-400 flex-shrink-0">{e.created_at ? new Date(e.created_at).toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

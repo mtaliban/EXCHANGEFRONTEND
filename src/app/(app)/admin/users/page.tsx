@@ -86,6 +86,10 @@ export default function AdminUsersPage() {
   const [addingAdmin, setAddingAdmin] = useState(false);
   const [live, setLive] = useState(false);
   const lastEvent = useRef(0);
+  const [regionFilter, setRegionFilter] = useState<number | ''>('');
+  const [regions, setRegions] = useState<Region[]>([]);
+
+  useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, []);
 
   async function load(bypass = false) {
     const params: any = { limit: 200 };
@@ -130,9 +134,9 @@ export default function AdminUsersPage() {
     return () => clearTimeout(id);
   }, [live]);
   // Chaguzi huisha wakati filters zinabadilika — orodha yenyewe imebadilika.
-  useEffect(() => { setSelected(new Set()); }, [q, category]);
+  useEffect(() => { setSelected(new Set()); }, [q, category, regionFilter]);
 
-  const visibleUsers = (data?.users || []) as any[];
+  const visibleUsers = ((data?.users || []) as any[]).filter((u: any) => !regionFilter || u.current_station?.region_id === regionFilter);
   const allVisibleSelected = visibleUsers.length > 0 && visibleUsers.every((u) => selected.has(u._id));
 
   function toggleOne(id: string) {
@@ -290,6 +294,10 @@ export default function AdminUsersPage() {
           <option value="">{t('admin.all_depts')}</option>
           <option value="health">{t('admin.health')}</option>
           <option value="education">{t('admin.education')}</option>
+        </select>
+        <select className="input sm:w-auto" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
+          <option value="">{t('admin.filter_all_regions')}</option>
+          {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
       </div>
 
@@ -580,6 +588,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         </div>
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
+          {row('Password', <span className="text-brand-grey-600 font-semibold">●●●●●● (imesetiwa)</span>)}
           {user.phone_alt && row('WhatsApp', (
             <a href={`https://wa.me/${user.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}`}
               target="_blank" rel="noreferrer"
