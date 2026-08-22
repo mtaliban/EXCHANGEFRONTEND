@@ -1,9 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
-import { Target, AlertTriangle, Lightbulb, GraduationCap, Award, Phone, MapPin, ArrowRight, Users, Heart } from 'lucide-react';
+import { Target, AlertTriangle, Lightbulb, GraduationCap, Award, Phone, MapPin, ArrowRight, Users, Heart, Stethoscope, BookOpen, Building2, Wheat } from 'lucide-react';
 
 export default function AboutPage() {
   const t = useT();
@@ -47,46 +46,58 @@ export default function AboutPage() {
         </h1>
       </div>
 
-      {/* ═══ PICHA — Watumishi wa Serikali ═══ */}
-      <div className="relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-brand-grey-200 dark:ring-brand-grey-600 mb-10">
-        <div className="grid grid-cols-2">
-          <div className="relative h-56 sm:h-72 group overflow-hidden">
-            <Image src="/images/benjamin-mkapa-hospital.jpg" alt="Hospitali" fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="50vw" priority />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-3 left-3 right-3">
-              <span className="text-[10px] sm:text-[11px] font-bold bg-white/95 text-brand-navy px-3 py-1.5 rounded-lg shadow-lg block text-center">🏥 Afisa Afya</span>
-            </div>
+      {/* ═══ HUDUMA ZETU — Aina za Watumishi ═══ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+        {/* Afya */}
+        <div className="card flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0">
+            <Stethoscope size={24} />
           </div>
-          <div className="relative h-56 sm:h-72 group overflow-hidden">
-            <Image src="/images/elboru-school.jpg" alt="Shule" fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="50vw" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-3 left-3 right-3">
-              <span className="text-[10px] sm:text-[11px] font-bold bg-white/95 text-brand-navy px-3 py-1.5 rounded-lg shadow-lg block text-center">📚 Mwalimu</span>
-            </div>
-          </div>
-          <div className="relative h-40 sm:h-52 group overflow-hidden">
-            <Image src="/images/school.jpg" alt="Shule" fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="50vw" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-2 left-2 right-2">
-              <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center">🏫 Afisa Elimu</span>
-            </div>
-          </div>
-          <div className="relative h-40 sm:h-52 group overflow-hidden">
-            <Image src="/images/hospital.jpg" alt="Kituo cha Afya" fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="50vw" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-2 left-2 right-2">
-              <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center">🌾 Afisa Kilimo</span>
-            </div>
+          <div>
+            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Afya</h3>
+            <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
+              Wataalamu wa afya kama madaktari, wauguzi, wataalamu wa maabara, na watoa huduma za dawa. Wanatumia mfumo huu kuchangia na kuchagua vituo vya afya wanavyotaka kuhamia.
+            </p>
           </div>
         </div>
-        {/* Stats overlay */}
-        <div className="absolute top-4 right-4 flex gap-2">
-          <span className="bg-white/90 backdrop-blur-sm text-brand-grey-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-            14,000+ Vituo vya Afya
-          </span>
-          <span className="bg-white/90 backdrop-blur-sm text-brand-grey-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-            25,000+ Shule
-          </span>
+
+        {/* Elimu */}
+        <div className="card flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
+            <BookOpen size={24} />
+          </div>
+          <div>
+            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Elimu</h3>
+            <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
+              Walimu wa elimu ya msingi na sekondari, pamoja na wataalamu wengine wa elimu. Wanachagua shule wanazotaka kuhamia na kuweka utaalamu wao.
+            </p>
+          </div>
+        </div>
+
+        {/* Watumishi wa Umma */}
+        <div className="card flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0">
+            <Building2 size={24} />
+          </div>
+          <div>
+            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Watumishi wa Umma</h3>
+            <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
+              Maafisa na watumishi wa serikali katika idara mbalimbali — uhasibu, TEHAMA, utawala, na nyingine. Wanachagua mikoa na wilaya wanazotaka kuhamia.
+            </p>
+          </div>
+        </div>
+
+        {/* Afisa Kilimo */}
+        <div className="card flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+            <Wheat size={24} />
+          </div>
+          <div>
+            <h3 className="font-bold text-brand-grey-900 dark:text-white mb-1">Afisa Kilimo</h3>
+            <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">
+              Maafisa kilimo, wakulima wa kitaalamu, na wataalamu wa mifugo. Wanachagua mikoa na wilaya wanazotaka kuhamia ili kuboresha kilimo na ufugaji.
+            </p>
+          </div>
         </div>
       </div>
 
