@@ -123,7 +123,8 @@ export default function AdminAnnouncementsPage() {
       });
       setResult({ type: 'success', msg: `${t('ann.sent')} ${res.sent_to} walengwa` });
       setTitle(''); setMessage(''); setTargetName(''); setTargetUserId(''); setResults(null);
-      setList((prev) => [{ announcement_id: 'new-' + Date.now(), title: title.trim(), message: message.trim(), audience, created_at: new Date().toISOString(), status: 'sent', sent_to: res.sent_to }, ...(prev || [])]);
+      // Reload list kutoka backend kupata announcement_id halisi (sio 'new-...')
+      reload();
     } catch (e: any) {
       setResult({ type: 'error', msg: `${t('ann.send_error')} ${e?.response?.data?.detail || t('msg.try_again')}` });
     } finally { setSending(false); }
