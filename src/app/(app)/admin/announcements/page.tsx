@@ -78,7 +78,7 @@ export default function AdminAnnouncementsPage() {
   const [list, setList] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [historyPage, setHistoryPage] = useState(1);
-  const PAGE_SIZE = 3;
+  const PAGE_SIZE = 1;
 
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
   const liveDepts = useLiveDepartments(() => {
@@ -293,7 +293,7 @@ export default function AdminAnnouncementsPage() {
       )}
 
       {/* History pagination */}
-      {list.length > PAGE_SIZE && (
+      {list.length > 0 && (
         <div className="flex items-center justify-center gap-2 pt-3">
           <button disabled={historyPage <= 1} onClick={() => setHistoryPage(historyPage - 1)}
             className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
