@@ -56,13 +56,15 @@ export default function Step1Identity({ initial, onNext }: Props) {
   const [phone_alt, setPhoneAlt] = useState(initial.phone_alt || '');
   const [password, setPassword] = useState(initial.password || '');
   const [password2, setPassword2] = useState(initial.password || '');
-  // Password zinaonekana BY DEFAULT (rahisi kwa watumiaji) — macho yanaficha.
   const [showPw, setShowPw] = useState(true);
   const [showPw2, setShowPw2] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   // PHONE CHECK: real-time availability check (debounced)
   const [phoneCheck, setPhoneCheck] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const phoneTimer = useRef<any>(null);
+  // WHATSAPP CHECK: same real-time availability check
+  const [altCheck, setAltCheck] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const altTimer = useRef<any>(null);
 
   // Debounced phone check — 500ms baada ya user kuacha kuandika
   useEffect(() => {
@@ -79,6 +81,21 @@ export default function Step1Identity({ initial, onNext }: Props) {
     return () => { if (phoneTimer.current) clearTimeout(phoneTimer.current); };
   }, [phone_primary]);
 
+  // Debounced WhatsApp check
+  useEffect(() => {
+    if (!phone_alt || phone_alt.length < 10) { setAltCheck('idle'); return; }
+    const cleaned = phone_alt.replace(/[\s-]/g, '');
+    if (!/^(\+?255|0)\d{9}$/.test(cleaned)) { setAltCheck('idle'); return; }
+    setAltCheck('checking');
+    if (altTimer.current) clearTimeout(altTimer.current);
+    altTimer.current = setTimeout(() => {
+      checkPhone(cleaned).then((r) => {
+        setAltCheck(r.available ? 'available' : 'taken');
+      }).catch(() => setAltCheck('idle'));
+    }, 500);
+    return () => { if (altTimer.current) clearTimeout(altTimer.current); };
+  }, [phone_alt]);
+
   function validate() {
     const e: Record<string, string> = {};
     if (full_name.trim().length < 3) e.full_name = t('step1.err_name');
@@ -87,11 +104,12 @@ export default function Step1Identity({ initial, onNext }: Props) {
     } else if (phoneCheck === 'taken') {
       e.phone_primary = 'Namba hii tayari inatumiwa';
     }
-    // WhatsApp namba ni LAZIMA — kama haijawekwa, button ya WhatsApp haifanyi kazi.
     if (!phone_alt) {
       e.phone_alt = t('step1.err_phone_alt_required');
     } else if (!/^(\+?255|0)\d{9}$/.test(phone_alt.replace(/[\s-]/g, ''))) {
       e.phone_alt = t('step1.err_phone_alt');
+    } else if (altCheck === 'taken') {
+      e.phone_alt = 'Namba hii tayari inatumiwa na mtu mwingine';
     }
     if (password.length < 6) e.password = t('step1.err_password');
     if (password !== password2) e.password2 = t('step1.err_password2');
@@ -145,7 +163,24 @@ export default function Step1Identity({ initial, onNext }: Props) {
 
       <div>
         <FieldLabel icon={MessageCircle}>{t('step1.phone_whatsapp')} *</FieldLabel>
-        <input className="input" value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" required />
+        <div className="relative">
+          <input className={`input pr-9 ${altCheck === 'taken' ? '!border-brand-red focus:!ring-brand-red' : altCheck === 'available' ? '!border-green-500 focus:!ring-green-500' : ''}`} value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" required />
+          <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+            {altCheck === 'checking' && <Loader2 size={14} className="animate-spin text-brand-grey-400" />}
+            {altCheck === 'available' && <CheckCircle2 size={14} className="text-green-500" />}
+            {altCheck === 'taken' && <AlertCircle size={14} className="text-brand-red" />}
+          </div>
+        </div>
+        {altCheck === 'taken' && (
+          <p className="flex items-center gap-1 text-brand-red text-xs mt-1 font-medium">
+            <AlertCircle size={11} /> Namba hii tayari inatumiwa na mtu mwingine
+          </p>
+        )}
+        {altCheck === 'available' && (
+          <p className="flex items-center gap-1 text-green-600 text-xs mt-1 font-medium">
+            <CheckCircle2 size={11} /> Namba hii ipo huru
+          </p>
+        )}
         <FieldError msg={errors.phone_alt} />
       </div>
 
@@ -176,8 +211,8 @@ export default function Step1Identity({ initial, onNext }: Props) {
         </div>
       </div>
 
-      <div className="flex justify-end pt-2">
-        <button type="submit" className="btn-primary">{t('wizard.next')}</button>
+      <div className="flex justify-end pt-3">
+        <button type="submit" className="btn-primary py-3 px-8 text-base font-bold">{t('wizard.next')}</button>
       </div>
     </form>
   );

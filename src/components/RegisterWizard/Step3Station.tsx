@@ -75,7 +75,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
       <div>
         <label className="label">{t('step3.region')} *</label>
-        <select className="input" value={region_id} onChange={(e) => setRegionId(e.target.value ? Number(e.target.value) : '')} required>
+        <select className="input text-base py-3" value={region_id} onChange={(e) => setRegionId(e.target.value ? Number(e.target.value) : '')} required>
           <option value="">Chagua Mkoa</option>
           {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
@@ -84,7 +84,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       {region_id !== '' && (
         <div>
           <label className="label">{t('step3.district')} *</label>
-          <select className="input" value={district_id} onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : '')} required>
+          <select className="input text-base py-3" value={district_id} onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : '')} required>
             <option value="">Chagua Wilaya</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
@@ -96,7 +96,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
           <label className="label">
             {t('step3.facility')} ({category === 'health' ? t('step3.facility_health') : t('step3.facility_school')}) — {t('msg.optional')}
           </label>
-          <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)}>
+          <select className="input text-base py-3" value={facility_id} onChange={(e) => setFacilityId(e.target.value)}>
             <option value="">{t('step3.facility_none')}</option>
             {facilities.map((f: any) => (
               <option key={f.id || f.code} value={String(f.id || f.code)}>
@@ -104,14 +104,6 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
               </option>
             ))}
           </select>
-          {!facility_id && (
-            <input
-              className="input mt-2"
-              placeholder={t('step3.manual_ph')}
-              value={facility_name_manual}
-              onChange={(e) => setFacilityNameManual(e.target.value)}
-            />
-          )}
         </div>
       )}
 
@@ -122,9 +114,9 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
         </div>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
-        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
-        <button type="submit" className="btn-primary flex-1 sm:flex-none">{t('wizard.next')}</button>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4">
+        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none py-3 px-6 text-base font-bold">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary flex-1 sm:flex-none py-3 px-6 text-base font-bold">{t('wizard.next')}</button>
       </div>
     </form>
   );

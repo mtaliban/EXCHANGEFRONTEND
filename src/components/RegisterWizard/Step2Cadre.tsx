@@ -77,14 +77,18 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   }, [showSubjects, subjectLevel, forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSubject(code: string) {
-    setSelectedSubjects((prev) =>
-      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
-    );
+    setSelectedSubjects((prev) => {
+      if (prev.includes(code)) return prev.filter((c) => c !== code);
+      // Masomo 2 pekee
+      if (prev.length >= 2) return prev;
+      return [...prev, code];
+    });
   }
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
     if (!category || !cadre_code) { setError(t('step2.err_choose')); return; }
+    if (showSubjects && selectedSubjects.length < 1) { setError('Chagua angalau somo moja (masomo ni lazima).'); return; }
     onNext({ category, cadre_code, subjects: selectedSubjects });
   }
 
@@ -94,21 +98,18 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
       <div>
         <label className="label">{t('step2.department')} *</label>
-        <div className="grid grid-cols-2 gap-2">
+        <select className="input text-base py-3" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }} required>
+          <option value="">-- Chagua Idara --</option>
           {departments.map((d) => (
-            <button key={d.code} type="button"
-              onClick={() => { setCategory(d.code); setCadreCode(''); }}
-              className={`px-3 py-2.5 rounded-lg border text-sm font-medium transition ${category === d.code ? 'border-brand-blue bg-brand-blue-50 text-brand-blue' : 'border-brand-grey-200 bg-white text-brand-grey-700 hover:border-brand-blue'}`}>
-              {d.icon ? `${d.icon} ` : ''}{d.name}
-            </button>
+            <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
           ))}
-        </div>
+        </select>
       </div>
 
       {category && (
         <div>
           <label className="label">{t('step2.cadre')} *</label>
-          <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
+          <select className="input text-base py-3" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
             <option value="">{t('step2.choose_cadre')}</option>
             {cadres.map((c) => (
               <option key={c.code} value={c.code}>{c.display_name}</option>
@@ -120,8 +121,8 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       {showSubjects && (
         <div>
           <label className="label flex items-center gap-1.5">
-            {t('step2.subject')}
-            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">({t('msg.optional')})</span>
+            {t('step2.subject')} <span className="text-brand-red text-xs">*</span>
+            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">(chagua masomo 2 pekee)</span>
           </label>
 
           {loadingSubjects ? (
@@ -149,9 +150,9 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
         </div>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
-        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
-        <button type="submit" className="btn-primary flex-1 sm:flex-none">{t('wizard.next')}</button>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4">
+        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none py-3 px-6 text-base font-bold">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary flex-1 sm:flex-none py-3 px-6 text-base font-bold">{t('wizard.next')}</button>
       </div>
     </form>
   );

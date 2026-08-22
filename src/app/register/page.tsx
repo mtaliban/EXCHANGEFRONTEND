@@ -1,38 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, User, Phone, ArrowRight } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import RegisterWizard from '@/components/RegisterWizard/RegisterWizard';
 import { useT } from '@/lib/i18n';
-
-type Step = 'wizard' | 'success';
 
 export default function RegisterPage() {
   const t = useT();
   const router = useRouter();
-  const [step, setStep] = useState<Step>('wizard');
-  const [registeredPhone, setRegisteredPhone] = useState('');
+  const [registered, setRegistered] = useState(false);
+  const toastShown = useRef(false);
 
   function onComplete(data?: any) {
-    // Show success screen, then auto-redirect to login
-    setRegisteredPhone(data?.phone_primary || '');
-    setStep('success');
+    const phone = data?.phone_primary || '';
+    setRegistered(true);
+    // Show official toast
+    if (!toastShown.current) {
+      toastShown.current = true;
+      showRegToast();
+    }
+    // Redirect to login with phone auto-fill after 1.5s
+    setTimeout(() => {
+      router.push(`/login?phone=${encodeURIComponent(phone)}`);
+    }, 1500);
   }
-
-  // Auto-redirect to login after 4 seconds
-  useEffect(() => {
-    if (step !== 'success') return;
-    const timer = setTimeout(() => {
-      router.push(`/login?phone=${encodeURIComponent(registeredPhone)}`);
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [step, registeredPhone, router]);
 
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-8">
-      {/* Mshale wa kurudi home */}
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-grey-600 hover:text-brand-blue transition mb-4"
@@ -41,53 +37,17 @@ export default function RegisterPage() {
         {t('action.back')}
       </Link>
 
-      {/* ═══ SUCCESS SCREEN ═══ */}
-      {step === 'success' && (
-        <div className="card p-6 sm:p-8 text-center space-y-5 animate-fade-in">
-          <div className="w-20 h-20 mx-auto rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center">
-            <CheckCircle2 size={40} className="text-green-500" />
+      {registered && (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 mx-auto rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
           </div>
-          <div>
-            <h1 className="text-2xl font-extrabold text-brand-grey-900 mb-2">
-              Usajili Umekamilika!
-            </h1>
-            <p className="text-sm text-brand-grey-500 leading-relaxed">
-              Akaunti yako imetengenezwa kwa mafanikio.
-              Unaelekezwa kwenye kuingia sasa...
-            </p>
-          </div>
-
-          {registeredPhone && (
-            <div className="bg-brand-grey-50 rounded-xl p-4 border border-brand-grey-200">
-              <div className="flex items-center justify-center gap-2 text-sm text-brand-grey-700">
-                <Phone size={14} className="text-brand-blue" />
-                <span className="font-semibold">{registeredPhone}</span>
-              </div>
-              <p className="text-[11px] text-brand-grey-500 mt-1">
-                Namba yako ya simu — itajijaza kwenye login page
-              </p>
-            </div>
-          )}
-
-          {/* Countdown */}
-          <div className="flex items-center justify-center gap-2 text-xs text-brand-grey-400">
-            <span className="w-6 h-6 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold animate-pulse">4</span>
-            sekunde kabla ya kupelekwa login...
-          </div>
-
-          <Link
-            href={`/login?phone=${encodeURIComponent(registeredPhone)}`}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-blue px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-blue-700 active:scale-[0.98] transition w-full"
-          >
-            <User size={18} />
-            Ngingia Sasa
-            <ArrowRight size={16} />
-          </Link>
+          <h2 className="text-lg font-bold text-brand-grey-900">Usajili Umefanikiwa!</h2>
+          <p className="text-sm text-brand-grey-500 mt-1">Inakurudisha kwenye login...</p>
         </div>
       )}
 
-      {/* ═══ REGISTRATION WIZARD ═══ */}
-      {step === 'wizard' && (
+      {!registered && (
         <>
           <div className="text-center mb-6">
             <span className="inline-flex items-center rounded-full bg-brand-blue-50 border border-brand-blue-100 px-3 py-1 text-xs font-semibold text-brand-blue mb-2">
@@ -109,4 +69,19 @@ export default function RegisterPage() {
       )}
     </div>
   );
+}
+
+function showRegToast() {
+  let c = document.getElementById('kv-toasts');
+  if (!c) {
+    c = document.createElement('div');
+    c.id = 'kv-toasts';
+    c.className = 'fixed bottom-24 left-3 sm:left-auto sm:right-4 sm:top-3 sm:bottom-auto z-[100] flex flex-col items-end gap-2 pointer-events-none';
+    document.body.appendChild(c);
+  }
+  const el = document.createElement('div');
+  el.className = 'pointer-events-auto w-fit min-w-[200px] max-w-[300px] rounded-lg shadow-md border border-green-300 bg-white dark:bg-brand-grey-900 px-4 py-3 text-[12px] font-medium animate-slide-in';
+  el.innerHTML = '<div class="font-bold text-green-700 dark:text-green-400">Usajili umefanikiwa — karibu!</div><div class="text-brand-grey-500 mt-0.5">Unaelekezwa kwenye login...</div>';
+  c.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3000);
 }

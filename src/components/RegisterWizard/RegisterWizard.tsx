@@ -81,7 +81,7 @@ export default function RegisterWizard({ onComplete }: Props) {
                       : 'bg-white text-brand-grey-500 border-brand-grey-300'
                 )}
               >
-                {step > s.n ? '✓' : s.n}
+                {s.n}
               </div>
               <span className={clsx(
                 'text-[10px] sm:text-xs mt-1 text-center truncate w-full px-1 hidden min-[380px]:block',

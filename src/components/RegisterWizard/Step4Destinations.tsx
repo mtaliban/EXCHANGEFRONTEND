@@ -44,10 +44,6 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   function update(idx: number, patch: Partial<DraftDest>) {
     setDrafts((ds) => {
       const next = ds.map((d, i) => (i === idx ? { ...d, ...patch } : d));
-      // AUTO-ADD: when user picks a region in the LAST row, add a new empty row
-      if (patch.region_id && typeof patch.region_id === 'number' && idx === ds.length - 1 && ds.length < 15) {
-        next.push({ region_id: '', district_id: null });
-      }
       return next;
     });
     if (patch.region_id && typeof patch.region_id === 'number') loadDistrictsFor(patch.region_id);
@@ -117,12 +113,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
                 {districts.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
               </select>
             </div>
-            {/* HINT: ukichagua mkoa kwenye row ya mwisho, row mpya inaongezeka自动 */}
-            {isLast && hasRegion && drafts.length < 15 && (
-              <div className="text-[10px] text-brand-blue mt-1.5 font-medium animate-pulse">
-                + Chagua mkoa mwingine hapa chini kuongeza sehemu nyingine
-              </div>
-            )}
+
           </div>
         );
       })}
@@ -134,9 +125,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         </div>
       )}
 
-      <div className="flex justify-between gap-2 pt-2">
-        <button type="button" onClick={onBack} disabled={submitting} className="btn-outline">{t('wizard.back')}</button>
-        <button type="submit" disabled={submitting} className="btn-primary">
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4">
+        <button type="button" onClick={onBack} disabled={submitting} className="btn-outline flex-1 sm:flex-none py-3 px-6 text-base font-bold">{t('wizard.back')}</button>
+        <button type="submit" disabled={submitting} className="btn-primary flex-1 sm:flex-none py-3 px-6 text-base font-bold">
           {submitting ? (
             <span className="inline-flex items-center gap-2">
               <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
