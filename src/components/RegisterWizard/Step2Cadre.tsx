@@ -106,25 +106,19 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step2.title')}</h2>
 
       <div>
-        <label className="label">{t('step2.department')} *</label>          <select className="input text-base py-3" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }} required>
+        <label className="label">{t('step2.department')} *</label>          <select className="input" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }} required>
           <option value="">-- Chagua Idara --</option>
           {departments.map((d) => (
             <option key={d.code} value={d.code}>{d.name}</option>
           ))}
         </select>
-        {/* Onyesha icon ya idara iliyochaguliwa */}
-        {category && (
-          <div className="flex items-center gap-2 mt-1.5 text-xs text-brand-grey-500">
-            <DeptIcon code={category} />
-            <span>{departments.find((d) => d.code === category)?.name || category}</span>
-          </div>
-        )}
+
       </div>
 
       {category && (
         <div>
           <label className="label">{t('step2.cadre')} *</label>
-          <select className="input text-base py-3" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
+          <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
             <option value="">{t('step2.choose_cadre')}</option>
             {cadres.map((c) => (
               <option key={c.code} value={c.code}>{c.display_name}</option>
@@ -146,7 +140,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
           ) : (
             <>
               {/* Dropdown ya somo la kwanza */}
-              <select className="input text-base py-3 mb-2" value={selectedSubjects[0] || ''} onChange={(e) => {
+              <select className="input mb-2" value={selectedSubjects[0] || ''} onChange={(e) => {
                 const val = e.target.value;
                 if (val) setSelectedSubjects((prev) => [val, prev[1] || ''].filter(Boolean));
                 else setSelectedSubjects((prev) => prev.slice(1));
@@ -157,7 +151,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
                 ))}
               </select>
               {/* Dropdown ya somo la pili (hiari) */}
-              <select className="input text-base py-3" value={selectedSubjects[1] || ''} onChange={(e) => {
+              <select className="input" value={selectedSubjects[1] || ''} onChange={(e) => {
                 const val = e.target.value;
                 if (val) setSelectedSubjects((prev) => [prev[0] || '', val].filter(Boolean));
                 else setSelectedSubjects((prev) => [prev[0]].filter(Boolean));
