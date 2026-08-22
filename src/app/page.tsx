@@ -104,7 +104,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute bottom-3 left-2.5 right-2.5">
                     <span className="text-[10px] sm:text-[11px] font-bold bg-white/95 text-brand-navy px-3 py-1.5 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
-                      🏥 Hospitali ya<br className="sm:hidden" /> Benjamin Mkapa
+                      🏥 Watumishi wa Afya
                     </span>
                   </div>
                 </div>
@@ -120,7 +120,39 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute bottom-3 left-2.5 right-2.5">
                     <span className="text-[10px] sm:text-[11px] font-bold bg-white/95 text-brand-navy px-3 py-1.5 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
-                      Shule ya Elboru
+                      📚 Walimu
+                    </span>
+                  </div>
+                </div>
+                <div className="relative h-32 sm:h-40 group overflow-hidden">
+                  <Image
+                    src="/images/school.jpg"
+                    alt="Shule"
+                    fill
+                    unoptimized
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
+                      🏫 Watumishi wa Umma
+                    </span>
+                  </div>
+                </div>
+                <div className="relative h-32 sm:h-40 group overflow-hidden">
+                  <Image
+                    src="/images/hospital.jpg"
+                    alt="Kituo cha Afya"
+                    fill
+                    unoptimized
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <span className="text-[9px] sm:text-[10px] font-bold bg-white/95 text-brand-navy px-2 py-1 rounded-lg shadow-lg block text-center leading-tight backdrop-blur-sm">
+                      🌾 Wafanyakazi wa Vijijini
                     </span>
                   </div>
                 </div>
