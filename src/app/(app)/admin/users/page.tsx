@@ -86,6 +86,8 @@ export default function AdminUsersPage() {
   const [addingAdmin, setAddingAdmin] = useState(false);
   const [live, setLive] = useState(false);
   const lastEvent = useRef(0);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 5;
   const [regionFilter, setRegionFilter] = useState<number | ''>('');
   const [districtFilter, setDistrictFilter] = useState<number | ''>('');
   const [facilityFilter, setFacilityFilter] = useState<string>('');
@@ -158,9 +160,12 @@ export default function AdminUsersPage() {
     return () => clearTimeout(id);
   }, [live]);
   // Chaguzi huisha wakati filters zinabadilika — orodha yenyewe imebadilika.
-  useEffect(() => { setSelected(new Set()); }, [q, category, regionFilter]);
+  useEffect(() => { setSelected(new Set()); setPage(1); }, [q, category, regionFilter, districtFilter, facilityFilter, subjectFilter]);
 
   const visibleUsers = (data?.users || []) as any[];
+  const totalPages = Math.max(1, Math.ceil(visibleUsers.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = visibleUsers.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
   const allVisibleSelected = visibleUsers.length > 0 && visibleUsers.every((u) => selected.has(u._id));
 
   function toggleOne(id: string) {
@@ -364,9 +369,9 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-brand-grey-100">
-            {data?.users?.map((u: any, i: number) => (
+            {pageItems.map((u: any, i: number) => (
               <tr key={u._id} className={`hover:bg-brand-grey-50 ${u.status === 'disabled' ? 'opacity-50' : ''}`}>
-                <td className="px-3 py-2 text-center text-xs font-bold text-brand-grey-400">{i + 1}</td>
+                <td className="px-3 py-2 text-center text-xs font-bold text-brand-grey-400">{(safePage - 1) * PAGE_SIZE + i + 1}</td>
                 <td className="px-3 py-2">
                   <input type="checkbox" checked={selected.has(u._id)}
                     onChange={() => toggleOne(u._id)} disabled={u.is_admin}
@@ -420,6 +425,25 @@ export default function AdminUsersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 pt-1">
+          <button type="button" disabled={safePage <= 1}
+            onClick={() => setPage(safePage - 1)}
+            className="min-w-[44px] min-h-[44px] px-3 rounded-xl border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition active:scale-95">
+            ← Rudi
+          </button>
+          <span className="text-sm font-bold text-brand-grey-500 px-2">
+            {safePage} / {totalPages}
+          </span>
+          <button type="button" disabled={safePage >= totalPages}
+            onClick={() => setPage(safePage + 1)}
+            className="min-w-[44px] min-h-[44px] px-3 rounded-xl border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition active:scale-95">
+            Endelea →
+          </button>
+        </div>
+      )}
 
       {/* ═══ TRASH — akaunti zilizofutwa (zinaweza kurudishwa au kufutwa KABISA) ═══ */}
       {showTrash && (
