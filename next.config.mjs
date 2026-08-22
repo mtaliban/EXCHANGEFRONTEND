@@ -11,7 +11,9 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
+  // Standalone ni kwa Docker/self-hosted TU — Vercel haikubali hii.
+  // Tumia env variable: NEXT_STANDALONE=1 ndio iwereshwe.
+  ...(process.env.NEXT_STANDALONE === '1' ? { output: 'standalone' } : {}),
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.16-171-23-21.sslip.io',
   },
