@@ -11,10 +11,7 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
-  // KUONDOA output: 'standalone' — Vercel haihitaji hii. Standalone ni kwa
-  // Docker/self-hosted deployments pekee. Kuweka hapa kunasababisha Vercel
-  // WAF kuchanganyikiwa na ku-trigger Security Checkpoint ("We're verifying
-  // your browser"). Vercel inatumia deployment model yake ya kipekee.
+  output: 'standalone',
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.16-171-23-21.sslip.io',
   },
