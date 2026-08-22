@@ -138,36 +138,42 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
               <span className="text-sm">{t('msg.loading')}</span>
             </div>
           ) : (
-            <>
-              {/* Dropdown ya somo la kwanza */}
-              <select className="input mb-2" value={selectedSubjects[0] || ''} onChange={(e) => {
-                const val = e.target.value;
-                if (val) setSelectedSubjects((prev) => [val, prev[1] || ''].filter(Boolean));
-                else setSelectedSubjects((prev) => prev.slice(1));
-              }}>
-                <option value="">-- Somo la kwanza --</option>
-                {subjects.map((s) => (
-                  <option key={s.code} value={s.code}>{s.name}</option>
-                ))}
-              </select>
-              {/* Dropdown ya somo la pili (hiari) */}
-              <select className="input" value={selectedSubjects[1] || ''} onChange={(e) => {
-                const val = e.target.value;
-                if (val) setSelectedSubjects((prev) => [prev[0] || '', val].filter(Boolean));
-                else setSelectedSubjects((prev) => [prev[0]].filter(Boolean));
-              }}>
-                <option value="">-- Somo la pili (hiari) --</option>
-                {subjects.filter((s) => s.code !== selectedSubjects[0]).map((s) => (
-                  <option key={s.code} value={s.code}>{s.name}</option>
-                ))}
-              </select>
+            <div className="space-y-1">
+              <p className="text-xs text-brand-grey-500 mb-2">Chagua angalau somo moja (max 2)</p>
+              {subjects.map((s) => {
+                const checked = selectedSubjects.includes(s.code);
+                const disabled = !checked && selectedSubjects.length >= 2;
+                return (
+                  <label
+                    key={s.code}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border transition cursor-pointer ${
+                      checked
+                        ? 'border-brand-blue bg-brand-blue-50 dark:bg-brand-blue-900/20'
+                        : disabled
+                          ? 'border-brand-grey-200 dark:border-brand-grey-700 opacity-50 cursor-not-allowed'
+                          : 'border-brand-grey-200 dark:border-brand-grey-700 hover:border-brand-blue/50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded border-brand-grey-300 text-brand-blue focus:ring-brand-blue"
+                      checked={checked}
+                      disabled={disabled}
+                      onChange={() => toggleSubject(s.code)}
+                    />
+                    <span className={`text-sm ${checked ? 'font-semibold text-brand-blue' : 'text-brand-grey-700 dark:text-brand-grey-300'}`}>
+                      {s.name}
+                    </span>
+                  </label>
+                );
+              })}
               {selectedSubjects.length > 0 && (
-                <div className="flex items-center gap-2 mt-1.5 text-xs text-green-600">
+                <div className="flex items-center gap-2 mt-2 text-xs text-green-600">
                   <BookOpen size={12} />
                   <span>Umepata: {selectedSubjects.length} somo{selectedSubjects.length > 1 ? 'i' : ''}</span>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       )}

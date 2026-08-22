@@ -82,7 +82,7 @@ describe('Step2Cadre', () => {
     );
   });
 
-  it('submits for teachers with subjects and passes chosen subjects', async () => {
+  it('submits for teachers with subjects via checkboxes', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
     const onNext = vi.fn();
@@ -100,20 +100,17 @@ describe('Step2Cadre', () => {
       fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
     });
 
-    // Wait for subject selects to appear
+    // Wait for subject checkboxes to appear
     await waitFor(() => {
-      const allSelects = screen.getAllByRole('combobox');
-      expect(allSelects.length).toBeGreaterThanOrEqual(3); // dept + cadre + subject1 + subject2
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(2);
     });
 
     expect(getSubjects).toHaveBeenCalled();
 
-    // Select both subjects via dropdowns
-    const allSelects = screen.getAllByRole('combobox');
-    const subjectSelect1 = allSelects[2]; // somo la kwanza
-    const subjectSelect2 = allSelects[3]; // somo la pili
-    fireEvent.change(subjectSelect1, { target: { value: 'MATH' } });
-    fireEvent.change(subjectSelect2, { target: { value: 'BIO' } });
+    // Click both subject checkboxes
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]); // MATH
+    fireEvent.click(checkboxes[1]); // BIO
     fireEvent.click(screen.getByText('Endelea →'));
 
     await waitFor(() =>
@@ -123,7 +120,7 @@ describe('Step2Cadre', () => {
     );
   });
 
-  it('passes chosen subjects when a teacher selects one subject', async () => {
+  it('passes chosen subjects when a teacher selects one checkbox', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
     const onNext = vi.fn();
@@ -139,15 +136,14 @@ describe('Step2Cadre', () => {
       fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
     });
 
-    // Wait for subject selects
+    // Wait for subject checkboxes
     await waitFor(() => {
-      const allSelects = screen.getAllByRole('combobox');
-      expect(allSelects.length).toBeGreaterThanOrEqual(3);
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(2);
     });
 
     // Select only one subject
-    const allSelects = screen.getAllByRole('combobox');
-    fireEvent.change(allSelects[2], { target: { value: 'MATH' } });
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]); // MATH only
     fireEvent.click(screen.getByText('Endelea →'));
 
     await waitFor(() =>
@@ -157,7 +153,7 @@ describe('Step2Cadre', () => {
     );
   });
 
-  it('allows selecting two subjects via dropdowns', async () => {
+  it('allows selecting two subjects via checkboxes', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
     const onNext = vi.fn();
@@ -173,21 +169,52 @@ describe('Step2Cadre', () => {
       fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
     });
 
-    // Wait for subject selects
+    // Wait for subject checkboxes
     await waitFor(() => {
-      const allSelects = screen.getAllByRole('combobox');
-      expect(allSelects.length).toBeGreaterThanOrEqual(3);
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(2);
     });
 
-    const allSelects = screen.getAllByRole('combobox');
-    fireEvent.change(allSelects[2], { target: { value: 'MATH' } });
-    fireEvent.change(allSelects[3], { target: { value: 'BIO' } });
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]); // MATH
+    fireEvent.click(checkboxes[1]); // BIO
     fireEvent.click(screen.getByText('Endelea →'));
 
     await waitFor(() => {
       const call = vi.mocked(onNext).mock.calls[0]?.[0];
       expect(call.subjects).toEqual(['MATH', 'BIO']);
     });
+  });
+
+  it('does not allow more than 2 subjects', async () => {
+    vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
+    const MORE_SUBJECTS: Subject[] = [
+      { code: 'MATH', name: 'Mathematics', level: 'Secondary' },
+      { code: 'BIO', name: 'Biology', level: 'Secondary' },
+      { code: 'CHEM', name: 'Chemistry', level: 'Secondary' },
+    ];
+    vi.mocked(getSubjects).mockResolvedValue(MORE_SUBJECTS);
+    render(<Step2Cadre initial={{}} onBack={() => {}} onNext={() => {}} />);
+
+    await waitFor(() => expect(getCadres).toHaveBeenCalled());
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: 'education' } });
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
+
+    await waitFor(() => {
+      const updatedSelects = screen.getAllByRole('combobox');
+      fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
+    });
+
+    // Wait for subject checkboxes
+    await waitFor(() => {
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(3);
+    });
+
+    // Select 2, then try a 3rd — should be disabled
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]); // MATH
+    fireEvent.click(checkboxes[1]); // BIO
+    expect(checkboxes[2]).toBeDisabled(); // CHEM should be disabled
   });
 
   it('shows selected subject count', async () => {
@@ -205,17 +232,44 @@ describe('Step2Cadre', () => {
       fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
     });
 
-    // Wait for subject selects
+    // Wait for subject checkboxes
     await waitFor(() => {
-      const allSelects = screen.getAllByRole('combobox');
-      expect(allSelects.length).toBeGreaterThanOrEqual(3);
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(2);
     });
 
-    const allSelects = screen.getAllByRole('combobox');
-    fireEvent.change(allSelects[2], { target: { value: 'MATH' } });
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]); // MATH
     expect(await screen.findByText(/Umepata: 1 somo/)).toBeInTheDocument();
 
-    fireEvent.change(allSelects[3], { target: { value: 'BIO' } });
+    fireEvent.click(checkboxes[1]); // BIO
     expect(await screen.findByText(/Umepata: 2 somo/)).toBeInTheDocument();
+  });
+
+  it('toggles subject selection on and off', async () => {
+    vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
+    vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
+    render(<Step2Cadre initial={{}} onBack={() => {}} onNext={() => {}} />);
+
+    await waitFor(() => expect(getCadres).toHaveBeenCalled());
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: 'education' } });
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education'));
+
+    await waitFor(() => {
+      const updatedSelects = screen.getAllByRole('combobox');
+      fireEvent.change(updatedSelects[1], { target: { value: 'TEACHER_SECONDARY' } });
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(2);
+    });
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    // Select then deselect
+    fireEvent.click(checkboxes[0]); // select MATH
+    expect(await screen.findByText(/Umepata: 1 somo/)).toBeInTheDocument();
+
+    fireEvent.click(checkboxes[0]); // deselect MATH
+    expect(screen.queryByText(/Umepata/)).not.toBeInTheDocument();
   });
 });
