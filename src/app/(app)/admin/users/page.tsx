@@ -629,12 +629,18 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
   const [boardData, setBoardData] = useState<any>(null);
   const [boardLoading, setBoardLoading] = useState(false);
   const [boardFilter, setBoardFilter] = useState<string>('__all__');
+  const [allRegions, setAllRegions] = useState<any[]>([]);
   useEffect(() => {
     if (user.is_admin) return;
     let alive = true;
     adminUserMatches(user._id).then((d) => { if (alive) setMatches(d.matches || []); }).catch(() => {});
     return () => { alive = false; };
   }, [user._id, user.is_admin]);
+  // Load mikoa yote mara moja modal inapofunguka
+  useEffect(() => {
+    if (user.is_admin || allRegions.length > 0) return;
+    getRegions().then((r) => setAllRegions(r)).catch(() => {});
+  }, [user.is_admin, allRegions.length]);
   async function loadBoard(filterVal?: string) {
     setBoardLoading(true);
     try {
@@ -676,7 +682,16 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         </div>
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
-          {row('Password', user.has_password ? <span className="text-green-600 font-semibold flex items-center gap-1"><CheckCircle2 size={13} /> Imewekwa</span> : <span className="text-brand-red font-semibold flex items-center gap-1"><XCircle size={13} /> Haijawekwa</span>)}
+          {row('Password', (
+            <div className="flex flex-col items-end gap-0.5">
+              {user.has_password ? (
+                <><span className="text-green-600 font-semibold text-xs flex items-center gap-1"><CheckCircle2 size={12} /> Imewekwa</span>
+                <span className="text-[9px] font-mono text-brand-grey-400 max-w-[200px] truncate" title={user.password_hash}>{user.password_hash?.slice(0, 28)}...</span></>
+              ) : (
+                <span className="text-brand-red font-semibold text-xs flex items-center gap-1"><XCircle size={12} /> Haijawekwa</span>
+              )}
+            </div>
+          ))}
           {user.phone_alt && row('WhatsApp', (
             <a href={`https://wa.me/${user.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}`}
               target="_blank" rel="noreferrer"
@@ -754,14 +769,14 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
               <select className="input text-xs py-1.5 flex-1" value={boardFilter}
                 onChange={(e) => { setBoardFilter(e.target.value); loadBoard(e.target.value); }}>
                 <option value="__all__">Wote — Watu wote wanakotoka</option>
-                <optgroup label="Mikoa anayotaka kwenda">
+                <optgroup label="Mikoa anayotaka kwenda (destinations)">
                   {dests.map((d: any, i: number) => (
                     <option key={"dest-" + i} value={String(d.region_id || '')}>{d.region_name || `Dest ${i + 1}`}</option>
                   ))}
                 </optgroup>
-                {boardData?.regions && (
-                  <optgroup label="Mikoa yote ya Tanzania">
-                    {boardData.regions.map((r: any) => (
+                {allRegions.length > 0 && (
+                  <optgroup label="Mikoa yote ya Tanzania (26)">
+                    {allRegions.map((r: any) => (
                       <option key={"reg-" + r.id} value={String(r.id)}>{r.name}</option>
                     ))}
                   </optgroup>
