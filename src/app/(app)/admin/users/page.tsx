@@ -13,10 +13,6 @@ import {
   RefreshCw, Database, Settings, Loader2, HandCoins, LayoutDashboard,
 } from 'lucide-react';
 import { API_URL } from '@/lib/config';
-import { boardEmptyMessage } from '@/lib/i18n_board';
-import { getInitial } from '@/lib/initials';
-import { timeAgo } from '@/lib/timeAgo';
-import { parseServerDate } from '@/lib/dates';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { askConfirm } from '@/components/confirm';
