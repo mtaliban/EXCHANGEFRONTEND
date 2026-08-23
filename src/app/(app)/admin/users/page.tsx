@@ -536,14 +536,11 @@ export default function AdminUsersPage() {
   );
 
   async function restore(u: any) {
-    const ok = await askConfirm({ title: t('admin.trash_restore_confirm'), message: u.full_name });
-    if (!ok) return;
     try {
       await adminTrashRestore(u._id);
       setMessage(`${t('admin.trash_restored')} ${u.full_name}`);
       setTrash((prev) => prev.filter((x: any) => x._id !== u._id));
       setTrashTotal((n) => Math.max(0, n - 1));
-      // RELOAD data yote (mtu mpya ana _id mpya baada ya restore)
       load(true);
     } catch (e: any) {
       setMessage(e?.response?.data?.detail || 'Imeshindwa kumrudisha mtumiaji');
