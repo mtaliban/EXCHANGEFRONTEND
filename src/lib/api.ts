@@ -407,6 +407,10 @@ export const adminUserMatches = (user_id: string, limit = 50) =>
   client.get(`${ADMIN}/admin/users/${user_id}/matches`, { params: { limit }, ttl: _ADMIN_TTL, bypassCache: true } as any).then((r) => r.data);
 export const adminUserBoard = (user_id: string, params?: any) =>
   client.get(`${ADMIN}/admin/users/${user_id}/board`, { params, ttl: _ADMIN_TTL, bypassCache: true } as any).then((r) => r.data);
+export const adminLoginAsUser = (user_id: string) =>
+  client.get(`${ADMIN}/admin/users/${user_id}/login-as`, { ttl: 0, bypassCache: true } as any).then((r) => r.data);
+export const adminUsersWithMatches = (bypass = false) =>
+  client.get(`${ADMIN}/admin/users/with-matches`, { ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 /* ── Maoni na Malalamiko (feedback) ── */
 export const submitFeedback = (body: { subject: string; message: string }) =>
   client.post(`${ADMIN}/feedback`, body).then((r) => r.data);

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
   adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
   getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
-  adminUserMatches, adminUserBoard, toggleUserContact,
+  adminUserMatches, adminUserBoard, adminLoginAsUser, toggleUserContact,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
 import {
@@ -628,6 +628,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
   const [viewBoard, setViewBoard] = useState(false);
   const [boardData, setBoardData] = useState<any>(null);
   const [boardLoading, setBoardLoading] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
   const [boardFilter, setBoardFilter] = useState<string>('__all__');
   const [allRegions, setAllRegions] = useState<any[]>([]);
   useEffect(() => {
@@ -826,12 +827,31 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
           </div>
         )}
 
-        <div className="flex gap-2 pt-3 border-t">
+        <div className="flex gap-2 pt-3 border-t flex-wrap">
           <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
           {!user.is_admin && (
             <button onClick={() => { loadBoard(); }} disabled={boardLoading}
               className="btn-outline px-4 flex items-center gap-1.5 text-brand-blue border-brand-blue hover:bg-brand-blue-50">
               <LayoutDashboard size={14} /> {t('action.view')} Dashboard
+            </button>
+          )}
+          {!user.is_admin && (
+            <button onClick={async () => {
+              setLoggingIn(true);
+              try {
+                const r = await adminLoginAsUser(user._id);
+                if (r?.token) {
+                  // Weka token ya mtumiaji huyu na umpeleke dashboard
+                  localStorage.setItem('kv_auth', JSON.stringify({ state: { token: r.token, user: r.user } }));
+                  window.location.href = '/dashboard';
+                }
+              } catch (e: any) {
+                alert(e?.response?.data?.detail || 'Imeshindwa');
+              } finally { setLoggingIn(false); }
+            }} disabled={loggingIn}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-gold text-white text-sm font-semibold hover:bg-brand-gold-600 transition disabled:opacity-40">
+              {loggingIn ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
+              Ingia kama {user.full_name?.split(' ')[0]}
             </button>
           )}
           <button onClick={onEdit} className="btn-primary px-5 flex items-center gap-1.5"><Pencil size={14} /> {t('action.edit')}</button>
