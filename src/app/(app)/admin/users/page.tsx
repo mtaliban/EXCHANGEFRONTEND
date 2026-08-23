@@ -3,16 +3,20 @@
 import { useEffect, useRef, useState } from 'react';import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
   adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
   getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
-  adminUserMatches, toggleUserContact,
+  adminUserMatches, adminUserBoard, toggleUserContact,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
 import {
   Users, Shield, ShieldCheck, Trash2, Eye, Pencil, Plus, Ban, CheckCircle2,
   Search, Filter, Download, AlertTriangle, RotateCcw, XCircle, Phone, Mail,
   MapPin, Building2, BookOpen, UserCheck, UserX, Clock, Info, ChevronDown,
-  RefreshCw, Database, Settings, Loader2, HandCoins,
+  RefreshCw, Database, Settings, Loader2, HandCoins, LayoutDashboard,
 } from 'lucide-react';
 import { API_URL } from '@/lib/config';
+import { boardEmptyMessage } from '@/lib/i18n_board';
+import { getInitial } from '@/lib/initials';
+import { timeAgo } from '@/lib/timeAgo';
+import { parseServerDate } from '@/lib/dates';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { askConfirm } from '@/components/confirm';
@@ -615,18 +619,35 @@ function SubjectPicker({ cadreCode, value, onChange, cadres }: {
 }
 
 /** View User — modal ya kuona TAARIFA ZOTE za mtumiaji (kisomi) +
- *  WALE ANAOWAONA kwenye dashboard yake (matches) — real-time. */
+ *  WALE ANAOWAONA kwenye dashboard yake (matches) + ONA DASHBOARD. */
 function ViewUserModal({ user, onClose, onEdit }: any) {
   const t = useT();
   const st = user.current_station || {};
   const dests = user.desired_destinations || [];
   const [matches, setMatches] = useState<any[] | null>(null);
+  const [viewBoard, setViewBoard] = useState(false);
+  const [boardData, setBoardData] = useState<any>(null);
+  const [boardLoading, setBoardLoading] = useState(false);
+  const [boardFilter, setBoardFilter] = useState<string>('__all__');
   useEffect(() => {
-    if (user.is_admin) return; // admin haoni matches — siyo mwalimu
+    if (user.is_admin) return;
     let alive = true;
     adminUserMatches(user._id).then((d) => { if (alive) setMatches(d.matches || []); }).catch(() => {});
     return () => { alive = false; };
   }, [user._id, user.is_admin]);
+  async function loadBoard() {
+    setBoardLoading(true);
+    try {
+      const params: any = { scope: 'incoming' };
+      if (boardFilter !== '__all__') {
+        params.region_ids = boardFilter;
+      }
+      const d = await adminUserBoard(user._id, params);
+      setBoardData(d);
+      setViewBoard(true);
+    } catch { /* */ }
+    finally { setBoardLoading(false); }
+  }
   const row = (label: string, val: React.ReactNode) => (
     <div className="flex items-start justify-between gap-3 py-1.5 border-b border-brand-grey-100 last:border-0">
       <span className="text-xs font-semibold text-brand-grey-500 uppercase tracking-wide">{label}</span>
@@ -654,7 +675,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         </div>
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
-          {row('Password', user.has_password ? <span className="text-green-600 font-semibold">✓ Imewekwa</span> : <span className="text-brand-red font-semibold">✗ Haijawekwa</span>)}
+          {row('Password Hash', user.password_hash ? <span className="text-brand-red font-mono text-[10px] break-all">{user.password_hash}</span> : <span className="text-brand-grey-500">Haijawekwa</span>)}
           {user.phone_alt && row('WhatsApp', (
             <a href={`https://wa.me/${user.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}`}
               target="_blank" rel="noreferrer"
@@ -722,8 +743,71 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
           </div>
         )}
 
+        {/* ONA DASHBOARD — admin aone dashboard ya huyu mtumiaji */}
+        {!user.is_admin && (
+          <div className="rounded-xl border border-brand-blue/20 p-3 bg-brand-blue-50/50">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-brand-blue flex items-center gap-1.5"><LayoutDashboard size={14} /> Ona Dashboard ya {user.full_name?.split(' ')[0]}</h3>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <select className="input text-xs py-1.5 flex-1" value={boardFilter} onChange={(e) => setBoardFilter(e.target.value)}>
+                <option value="__all__">Mkoa wote anayotaka</option>
+                {dests.map((d: any, i: number) => (
+                  <option key={i} value={String(d.region_id || '')}>{d.region_name || `Dest ${i + 1}`}</option>
+                ))}
+              </select>
+              <button onClick={loadBoard} disabled={boardLoading}
+                className="inline-flex items-center gap-1 text-[11px] px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition disabled:opacity-40">
+                {boardLoading ? <Loader2 size={12} className="animate-spin" /> : <LayoutDashboard size={12} />}
+                {viewBoard ? 'Refresh' : 'Ona Dashboard'}
+              </button>
+            </div>
+            {viewBoard && boardData && (
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-brand-grey-600 font-semibold">
+                    Wanakotoka: <span className="text-brand-grey-900">{boardData.as_user?.region_name || '—'}</span>
+                  </span>
+                  <span className="font-bold text-brand-blue">{boardData.total} waliofananisha</span>
+                </div>
+                {boardData.candidates?.length === 0 ? (
+                  <div className="text-xs text-brand-grey-400 py-2 text-center">Hakuna mtu anayefanana na huyu mtumiaji kwa sasa</div>
+                ) : (
+                  <div className="space-y-1.5 max-h-72 overflow-y-auto">
+                    {boardData.candidates?.map((c: any) => (
+                      <div key={c.user_id} className="flex items-center justify-between gap-2 py-1.5 border-b border-brand-grey-100 last:border-0">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-brand-grey-900 truncate">
+                            {c.full_name} {c.online && <span className="text-[10px] font-bold text-green-500">● LIVE</span>}
+                          </div>
+                          <div className="text-[11px] text-brand-grey-500 truncate">
+                            {c.cadre_display || c.cadre_code} · {[c.current_station?.district_name, c.current_station?.region_name].filter(Boolean).join(', ') || '—'}
+                          </div>
+                          {c.subjects?.length > 0 && (
+                            <div className="text-[10px] text-brand-grey-400 mt-0.5">Masomo: {c.subjects.join(', ')}</div>
+                          )}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-xs font-bold text-brand-blue">{Math.round((c.score || 0) * 100)}%</div>
+                          <a href={`tel:${c.phone_primary}`} className="text-[11px] text-brand-grey-600 hover:underline">{c.phone_primary}</a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2 pt-3 border-t">
           <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
+          {!user.is_admin && (
+            <button onClick={loadBoard} disabled={boardLoading}
+              className="btn-outline px-4 flex items-center gap-1.5 text-brand-blue border-brand-blue hover:bg-brand-blue-50">
+              <LayoutDashboard size={14} /> {t('action.view')} Dashboard
+            </button>
+          )}
           <button onClick={onEdit} className="btn-primary px-5 flex items-center gap-1.5"><Pencil size={14} /> {t('action.edit')}</button>
         </div>
       </div>
