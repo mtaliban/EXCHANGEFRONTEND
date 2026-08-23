@@ -635,12 +635,13 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
     adminUserMatches(user._id).then((d) => { if (alive) setMatches(d.matches || []); }).catch(() => {});
     return () => { alive = false; };
   }, [user._id, user.is_admin]);
-  async function loadBoard() {
+  async function loadBoard(filterVal?: string) {
     setBoardLoading(true);
     try {
       const params: any = { scope: 'incoming' };
-      if (boardFilter !== '__all__') {
-        params.region_ids = boardFilter;
+      const f = filterVal ?? boardFilter;
+      if (f !== '__all__') {
+        params.region_ids = f;
       }
       const d = await adminUserBoard(user._id, params);
       setBoardData(d);
@@ -675,7 +676,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         </div>
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
-          {row('Password Hash', user.password_hash ? <span className="text-brand-red font-mono text-[10px] break-all">{user.password_hash}</span> : <span className="text-brand-grey-500">Haijawekwa</span>)}
+          {row('Password', user.has_password ? <span className="text-green-600 font-semibold flex items-center gap-1"><CheckCircle2 size={13} /> Imewekwa</span> : <span className="text-brand-red font-semibold flex items-center gap-1"><XCircle size={13} /> Haijawekwa</span>)}
           {user.phone_alt && row('WhatsApp', (
             <a href={`https://wa.me/${user.phone_alt.replace(/\D/g, '').replace(/^0/, '255')}`}
               target="_blank" rel="noreferrer"
@@ -750,13 +751,23 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
               <h3 className="text-sm font-bold text-brand-blue flex items-center gap-1.5"><LayoutDashboard size={14} /> Ona Dashboard ya {user.full_name?.split(' ')[0]}</h3>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <select className="input text-xs py-1.5 flex-1" value={boardFilter} onChange={(e) => setBoardFilter(e.target.value)}>
-                <option value="__all__">Mkoa wote anayotaka</option>
-                {dests.map((d: any, i: number) => (
-                  <option key={i} value={String(d.region_id || '')}>{d.region_name || `Dest ${i + 1}`}</option>
-                ))}
+              <select className="input text-xs py-1.5 flex-1" value={boardFilter}
+                onChange={(e) => { setBoardFilter(e.target.value); loadBoard(e.target.value); }}>
+                <option value="__all__">Wote — Watu wote wanakotoka</option>
+                <optgroup label="Mikoa anayotaka kwenda">
+                  {dests.map((d: any, i: number) => (
+                    <option key={"dest-" + i} value={String(d.region_id || '')}>{d.region_name || `Dest ${i + 1}`}</option>
+                  ))}
+                </optgroup>
+                {boardData?.regions && (
+                  <optgroup label="Mikoa yote ya Tanzania">
+                    {boardData.regions.map((r: any) => (
+                      <option key={"reg-" + r.id} value={String(r.id)}>{r.name}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
-              <button onClick={loadBoard} disabled={boardLoading}
+              <button onClick={(_e) => { loadBoard(); }} disabled={boardLoading}
                 className="inline-flex items-center gap-1 text-[11px] px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition disabled:opacity-40">
                 {boardLoading ? <Loader2 size={12} className="animate-spin" /> : <LayoutDashboard size={12} />}
                 {viewBoard ? 'Refresh' : 'Ona Dashboard'}
@@ -803,7 +814,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         <div className="flex gap-2 pt-3 border-t">
           <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
           {!user.is_admin && (
-            <button onClick={loadBoard} disabled={boardLoading}
+            <button onClick={() => { loadBoard(); }} disabled={boardLoading}
               className="btn-outline px-4 flex items-center gap-1.5 text-brand-blue border-brand-blue hover:bg-brand-blue-50">
               <LayoutDashboard size={14} /> {t('action.view')} Dashboard
             </button>
