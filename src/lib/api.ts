@@ -228,7 +228,7 @@ export const getRegions = () =>
   client.get<Region[]>(`${LOC}/locations/regions`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
 export interface Department { code: string; name: string; status: string; icon?: string | null; }
 export const getDepartments = (bypassCache = false) =>
-  client.get<Department[]>(`${LOC}/locations/departments`, { ttl: _STATIC_TTL, bypassCache } as any).then((r) => r.data);
+  client.get<Department[]>(`${LOC}/locations/departments`, { ttl: 60_000, bypassCache } as any).then((r) => r.data);
 export const getDistricts = (regionId: number) =>
   client.get<District[]>(`${LOC}/locations/regions/${regionId}/districts`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
 export const getFacilities = (
@@ -242,10 +242,10 @@ export const getFacilities = (
   if (q) params.q = q;
   return client.get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
 };
-export const getCadres = (category?: string) =>
-  client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined, ttl: _STATIC_TTL } as any).then((r) => r.data);
-export const getSubjects = (level?: 'Primary' | 'Secondary') =>
-  client.get<Subject[]>(`${LOC}/cadres/subjects`, { params: level ? { level } : undefined, ttl: _STATIC_TTL } as any).then((r) => r.data);
+export const getCadres = (category?: string, bypass = false) =>
+  client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined, ttl: 60_000, bypassCache: bypass } as any).then((r) => r.data);
+export const getSubjects = (level?: 'Primary' | 'Secondary', bypass = false) =>
+  client.get<Subject[]>(`${LOC}/cadres/subjects`, { params: level ? { level } : undefined, ttl: 60_000, bypassCache: bypass } as any).then((r) => r.data);
 
 /* ── Auth ─────────────────────────────────────────── */
 export interface Station {
