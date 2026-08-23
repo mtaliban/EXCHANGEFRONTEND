@@ -31,7 +31,7 @@ function localApi(baked: string): string {
 // Default ya production (Caddy HTTPS kwenye EC2). Inatumika kama build haina
 // env var — ili bundle isishipwe kamwe ikiwa na localhost kwenye internet.
 // Local dev bado inafanya kazi: isLocalHost() inarudisha local backend.
-const PRODUCTION_API_URL = 'https://assistance-own-still-reverse.trycloudflare.com';
+const PRODUCTION_API_URL = 'https://api.16-171-23-21.sslip.io';
 
 export const API_URL: string = (() => {
   const baked = process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
