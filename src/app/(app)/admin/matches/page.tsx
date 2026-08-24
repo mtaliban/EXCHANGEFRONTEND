@@ -242,16 +242,44 @@ function UserMatchCard({ user, regions, onRefresh }: { user: any; regions: any[]
             )}
           </div>
 
-          {/* Match info summary */}
-          <div className="text-xs text-brand-grey-500 bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg p-2.5">
-            <div className="font-semibold text-brand-grey-700 dark:text-brand-grey-300 mb-1">Taarifa za Michango</div>
-            <div className="space-y-0.5">
-              <div>Mikoa anayotaka kwenda: <span className="font-semibold text-brand-grey-900 dark:text-white">{dests.map((d: any) => d.region_name).filter(Boolean).join(', ') || '—'}</span></div>
-              <div>Kada: <span className="font-semibold text-brand-grey-900 dark:text-white">{user.cadre_display || user.cadre_code || '—'}</span></div>
-              {user.subjects?.length > 0 && <div>Masomo: <span className="font-semibold text-brand-grey-900 dark:text-white">{user.subjects.join(', ')}</span></div>}
-              <div>Wengine wa mkoa huo: <span className="font-bold text-brand-blue">{user.match_count || 0} waliofanana</span></div>
+          {/* WALE AMBAO AMEMATCH NAO — orodha kamili */}
+          {user.matched_users && user.matched_users.length > 0 ? (
+            <div>
+              <div className="text-[10px] uppercase tracking-wider font-bold text-brand-grey-400 mb-1.5">
+                Waliopata — <span className="text-brand-blue">{user.matched_users.length} wenzake</span>
+              </div>
+              <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                {user.matched_users.map((m: any) => (
+                  <div key={m.user_id} className="flex items-center gap-2.5 py-2 px-2.5 rounded-lg bg-white dark:bg-brand-grey-900 border border-brand-grey-100 dark:border-brand-grey-700">
+                    <div className="w-8 h-8 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      {m.full_name?.slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-brand-grey-900 dark:text-white truncate">{m.full_name}</div>
+                      <div className="text-[11px] text-brand-grey-500 truncate">
+                        {m.cadre_display || '—'} · {[m.district_name, m.region_name].filter(Boolean).join(', ')}
+                      </div>
+                      {m.subjects?.length > 0 && (
+                        <div className="text-[10px] text-brand-grey-400 mt-0.5">Masomo: {m.subjects.join(', ')}</div>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      {typeof m.score === 'number' && (
+                        <div className="text-xs font-bold text-brand-blue">{Math.round(m.score * 100)}%</div>
+                      )}
+                      {m.phone_primary && (
+                        <a href={`tel:${m.phone_primary}`} className="text-[11px] text-brand-grey-600 hover:underline">
+                          {m.phone_primary}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-xs text-brand-grey-400 py-2 text-center">Hakuna taarifa za waliokutanishwa</div>
+          )}
         </div>
       )}
     </div>
