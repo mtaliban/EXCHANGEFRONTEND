@@ -6,7 +6,7 @@ import { getRegions } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 import {
-  Search, Phone, Zap, ArrowLeftRight, MapPin, ChevronDown, ChevronUp,
+  Search, Phone, ArrowLeftRight, MapPin,
 } from 'lucide-react';
 
 /* ── Cadre label map ───────────────────────────────────────────── */
@@ -30,7 +30,6 @@ function categoryLabel(cat: string): string {
   return cat || '—';
 }
 
-/* ── Normalize phone for search ────────────────────────────────── */
 function normPhone(p?: string): string {
   if (!p) return '';
   return p.replace(/[^0-9]/g, '').replace(/^255/, '0').replace(/^0/, '');
@@ -46,9 +45,8 @@ export default function AdminMatchesPage() {
   const [regionId, setRegionId] = useState<number | ''>('');
   const [category, setCategory] = useState('');
   const [regions, setRegions] = useState<any[]>([]);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 18;
 
   const load = useCallback(async () => {
     if (!regionId) { setUsers([]); setTotal(0); setLoading(false); return; }
@@ -73,7 +71,6 @@ export default function AdminMatchesPage() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, []);
 
-  /* ── Client-side filter by search ─────────────────────────────── */
   const filtered = users.filter((u) => {
     if (!q) return true;
     const ql = q.toLowerCase();
@@ -96,25 +93,21 @@ export default function AdminMatchesPage() {
   const safePage = Math.min(page, totalPages);
   const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  const toggleExpand = (id: string) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-
   const regionName = regions.find((r) => r.id === regionId)?.name || '';
 
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* ═══ Header ═══ */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
-            <ArrowLeftRight size={22} className="text-brand-blue" />
-            Wanaohamia Mkoa
-          </h1>
-          <p className="text-brand-grey-500 text-sm mt-0.5">
-            {regionId
-              ? `${filtered.length} ${filtered.length === 1 ? 'mtu' : 'watu'} wanataka kuhamia ${regionName}`
-              : 'Chagua mkoa kuona watu wanaohamia'}
-          </p>
-        </div>
+      <div>
+        <h1 className="text-xl md:text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
+          <ArrowLeftRight size={22} className="text-brand-blue" />
+          Wanaohamia Mkoa
+        </h1>
+        <p className="text-brand-grey-500 text-sm mt-0.5">
+          {regionId
+            ? `${filtered.length} ${filtered.length === 1 ? 'mtu' : 'watu'} wanataka kuhamia ${regionName}`
+            : 'Chagua mkoa kuona watu wanaohamia'}
+        </p>
       </div>
 
       {/* ═══ Filters ═══ */}
@@ -162,20 +155,15 @@ export default function AdminMatchesPage() {
         </div>
       ) : (
         <>
-          <div className="space-y-2">
+          {/* ═══ GRID — 3 columns, data yote inaonekana ═══ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {pageItems.map((u) => (
-              <UserCard
-                key={u._id}
-                user={u}
-                isOpen={!!expanded[u._id]}
-                onToggle={() => toggleExpand(u._id)}
-                destRegion={regionName}
-              />
+              <UserCard key={u._id} user={u} destRegion={regionName} />
             ))}
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-1">
+            <div className="flex items-center justify-center gap-3 pt-2">
               <button type="button" disabled={safePage <= 1}
                 onClick={() => setPage(safePage - 1)}
                 className="min-w-[44px] min-h-[44px] px-3 rounded-xl border border-brand-grey-200 text-sm font-semibold text-brand-grey-700 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
@@ -197,113 +185,62 @@ export default function AdminMatchesPage() {
   );
 }
 
-/* ═══ UserCard ═══════════════════════════════════════════════════ */
-function UserCard({ user: u, isOpen, onToggle, destRegion }: { user: any; isOpen: boolean; onToggle: () => void; destRegion: string }) {
+/* ═══ UserCard — data yote inaonekana bila kubofya ════════════════ */
+function UserCard({ user: u, destRegion }: { user: any; destRegion: string }) {
   const initials = (u.full_name || '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 overflow-hidden">
-      {/* ═══ Header — click to expand ═══ */}
-      <button
-        onClick={onToggle}
-        className="w-full text-left p-3 md:p-4 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
-            <div className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center text-sm font-bold">
-              {initials}
-            </div>
-            {u.online && (
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border border-white dark:border-brand-grey-900" />
-            )}
+    <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-3 flex flex-col gap-2 hover:border-brand-blue dark:hover:border-brand-grey-500 transition">
+      {/* Jina + Avatar */}
+      <div className="flex items-center gap-2.5">
+        <div className="relative flex-shrink-0">
+          <div className="w-9 h-9 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold">
+            {initials}
           </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{u.full_name}</span>
-              {u.is_verified && <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 rounded-full">✓ Verified</span>}
-            </div>
-            <div className="text-[11px] text-brand-grey-500 truncate mt-0.5">
-              <span className="font-semibold text-brand-blue-600">{categoryLabel(u.category)}</span>
-              {' · '}
-              <span>{cadreLabel(u.cadre_code)}</span>
-            </div>
+          {u.online && (
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border border-white dark:border-brand-grey-900" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="text-[13px] font-bold text-brand-grey-900 dark:text-white truncate">{u.full_name}</span>
+            {u.is_verified && <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 rounded-full">✓</span>}
           </div>
-
-          {/* Arrow */}
-          <div className="flex flex-col items-center flex-shrink-0 px-1">
-            <ArrowLeftRight size={16} className="text-brand-blue" />
-          </div>
-
-          {/* Destination */}
-          <div className="flex-shrink-0 text-right">
-            <div className="text-[11px] text-brand-grey-400">Anataka kuja</div>
-            <div className="text-sm font-extrabold text-brand-blue">{destRegion}</div>
-          </div>
-
-          {/* Expand */}
-          <div className="flex-shrink-0 ml-1">
-            {isOpen ? <ChevronUp size={16} className="text-brand-grey-400" /> : <ChevronDown size={16} className="text-brand-grey-400" />}
+          <div className="text-[10px] text-brand-grey-500 truncate">
+            <span className="font-semibold text-brand-blue-600">{categoryLabel(u.category)}</span> · {cadreLabel(u.cadre_code)}
           </div>
         </div>
-      </button>
+      </div>
 
-      {/* ═══ Details — inaonekana ukibofya ═══ */}
-      {isOpen && (
-        <div className="border-t border-brand-grey-100 dark:border-brand-grey-700 px-3 md:px-4 pb-3 md:pb-4 pt-3 space-y-3">
-          {/* Sentesi */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg px-3 py-2">
-            <p className="text-[12px] text-brand-grey-700 dark:text-brand-grey-200 leading-relaxed">
-              <span className="font-bold text-brand-grey-900 dark:text-white">{u.full_name}</span>
-              {' '}— {cadreLabel(u.cadre_code)} kutoka{' '}
-              <span className="font-bold">{u.current_region}{u.current_district ? `, ${u.current_district}` : ''}</span>
-              {u.current_facility && <>, {u.current_facility}</>}
-              {' '}anataka kuhamia <span className="font-bold text-brand-blue">{destRegion}</span>
-              {u.destination_district && <>, {u.destination_district}</>}
-            </p>
-          </div>
+      {/* Kutoka → Kuja */}
+      <div className="bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 text-[11px] space-y-1">
+        <div className="text-brand-grey-600 dark:text-brand-grey-300 font-medium">
+          <MapPin size={10} className="inline" /> Kutoka: <b className="text-brand-grey-800 dark:text-brand-grey-200">{u.current_region}{u.current_district ? `, ${u.current_district}` : ''}</b>
+        </div>
+        <div className="text-brand-blue font-bold">
+          <ArrowLeftRight size={10} className="inline" /> Kuja: <b>{destRegion}</b>
+          {u.destination_district && <span className="font-medium">, {u.destination_district}</span>}
+        </div>
+      </div>
 
-          {/* Masomo */}
-          {u.subjects?.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1 text-[11px]">
-              <span className="text-brand-grey-500 font-semibold">Masomo:</span>
-              {u.subjects.map((s: string) => (
-                <span key={s} className="px-1.5 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 font-semibold">{s}</span>
-              ))}
-            </div>
-          )}
-
-          {/* Mikoa mingine anayotaka */}
-          {u.all_destinations?.length > 1 && (
-            <div className="text-[11px] text-brand-grey-500">
-              <MapPin size={11} className="inline" /> Mikoa mingine anayotaka: {u.all_destinations.filter((r: string) => r !== destRegion).join(', ')}
-            </div>
-          )}
-
-          {/* Simu + Tarehe */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2 flex-wrap">
-              {u.phone_primary && (
-                <a href={`tel:${u.phone_primary}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-[11px] font-semibold text-brand-grey-900 dark:text-white hover:border-brand-blue transition">
-                  <Phone size={10} /> {u.phone_primary}
-                </a>
-              )}
-              {u.phone_alt && u.phone_alt !== u.phone_primary && (
-                <a href={`tel:${u.phone_alt}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-[11px] font-semibold text-brand-grey-900 dark:text-white hover:border-brand-blue transition">
-                  <Phone size={10} /> {u.phone_alt}
-                </a>
-              )}
-            </div>
-            {u.created_at && (
-              <span className="text-[10px] text-brand-grey-400">
-                {new Date(u.created_at).toLocaleDateString('sw-TZ', { day: '2-digit', month: 'short', year: 'numeric' })}
-              </span>
-            )}
-          </div>
+      {/* Masomo */}
+      {u.subjects?.length > 0 && (
+        <div className="flex flex-wrap gap-1 text-[10px]">
+          {u.subjects.slice(0, 3).map((s: string) => (
+            <span key={s} className="px-1.5 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 font-semibold">{s}</span>
+          ))}
+          {u.subjects.length > 3 && <span className="text-brand-grey-400">+{u.subjects.length - 3}</span>}
         </div>
       )}
+
+      {/* Simu */}
+      <div className="flex items-center gap-1.5 mt-auto pt-1">
+        {u.phone_primary && (
+          <a href={`tel:${u.phone_primary}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-[10px] font-semibold text-brand-grey-900 dark:text-white hover:border-brand-blue transition flex-1 justify-center">
+            <Phone size={10} /> {u.phone_primary}
+          </a>
+        )}
+      </div>
     </div>
   );
 }
