@@ -119,15 +119,23 @@ export default function AdminMatchesPage() {
   }, [live]);
 
   /* ── Filter by search + region ─────────────────────────────────── */
+  /* Normalize phone: +255745587187 → 0745587187, 255745587187, etc. */
+  function normPhone(p?: string): string {
+    if (!p) return '';
+    return p.replace(/[^0-9]/g, '').replace(/^255/, '0').replace(/^0/, '');
+  }
   const filtered = matches.filter((m) => {
     const a = m.user_a || {};
     const b = m.user_b || {};
     if (q) {
       const ql = q.toLowerCase();
+      const qNorm = normPhone(q);
       const nameMatch =
         a.full_name?.toLowerCase().includes(ql) ||
         b.full_name?.toLowerCase().includes(ql);
       const phoneMatch =
+        normPhone(a.phone).includes(qNorm) ||
+        normPhone(b.phone).includes(qNorm) ||
         a.phone?.includes(q) || b.phone?.includes(q);
       const cadreMatch =
         cadreLabel(a.cadre).toLowerCase().includes(ql) ||
