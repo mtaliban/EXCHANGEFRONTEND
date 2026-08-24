@@ -23,7 +23,7 @@ export default function DonatePage() {
   const { subscribe } = useLive();
   const [adminPhone, setAdminPhone] = useState('');
   const [currency, setCurrency] = useState('TZS');
-  const [amount, setAmount] = useState<number | ''>(2000);
+  const [amount, setAmount] = useState<number | ''>(3000);
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
@@ -181,7 +181,7 @@ export default function DonatePage() {
           <div>
             <label className="label">{t('donate.amount')} ({currency})</label>
             <input type="number" className="input" min={500} step={500}
-              value={amount} onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))} placeholder="2000" disabled={busy} />
+              value={amount} onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))} placeholder="3000" disabled={busy} />
           </div>
           <div>
             <label className="label">{t('donate.phone_label')}</label>
