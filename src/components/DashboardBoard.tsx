@@ -305,7 +305,7 @@ export default function DashboardBoard() {
               <span className="text-brand-blue">Wanaotoka</span>{' '}
               <span className="font-extrabold text-brand-grey-900 dark:text-white">{activeSourceRegionName || 'Mikoa Yote'}</span>
               {' '}<ArrowLeftRight size={12} className="text-brand-blue inline mx-0.5" />{' '}
-              <span className="text-brand-blue">wanakuta Mkoa wako</span>{' '}
+              <span className="text-brand-blue">wanahamia</span>{' '}
               <span className="font-extrabold text-brand-grey-900 dark:text-white">{myStation.region_name || ''}</span>
             </span>
           </div>
