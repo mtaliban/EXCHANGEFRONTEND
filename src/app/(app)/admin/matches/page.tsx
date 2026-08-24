@@ -125,7 +125,7 @@ export default function AdminMatchesPage() {
             Waliopata Wenzao
           </h1>
           <p className="text-brand-grey-500 text-sm mt-1">
-            {filtered.length} watu · {totalMatches} michango jumla
+            {filtered.length} watu · {totalMatches} matches jumla
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -159,8 +159,8 @@ export default function AdminMatchesPage() {
           <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-brand-grey-100 flex items-center justify-center">
             <Users size={24} className="text-brand-grey-400" />
           </div>
-          <p className="font-semibold text-brand-grey-700">Hakuna mtu aliye na michango kwa sasa</p>
-          <p className="text-xs text-brand-grey-400 mt-1">Michango itaonekana mtu anapopata mtu wa kubadilishana naye</p>
+          <p className="font-semibold text-brand-grey-700">Hakuna mtu bado amepata mtu wa kubadilishana naye</p>
+          <p className="text-xs text-brand-grey-400 mt-1">Watonekana mtu anapopata mtu anayefanana naye kwenye dashboard yake</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -246,7 +246,7 @@ function UserMatchCard({ user, regions, onRefresh }: { user: any; regions: any[]
           {user.matched_users && user.matched_users.length > 0 ? (
             <div>
               <div className="text-[10px] uppercase tracking-wider font-bold text-brand-grey-400 mb-1.5">
-                Waliopata — <span className="text-brand-blue">{user.matched_users.length} wenzake</span>
+                Ame matches na — <span className="text-brand-blue">{user.matched_users.length} wenzake</span>
               </div>
               <div className="space-y-1.5 max-h-64 overflow-y-auto">
                 {user.matched_users.map((m: any) => (
