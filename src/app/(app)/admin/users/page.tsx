@@ -348,7 +348,36 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="text-xs text-brand-grey-500">{t('admin.total')} {data?.total ?? '...'}</div>
+      {/* ═══ SENTESI CLEAR — nani yupo, anataka kwenda wapi ═══ */}
+      <div className="rounded-xl bg-brand-blue-50 dark:bg-brand-blue-950/30 border border-brand-blue-200 dark:border-brand-blue-800 px-4 py-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-bold text-brand-blue-800 dark:text-brand-blue-200">
+            {data?.total ?? 0} {category === 'health' ? 'wafanyakazi' : category === 'education' ? 'watumiaji' : 'watumiaji'}
+          </span>
+          {regionFilter ? (
+            <>
+              <span className="text-sm text-brand-grey-600 dark:text-brand-grey-300">kutoka mkoa wa</span>
+              <span className="text-sm font-extrabold text-brand-grey-900 dark:text-white">
+                {regions.find((r: any) => String(r.id) === String(regionFilter))?.name || '—'}
+              </span>
+              {category && (
+                <span className="text-sm text-brand-grey-600 dark:text-brand-grey-300">
+                  {category === 'health' ? 'wa idara ya Afya' : 'wa idara ya Elimu'}
+                </span>
+              )}
+              <span className="text-sm text-brand-grey-600 dark:text-brand-grey-300">wanataka kuhamia</span>
+              <span className="text-sm font-extrabold text-green-700 dark:text-green-400">mikoa mingine</span>
+            </>
+          ) : (
+            <span className="text-sm text-brand-grey-600 dark:text-brand-grey-300">kwenye mfumo wote</span>
+          )}
+        </div>
+        {regionFilter && (
+          <p className="text-[11px] text-brand-grey-500 dark:text-brand-grey-400 mt-1">
+            Hii ni orodha ya watu waliopo mkoa huu — chagua mkoa mwingine kuona wale wanataka kuhamia hapa.
+          </p>
+        )}
+      </div>
 
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[760px]">
