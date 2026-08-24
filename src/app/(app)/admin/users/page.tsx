@@ -676,7 +676,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
                       const res = await fetch(`${API_URL}/admin/users/${user._id}/password`, {
                         headers: token ? { Authorization: `Bearer ${token}` } : {},
                       });
-                      if (res.ok) { const d = await res.json(); setShowPw(d.password_plain || 'Haijawekwa'); }
+                      if (res.ok) { const d = await res.json(); setShowPw(d.password_plain || d.message || 'Haijawekwa'); }
                     } catch {}
                     setPwLoading(false);
                   }}

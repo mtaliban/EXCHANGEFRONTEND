@@ -51,15 +51,12 @@ export default function AdminMatchesPage() {
   const load = useCallback(async () => {
     if (!regionId) { setUsers([]); setTotal(0); setLoading(false); return; }
     setLoading(true);
-    // debounce search — subiri 300ms baada ya mtu kuacha typing
-    if (q.trim()) await new Promise((r) => setTimeout(r, 300));
     try {
       const raw = localStorage.getItem('kv_auth');
       let token: string | null = null;
       try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
       const params = new URLSearchParams({ region_id: String(regionId), limit: '500' });
       if (category) params.set('category', category);
-      if (q.trim()) params.set('q', q.trim());
       const res = await fetch(`${API_URL}/admin/incoming?${params}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -69,7 +66,7 @@ export default function AdminMatchesPage() {
       setTotal(data.total || 0);
     } catch { setUsers([]); setTotal(0); }
     finally { setLoading(false); }
-  }, [regionId, category, q]);
+  }, [regionId, category]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, []);
