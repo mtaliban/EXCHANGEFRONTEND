@@ -301,18 +301,20 @@ export default function DashboardBoard() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0 flex-wrap">
             <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-            <span className="text-brand-blue">{t('board.source_label')}</span>
+            <span className="text-brand-grey-800 dark:text-white">
+              {myCategory === 'health' ? 'Wafanyakazi wa Idara ya Afya' : `Walimu wa Idara ya Elimu (${user?.cadre_code?.includes('PRIMARY') ? 'Msingi' : 'Sekondari'})`}
+            </span>
+            <span className="text-brand-grey-600 dark:text-brand-grey-300">kutoka</span>
             <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">{activeSourceRegionName || t('board.all_regions')}</span>
-            <span className="text-brand-grey-400 dark:text-brand-grey-500 flex-shrink-0">→</span>
-            <span className="text-brand-blue">{t('board.dest_label')}</span>
-            <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">{myStation.region_name || ''}</span>
+            <span className="text-brand-grey-600 dark:text-brand-grey-300">wanaotaka kuhamia</span>
+            <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">Mkoa wako {myStation.region_name || ''}</span>
+            <span className="text-brand-grey-600 dark:text-brand-grey-300">wako hapa</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2 py-0.5 rounded-full">
+              <Users size={11} /> {board?.total ?? 0}
+            </span>
           </h2>
           <div className="flex items-center gap-2 flex-shrink-0">
-            {!loading && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-grey-900 dark:text-white bg-brand-grey-100 dark:bg-brand-grey-800 px-2 py-0.5 rounded-full">
-                <Users size={12} /> {board?.total ?? 0}
-              </span>
-            )}
+            {!loading && (<></>)}
             {onlineCount > 0 && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950 px-2 py-0.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />

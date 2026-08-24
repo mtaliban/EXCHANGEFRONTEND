@@ -54,7 +54,7 @@ export default function DashboardPage() {
         href={WA_GROUP_LINK}
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-[#25D366] hover:bg-[#20BA5C] text-white shadow-lg hover:shadow-xl transition-all duration-200 pl-4 pr-5 py-3 group active:scale-95"
+        className="fixed bottom-20 right-5 z-40 flex items-center gap-2.5 rounded-full bg-[#25D366] hover:bg-[#20BA5C] text-white shadow-lg hover:shadow-xl transition-all duration-200 pl-4 pr-5 py-3 group active:scale-95"
         aria-label="Jiunge na WhatsApp Group"
       >
         {/* Official WhatsApp logo — green circle + white phone + chat bubble */}
