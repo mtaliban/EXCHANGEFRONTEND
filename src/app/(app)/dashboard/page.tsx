@@ -49,12 +49,12 @@ export default function DashboardPage() {
       {/* ═══ BOARD MOJA: Wanaokuja {mkoa} (live mpya juu, kijani=online) ═══ */}
       <DashboardBoard />
 
-      {/* ═══ WHATSAPP GROUP — icon tu, kushoto, haibadiliki ═══ */}
+      {/* ═══ WHATSAPP GROUP — icon ya official, kulia juu ═══ */}
       <a
         href={WA_GROUP_LINK}
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-20 left-4 z-50 w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 active:scale-90 hover:scale-110"
+        className="fixed top-20 right-4 z-50 w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 active:scale-90 hover:scale-110"
         aria-label="Jiunge na WhatsApp Group"
         title="Jiunge na WhatsApp Group"
       >
