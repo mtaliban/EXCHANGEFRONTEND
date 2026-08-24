@@ -298,9 +298,9 @@ export default function DashboardBoard() {
     <div className="space-y-4">
       {/* ═══ LIVE — Wazi: Watu Wanakotoka [X] Wanaokuja [Y] ═══ */}
       <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
-        <div className="flex items-center gap-3 flex-nowrap overflow-x-auto">
+        <div className="flex items-center gap-3 flex-wrap">
           <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-          <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0 whitespace-nowrap">
+          <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0 flex-wrap">
             <span className="text-brand-blue">Wanaotoka</span>
             <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">{activeSourceRegionName || 'Mikoa Yote'}</span>
             <ArrowLeftRight size={14} className="text-brand-blue flex-shrink-0" />
