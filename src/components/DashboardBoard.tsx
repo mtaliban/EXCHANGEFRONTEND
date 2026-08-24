@@ -302,10 +302,11 @@ export default function DashboardBoard() {
           <div className="flex items-center gap-1.5 min-w-0">
             <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
             <span className="font-bold text-[13px] text-brand-grey-900 dark:text-white whitespace-nowrap">
-              <span className="text-brand-blue">Wanaotoka</span>{' '}
-              <span className="font-extrabold">{activeSourceRegionName || 'Mikoa Yote'}</span>
-              {' '}<ArrowLeftRight size={12} className="text-brand-blue inline" />{' '}
+              <span className="text-brand-blue">Wanahamia Mkoa wako</span>{' '}
               <span className="font-extrabold">{myStation.region_name || ''}</span>
+              {' '}<ArrowLeftRight size={12} className="text-brand-blue inline" />{' '}
+              <span className="text-brand-blue">wakitokea Mkoa wa</span>{' '}
+              <span className="font-extrabold">{activeSourceRegionName || 'Mikoa Yote'}</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
