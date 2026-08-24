@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getMe } from '@/lib/api';
 import { useT } from '@/lib/i18n';
@@ -20,6 +20,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const t = useT();
   const router = useRouter();
   const { token, user, setUser, logout } = useAuth();
+  const pathname = usePathname();
   const verifiedRef = useRef(false);
   const [hydrated, setHydrated] = useState(() => useAuth.persist.hasHydrated());
 
@@ -43,6 +44,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
     router.replace('/login');
   }, [hydrated, token, router]);
+
+  // Admin guard: mtu wa kawaida haingii kwenye /admin/*
+  useEffect(() => {
+    if (!hydrated || !user || !pathname) return;
+    const isAdminPath = pathname.startsWith('/admin');
+    const isAdmin = (user as any)?.is_admin;
+    if (isAdminPath && !isAdmin) {
+      router.replace('/dashboard');
+    }
+  }, [hydrated, user, pathname, router]);
 
   // Background refresh (once per session)
   useEffect(() => {
