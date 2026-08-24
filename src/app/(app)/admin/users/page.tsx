@@ -623,6 +623,8 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
   const dests = user.desired_destinations || [];
   const [matches, setMatches] = useState<any[] | null>(null);
   const [loggingIn, setLoggingIn] = useState(false);
+  const [showPw, setShowPw] = useState<string | null>(null);
+  const [pwLoading, setPwLoading] = useState(false);
   useEffect(() => {
     if (user.is_admin) return;
     let alive = true;
@@ -660,9 +662,28 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
           {row('Password', (
             <div className="flex flex-col items-end gap-0.5">
-              {user.has_password ? (
-                <><span className="text-green-600 font-semibold text-xs flex items-center gap-1"><CheckCircle2 size={12} /> Imewekwa</span>
-                <span className="text-[9px] font-mono text-brand-grey-400 max-w-[200px] truncate" title={user.password_hash}>{user.password_hash?.slice(0, 28)}...</span></>
+              {showPw ? (
+                <span className="text-brand-blue font-mono text-xs font-bold bg-brand-blue-50 px-2 py-0.5 rounded-md">{showPw}</span>
+              ) : user.has_password ? (
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    setPwLoading(true);
+                    try {
+                      const raw = localStorage.getItem('kv_auth');
+                      let token: string | null = null;
+                      try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
+                      const res = await fetch(`${API_URL}/admin/users/${user._id}/password`, {
+                        headers: token ? { Authorization: `Bearer ${token}` } : {},
+                      });
+                      if (res.ok) { const d = await res.json(); setShowPw(d.password_plain || 'Haijawekwa'); }
+                    } catch {}
+                    setPwLoading(false);
+                  }}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-blue bg-brand-blue-50 hover:bg-brand-blue-100 px-2 py-0.5 rounded-md border border-brand-blue/20 transition"
+                >
+                  {pwLoading ? <Loader2 size={11} className="animate-spin" /> : <Eye size={11} />} Ona Password
+                </button>
               ) : (
                 <span className="text-brand-red font-semibold text-xs flex items-center gap-1"><XCircle size={12} /> Haijawekwa</span>
               )}
