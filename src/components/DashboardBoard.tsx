@@ -298,10 +298,10 @@ export default function DashboardBoard() {
     <div className="space-y-4">
       {/* ═══ LIVE — Wazi: Watu Wanakotoka [X] Wanaokuja [Y] ═══ */}
       <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 overflow-hidden">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-            <span className="font-bold text-[13px] text-brand-grey-900 dark:text-white whitespace-nowrap">
+            <span className="font-bold text-[13px] text-brand-grey-900 dark:text-white">
               <span className="text-brand-blue">Wanahamia Mkoa wako</span>{' '}
               <span className="font-extrabold">{myStation.region_name || ''}</span>
               {' '}<ArrowLeftRight size={12} className="text-brand-blue inline" />{' '}
