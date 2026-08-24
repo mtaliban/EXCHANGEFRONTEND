@@ -298,29 +298,28 @@ export default function DashboardBoard() {
     <div className="space-y-4">
       {/* ═══ LIVE — Wazi: Watu Wanakotoka [X] Wanaokuja [Y] ═══ */}
       <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0 flex-wrap">
-            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-            {/* Sentesi: [label bluu] [Mkoa nyeusi] ↔ [label bluu] [Mkoa nyeusi] */}
+        <div className="flex items-center gap-3 flex-nowrap overflow-x-auto">
+          <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
+          <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0 whitespace-nowrap">
             <span className="text-brand-blue">Wanaotoka</span>
             <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">{activeSourceRegionName || 'Mikoa Yote'}</span>
             <ArrowLeftRight size={14} className="text-brand-blue flex-shrink-0" />
             <span className="text-brand-blue">wanakuta</span>
             <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">Mkoa wako {myStation.region_name || ''}</span>
           </h2>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="inline-flex items-center gap-1 text-[13px] font-extrabold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-3 py-1 rounded-full">
-              <Users size={13} /> {board?.total ?? 0}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="inline-flex items-center gap-1 text-[12px] font-extrabold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2.5 py-0.5 rounded-full">
+              <Users size={12} /> {board?.total ?? 0}
             </span>
             {onlineCount > 0 && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950 px-2 py-0.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                {onlineCount} {t('board.online_now')}
+                {onlineCount}
               </span>
             )}
             {freshCount > 0 && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">
-                 {freshCount} {t('board.new_arrivals')}
+                +{freshCount}
               </span>
             )}
           </div>
