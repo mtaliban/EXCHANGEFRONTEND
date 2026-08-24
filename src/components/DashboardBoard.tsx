@@ -301,17 +301,23 @@ export default function DashboardBoard() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0 flex-wrap">
             <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
+            {/* Sentesi rasmi kwa mtumiaji: Walimu 25 wa Elimu ya Msingi kutoka Arusha wanataka kuhamia Kagera */}
             <span className="text-brand-grey-800 dark:text-white">
-              {myCategory === 'health' ? 'Wafanyakazi wa Idara ya Afya' : `Walimu wa Idara ya Elimu (${user?.cadre_code?.includes('PRIMARY') ? 'Msingi' : 'Sekondari'})`}
+              {myCategory === 'health' ? 'Wafanyakazi wa Afya' : 'Walimu'}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2 py-0.5 rounded-full">
+              {board?.total ?? 0}
+            </span>
+            <span className="text-brand-grey-600 dark:text-brand-grey-300">
+              {myCategory === 'health'
+                ? 'wa Afya'
+                : user?.cadre_code?.includes('PRIMARY') ? 'wa Elimu ya Msingi' : 'wa Elimu ya Sekondari'}
             </span>
             <span className="text-brand-grey-600 dark:text-brand-grey-300">kutoka</span>
-            <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">{activeSourceRegionName || t('board.all_regions')}</span>
-            <span className="text-brand-grey-600 dark:text-brand-grey-300">wanaotaka kuhamia</span>
+            <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">Mkoa wa {activeSourceRegionName || 'Mikoa Yote'}</span>
+            <span className="text-brand-grey-600 dark:text-brand-grey-300">wanataka kuhamia</span>
             <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">Mkoa wako {myStation.region_name || ''}</span>
-            <span className="text-brand-grey-600 dark:text-brand-grey-300">wako hapa</span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2 py-0.5 rounded-full">
-              <Users size={11} /> {board?.total ?? 0}
-            </span>
+            <span className="text-brand-grey-500 dark:text-brand-grey-400 text-[11px] ml-1">— hapa</span>
           </h2>
           <div className="flex items-center gap-2 flex-shrink-0">
             {!loading && (<></>)}

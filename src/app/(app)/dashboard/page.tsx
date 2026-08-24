@@ -49,20 +49,23 @@ export default function DashboardPage() {
       {/* ═══ BOARD MOJA: Wanaokuja {mkoa} (live mpya juu, kijani=online) ═══ */}
       <DashboardBoard />
 
-      {/* ═══ WHATSAPP GROUP — button ya kujunga na group ═══ */}
+      {/* ═══ WHATSAPP GROUP — official, kubwa, ya kisomi ═══ */}
       <a
         href={WA_GROUP_LINK}
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-20 right-5 z-40 flex items-center gap-2.5 rounded-full bg-[#25D366] hover:bg-[#20BA5C] text-white shadow-lg hover:shadow-xl transition-all duration-200 pl-4 pr-5 py-3 group active:scale-95"
-        aria-label="Jiunge na WhatsApp Group"
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-3 rounded-2xl bg-[#25D366] hover:bg-[#1ebe5d] text-white shadow-xl hover:shadow-2xl transition-all duration-200 pl-5 pr-6 py-4 group active:scale-95 border-2 border-white/20"
+        aria-label="Jiunge na WhatsApp Group ya Kubadilishana Vituo"
       >
-        {/* Official WhatsApp logo — green circle + white phone + chat bubble */}
-        <svg viewBox="0 0 32 32" className="w-7 h-7 flex-shrink-0" aria-hidden="true">
-          <circle cx="16" cy="16" r="16" fill="white"/>
-          <path d="M23.3 8.7C21.4 6.8 18.8 5.7 16 5.7c-5.6 0-10.2 4.6-10.2 10.2 0 1.8.5 3.5 1.3 5L5.7 26.3l5.6-1.5c1.5.8 3.1 1.2 4.7 1.2 5.6 0 10.2-4.6 10.2-10.2 0-2.7-1.1-5.3-2.9-7.1zM16 24.3c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.3.9.9-3.2-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.7 3.8-8.5 8.5-8.5 2.3 0 4.4.9 6 2.5 1.6 1.6 2.5 3.7 2.5 6 0 4.7-3.8 8.5-8.5 8.5zm4.7-6.4c-.3-.1-1.6-.8-1.8-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.8-1.3.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.6-.3z" fill="#25D366"/>
+        {/* Official WhatsApp logo — kubwa, clear */}
+        <svg viewBox="0 0 39 39" className="w-9 h-9 flex-shrink-0 drop-shadow-sm" aria-hidden="true">
+          <circle cx="19.5" cy="19.5" r="19.5" fill="white"/>
+          <path d="M28.7 10.6c-2.4-2.4-5.6-3.7-9.1-3.7-7 0-12.7 5.7-12.7 12.7 0 2.2.6 4.4 1.7 6.3L6.5 32.5l7-1.8c1.9 1 4 1.5 6.1 1.5h0c7 0 12.7-5.7 12.7-12.7 0-3.4-1.3-6.6-3.6-9.3zM19.6 29c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.2 1.1 1.1-4.1-.3-.4c-1-1.6-1.5-3.5-1.5-5.4 0-5.8 4.7-10.5 10.5-10.5 2.8 0 5.5 1.1 7.5 3.1 2 2 3.1 4.7 3.1 7.5-.1 5.9-4.8 10.6-10.5 10.6zm5.8-7.9c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.7.2-.2.3-.8 1.1-1 1.3-.2.2-.4.2-.7.1-.3-.1-1.4-.5-2.7-1.7-1-1-1.7-2.1-1.9-2.5-.2-.3 0-.5.1-.7.1-.1.3-.4.4-.5.1-.2.2-.3.3-.5.1-.2.1-.4 0-.5-.1-.1-.7-1.7-1-2.3-.3-.6-.6-.5-.8-.5h-.7c-.2 0-.6.1-.9.5-.3.3-1.2 1.2-1.2 2.9s1.2 3.4 1.4 3.6c.1.2 2.4 3.7 5.8 5.2.8.4 1.5.6 2 .8.8.3 1.6.2 2.2.1.6-.1 2-.8 2.3-1.6.3-.8.3-1.4.2-1.6-.1-.1-.3-.2-.7-.4z" fill="#25D366"/>
         </svg>
-        <span className="text-sm font-bold hidden sm:inline">Jiunge na Group</span>
+        <div className="flex flex-col leading-tight">
+          <span className="text-[13px] font-extrabold tracking-wide">Jiunge na Group</span>
+          <span className="text-[10px] font-medium text-white/80 hidden sm:block">WhatsApp — Kubadilishana Vituo</span>
+        </div>
       </a>
     </div>
   );
