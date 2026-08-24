@@ -222,14 +222,15 @@ export default function DashboardBoard() {
   }, [singleRegion, regions]);
 
   // Jina la mkoa uliochaguliwa (chanzo) — kwa maelezo ya header kisomi.
+  // '__all__' = Mikoa Yote (hakuna filter); mkoa mmoja = jina lake.
   const activeSourceRegionName = useMemo(() => {
-    if (regionSel === '__all__') return watchedNames.length ? watchedNames.join(', ') : null;
+    if (regionSel === '__all__') return 'Mikoa Yote';
     if (singleRegion !== undefined) {
       const r = regions.find((x) => x.id === singleRegion);
       if (r) return r.name;
     }
-    return null;
-  }, [regionSel, singleRegion, regions, watchedNames]);
+    return 'Mikoa Yote';
+  }, [regionSel, singleRegion, regions]);
 
   // Stats chips: facility → district → region (kiwango cha sasa)
   const chips = useMemo(() => {
