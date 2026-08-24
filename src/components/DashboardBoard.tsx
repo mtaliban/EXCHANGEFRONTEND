@@ -300,17 +300,16 @@ export default function DashboardBoard() {
       <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="font-bold text-[13px] text-brand-grey-900 dark:text-white flex items-center gap-1.5 min-w-0 flex-wrap">
-            <ArrowLeftRight size={14} className="text-brand-blue flex-shrink-0" />
             <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-            {/* Sentesi: Walimu wa Mkoa wa Arusha wanaohamia Mkoa wako Kagera — hawa hapa 25 */}
+            {/* Sentesi: Walimu wa Mkoa wa [Arusha] ↔ wanahamia Mkoa wako [Kagera] — IDADI */}
             <span className="text-brand-grey-800 dark:text-white">
               {myCategory === 'health' ? 'Wafanyakazi' : 'Walimu'}
             </span>
             <span className="text-brand-grey-600 dark:text-brand-grey-300">wa Mkoa wa</span>
-            <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">{activeSourceRegionName || 'Mikoa Yote'}</span>
-            <span className="text-brand-grey-600 dark:text-brand-grey-300">wanaohamia</span>
-            <span className="text-brand-grey-900 dark:text-white font-extrabold break-words">Mkoa wako {myStation.region_name || ''}</span>
-            <span className="text-brand-grey-500 dark:text-brand-grey-400 text-[11px]">— hawa hapa</span>
+            <span className="text-brand-blue font-extrabold break-words">{activeSourceRegionName || 'Mikoa Yote'}</span>
+            <ArrowLeftRight size={14} className="text-brand-blue flex-shrink-0" />
+            <span className="text-brand-grey-600 dark:text-brand-grey-300">wanahamia Mkoa wako</span>
+            <span className="text-brand-blue font-extrabold break-words">{myStation.region_name || ''}</span>
             <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2 py-0.5 rounded-full">
               <Users size={11} /> {board?.total ?? 0}
             </span>
