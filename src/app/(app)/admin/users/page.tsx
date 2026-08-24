@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from 'react';import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
   adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
   getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
-  adminUserMatches, adminUserBoard, adminLoginAsUser, toggleUserContact,
+  adminUserMatches, adminLoginAsUser, toggleUserContact,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
 import {
   Users, Shield, ShieldCheck, Trash2, Eye, Pencil, Plus, Ban, CheckCircle2,
   Search, Filter, Download, AlertTriangle, RotateCcw, XCircle, Phone, Mail,
   MapPin, Building2, BookOpen, UserCheck, UserX, Clock, Info, ChevronDown,
-  RefreshCw, Database, Settings, Loader2, HandCoins, LayoutDashboard,
+  RefreshCw, Database, Settings, Loader2, HandCoins,
 } from 'lucide-react';
 import { API_URL } from '@/lib/config';
 import { conversationTime } from '@/lib/dates';
@@ -622,12 +622,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
   const st = user.current_station || {};
   const dests = user.desired_destinations || [];
   const [matches, setMatches] = useState<any[] | null>(null);
-  const [viewBoard, setViewBoard] = useState(false);
-  const [boardData, setBoardData] = useState<any>(null);
-  const [boardLoading, setBoardLoading] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
-  const [boardFilter, setBoardFilter] = useState<string>('__all__');
-  const [allRegions, setAllRegions] = useState<any[]>([]);
   useEffect(() => {
     if (user.is_admin) return;
     let alive = true;
@@ -635,24 +630,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
     return () => { alive = false; };
   }, [user._id, user.is_admin]);
   // Load mikoa yote mara moja modal inapofunguka
-  useEffect(() => {
-    if (user.is_admin || allRegions.length > 0) return;
-    getRegions().then((r) => setAllRegions(r)).catch(() => {});
-  }, [user.is_admin, allRegions.length]);
-  async function loadBoard(filterVal?: string) {
-    setBoardLoading(true);
-    try {
-      const params: any = { scope: 'incoming' };
-      const f = filterVal ?? boardFilter;
-      if (f !== '__all__') {
-        params.region_ids = f;
-      }
-      const d = await adminUserBoard(user._id, params);
-      setBoardData(d);
-      setViewBoard(true);
-    } catch { /* */ }
-    finally { setBoardLoading(false); }
-  }
+
   const row = (label: string, val: React.ReactNode) => (
     <div className="flex items-start justify-between gap-3 py-1.5 border-b border-brand-grey-100 last:border-0">
       <span className="text-xs font-semibold text-brand-grey-500 uppercase tracking-wide">{label}</span>
@@ -757,81 +735,10 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
           </div>
         )}
 
-        {/* ONA DASHBOARD — admin aone dashboard ya huyu mtumiaji */}
-        {!user.is_admin && (
-          <div className="rounded-xl border border-brand-blue/20 p-3 bg-brand-blue-50/50">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-brand-blue flex items-center gap-1.5"><LayoutDashboard size={14} /> Ona Dashboard ya {user.full_name?.split(' ')[0]}</h3>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <select className="input text-xs py-1.5 flex-1" value={boardFilter}
-                onChange={(e) => { setBoardFilter(e.target.value); loadBoard(e.target.value); }}>
-                <option value="__all__">Wote — Watu wote wanakotoka</option>
-                <optgroup label="Mikoa anayotaka kwenda (destinations)">
-                  {dests.map((d: any, i: number) => (
-                    <option key={"dest-" + i} value={String(d.region_id || '')}>{d.region_name || `Dest ${i + 1}`}</option>
-                  ))}
-                </optgroup>
-                {allRegions.length > 0 && (
-                  <optgroup label="Mikoa yote ya Tanzania (26)">
-                    {allRegions.map((r: any) => (
-                      <option key={"reg-" + r.id} value={String(r.id)}>{r.name}</option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
-              <button onClick={(_e) => { loadBoard(); }} disabled={boardLoading}
-                className="inline-flex items-center gap-1 text-[11px] px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition disabled:opacity-40">
-                {boardLoading ? <Loader2 size={12} className="animate-spin" /> : <LayoutDashboard size={12} />}
-                {viewBoard ? 'Refresh' : 'Ona Dashboard'}
-              </button>
-            </div>
-            {viewBoard && boardData && (
-              <div className="mt-3 space-y-2">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-brand-grey-600 font-semibold">
-                    Wanakotoka: <span className="text-brand-grey-900">{boardData.as_user?.region_name || '—'}</span>
-                  </span>
-                  <span className="font-bold text-brand-blue">{boardData.total} waliofananisha</span>
-                </div>
-                {boardData.candidates?.length === 0 ? (
-                  <div className="text-xs text-brand-grey-400 py-2 text-center">Hakuna mtu anayefanana na huyu mtumiaji kwa sasa</div>
-                ) : (
-                  <div className="space-y-1.5 max-h-72 overflow-y-auto">
-                    {boardData.candidates?.map((c: any) => (
-                      <div key={c.user_id} className="flex items-center justify-between gap-2 py-1.5 border-b border-brand-grey-100 last:border-0">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-brand-grey-900 truncate">
-                            {c.full_name} {c.online && <span className="text-[10px] font-bold text-green-500">● LIVE</span>}
-                          </div>
-                          <div className="text-[11px] text-brand-grey-500 truncate">
-                            {c.cadre_display || c.cadre_code} · {[c.current_station?.district_name, c.current_station?.region_name].filter(Boolean).join(', ') || '—'}
-                          </div>
-                          {c.subjects?.length > 0 && (
-                            <div className="text-[10px] text-brand-grey-400 mt-0.5">Masomo: {c.subjects.join(', ')}</div>
-                          )}
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-xs font-bold text-brand-blue">{Math.round((c.score || 0) * 100)}%</div>
-                          <a href={`tel:${c.phone_primary}`} className="text-[11px] text-brand-grey-600 hover:underline">{c.phone_primary}</a>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+
 
         <div className="flex gap-2 pt-3 border-t flex-wrap">
           <button onClick={onClose} className="btn-outline px-5">{t('admin.cancel')}</button>
-          {!user.is_admin && (
-            <button onClick={() => { loadBoard(); }} disabled={boardLoading}
-              className="btn-outline px-4 flex items-center gap-1.5 text-brand-blue border-brand-blue hover:bg-brand-blue-50">
-              <LayoutDashboard size={14} /> {t('action.view')} Dashboard
-            </button>
-          )}
           {!user.is_admin && (
             <button onClick={async () => {
               setLoggingIn(true);
