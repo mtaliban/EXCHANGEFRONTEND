@@ -298,18 +298,18 @@ export default function DashboardBoard() {
     <div className="space-y-4">
       {/* ═══ LIVE — Wazi: Watu Wanakotoka [X] Wanaokuja [Y] ═══ */}
       <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
-        <div className="flex items-center justify-between gap-2 overflow-hidden">
-          <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1.5">
             <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
             <span className="font-bold text-[13px] text-brand-grey-900 dark:text-white">
               <span className="text-brand-blue">Wanaotoka</span>{' '}
               <span className="font-extrabold text-brand-grey-900 dark:text-white">{activeSourceRegionName || 'Mikoa Yote'}</span>
-              {' '}<ArrowLeftRight size={12} className="text-brand-blue inline mx-0.5" />{' '}
+              <span className="text-brand-blue mx-1">→</span>
               <span className="text-brand-blue">wanahamia</span>{' '}
               <span className="font-extrabold text-brand-grey-900 dark:text-white">{myStation.region_name || ''}</span>
             </span>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 pl-3.5">
             <span className="inline-flex items-center gap-1 text-[12px] font-extrabold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2.5 py-0.5 rounded-full">
               <Users size={12} /> {board?.total ?? 0}
             </span>
