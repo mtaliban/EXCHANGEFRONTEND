@@ -122,7 +122,7 @@ export default function AdminMatchesPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-brand-grey-900 flex items-center gap-2">
             <Users size={24} className="text-brand-blue" />
-            Waliopata Michango
+            Waliopata Wenzao
           </h1>
           <p className="text-brand-grey-500 text-sm mt-1">
             {filtered.length} watu · {totalMatches} michango jumla

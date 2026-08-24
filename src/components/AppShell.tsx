@@ -34,7 +34,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     ? [
         { href: '/admin', label: t('nav.admin'), icon: Crown },
         { href: '/admin/users', label: t('nav.users'), icon: Users },
-        { href: '/admin/matches', label: t('nav.matches', 'Michango'), icon: GitMerge },
+        { href: '/admin/matches', label: t('nav.matches', 'Waliopata Wenzao'), icon: GitMerge },
         { href: '/admin/data', label: t('nav.data'), icon: Database },
         { href: '/admin/announcements', label: t('nav.announcements'), icon: MegaphoneIcon },
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
@@ -276,7 +276,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
     ? [
         { href: '/admin', label: t('nav.admin'), icon: Crown },
         { href: '/admin/users', label: t('nav.users'), icon: Users },
-        { href: '/admin/matches', label: t('nav.matches', 'Michango'), icon: GitMerge },
+        { href: '/admin/matches', label: t('nav.matches', 'Waliopata Wenzao'), icon: GitMerge },
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
         { href: '/admin/feedback', label: t('nav.feedback_short', 'Maoni'), icon: ClipboardList },
       ]
