@@ -57,9 +57,7 @@ export default function DashboardBoard() {
   // Default: mkoa wa KWANZA anayotaka kwenda (destination) — mtu akiingia
   // anaona watu wanaokuja mkoa wake kutoka mkoa huo papo hapo. Akiwa na
   // destinations nyingi → '__all__' (zote). Anaweza kubadilisha drop-down.
-  const [regionSel, setRegionSel] = useState<string>(
-    destRegionIds.length > 1 ? '__all__' : destRegionIds.length === 1 ? String(destRegionIds[0]) : ''
-  );
+  const [regionSel, setRegionSel] = useState<string>('__all__');
   const [districtId, setDistrictId] = useState<number | undefined>();
   const [facilityId, setFacilityId] = useState<string | undefined>();
   // Kichujio cha masomo: off (wote) / any (somo moja linalofanana) / all (yote
@@ -112,10 +110,10 @@ export default function DashboardBoard() {
   }, [regionSel, watchedIds]);
 
   const effectiveRegionIds = useMemo(() => {
-    if (regionSel === '__all__') return watchedIds;
+    if (regionSel === '__all__') return []; // Wote — hakuna filter ya mkoa
     if (singleRegion !== undefined) return [singleRegion];
     return [];
-  }, [regionSel, watchedIds, singleRegion]);
+  }, [regionSel, singleRegion]);
 
   const loadBoard = useCallback(async (forceFresh = false) => {
     setLoading(true);
@@ -144,13 +142,13 @@ export default function DashboardBoard() {
     getRegions().then(setRegions).catch(() => {});
   }, [dv]);
 
-  // Sync: mtu asiye na destinations → mkoa wa kwanza wa dropdown (au '__all__')
+  // Sync: default ni '__all__' — onyesha WATU WOTE wa mikoa yote wanaokuja
   useEffect(() => {
     if (regionSel === '') {
-      setRegionSel(destRegionIds.length > 1 ? '__all__' : destRegionIds.length === 1 ? String(destRegionIds[0]) : regions.length ? String(regions[0].id) : '');
+      setRegionSel('__all__');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regionSel, destRegionIds, regions]);
+  }, [regionSel]);
 
   // Cascading: wilaya za mkoa mmoja uliochagua — district cache iko
   // localStorage (siku 24), kwa hivyo kurudi kwenye mkoa ule ule ni INSTANT.
@@ -208,7 +206,7 @@ export default function DashboardBoard() {
   }, [messages.length, loadBoard]);
 
   const clearFilters = () => {
-    setRegionSel(destRegionIds.length > 1 ? '__all__' : destRegionIds.length === 1 ? String(destRegionIds[0]) : '');
+    setRegionSel('__all__');
     setDistrictId(undefined);
     setFacilityId(undefined);
     setSubjectFilter('off');
@@ -333,13 +331,8 @@ export default function DashboardBoard() {
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5 mt-1">
             <select className="input text-xs py-1.5 w-full sm:flex-1 sm:min-w-[140px]" value={regionSel}
               onChange={(e) => { setRegionSel(e.target.value); setDistrictId(undefined); setFacilityId(undefined); setPage(1); }}>
-              {/* Default: mkoa wanaotaka kuja kwako (destinations) — lakini mikoa
-                  YOTE ya Tanzania iko kwenye dropdown, mtu aweze kubadilisha. */}
-              {watchedIds.length > 1 && (
-                <option value="__all__">
-                  {watchedNames.length ? `${t('board.all_regions')} (${watchedNames.join(', ')})` : t('board.all_regions')}
-                </option>
-              )}
+              {/* Mikoa Yote — default: ONYESHA WATU WOTE wanaokuja mkoa wako kutoka MIKOA YOTE */}
+              <option value="__all__">{t('board.all_regions')}</option>
               {regions.map((r) => (
                 <option key={r.id} value={String(r.id)}>{r.name}</option>
               ))}
