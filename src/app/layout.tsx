@@ -5,9 +5,65 @@ import Footer from '@/components/Footer';
 import ThemeInit from '@/components/ThemeInit';
 
 export const metadata: Metadata = {
-  title: 'Kubadilishana Vituo — Tanzania',
+  title: {
+    default: 'Kubadilishana Vituo — Tanzania | Kumtafuta Mwenye Kubadilishana Nawe',
+    template: '%s | Kubadilishana Vituo',
+  },
   description:
-    'Mfumo wa kubadilishana vituo vya kazi kwa watumishi wa Idara ya Afya na Elimu Tanzania.',
+    'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania. Jisajili bure, tafuta mtu anayetaka kubadilishana nawe mkoani.',
+  keywords: [
+    'kubadilishana vituo',
+    'kuhamisha vituo',
+    'watumishi wa afya',
+    'walimu tanzania',
+    'kubadilishana wilaya',
+    'kubadilishana mkoa',
+    'afisa kilimo',
+    'watumishi wa umma',
+    'kuhamisha kazi',
+    'exchange station',
+    'tanzania teachers',
+    'health workers exchange',
+  ],
+  authors: [{ name: 'Kubadilishana Vituo' }],
+  creator: 'Kubadilishana Vituo',
+  publisher: 'Kubadilishana Vituo',
+  metadataBase: new URL('https://esstranfer.com'),
+  openGraph: {
+    type: 'website',
+    locale: 'sw_TZ',
+    url: 'https://esstranfer.com',
+    siteName: 'Kubadilishana Vituo',
+    title: 'Kubadilishana Vituo — Kumtafuta Mwenye Kubadilishana Nawe',
+    description:
+      'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Kubadilishana Vituo — Tanzania',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Kubadilishana Vituo — Tanzania',
+    description:
+      'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
