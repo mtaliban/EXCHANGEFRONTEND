@@ -64,6 +64,7 @@ export default function DashboardBoard() {
   // mawili yanafanana) / none (wasio na somo linalofanana) + search ya masomo.
   const [subjectFilter, setSubjectFilter] = useState<'off' | 'any' | 'all' | 'none'>('off');
   const [subjectQ, setSubjectQ] = useState('');
+  const [cadreCode, setCadreCode] = useState<string>('');
   const [board, setBoard] = useState<any>(null);
   const [districts, setDistricts] = useState<District[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -124,13 +125,14 @@ export default function DashboardBoard() {
       if (facilityId !== undefined) params.facility_id = facilityId;
       if (subjectFilter !== 'off') params.subject_filter = subjectFilter;
       if (subjectQ.trim()) params.subject_q = subjectQ.trim();
+      if (cadreCode) params.cadre_code = cadreCode;
       bustGetCache(); // FUSHA frontend cache — data lazima iwe FRESH kila filter inapobadilika
       const b = await getBoard(params, forceFresh);
       setBoard(b);
     } finally {
       setLoading(false);
     }
-  }, [effectiveRegionIds, districtId, facilityId, subjectFilter, subjectQ]);
+  }, [effectiveRegionIds, districtId, facilityId, subjectFilter, subjectQ, cadreCode]);
 
 
 
@@ -211,6 +213,7 @@ export default function DashboardBoard() {
     setFacilityId(undefined);
     setSubjectFilter('off');
     setSubjectQ('');
+    setCadreCode('');
   };
 
   const currentRegionName = useMemo(() => {
@@ -374,7 +377,7 @@ export default function DashboardBoard() {
             )}
           </div>
 
-          {/* Kichujio cha masomo — onyeshwa kwa wasomi wote */}
+          {/* Kichujio cha masomo — onyeshwa kwa walimu (elimu) */}
           {isEdu && (
             <div className="mt-2 space-y-1.5">
               <div className="flex items-center gap-1 flex-wrap">
@@ -401,6 +404,32 @@ export default function DashboardBoard() {
                   onChange={(e) => { setSubjectQ(e.target.value); setPage(1); }}
                 />
               </div>
+            </div>
+          )}
+          {/* Kichujio cha kada — onyeshwa kwa wafanyakazi wa afya */}
+          {!isEdu && (
+            <div className="mt-2">
+              <label className="text-[11px] font-semibold text-brand-grey-600 dark:text-brand-grey-300 mr-1">{t('board.cadre')}:</label>
+              <select className="input text-xs py-1.5 mt-1 w-full sm:w-auto sm:min-w-[180px]" value={cadreCode}
+                onChange={(e) => { setCadreCode(e.target.value); setPage(1); }}>
+                <option value="">{t('board.cadre_all')}</option>
+                <option value="CO">Clinical Officer (CO)</option>
+                <option value="ACO">Assistant Clinical Officer (ACO)</option>
+                <option value="CA">Clinical Assistant (CA)</option>
+                <option value="MD">Medical Doctor (MD)</option>
+                <option value="AMO">Assistant Medical Officer (AMO)</option>
+                <option value="ANO">Assistant Nursing Officer (ANO)</option>
+                <option value="NO">Nursing Officer (NO)</option>
+                <option value="EN">Enrolled Nurse (EN)</option>
+                <option value="RN">Registered Nurse (RN)</option>
+                <option value="HA">Health Assistant (HA)</option>
+                <option value="MA">Medical Attendant (MA)</option>
+                <option value="PHARM_2">Pharmacist II</option>
+                <option value="LAB_TECH_2">Laboratory Technologist II</option>
+                <option value="LAB_SCI_2">Laboratory Scientist II</option>
+                <option value="LAB_ASST">Laboratory Assistant</option>
+                <option value="SR_LAB_ASST">Senior Laboratory Assistant</option>
+              </select>
             </div>
           )}
       </div>
