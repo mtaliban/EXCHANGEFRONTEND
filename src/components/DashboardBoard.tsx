@@ -413,22 +413,21 @@ export default function DashboardBoard() {
               <select className="input text-xs py-1.5 mt-1 w-full sm:w-auto sm:min-w-[180px]" value={cadreCode}
                 onChange={(e) => { setCadreCode(e.target.value); setPage(1); }}>
                 <option value="">{t('board.cadre_all')}</option>
-                <option value="CO">Clinical Officer (CO)</option>
-                <option value="ACO">Assistant Clinical Officer (ACO)</option>
-                <option value="CA">Clinical Assistant (CA)</option>
-                <option value="MD">Medical Doctor (MD)</option>
-                <option value="AMO">Assistant Medical Officer (AMO)</option>
-                <option value="ANO">Assistant Nursing Officer (ANO)</option>
-                <option value="NO">Nursing Officer (NO)</option>
-                <option value="EN">Enrolled Nurse (EN)</option>
-                <option value="RN">Registered Nurse (RN)</option>
-                <option value="HA">Health Assistant (HA)</option>
-                <option value="MA">Medical Attendant (MA)</option>
-                <option value="PHARM_2">Pharmacist II</option>
-                <option value="LAB_TECH_2">Laboratory Technologist II</option>
-                <option value="LAB_SCI_2">Laboratory Scientist II</option>
-                <option value="LAB_ASST">Laboratory Assistant</option>
-                <option value="SR_LAB_ASST">Senior Laboratory Assistant</option>
+                <option value="MD">Daktari (MD)</option>
+                <option value="AMO">Msaidizi wa Daktari (AMO)</option>
+                <option value="CO">Afisa wa Matibabu (CO)</option>
+                <option value="ACO">Msaidizi wa Afisa wa Matibabu (ACO)</option>
+                <option value="CA">Msaidizi wa Matibabu (CA)</option>
+                <option value="RN">Upasuaji wa Usajili (RN)</option>
+                <option value="NO">Afisa wa Ushariti (NO)</option>
+                <option value="EN">Upasuaji wa Kusajiliwa (EN)</option>
+                <option value="HA">Msaidizi wa Afya (HA)</option>
+                <option value="MA">Msaidizi wa Matibabu (MA)</option>
+                <option value="PHARM_2">Daktari wa Dawa (PHARM)</option>
+                <option value="LAB_TECH_2">Teknolojia ya Maabara (LAB TECH)</option>
+                <option value="LAB_SCI_2">Wanasayansi wa Maabara (LAB SCI)</option>
+                <option value="LAB_ASST">Msaidizi wa Maabara (LAB ASST)</option>
+                <option value="SR_LAB_ASST">Msaidizi Mkuu wa Maabara (SR LAB)</option>
               </select>
             </div>
           )}
@@ -579,6 +578,11 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
             <span className="text-[11px] font-medium text-brand-grey-600 dark:text-brand-grey-300 break-words min-w-0 leading-snug">
               {c.cadre_display || c.cadre_code}
             </span>
+            {!isEdu && c.cadre_code && (
+              <span className="text-[9px] font-bold text-white bg-emerald-500 dark:bg-emerald-600 px-1.5 py-0.5 rounded-full">
+                {c.cadre_code}
+              </span>
+            )}
           </div>
         </div>
       </div>
