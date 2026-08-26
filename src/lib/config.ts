@@ -60,3 +60,4 @@ export const APP_ROUTES = [
   // Login/Register pia hazina header/footer — page safi (mshale wa kurudi tu).
   '/login', '/register', '/forgot-password', '/reset-password',
 ];
+
