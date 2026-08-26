@@ -32,9 +32,6 @@ export default function Footer() {
         {/* ── Desktop: grid ya 4 ── */}
         <div className="hidden md:grid md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <img src="/images/LOGO.jpeg" alt="Logo" className="h-12 w-auto rounded" />
-            </div>
             <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">{t('footer.desc')}</p>
           </div>
 
@@ -84,9 +81,6 @@ export default function Footer() {
         {/* ── Simu: grid ya safu 2 zilizopangiliwa (Kurasa | Akaunti) ── */}
         <div className="md:hidden">
           <div className="flex items-center justify-between gap-2 mb-4">
-            <div className="flex items-center gap-2">
-              <img src="/images/LOGO.jpeg" alt="Logo" className="h-10 w-auto rounded" />
-            </div>
             <div className="flex items-center gap-2.5">
               <a href="https://wa.me/255625607088" aria-label="WhatsApp" className="w-8 h-8 rounded-lg bg-brand-blue-50 flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition">
                 <MessageCircle size={16} />
