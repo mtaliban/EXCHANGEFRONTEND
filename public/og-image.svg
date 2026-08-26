@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0f4ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Blue accent bar -->
+  <rect x="0" y="0" width="8" height="630" fill="#2563EB"/>
+  
+  <!-- Title -->
+  <text x="600" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="56" font-weight="800" fill="#111827" text-anchor="middle">Kubadilishana Vituo</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="270" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#2563EB" text-anchor="middle">Tanzania</text>
+  
+  <!-- Description -->
+  <text x="600" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#6B7280" text-anchor="middle">Mfumo rasmi wa kubadilishana vituo vya kazi</text>
+  <text x="600" y="375" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#6B7280" text-anchor="middle">kwa watumishi wa Afya, Elimu, Umma na Kilimo</text>
+  
+  <!-- Stats -->
+  <rect x="150" y="430" width="220" height="100" rx="12" fill="#EFF6FF" stroke="#DBEAFE" stroke-width="1"/>
+  <text x="260" y="475" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="800" fill="#2563EB" text-anchor="middle">211+</text>
+  <text x="260" y="510" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#6B7280" text-anchor="middle">Watumiaji</text>
+  
+  <rect x="420" y="430" width="220" height="100" rx="12" fill="#EFF6FF" stroke="#DBEAFE" stroke-width="1"/>
+  <text x="530" y="475" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="800" fill="#2563EB" text-anchor="middle">27</text>
+  <text x="530" y="510" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#6B7280" text-anchor="middle">Mikoa</text>
+  
+  <rect x="690" y="430" width="220" height="100" rx="12" fill="#EFF6FF" stroke="#DBEAFE" stroke-width="1"/>
+  <text x="800" y="475" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="800" fill="#2563EB" text-anchor="middle">188</text>
+  <text x="800" y="510" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#6B7280" text-anchor="middle">Wilaya</text>
+  
+  <!-- URL -->
+  <text x="600" y="600" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#9CA3AF" text-anchor="middle">esstranfer.com</text>
+</svg>

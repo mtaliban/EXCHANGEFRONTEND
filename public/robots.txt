@@ -3,5 +3,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 Disallow: /dashboard/
+Disallow: /reset-password/
+Disallow: /notifications/
 
 Sitemap: https://esstranfer.com/sitemap.xml

@@ -8,6 +8,80 @@ export default function HomePage() {
   const t = useT();
   return (
     <div className="bg-white dark:bg-brand-grey-950">
+      {/* JSON-LD Structured Data — Google inaelewa site vizuri zaidi */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Kubadilishana Vituo',
+          alternateName: 'Kubadilishana Vituo Tanzania',
+          url: 'https://esstranfer.com',
+          description: 'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
+          inLanguage: 'sw',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://esstranfer.com/search?q={search_term_string}',
+            'query-input': 'required name=search_term_string',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Kubadilishana Vituo',
+            url: 'https://esstranfer.com',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://esstranfer.com/og-image.png',
+            },
+          },
+          about: {
+            '@type': 'Thing',
+            name: 'Kubadilishana Vituo Tanzania',
+            description: 'Mfumo wa kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania',
+          },
+        }) }}
+      />
+      {/* FAQ Schema — Google inapenda maswali ya mara kwa mara */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'Kubadilishana Vituo ni nini?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Kubadilishana Vituo ni mfumo rasmi wa mtandaoni unaowasaidia watumishi wa serikali Tanzania (walimu, wauguzi, madaktari, n.k.) kutafuta mtu wa kubadilishana naye vituo vya kazi. Mtumiaji anaandika anapofanya kazi na anataka kwenda, mfumo unamtafutia mtu wa kubadilishana naye.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Je, huduma ni ya bure?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Ndiyo, kujiandikisha na kutafuta mtu wa kubadilishana ni bure kabisa. Kuna chaguo la kuchangia kwa mtaji wa mfumo.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Nani anatumia Kubadilishana Vituo?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Watumishi wa serikali wa Tanzania: walimu wa elimu ya msingi na sekondari, watumishi wa afya (madaktari, wauguzi, wauguzi wa maabara), watumishi wa umma, na wafanyakazi wa kilimo.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Jinsi gani ninapata mtu wa kubadilishana naye?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Baada ya kujisajili na kuingia, dashibodi yako inakuletea watu ambao wako mkoani na wanataka kwenda mkoa wako, au wako mkoani unakotaka kwenda. Unaweza kuwasiliana nao moja kwa moja.',
+              },
+            },
+          ],
+        }) }}
+      />
       {/* ═══ HERO — safi, nyeupe, hakuna bluu ya background ═══ */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 text-center">
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-grey-900 dark:text-white leading-tight mb-4">
