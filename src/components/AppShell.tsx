@@ -80,6 +80,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* ═══ DESKTOP SIDEBAR (hidden kwenye simu) ═══ */}
         <aside className="hidden md:block md:w-64 md:min-h-screen md:sticky md:top-0 bg-white border-r border-brand-grey-100">
           <div className="p-4 border-b border-brand-grey-100">
+            {/* Logo */}
+            <img src="/images/LOGO.jpeg" alt="Logo" className="h-16 w-auto rounded-lg mx-auto mb-3" />
             {/* Toolbar: WS status + language switcher (badilisha lugha) */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <WsStatus />
@@ -172,6 +174,7 @@ function MobileTopBar({ links, user, onLogout }: {
     <>
       {/* ═══ LEFT: Hamburger icon — bofya = dropdown menu ═══ */}
       <div className="relative flex-shrink-0">
+        <img src="/images/LOGO.jpeg" alt="Logo" className="h-9 w-auto rounded" />
         <button
           onClick={() => { setProfileOpen(false); setMenuOpen((v) => !v); }}
           className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-200 hover:bg-brand-grey-200 dark:hover:bg-brand-grey-700 transition"
