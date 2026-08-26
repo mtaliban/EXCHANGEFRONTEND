@@ -104,11 +104,11 @@ export default function HomePage() {
 
         {/* buttons — bluu tu kwenye CTA */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/register" className="btn-primary text-sm">
+          <Link href="/register" className="btn-primary text-base px-8 py-3">
             {t('landing.cta')}
-            <ArrowRight size={16} />
+            <ArrowRight size={18} />
           </Link>
-          <Link href="/services" className="btn-outline text-sm">
+          <Link href="/services" className="btn-outline text-base px-8 py-3">
             {t('landing.services')}
           </Link>
         </div>
@@ -163,9 +163,9 @@ export default function HomePage() {
           <p className="text-sm sm:text-base text-brand-grey-500 dark:text-brand-grey-400 mb-6 max-w-2xl mx-auto">
             {t('landing.cta_body')}
           </p>
-          <Link href="/register" className="btn-primary text-sm">
+          <Link href="/register" className="btn-primary text-base px-8 py-3">
             {t('landing.register_now')}
-            <ArrowRight size={16} />
+            <ArrowRight size={18} />
           </Link>
         </div>
       </section>
