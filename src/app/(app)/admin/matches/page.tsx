@@ -46,7 +46,7 @@ export default function AdminMatchesPage() {
   const [category, setCategory] = useState('');
   const [regions, setRegions] = useState<any[]>([]);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 18;
+  const PAGE_SIZE = 12;
 
   const load = useCallback(async () => {
     if (!regionId) { setUsers([]); setTotal(0); setLoading(false); return; }
@@ -129,7 +129,7 @@ export default function AdminMatchesPage() {
         </select>
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-400" />
-          <input className="input pl-9 w-full" placeholder="Tafuta jina, simu, kada au wilaya..."
+          <input className="input pl-9 w-full" placeholder="Tafuta kwa jina, namba ya simu, kada au wilaya..."
             value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
         </div>
       </div>
@@ -156,7 +156,7 @@ export default function AdminMatchesPage() {
       ) : (
         <>
           {/* ═══ GRID — 3 columns, data yote inaonekana ═══ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {pageItems.map((u) => (
               <UserCard key={u._id} user={u} destRegion={regionName} />
             ))}
@@ -190,11 +190,11 @@ function UserCard({ user: u, destRegion }: { user: any; destRegion: string }) {
   const initials = (u.full_name || '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-3 flex flex-col gap-2 hover:border-brand-blue dark:hover:border-brand-grey-500 transition">
+    <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-4 flex flex-col gap-3 hover:border-brand-blue dark:hover:border-brand-grey-500 transition shadow-sm hover:shadow-md">
       {/* Jina + Avatar */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3">
         <div className="relative flex-shrink-0">
-          <div className="w-9 h-9 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold">
+          <div className="w-11 h-11 rounded-full bg-brand-blue text-white flex items-center justify-center text-sm font-bold">
             {initials}
           </div>
           {u.online && (
@@ -202,18 +202,18 @@ function UserCard({ user: u, destRegion }: { user: any; destRegion: string }) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1 flex-wrap">
-            <span className="text-[13px] font-bold text-brand-grey-900 dark:text-white truncate">{u.full_name}</span>
-            {u.is_verified && <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 rounded-full">✓</span>}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{u.full_name}</span>
+            {u.is_verified && <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">✓</span>}
           </div>
-          <div className="text-[10px] text-brand-grey-500 truncate">
+          <div className="text-xs text-brand-grey-500 truncate">
             <span className="font-semibold text-brand-blue-600">{categoryLabel(u.category)}</span> · {cadreLabel(u.cadre_code)}
           </div>
         </div>
       </div>
 
       {/* Kutoka → Kuja */}
-      <div className="bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 text-[11px] space-y-1">
+      <div className="bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-3 py-2 text-xs space-y-1.5">
         <div className="text-brand-grey-600 dark:text-brand-grey-300 font-medium">
           <MapPin size={10} className="inline" /> Kutoka: <b className="text-brand-grey-800 dark:text-brand-grey-200">{u.current_region}{u.current_district ? `, ${u.current_district}` : ''}</b>
         </div>
@@ -225,19 +225,19 @@ function UserCard({ user: u, destRegion }: { user: any; destRegion: string }) {
 
       {/* Masomo */}
       {u.subjects?.length > 0 && (
-        <div className="flex flex-wrap gap-1 text-[10px]">
-          {u.subjects.slice(0, 3).map((s: string) => (
-            <span key={s} className="px-1.5 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 font-semibold">{s}</span>
+        <div className="flex flex-wrap gap-1.5">
+          {u.subjects.slice(0, 5).map((s: string) => (
+            <span key={s} className="px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 text-xs font-semibold border border-brand-blue/10">{s}</span>
           ))}
-          {u.subjects.length > 3 && <span className="text-brand-grey-400">+{u.subjects.length - 3}</span>}
+          {u.subjects.length > 5 && <span className="text-brand-grey-400 text-xs">+{u.subjects.length - 5}</span>}
         </div>
       )}
 
       {/* Simu */}
-      <div className="flex items-center gap-1.5 mt-auto pt-1">
+      <div className="flex items-center gap-2 mt-auto pt-1">
         {u.phone_primary && (
-          <a href={`tel:${u.phone_primary}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-[10px] font-semibold text-brand-grey-900 dark:text-white hover:border-brand-blue transition flex-1 justify-center">
-            <Phone size={10} /> {u.phone_primary}
+          <a href={`tel:${u.phone_primary}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-xs font-semibold text-brand-grey-900 dark:text-white hover:border-brand-blue transition flex-1 justify-center">
+            <Phone size={12} /> {u.phone_primary}
           </a>
         )}
       </div>

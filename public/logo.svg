@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="48" viewBox="0 0 200 48">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563EB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Icon: Two arrows exchanging -->
+  <rect x="2" y="8" width="32" height="32" rx="8" fill="url(#logoGrad)"/>
+  <path d="M10 20 L22 20 L18 16" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M26 28 L14 28 L18 32" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Text -->
+  <text x="42" y="22" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#111827">Kubadilishana</text>
+  <text x="42" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#2563EB">Vituo</text>
+</svg>

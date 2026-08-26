@@ -318,7 +318,7 @@ export default function AdminUsersPage() {
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-col sm:flex-row gap-2">
-          <input className="input flex-1 min-w-0" placeholder={t('admin.search_ph')}
+          <input className="input flex-1 min-w-0" placeholder="Tafuta kwa jina, namba ya simu au kada..."
             value={q} onChange={(e) => setQ(e.target.value)} />
           <select className="input sm:w-auto" value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="">{t('admin.all_depts')}</option>
@@ -661,9 +661,12 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">
           {row(t('admin.col_phone'), <span className="text-brand-blue font-semibold">{user.phone_primary}</span>)}
           {row('Password', (
-            <div className="flex flex-col items-end gap-0.5">
+            <div className="flex flex-col items-end gap-1">
               {showPw ? (
-                <span className="text-brand-blue font-mono text-xs font-bold bg-brand-blue-50 px-2 py-0.5 rounded-md">{showPw}</span>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="text-brand-blue font-mono text-sm font-bold bg-brand-blue-50 px-3 py-1 rounded-lg border border-brand-blue/20">{showPw}</span>
+                  <button onClick={() => setShowPw(null)} className="text-[10px] text-brand-grey-400 hover:text-brand-grey-600 underline">Ficha</button>
+                </div>
               ) : user.has_password ? (
                 <button
                   onClick={async (e) => {
@@ -676,16 +679,25 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
                       const res = await fetch(`${API_URL}/admin/users/${user._id}/password`, {
                         headers: token ? { Authorization: `Bearer ${token}` } : {},
                       });
-                      if (res.ok) { const d = await res.json(); setShowPw(d.password_plain || d.message || 'Haijawekwa'); }
+                      if (res.ok) {
+                        const d = await res.json();
+                        if (d.password_plain) {
+                          setShowPw(d.password_plain);
+                        } else if (d.status === 'hash_only') {
+                          setShowPw('🔒 Password imeshahashwa — reset ili kuiona');
+                        } else {
+                          setShowPw(d.message || 'Haijawekwa');
+                        }
+                      }
                     } catch {}
                     setPwLoading(false);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-blue bg-brand-blue-50 hover:bg-brand-blue-100 px-2 py-0.5 rounded-md border border-brand-blue/20 transition"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand-blue hover:bg-brand-blue-700 px-3 py-1.5 rounded-lg transition shadow-sm"
                 >
-                  {pwLoading ? <Loader2 size={11} className="animate-spin" /> : <Eye size={11} />} Ona Password
+                  {pwLoading ? <Loader2 size={13} className="animate-spin" /> : <Eye size={13} />} Ona Password
                 </button>
               ) : (
-                <span className="text-brand-red font-semibold text-xs flex items-center gap-1"><XCircle size={12} /> Haijawekwa</span>
+                <span className="text-brand-grey-500 font-medium text-xs flex items-center gap-1 bg-brand-grey-50 px-2 py-1 rounded-md"><XCircle size={12} /> Haijawekwa password</span>
               )}
             </div>
           ))}
