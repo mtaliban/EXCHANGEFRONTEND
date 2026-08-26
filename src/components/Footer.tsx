@@ -33,10 +33,7 @@ export default function Footer() {
         <div className="hidden md:grid md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-brand-blue flex items-center justify-center text-white font-bold text-sm">
-                KV
-              </div>
-              <span className="font-bold text-brand-grey-900 dark:text-white">Kubadilishana Vituo</span>
+              <img src="/images/LOGO.jpeg" alt="Logo" className="h-8 w-auto rounded" />
             </div>
             <p className="text-sm text-brand-grey-500 dark:text-brand-grey-400 leading-relaxed">{t('footer.desc')}</p>
           </div>
@@ -88,10 +85,7 @@ export default function Footer() {
         <div className="md:hidden">
           <div className="flex items-center justify-between gap-2 mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-brand-blue flex items-center justify-center text-white font-bold text-xs">
-                KV
-              </div>
-              <span className="font-bold text-brand-grey-900 dark:text-white text-sm">Kubadilishana Vituo</span>
+              <img src="/images/LOGO.jpeg" alt="Logo" className="h-7 w-auto rounded" />
             </div>
             <div className="flex items-center gap-2.5">
               <a href="https://wa.me/255625607088" aria-label="WhatsApp" className="w-8 h-8 rounded-lg bg-brand-blue-50 flex items-center justify-center text-brand-blue hover:bg-brand-blue hover:text-white transition">
