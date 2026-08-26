@@ -84,6 +84,7 @@ export default function HomePage() {
       />
       {/* ═══ HERO — safi, nyeupe, hakuna bluu ya background ═══ */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 text-center">
+        <img src="/images/LOGO.jpeg" alt="Logo" className="mx-auto mb-8 h-28 sm:h-36 w-auto rounded-xl shadow-lg" />
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-grey-900 dark:text-white leading-tight mb-4">
           {t('landing.title1')}{' '}
           <span className="text-brand-blue">{t('landing.title2')}</span>
