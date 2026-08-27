@@ -11,7 +11,7 @@ import { useLive } from '@/lib/liveSocket';
 import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
-  BarChart3, Bell, Crown, Database, GitMerge, HandCoins, KeyRound, LayoutDashboard,
+  BarChart3, Bell, Crown, Database, GitMerge, HandCoins, Heart, KeyRound, LayoutDashboard,
   LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
@@ -35,6 +35,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         { href: '/admin', label: t('nav.admin'), icon: Crown },
         { href: '/admin/users', label: t('nav.users'), icon: Users },
         { href: '/admin/matches', label: t('nav.matches', 'Waliopata Wenzao'), icon: GitMerge },
+        { href: '/admin/real-matches', label: t('nav.real_matches', 'Match za Kweli'), icon: Heart },
         { href: '/admin/data', label: t('nav.data'), icon: Database },
         { href: '/admin/announcements', label: t('nav.announcements'), icon: MegaphoneIcon },
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },

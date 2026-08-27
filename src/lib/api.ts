@@ -412,6 +412,8 @@ export const adminUsers = (params?: any, bypass = false) =>
   client.get(`${ADMIN}/admin/users`, { params, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminMatches = (limit = 100) =>
   client.get(`${ADMIN}/admin/matches`, { params: { limit }, ttl: _ADMIN_TTL } as any).then((r) => r.data);
+export const adminRealMatches = (params?: { category?: string; cadre_code?: string; limit?: number }, bypass = false) =>
+  client.get(`${ADMIN}/admin/real-matches`, { params, ttl: _ADMIN_TTL, bypassCache: bypass } as any).then((r) => r.data);
 export const adminUserMatches = (user_id: string, limit = 50) =>
   client.get(`${ADMIN}/admin/users/${user_id}/matches`, { params: { limit }, ttl: _ADMIN_TTL, bypassCache: true } as any).then((r) => r.data);
 export const adminUserBoard = (user_id: string, params?: any) =>
