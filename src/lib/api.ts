@@ -322,6 +322,9 @@ export const getBoard = (params?: {
   subject_filter?: 'off' | 'any' | 'all' | 'none';
   subject_q?: string;
   limit?: number;
+  q?: string;
+  source_region_id?: number;
+  cadre_code?: string;
 }, bypassCache = false) =>
   // TTL ndefu (45s): kurudi kwenye dashboard hakufetch DB kila mara — WS events
   // zinabust cache na kufetch fresh PAPO HAPO (data ya live haichemki).
