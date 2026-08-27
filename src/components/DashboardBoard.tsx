@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import {
-  getBoard, getRegions, getDistricts, getFacilities, logCall, bustGetCache,
-  type Region, type District, type Facility,
+  getBoard, getRegions, getDistricts, getFacilities, logCall, bustGetCache, getCadres,
+  type Region, type District, type Facility, type Cadre,
 } from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { useLive } from '@/lib/liveSocket';
@@ -73,6 +73,13 @@ export default function DashboardBoard() {
   const [now, setNow] = useState(Date.now());
   const [page, setPage] = useState(1);
   const [lastArrivalKey, setLastArrivalKey] = useState<string | null>(null);
+  const [cadres, setCadres] = useState<Cadre[]>([]);
+
+  // Load cadres dynamically based on category
+  useEffect(() => {
+    const cat = isAdmin ? undefined : myCategory;
+    getCadres(cat).then(setCadres).catch(() => {});
+  }, [isAdmin, myCategory]);
 
   // REFRESH user data on mount — is_verified + contact_enabled lazima ziwe FRESH
   // ili canContact isome data halisi, sio stale ya auth store.
@@ -416,28 +423,16 @@ export default function DashboardBoard() {
               </div>
             </div>
           )}
-          {/* Kichujio cha kada — onyeshwa kwa wafanyakazi wa afya AU admin */}
+          {/* Kichujio cha kada — onyeshwa kwa wote (afya/elimu/.admin) — dynamic kutoka DB */}
           {(!isEdu || isAdmin) && (
             <div className="mt-2">
               <label className="text-[11px] font-semibold text-brand-grey-600 dark:text-brand-grey-300 mr-1">{t('board.cadre')}:</label>
               <select className="input text-xs py-1.5 mt-1 w-full sm:w-auto sm:min-w-[180px]" value={cadreCode}
                 onChange={(e) => { setCadreCode(e.target.value); setPage(1); }}>
                 <option value="">{t('board.cadre_all')}</option>
-                <option value="MD">Daktari (MD)</option>
-                <option value="AMO">Msaidizi wa Daktari (AMO)</option>
-                <option value="CO">Afisa wa Matibabu (CO)</option>
-                <option value="ACO">Msaidizi wa Afisa wa Matibabu (ACO)</option>
-                <option value="CA">Msaidizi wa Matibabu (CA)</option>
-                <option value="RN">Upasuaji wa Usajili (RN)</option>
-                <option value="NO">Afisa wa Ushariti (NO)</option>
-                <option value="EN">Upasuaji wa Kusajiliwa (EN)</option>
-                <option value="HA">Msaidizi wa Afya (HA)</option>
-                <option value="MA">Msaidizi wa Matibabu (MA)</option>
-                <option value="PHARM_2">Daktari wa Dawa (PHARM)</option>
-                <option value="LAB_TECH_2">Teknolojia ya Maabara (LAB TECH)</option>
-                <option value="LAB_SCI_2">Wanasayansi wa Maabara (LAB SCI)</option>
-                <option value="LAB_ASST">Msaidizi wa Maabara (LAB ASST)</option>
-                <option value="SR_LAB_ASST">Msaidizi Mkuu wa Maabara (SR LAB)</option>
+                {cadres.filter((c) => !isAdmin || c.category === 'health').map((c) => (
+                  <option key={c.code} value={c.code}>{c.display_name}</option>
+                ))}
               </select>
             </div>
           )}
