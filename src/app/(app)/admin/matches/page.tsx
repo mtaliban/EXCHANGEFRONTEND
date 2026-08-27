@@ -9,16 +9,45 @@ import {
   Search, Phone, ArrowLeftRight, MapPin,
 } from 'lucide-react';
 
-/* ── Cadre label map ───────────────────────────────────────────── */
-const CADRE_LABELS: Record<string, string> = {
-  TEACHER_PRIMARY: 'Walimu wa Msingi',
-  TEACHER_SECONDARY: 'Walimu wa Sekondari',
-  CO: 'Afisa Afya',
-  HA: 'Msaidizi wa Afya',
-  EN: 'Enrolled Nurse',
-  MA: 'Medical Attendant',
-  NU: 'Muuguzi',
-};
+/* ── Cadre options by category ───────────────────────────────── */
+const EDUCATION_CADRES = [
+  { code: 'TEACHER_PRIMARY', label: 'Mwalimu wa Msingi' },
+  { code: 'TEACHER_SECONDARY', label: 'Mwalimu wa Sekondari' },
+  { code: 'TEACHER_SPECIAL', label: 'Mwalimu wa Elimu ya Pekee' },
+];
+
+const HEALTH_CADRES = [
+  { code: 'MD', label: 'Daktari (MD)' },
+  { code: 'CO', label: 'Afisa wa Afya (CO)' },
+  { code: 'ACO', label: 'Msaidizi wa Afisa wa Afya' },
+  { code: 'CA', label: 'Msaidizi wa Kliniki' },
+  { code: 'AMO', label: 'Msaidizi wa Daktari' },
+  { code: 'NO', label: 'Afisa wa Ugojaji (NO)' },
+  { code: 'RN', label: 'Muuguzi Aliyesajiliwa (RN)' },
+  { code: 'EN', label: 'Muuguzi Aliyeandikwa (EN)' },
+  { code: 'ANO', label: 'Msaidizi wa Ugojaji (ANO)' },
+  { code: 'HA', label: 'Msaidizi wa Afya (HA)' },
+  { code: 'MA', label: 'Msaidizi wa Matibabu (MA)' },
+  { code: 'LAB_TECH_1', label: 'Teknolojia ya Maabara I' },
+  { code: 'LAB_TECH_2', label: 'Teknolojia ya Maabara II' },
+  { code: 'LAB_SCI_2', label: 'Wanasayansi wa Maabara II' },
+  { code: 'LAB_ASST', label: 'Msaidizi wa Maabara' },
+  { code: 'SR_LAB_ASST', label: 'Msaidizi Mkuu wa Maabara' },
+  { code: 'MALT', label: 'Teknolojia ya Maabara ya Matibabu' },
+  { code: 'PHARM_2', label: 'Daktari wa Pharmacy II' },
+];
+
+const ALL_CADRES = [...EDUCATION_CADRES, ...HEALTH_CADRES];
+
+const CADRE_LABELS: Record<string, string> = Object.fromEntries(
+  ALL_CADRES.map(c => [c.code, c.label])
+);
+
+function getCadreOptions(category: string) {
+  if (category === 'education') return EDUCATION_CADRES;
+  if (category === 'health') return HEALTH_CADRES;
+  return ALL_CADRES;
+}
 
 function cadreLabel(code: string): string {
   return CADRE_LABELS[code] || code || '—';
@@ -44,6 +73,7 @@ export default function AdminMatchesPage() {
   const [q, setQ] = useState('');
   const [regionId, setRegionId] = useState<number | ''>('');
   const [category, setCategory] = useState('');
+  const [cadreCode, setCadreCode] = useState('');
   const [sourceRegion, setSourceRegion] = useState<number | ''>('');
   const [regions, setRegions] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -58,6 +88,7 @@ export default function AdminMatchesPage() {
       try { token = raw ? (JSON.parse(raw)?.state?.token || null) : null; } catch {}
       const params = new URLSearchParams({ region_id: String(regionId), limit: '500' });
       if (category) params.set('category', category);
+      if (cadreCode) params.set('cadre_code', cadreCode);
       const res = await fetch(`${API_URL}/admin/incoming?${params}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -67,7 +98,7 @@ export default function AdminMatchesPage() {
       setTotal(data.total || 0);
     } catch { setUsers([]); setTotal(0); }
     finally { setLoading(false); }
-  }, [regionId, category]);
+  }, [regionId, category, cadreCode]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, []);
@@ -78,8 +109,10 @@ export default function AdminMatchesPage() {
       const regionName = regions.find((r: any) => r.id === sourceRegion)?.name;
       if (regionName && u.current_region !== regionName) return false;
     }
+    // Cadre filter — chuja kwa kada
+    if (cadreCode && u.cadre_code !== cadreCode) return false;
     // Search filter
-    if (!q) return sourceRegion ? true : true;
+    if (!q) return sourceRegion || cadreCode ? true : true;
     const ql = q.toLowerCase();
     const qNorm = normPhone(q);
     const nameMatch = u.full_name?.toLowerCase().includes(ql);
@@ -128,11 +161,21 @@ export default function AdminMatchesPage() {
         </select>
         <select className="input sm:w-44" value={category} onChange={(e) => {
           setCategory(e.target.value);
+          setCadreCode('');
           setPage(1);
         }}>
           <option value="">Idara Zote</option>
           <option value="education">Elimu</option>
           <option value="health">Afya</option>
+        </select>
+        <select className="input sm:w-56" value={cadreCode} onChange={(e) => {
+          setCadreCode(e.target.value);
+          setPage(1);
+        }}>
+          <option value="">Kada Zote</option>
+          {getCadreOptions(category).map(c => (
+            <option key={c.code} value={c.code}>{c.label}</option>
+          ))}
         </select>
         <select className="input sm:w-56" value={sourceRegion} onChange={(e) => {
           setSourceRegion(e.target.value ? Number(e.target.value) : '');
@@ -164,7 +207,7 @@ export default function AdminMatchesPage() {
           <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-brand-grey-100 flex items-center justify-center">
             <ArrowLeftRight size={24} className="text-brand-grey-400" />
           </div>
-          <p className="font-semibold text-brand-grey-700">Hakuna mtu anaetaka kuhamia {regionName}</p>
+          <p className="font-semibold text-brand-grey-700">Hakuna mtu anaetaka kuhamia {regionName}{cadreCode ? ` wa kada hii` : ''}</p>
           <p className="text-xs text-brand-grey-400 mt-1">Wataonekana mtu anapojiunga na kuchagua mkoa huu kama lengo</p>
         </div>
       ) : (
