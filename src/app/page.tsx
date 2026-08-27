@@ -14,8 +14,8 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'WebSite',
-          name: 'Kubadilishana Vituo',
-          alternateName: 'Kubadilishana Vituo Tanzania',
+          name: 'Kubadilishana Portal',
+          alternateName: ['Kubadilishana Vituo', 'Kubadilishana Portal Tanzania', 'Exchange Station Tanzania'],
           url: 'https://esstranfer.com',
           description: 'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi, Wafanyakazi wa Kilimo na watumishi wote wa serikali.',
           inLanguage: 'sw',
@@ -26,7 +26,7 @@ export default function HomePage() {
           },
           publisher: {
             '@type': 'Organization',
-            name: 'Kubadilishana Vituo',
+            name: 'Kubadilishana Portal',
             url: 'https://esstranfer.com',
             logo: {
               '@type': 'ImageObject',
@@ -35,8 +35,8 @@ export default function HomePage() {
           },
           about: {
             '@type': 'Thing',
-            name: 'Kubadilishana Vituo Tanzania',
-            description: 'Mfumo wa kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania — walimu, wauguzi, madaktari, wafanyakazi wa kilimo na watumishi wa umma',
+            name: 'Kubadilishana Portal Tanzania',
+            description: 'Kubadilishana Portal — Mfumo wa kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania — walimu, wauguzi, madaktari, wafanyakazi wa kilimo na watumishi wa umma',
           },
         }) }}
       />
@@ -49,10 +49,10 @@ export default function HomePage() {
           mainEntity: [
             {
               '@type': 'Question',
-              name: 'Kubadilishana Vituo ni nini?',
+              name: 'Kubadilishana Portal ni nini?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Kubadilishana Vituo ni mfumo rasmi wa mtandaoni unaowasaidia watumishi wa serikali Tanzania (walimu, wauguzi, madaktari, n.k.) kutafuta mtu wa kubadilishana naye vituo vya kazi. Mtumiaji anaandika anapofanya kazi na anataka kwenda, mfumo unamtafutia mtu wa kubadilishana naye.',
+                text: 'Kubadilishana Portal ni mfumo rasmi wa mtandaoni unaowasaidia watumishi wa serikali Tanzania (walimu, wauguzi, madaktari, n.k.) kutafuta mtu wa kubadilishana naye vituo vya kazi. Mtumiaji anaandika anapofanya kazi na anataka kwenda, mfumo unamtafutia mtu wa kubadilishana naye.',
               },
             },
             {
@@ -65,7 +65,7 @@ export default function HomePage() {
             },
             {
               '@type': 'Question',
-              name: 'Nani anatumia Kubadilishana Vituo?',
+              name: 'Nani anatumia Kubadilishana Portal?',
               acceptedAnswer: {
                 '@type': 'Answer',
                 text: 'Watumishi wote wa serikali wa Tanzania: Walimu wa Msingi, Walimu wa Sekondari, Madaktari, Wauguzi, Wauguzi wa Maabara, Wauguzi wa Meno, Afisa wa Afya, Msaidizi wa Afya, Afisa wa Kilimo, Msaidizi wa Kilimo, na watumishi wote wa umma. Huduma ni bure kabisa.',
@@ -81,7 +81,7 @@ export default function HomePage() {
             },
             {
               '@type': 'Question',
-              name: 'Je, Kubadilishana Portal inasaidia kada gani?',
+              name: 'Kubadilishana Portal inasaidia kada gani?',
               acceptedAnswer: {
                 '@type': 'Answer',
                 text: 'Kubadilishana Portal inasaidia kada zote: Walimu (Msingi na Sekondari), Wauguzi, Madaktari, Wauguzi wa Maabara, Wauguzi wa Meno, Afisa wa Afya, Msaidizi wa Afya, Afisa wa Kilimo, na watumishi wote wa serikali Tanzania. Chagua kada yako na mkoa wako, mfumo utafute mwenzie.',

@@ -41,7 +41,7 @@ export default function AboutContent() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'Organization',
-          name: 'Kubadilishana Vituo',
+          name: 'Kubadilishana Portal',
           url: 'https://esstranfer.com',
           logo: 'https://esstranfer.com/images/LOGOL.jpeg',
           description: 'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi, Wafanyakazi wa Kilimo na watumishi wote wa serikali.',

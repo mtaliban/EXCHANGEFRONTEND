@@ -2,12 +2,12 @@ import type { Metadata } from 'next';
 import ContactContent from './ContactContent';
 
 export const metadata: Metadata = {
-  title: 'Wasiliana Nasi',
+  title: 'Wasiliana Nasi — Kubadilishana Portal',
   description:
-    'Wasiliana na timu ya Kubadilishana Vituo — maswali, maoni, au msaada. Tuko tayari kukusaidia.',
+    'Wasiliana na timu ya Kubadilishana Portal — maswali, maoni, au msaada. Tuko tayari kukusaidia.',
   openGraph: {
-    title: 'Wasiliana Nasi — Kubadilishana Vituo',
-    description: 'Wasiliana na timu ya Kubadilishana Vituo.',
+    title: 'Wasiliana Nasi — Kubadilishana Portal',
+    description: 'Wasiliana na timu ya Kubadilishana Portal.',
     url: 'https://esstranfer.com/contact',
     images: [{ url: 'https://esstranfer.com/images/LOGOL.jpeg', width: 1200, height: 630 }],
   },

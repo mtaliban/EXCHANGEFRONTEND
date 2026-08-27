@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import AboutContent from './AboutContent';
 
 export const metadata: Metadata = {
-  title: 'Kuhusu Sisi',
+  title: 'Kuhusu Sisi — Kubadilishana Portal',
   description:
-    'Jifunze kuhusu Kubadilishana Vituo — mfumo rasmi wa kusaidia watumishi wa Afya, Elimu, Umma na Kilimo Tanzania kubadilishana vituo vya kazi.',
+    'Jifunze kuhusu Kubadilishana Portal — mfumo rasmi wa kusaidia watumishi wa Afya, Elimu, Umma na Kilimo Tanzania kubadilishana vituo vya kazi. Bure kabisa.',
   openGraph: {
-    title: 'Kuhusu Sisi — Kubadilishana Vituo',
+    title: 'Kuhusu Sisi — Kubadilishana Portal',
     description:
-      'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania.',
+      'Kubadilishana Portal — mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania.',
     url: 'https://esstranfer.com/about',
     images: [{ url: 'https://esstranfer.com/images/LOGOL.jpeg', width: 1200, height: 630 }],
   },

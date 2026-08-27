@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import ServicesContent from './ServicesContent';
 
 export const metadata: Metadata = {
-  title: 'Huduma Zetu',
+  title: 'Huduma Zetu — Kubadilishana Portal',
   description:
     'Kubadilishana Portal — Huduma za kubadilishana vituo vya kazi kwa Walimu, Madaktari, Wauguzi, Wauguzi wa Maabara, Wauguzi wa Meno, Wafanyakazi wa Kilimo na watumishi wote wa serikali Tanzania. Bure kabisa.',
   openGraph: {

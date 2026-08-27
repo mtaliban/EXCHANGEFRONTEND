@@ -24,10 +24,10 @@ export default function ServicesContent() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'Service',
-          serviceType: 'Kubadilishana Vituo',
+          serviceType: 'Kubadilishana Portal',
           provider: {
             '@type': 'Organization',
-            name: 'Kubadilishana Vituo',
+            name: 'Kubadilishana Portal',
             url: 'https://esstranfer.com',
           },
           description: 'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi, Wafanyakazi wa Kilimo na watumishi wote wa serikali.',

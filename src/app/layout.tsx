@@ -6,14 +6,15 @@ import ThemeInit from '@/components/ThemeInit';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Kubadilishana Vituo — Kubadilishana Portal ya Tanzania | Walimu, Afya, Kilimo',
-    template: '%s | Kubadilishana Vituo',
+    default: 'Kubadilishana Portal — Tafuta Mwenye Kubadilishana Nawe Tanzania',
+    template: '%s | Kubadilishana Portal',
   },
   description:
     'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi, Wauguzi wa Maabara, Wauguzi wa Meno, Afisa wa Afya, Msaidizi wa Afya, Afisa wa Kilimo, na watumishi wote wa serikali. Jisajili sasa, chagua mkoa wako, na upate mwenzie.',
   keywords: [
-    'kubadilishana vituo',
+    'kubadilishana',
     'kubadilishana portal',
+    'kubadilishana vituo',
     'kuhamisha vituo',
     'kubadilishana vituo tanzania',
     'walimu kubadilishana vituo',
@@ -38,6 +39,9 @@ export const metadata: Metadata = {
     'kubadilishana mwanza',
     'kubadilishana mbeya',
     'kubadilishana zanzibar',
+    'kubadilishana vituo vyote',
+    'kubadilishana kazi',
+    'exchange tanzania',
     'exchange station tanzania',
     'tanzania teachers exchange',
     'health workers exchange tanzania',
@@ -46,32 +50,32 @@ export const metadata: Metadata = {
     'bure kubadilishana vituo',
     'mfumo wa kubadilishana vituo',
   ],
-  authors: [{ name: 'Kubadilishana Vituo' }],
-  creator: 'Kubadilishana Vituo',
-  publisher: 'Kubadilishana Vituo',
+  authors: [{ name: 'Kubadilishana Portal' }],
+  creator: 'Kubadilishana Portal',
+  publisher: 'Kubadilishana Portal',
   metadataBase: new URL('https://esstranfer.com'),
   openGraph: {
     type: 'website',
     locale: 'sw_TZ',
     url: 'https://esstranfer.com',
-    siteName: 'Kubadilishana Vituo',
-    title: 'Kubadilishana Vituo — Kumtafuta Mwenye Kubadilishana Nawe',
+    siteName: 'Kubadilishana Portal',
+    title: 'Kubadilishana Portal — Tafuta Mwenye Kubadilishana Nawe Tanzania',
     description:
-      'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
+      'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi na watumishi wote wa serikali.',
     images: [
       {
         url: 'https://esstranfer.com/images/LOGOL.jpeg',
         width: 1200,
         height: 630,
-        alt: 'Kubadilishana Vituo — Kubadilishana Portal ya Tanzania',
+        alt: 'Kubadilishana Portal — Tafuta Mwenye Kubadilishana Nawe Tanzania',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kubadilishana Vituo — Tanzania',
+    title: 'Kubadilishana Portal — Tanzania',
     description:
-      'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
+      'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi na watumishi wote.',
     images: ['https://esstranfer.com/images/LOGOL.jpeg'],
   },
   robots: {

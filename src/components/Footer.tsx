@@ -126,7 +126,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-brand-grey-200 dark:border-brand-grey-700 mt-6 pt-4 text-center text-xs text-brand-grey-500 dark:text-brand-grey-400">
-          © {new Date().getFullYear()} Kubadilishana Vituo. {t('footer.rights')}
+          © {new Date().getFullYear()} Kubadilishana Portal. {t('footer.rights')}
         </div>
       </div>
     </footer>
