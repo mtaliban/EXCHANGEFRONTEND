@@ -159,7 +159,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
     });
     // Notifications center (payments, profile updates, registrations…)
     const unsub4 = subscribe('notification', (p) => {
-      if (p.type === 'match.found' || p.type === 'message.sent' || p.type === 'call.initiated') return;
+      if (p.type === 'message.sent' || p.type === 'call.initiated') return;
       if (isSoundEnabled()) playPingSound();
       const meta = NOTIFICATION_TYPE_META[p.type] || { icon: DEFAULT_NOTIFICATION_ICON, color: 'blue' };
       showToast({
