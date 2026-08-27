@@ -171,7 +171,7 @@ export default function LoginContent() {
       <div className="w-full max-w-md">
         <div className="card p-4 sm:p-6">
           <div className="text-center mb-6">
-            <img src="/images/LOGO.jpeg" alt="Logo" className="mx-auto mb-4 h-20 sm:h-24 w-auto rounded-xl shadow-md" />
+            <img src="/images/LOGOL.jpeg" alt="Logo" className="mx-auto mb-4 h-20 sm:h-24 w-auto rounded-xl shadow-md" />
             <h1 className="text-2xl sm:text-3xl font-bold text-brand-grey-900">{t('login.welcome')}</h1>
             <p className="text-brand-grey-500 mt-1 text-sm">{t('login.subtitle')}</p>
           </div>

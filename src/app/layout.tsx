@@ -39,7 +39,7 @@ export const metadata: Metadata = {
       'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
     images: [
       {
-        url: 'https://esstranfer.com/images/LOGO.jpeg',
+        url: 'https://esstranfer.com/images/LOGOL.jpeg',
         width: 1200,
         height: 630,
         alt: 'Logo',
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     title: 'Kubadilishana Vituo — Tanzania',
     description:
       'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
-    images: ['https://esstranfer.com/images/LOGO.jpeg'],
+    images: ['https://esstranfer.com/images/LOGOL.jpeg'],
   },
   robots: {
     index: true,
@@ -65,9 +65,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: '/images/LOGOL.jpeg',
+    shortcut: '/images/LOGOL.jpeg',
+    apple: '/images/LOGOL.jpeg',
   },
 };
 
