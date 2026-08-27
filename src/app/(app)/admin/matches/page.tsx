@@ -44,6 +44,7 @@ export default function AdminMatchesPage() {
   const [q, setQ] = useState('');
   const [regionId, setRegionId] = useState<number | ''>('');
   const [category, setCategory] = useState('');
+  const [sourceRegion, setSourceRegion] = useState<number | ''>('');
   const [regions, setRegions] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 12;
@@ -72,7 +73,13 @@ export default function AdminMatchesPage() {
   useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, []);
 
   const filtered = users.filter((u) => {
-    if (!q) return true;
+    // Kutoka filter — chuja kwa mkoa wa chanzo
+    if (sourceRegion) {
+      const regionName = regions.find((r: any) => r.id === sourceRegion)?.name;
+      if (regionName && u.current_region !== regionName) return false;
+    }
+    // Search filter
+    if (!q) return sourceRegion ? true : true;
     const ql = q.toLowerCase();
     const qNorm = normPhone(q);
     const nameMatch = u.full_name?.toLowerCase().includes(ql);
@@ -126,6 +133,13 @@ export default function AdminMatchesPage() {
           <option value="">Idara Zote</option>
           <option value="education">Elimu</option>
           <option value="health">Afya</option>
+        </select>
+        <select className="input sm:w-56" value={sourceRegion} onChange={(e) => {
+          setSourceRegion(e.target.value ? Number(e.target.value) : '');
+          setPage(1);
+        }}>
+          <option value="">Kutoka: Mikoa yote</option>
+          {regions.map((r) => <option key={r.id} value={r.id}>Kutoka: {r.name}</option>)}
         </select>
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-400" />

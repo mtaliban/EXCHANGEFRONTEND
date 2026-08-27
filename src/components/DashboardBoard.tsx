@@ -66,8 +66,6 @@ export default function DashboardBoard() {
   const [subjectFilter, setSubjectFilter] = useState<'off' | 'any' | 'all' | 'none'>('off');
   const [subjectQ, setSubjectQ] = useState('');
   const [cadreCode, setCadreCode] = useState<string>('');
-  const [searchQ, setSearchQ] = useState('');
-  const [sourceRegionId, setSourceRegionId] = useState<number | undefined>();
   const [board, setBoard] = useState<any>(null);
   const [districts, setDistricts] = useState<District[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -129,15 +127,13 @@ export default function DashboardBoard() {
       if (subjectFilter !== 'off') params.subject_filter = subjectFilter;
       if (subjectQ.trim()) params.subject_q = subjectQ.trim();
       if (cadreCode) params.cadre_code = cadreCode;
-      if (searchQ.trim()) params.q = searchQ.trim();
-      if (sourceRegionId) params.source_region_id = sourceRegionId;
       bustGetCache(); // FUSHA frontend cache — data lazima iwe FRESH kila filter inapobadilika
       const b = await getBoard(params, forceFresh);
       setBoard(b);
     } finally {
       setLoading(false);
     }
-  }, [effectiveRegionIds, districtId, facilityId, subjectFilter, subjectQ, cadreCode, searchQ, sourceRegionId]);
+  }, [effectiveRegionIds, districtId, facilityId, subjectFilter, subjectQ, cadreCode]);
 
 
 
@@ -228,8 +224,6 @@ export default function DashboardBoard() {
     setSubjectFilter('off');
     setSubjectQ('');
     setCadreCode('');
-    setSearchQ('');
-    setSourceRegionId(undefined);
   };
 
   const currentRegionName = useMemo(() => {
@@ -392,34 +386,6 @@ export default function DashboardBoard() {
               </button>
             )}
           </div>
-
-          {/* Search + Kutoka filter — admin pekee */}
-          {isAdmin && (
-            <div className="mt-2 flex flex-col sm:flex-row sm:flex-wrap gap-1.5">
-              <div className="flex items-center gap-1.5 flex-1 min-w-[160px]">
-                <Search size={12} className="text-brand-grey-400 flex-shrink-0" />
-                <input
-                  className="input text-xs py-1.5 w-full"
-                  placeholder="Tafuta jina, namba ya simu au kada..."
-                  value={searchQ}
-                  onChange={(e) => { setSearchQ(e.target.value); setPage(1); }}
-                />
-              </div>
-              <div className="flex items-center gap-1.5 flex-1 min-w-[160px]">
-                <MapPin size={12} className="text-brand-grey-400 flex-shrink-0" />
-                <select
-                  className="input text-xs py-1.5 w-full"
-                  value={sourceRegionId ?? ''}
-                  onChange={(e) => { setSourceRegionId(e.target.value ? Number(e.target.value) : undefined); setPage(1); }}
-                >
-                  <option value="">Kutoka: Mikoa yote</option>
-                  {regions.map((r) => (
-                    <option key={r.id} value={r.id}>Kutoka: {r.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
 
           {/* Kichujio cha masomo — onyeshwa kwa walimu (elimu) */}
           {isEdu && (
