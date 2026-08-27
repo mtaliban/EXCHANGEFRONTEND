@@ -630,14 +630,21 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
 
 
 
-      {/* MUDA WA JUU (relative): wapya wana " MPYA + muda", wengine  muda tu — siyo saa halisi */}
-      <div className={`text-[11px] font-medium ${fresh ? 'text-brand-blue font-bold' : 'text-brand-grey-400'}`} title={`${new Date(createdTs).toLocaleString('sw-TZ')}`}>
-        {fresh ? (
-          <span className="inline-flex items-center gap-1 animate-[newPulse_1s_ease-in-out_infinite]"><Zap size={11} className="text-brand-blue" /> {t('board.new_badge')} · {ago}</span>
-        ) : (
-          <span className="inline-flex items-center gap-1"><Clock size={11} /> {ago}</span>
-        )}
-      </div>
+      {/* MUDA WA JUU (relative + tarehe kamili): wapya wana " MPYA + muda", wengine muda + tarehe */}
+      {(() => {
+        const d = new Date(createdTs);
+        const fullDate = d.toLocaleDateString('sw-TZ', { day: 'numeric', month: 'long', year: 'numeric' });
+        return (
+          <div className={`text-[11px] font-medium ${fresh ? 'text-brand-blue font-bold' : 'text-brand-grey-400'}`}>
+            {fresh ? (
+              <span className="inline-flex items-center gap-1 animate-[newPulse_1s_ease-in-out_infinite]"><Zap size={11} className="text-brand-blue" /> {t('board.new_badge')} · {ago}</span>
+            ) : (
+              <span className="inline-flex items-center gap-1"><Clock size={11} /> {ago}</span>
+            )}
+            <span className="block text-[10px] text-brand-grey-400 dark:text-brand-grey-500 font-normal mt-0.5">{fullDate}</span>
+          </div>
+        );
+      })()}
 
       {/* VIFUNGO VYA KUWASILIANA — buttons zote daima zipo, guide inaonyesha kwa wasio verified */}
       <div className="flex gap-1.5 mt-auto pt-1">
