@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getActiveAnnouncements, getNotifications, dismissAnnouncement, bustGetCache, type Announcement } from '@/lib/api';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
@@ -60,6 +60,32 @@ export default function AnnouncementsPage() {
     });
   }
 
+  // Deduplicate: admin akiresend tangazo, document mpya inaundwa.
+  // Onyesha tangazo moja tu kwa title+message (la karibuni zaidi).
+  const uniqueItems = useMemo(() => {
+    const seen = new Map<string, Announcement>();
+    for (const a of items) {
+      const key = `${a.title}|${a.message}`;
+      const existing = seen.get(key);
+      if (!existing || new Date(a.created_at) > new Date(existing.created_at)) {
+        seen.set(key, a);
+      }
+    }
+    return Array.from(seen.values());
+  }, [items]);
+
+  const uniqueHistory = useMemo(() => {
+    const seen = new Map<string, any>();
+    for (const n of history) {
+      const key = `${n.title}|${n.body}`;
+      const existing = seen.get(key);
+      if (!existing || new Date(n.created_at) > new Date(existing.created_at)) {
+        seen.set(key, n);
+      }
+    }
+    return Array.from(seen.values());
+  }, [history]);
+
   return (
     <div className="p-4 md:p-6 max-w-3xl">
       {/* Header — official */}
@@ -77,9 +103,9 @@ export default function AnnouncementsPage() {
 
       {/* Active announcements — official cards */}
       <h2 className="text-[11px] font-bold uppercase tracking-wider text-brand-grey-500 mb-3 mt-4 flex items-center gap-1.5">
-        <Megaphone size={13} /> {t('annuser.active')} ({items.length})
+        <Megaphone size={13} /> {t('annuser.active')} ({uniqueItems.length})
       </h2>
-      {!loading && items.length === 0 && (
+      {!loading && uniqueItems.length === 0 && (
         <div className="bg-white rounded-xl border border-brand-grey-200 text-center py-10">
           <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-brand-grey-100 flex items-center justify-center">
             <Inbox size={24} className="text-brand-grey-400" />
@@ -88,7 +114,7 @@ export default function AnnouncementsPage() {
         </div>
       )}
       <div className="space-y-3">
-        {items.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE).map((a) => (
+        {uniqueItems.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE).map((a) => (
           <div key={a.announcement_id}
             className="bg-white rounded-xl border border-brand-grey-200 p-4 transition hover:shadow-sm">
             {/* Title + dismiss */}
@@ -128,14 +154,14 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* Active pagination */}
-      {items.length > PAGE_SIZE && (
+      {uniqueItems.length > PAGE_SIZE && (
         <div className="flex items-center justify-center gap-2 pt-3">
           <button disabled={activePage <= 1} onClick={() => setActivePage(activePage - 1)}
             className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
             <ChevronLeft size={16} />
           </button>
-          <span className="text-xs font-bold text-brand-grey-500 px-2">{activePage} / {Math.ceil(items.length / PAGE_SIZE)}</span>
-          <button disabled={activePage >= Math.ceil(items.length / PAGE_SIZE)} onClick={() => setActivePage(activePage + 1)}
+          <span className="text-xs font-bold text-brand-grey-500 px-2">{activePage} / {Math.ceil(uniqueItems.length / PAGE_SIZE)}</span>
+          <button            disabled={activePage >= Math.ceil(uniqueItems.length / PAGE_SIZE)} onClick={() => setActivePage(activePage + 1)}
             className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
             <ChevronRight size={16} />
           </button>
@@ -143,13 +169,13 @@ export default function AnnouncementsPage() {
       )}
 
       {/* History — paginated, official */}
-      {history.length > 0 && (
+      {uniqueHistory.length > 0 && (
         <>
           <h2 className="text-[11px] font-bold uppercase tracking-wider text-brand-grey-500 mb-3 mt-8 flex items-center gap-1.5">
-            <Clock size={13} /> {t('annuser.past')} ({history.length})
+            <Clock size={13} /> {t('annuser.past')} ({uniqueHistory.length})
           </h2>
           <div className="space-y-2">
-            {history.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE).map((n) => (
+            {uniqueHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE).map((n) => (
               <div key={n.notification_id} className="bg-white border border-brand-grey-200 rounded-xl overflow-hidden">
                 <button
                   onClick={() => toggleHistory(n.notification_id)}
@@ -178,14 +204,14 @@ export default function AnnouncementsPage() {
               </div>
             ))}
           </div>
-          {history.length > PAGE_SIZE && (
+          {uniqueHistory.length > PAGE_SIZE && (
             <div className="flex items-center justify-center gap-2 pt-3">
               <button disabled={historyPage <= 1} onClick={() => setHistoryPage(historyPage - 1)}
                 className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
                 <ChevronLeft size={16} />
               </button>
-              <span className="text-xs font-bold text-brand-grey-500 px-2">{historyPage} / {Math.ceil(history.length / PAGE_SIZE)}</span>
-              <button disabled={historyPage >= Math.ceil(history.length / PAGE_SIZE)} onClick={() => setHistoryPage(historyPage + 1)}
+              <span className="text-xs font-bold text-brand-grey-500 px-2">{historyPage} / {Math.ceil(uniqueHistory.length / PAGE_SIZE)}</span>
+              <button            disabled={historyPage >= Math.ceil(uniqueHistory.length / PAGE_SIZE)} onClick={() => setHistoryPage(historyPage + 1)}
                 className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition">
                 <ChevronRight size={16} />
               </button>

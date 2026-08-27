@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useLiveEvents } from '@/lib/useLiveEvents';
 import { getActiveAnnouncements, dismissAnnouncement, bustGetCache, type Announcement } from '@/lib/api';
@@ -29,7 +29,21 @@ export default function AnnouncementBanner() {
     reload();
   }, [messages.length]);
 
-  if (!items.length) return null;
+  // Deduplicate: admin akiresend tangazo, document mpya inaundwa.
+  // Onyesha tangazo moja tu kwa title+message (la karibuni zaidi).
+  const uniqueItems = useMemo(() => {
+    const seen = new Map<string, Announcement>();
+    for (const a of items) {
+      const key = `${a.title}|${a.message}`;
+      const existing = seen.get(key);
+      if (!existing || new Date(a.created_at) > new Date(existing.created_at)) {
+        seen.set(key, a);
+      }
+    }
+    return Array.from(seen.values());
+  }, [items]);
+
+  if (!uniqueItems.length) return null;
 
   function dismiss(id: string) {
     setItems((prev) => prev.filter((a) => a.announcement_id !== id));
@@ -38,7 +52,7 @@ export default function AnnouncementBanner() {
 
   return (
     <div className="space-y-2">
-      {items.map((a) => (
+      {uniqueItems.map((a) => (
         <div key={a.announcement_id}
           className="rounded-lg border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-900 px-4 py-3 animate-slide-in flex items-start gap-3 shadow-sm">
           <Megaphone size={16} className="text-brand-grey-400 flex-shrink-0 mt-0.5" />
