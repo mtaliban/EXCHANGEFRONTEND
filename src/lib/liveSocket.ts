@@ -11,6 +11,9 @@ interface LiveState {
   connected: boolean;
   handlers: Map<string, Set<Handler>>;
   onlineUserIds: Set<string>;
+  _token: string;
+  _reconnectTimer: ReturnType<typeof setTimeout> | null;
+  _reconnectDelay: number;
   connect: (token: string) => void;
   disconnect: () => void;
   send: (data: any) => void;
@@ -24,22 +27,37 @@ export const useLive = create<LiveState>((set, get) => ({
   connected: false,
   handlers: new Map(),
   onlineUserIds: new Set(),
+  _token: '' as string,
+  _reconnectTimer: null as ReturnType<typeof setTimeout> | null,
+  _reconnectDelay: 1000,
 
   connect: (token: string) => {
     const cur = get().socket;
     if (cur && (cur.readyState === WebSocket.OPEN || cur.readyState === WebSocket.CONNECTING)) return;
+    // Store token for auto-reconnect
+    get()._token = token;
+    get()._reconnectDelay = 1000;
     const url = `${MSG_WS_URL()}?token=${encodeURIComponent(token)}`;
     const ws = new WebSocket(url);
 
     ws.onopen = () => {
-      set({ connected: true });
+      set({ connected: true, _reconnectDelay: 1000 });
       // presence heartbeat every 30s
       const beat = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'presence_ping' }));
         else clearInterval(beat);
       }, 30000);
     };
-    ws.onclose = () => set({ connected: false });
+    ws.onclose = () => {
+      set({ connected: false });
+      // Auto-reconnect with exponential backoff (1s, 2s, 4s, max 30s)
+      const delay = get()._reconnectDelay;
+      const timer = setTimeout(() => {
+        const t = get()._token;
+        if (t) get().connect(t);
+      }, delay);
+      set({ _reconnectTimer: timer, _reconnectDelay: Math.min(delay * 2, 30000) });
+    };
     ws.onerror = () => set({ connected: false });
     ws.onmessage = (ev) => {
       try {
@@ -65,7 +83,9 @@ export const useLive = create<LiveState>((set, get) => ({
   disconnect: () => {
     const ws = get().socket;
     if (ws) ws.close();
-    set({ socket: null, connected: false });
+    // Clear reconnect timer and token
+    if (get()._reconnectTimer) clearTimeout(get()._reconnectTimer as any);
+    set({ socket: null, connected: false, _token: '', _reconnectTimer: null });
   },
 
   send: (data: any) => {
