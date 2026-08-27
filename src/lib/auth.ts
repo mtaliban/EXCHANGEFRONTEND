@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { bustGetCache } from './api';
 
 export interface AuthUser {
   user_id: string;
@@ -54,9 +55,9 @@ export const useAuth = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-      setAuth: (token, user) => set({ token, user }),
+      setAuth: (token, user) => { bustGetCache(); set({ token, user }); },
       setUser: (user) => set({ user }),
-      logout: () => set({ token: null, user: null }),
+      logout: () => { bustGetCache(); set({ token: null, user: null }); },
     }),
     {
       name: 'kv_auth',

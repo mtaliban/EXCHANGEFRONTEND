@@ -51,7 +51,13 @@ const _origGet = client.get.bind(client);
  */
 const _pendingFetches = new Map<string, Promise<any>>();
 (client.get as any) = (url: string, config?: any) => {
-  const key = url + '|' + JSON.stringify(config?.params || {});
+  // Include user token in cache key — prevents data leakage between users
+  let _cacheUser = '';
+  try {
+    const raw = localStorage.getItem('kv_auth');
+    if (raw) { const t = JSON.parse(raw)?.state?.token; if (t) _cacheUser = t.slice(-20); }
+  } catch {}
+  const key = _cacheUser + '|' + url + '|' + JSON.stringify(config?.params || {});
   const ttl = config?.ttl ?? _GET_TTL;
   const isStatic = ttl === _STATIC_TTL;
   const isFresh = (hit: { at: number }) => Date.now() - hit.at < ttl;
