@@ -91,6 +91,7 @@ export default function RealMatchesPage() {
   const [category, setCategory] = useState('');
   const [cadreCode, setCadreCode] = useState('');
   const [q, setQ] = useState('');
+  const [subjectQ, setSubjectQ] = useState('');
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 20;
 
@@ -113,19 +114,33 @@ export default function RealMatchesPage() {
 
   // Client-side search
   const filtered = matches.filter((m) => {
-    if (!q) return true;
-    const ql = q.toLowerCase();
-    const a = m.user_a;
-    const b = m.user_b;
-    return (
-      a.full_name?.toLowerCase().includes(ql) ||
-      b.full_name?.toLowerCase().includes(ql) ||
-      a.phone_primary?.includes(q) ||
-      b.phone_primary?.includes(q) ||
-      cadreLabel(a.cadre_code).toLowerCase().includes(ql) ||
-      a.current_region?.toLowerCase().includes(ql) ||
-      b.current_region?.toLowerCase().includes(ql)
-    );
+    if (q) {
+      const ql = q.toLowerCase();
+      const a = m.user_a;
+      const b = m.user_b;
+      const matchQ = (
+        a.full_name?.toLowerCase().includes(ql) ||
+        b.full_name?.toLowerCase().includes(ql) ||
+        a.phone_primary?.includes(q) ||
+        b.phone_primary?.includes(q) ||
+        cadreLabel(a.cadre_code).toLowerCase().includes(ql) ||
+        a.current_region?.toLowerCase().includes(ql) ||
+        b.current_region?.toLowerCase().includes(ql)
+      );
+      if (!matchQ) return false;
+    }
+    if (subjectQ) {
+      const sql = subjectQ.toUpperCase();
+      const common = m.common_subjects || [];
+      const aSubs = (m.user_a?.subjects || []).map((s: string) => s.toUpperCase());
+      const bSubs = (m.user_b?.subjects || []).map((s: string) => s.toUpperCase());
+      if (!common.some((s: string) => s.toUpperCase().includes(sql)) &&
+          !aSubs.some((s: string) => s.includes(sql)) &&
+          !bSubs.some((s: string) => s.includes(sql))) {
+        return false;
+      }
+    }
+    return true;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -170,8 +185,10 @@ export default function RealMatchesPage() {
           <input className="input pl-9 w-full" placeholder="Tafuta kwa jina, namba, kada au mkoa..."
             value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
         </div>
-        {(category || cadreCode || q) && (
-          <button onClick={() => { setCategory(''); setCadreCode(''); setQ(''); setPage(1); }}
+        <input className="input sm:w-36" placeholder="Somo (mfano MATH)"
+          value={subjectQ} onChange={(e) => { setSubjectQ(e.target.value.toUpperCase()); setPage(1); }} />
+        {(category || cadreCode || q || subjectQ) && (
+          <button onClick={() => { setCategory(''); setCadreCode(''); setQ(''); setSubjectQ(''); setPage(1); }}
             className="btn-outline text-xs flex items-center gap-1 whitespace-nowrap">
             <X size={14} /> Futa
           </button>
@@ -228,7 +245,7 @@ function MatchCard({ match: m }: { match: any }) {
 
   return (
     <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-4 hover:border-green-400 dark:hover:border-green-600 transition shadow-sm hover:shadow-md">
-      {/* Header: Score + Cadre */}
+      {/* Header: Score + Cadre + Common Subjects */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${sb.color}`}>
@@ -240,6 +257,18 @@ function MatchCard({ match: m }: { match: any }) {
         </div>
         <Star size={14} className="text-yellow-500" />
       </div>
+
+      {/* Common Subjects (masomo yanayofanana) */}
+      {m.common_subjects && m.common_subjects.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1 mb-3 p-2 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+          <span className="text-[10px] font-bold text-green-700 dark:text-green-400">Masomo Yanayofanana:</span>
+          {m.common_subjects.map((s: string) => (
+            <span key={s} className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-green-600 text-white">
+              {s} ✓
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Two users side by side */}
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-center">
@@ -290,6 +319,17 @@ function UserHalf({ user: u, side }: { user: any; side: string }) {
           <span>Anataka: <b>{u.destinations?.join(', ') || '—'}</b></span>
         </div>
       </div>
+
+      {/* Subjects / Masomo */}
+      {u.subjects && u.subjects.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {u.subjects.map((s: string) => (
+            <span key={s} className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+              {s}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Phone */}
       {u.phone_primary && (
