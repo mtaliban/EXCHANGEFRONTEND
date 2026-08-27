@@ -30,12 +30,16 @@ export default function DashboardPage() {
             {t('dash.welcome')}, {user?.full_name}
           </h1>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-medium text-brand-grey-500 dark:text-brand-grey-400 leading-tight">
-            {user?.category && (
+            {(user as any)?.is_admin ? (
+              <span className="text-brand-blue-600 dark:text-brand-blue-400 font-semibold">
+                {t('label.admin', 'Admin')}
+              </span>
+            ) : user?.category ? (
               <span className="text-brand-blue-600 dark:text-brand-blue-400 font-semibold">
                 {user.category === 'health' ? t('label.category_health') : t('label.category_education')}
               </span>
-            )}
-            {user?.cadre_display && <span>· {user.cadre_display}</span>}
+            ) : null}
+            {!(user as any)?.is_admin && user?.cadre_display && <span>· {user.cadre_display}</span>}
             {myStation?.region_name && (
               <span className="flex items-center gap-1">
                 <MapPin size={10} className="text-brand-blue-500 dark:text-brand-blue-400 flex-shrink-0" />

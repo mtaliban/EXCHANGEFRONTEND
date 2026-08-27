@@ -32,9 +32,10 @@ export default function DashboardBoard() {
   const myStation = (user?.current_station || {}) as any;
   const dests = (user?.desired_destinations || []) as any[];
   const myCategory = user?.category;
+  const isAdmin = !!(user as any)?.is_admin;
   // Idara zote isipokuwa 'health' zinachukuliwa kama zinaweza kuwa na masomo
-  // (elimu + idara nyingine zozote mpya).
-  const isEdu = myCategory !== 'health';
+  // (elimu + idara nyingine zozote mpya). Admin anaona ZOTE — elimu + afya.
+  const isEdu = isAdmin ? true : myCategory !== 'health';
 
   // Mikoa anayotaka kwenda (k.m. Dar + Pwani) + mikoa aliyoifuata (k.m. Tanga)
   const destRegionIds = useMemo(
@@ -167,14 +168,23 @@ export default function DashboardBoard() {
 
   // Cascading: vituo vya wilaya iliyochaguliwa — facility cache iko
   // localStorage (siku 24), instatn pale unapoamua wilaya.
+  // Admin anaona vituo vya category ZOTE (health + education).
   useEffect(() => {
     if (districtId !== undefined) {
-      getFacilities(districtId, (myCategory as any) || 'health').then(setFacilities).catch(() => setFacilities([]));
+      if (isAdmin) {
+        // Admin: load vituo vyote (health + education)
+        Promise.all([
+          getFacilities(districtId, 'health').catch(() => []),
+          getFacilities(districtId, 'education').catch(() => []),
+        ]).then(([h, e]) => setFacilities([...h, ...e])).catch(() => setFacilities([]));
+      } else {
+        getFacilities(districtId, (myCategory as any) || 'health').then(setFacilities).catch(() => setFacilities([]));
+      }
     } else {
       setFacilities([]);
     }
     setFacilityId(undefined);
-  }, [districtId, myCategory]);
+  }, [districtId, myCategory, isAdmin]);
 
   useEffect(() => { loadBoard(true); }, [loadBoard]);  // ALWAYS force fresh — filter/cache hazipaswi kuzuia data mpya
 
@@ -406,8 +416,8 @@ export default function DashboardBoard() {
               </div>
             </div>
           )}
-          {/* Kichujio cha kada — onyeshwa kwa wafanyakazi wa afya */}
-          {!isEdu && (
+          {/* Kichujio cha kada — onyeshwa kwa wafanyakazi wa afya AU admin */}
+          {(!isEdu || isAdmin) && (
             <div className="mt-2">
               <label className="text-[11px] font-semibold text-brand-grey-600 dark:text-brand-grey-300 mr-1">{t('board.cadre')}:</label>
               <select className="input text-xs py-1.5 mt-1 w-full sm:w-auto sm:min-w-[180px]" value={cadreCode}
