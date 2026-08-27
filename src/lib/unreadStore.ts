@@ -76,7 +76,7 @@ export const useUnreadStore = create<RouteUnreadState>((set, get) => ({
       // BADGE-ABLE routes tu — hizi ndizo zinapaswa kuonyesha namba kwenye menu
       const badgeRoutes = new Set([
         '/admin/users', '/admin/payments', '/admin/feedback',
-        '/admin/password-resets', '/admin/events',
+        '/admin/password-resets', '/admin/events', '/admin/real-matches',
         '/dashboard', '/donate', '/feedback',
       ]);
       const counts: Record<string, number> = {};

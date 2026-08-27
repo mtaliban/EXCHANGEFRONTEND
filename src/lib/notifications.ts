@@ -34,7 +34,7 @@ export function notificationRoute(type: string, data: any, isAdmin?: boolean): s
       case 'user.destination_changed':
       case 'user.updated_by_admin':
       case 'user.deleted':
-      case 'match.found':
+      case 'match.found': return '/admin/real-matches';
       case 'call.initiated': return '/admin/users';
       case 'payment.submitted':
       case 'payment.approved':
