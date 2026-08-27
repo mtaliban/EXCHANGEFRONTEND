@@ -43,8 +43,8 @@ export default function AboutContent() {
           '@type': 'Organization',
           name: 'Kubadilishana Vituo',
           url: 'https://esstranfer.com',
-          logo: 'https://esstranfer.com/og-image.png',
-          description: 'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
+          logo: 'https://esstranfer.com/images/LOGOL.jpeg',
+          description: 'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi, Wafanyakazi wa Kilimo na watumishi wote wa serikali.',
           address: {
             '@type': 'PostalAddress',
             addressLocality: 'Dodoma',

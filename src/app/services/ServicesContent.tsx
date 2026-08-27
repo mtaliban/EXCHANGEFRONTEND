@@ -30,7 +30,7 @@ export default function ServicesContent() {
             name: 'Kubadilishana Vituo',
             url: 'https://esstranfer.com',
           },
-          description: 'Mfumo wa mtandaoni wa kusaidia watumishi wa serikali Tanzania kubadilishana vituo vya kazi.',
+          description: 'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi, Wafanyakazi wa Kilimo na watumishi wote wa serikali.',
           areaServed: {
             '@type': 'Country',
             name: 'Tanzania',

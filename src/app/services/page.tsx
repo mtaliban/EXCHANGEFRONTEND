@@ -4,13 +4,13 @@ import ServicesContent from './ServicesContent';
 export const metadata: Metadata = {
   title: 'Huduma Zetu',
   description:
-    'Angalia huduma zinazotolewa na Kubadilishana Vituo: ufanisi wa watumishi wa Afya, Elimu, na Kilimo Tanzania. Tafuta mwenza wa kubadilishana vituo.',
+    'Kubadilishana Portal — Huduma za kubadilishana vituo vya kazi kwa Walimu, Madaktari, Wauguzi, Wauguzi wa Maabara, Wauguzi wa Meno, Wafanyakazi wa Kilimo na watumishi wote wa serikali Tanzania. Bure kabisa.',
   openGraph: {
-    title: 'Huduma Zetu — Kubadilishana Vituo',
+    title: 'Huduma Zetu — Kubadilishana Portal',
     description:
-      'Huduma za kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania.',
+      'Kubadilishana Portal — Huduma za kubadilishana vituo vya kazi kwa Walimu, Madaktari, Wauguzi na watumishi wote wa serikali Tanzania.',
     url: 'https://esstranfer.com/services',
-    images: [{ url: 'https://esstranfer.com/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: 'https://esstranfer.com/images/LOGOL.jpeg', width: 1200, height: 630 }],
   },
   alternates: { canonical: 'https://esstranfer.com/services' },
 };

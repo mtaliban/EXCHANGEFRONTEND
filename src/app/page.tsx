@@ -17,7 +17,7 @@ export default function HomePage() {
           name: 'Kubadilishana Vituo',
           alternateName: 'Kubadilishana Vituo Tanzania',
           url: 'https://esstranfer.com',
-          description: 'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa Afya, Elimu, Umma na Kilimo Tanzania.',
+          description: 'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi, Wafanyakazi wa Kilimo na watumishi wote wa serikali.',
           inLanguage: 'sw',
           potentialAction: {
             '@type': 'SearchAction',
@@ -30,13 +30,13 @@ export default function HomePage() {
             url: 'https://esstranfer.com',
             logo: {
               '@type': 'ImageObject',
-              url: 'https://esstranfer.com/og-image.png',
+              url: 'https://esstranfer.com/images/LOGOL.jpeg',
             },
           },
           about: {
             '@type': 'Thing',
             name: 'Kubadilishana Vituo Tanzania',
-            description: 'Mfumo wa kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania',
+            description: 'Mfumo wa kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania — walimu, wauguzi, madaktari, wafanyakazi wa kilimo na watumishi wa umma',
           },
         }) }}
       />
@@ -68,7 +68,7 @@ export default function HomePage() {
               name: 'Nani anatumia Kubadilishana Vituo?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Watumishi wa serikali wa Tanzania: walimu wa elimu ya msingi na sekondari, watumishi wa afya (madaktari, wauguzi, wauguzi wa maabara), watumishi wa umma, na wafanyakazi wa kilimo.',
+                text: 'Watumishi wote wa serikali wa Tanzania: Walimu wa Msingi, Walimu wa Sekondari, Madaktari, Wauguzi, Wauguzi wa Maabara, Wauguzi wa Meno, Afisa wa Afya, Msaidizi wa Afya, Afisa wa Kilimo, Msaidizi wa Kilimo, na watumishi wote wa umma. Huduma ni bure kabisa.',
               },
             },
             {
@@ -76,7 +76,15 @@ export default function HomePage() {
               name: 'Jinsi gani ninapata mtu wa kubadilishana naye?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Baada ya kujisajili na kuingia, dashibodi yako inakuletea watu ambao wako mkoani na wanataka kwenda mkoa wako, au wako mkoani unakotaka kwenda. Unaweza kuwasiliana nao moja kwa moja.',
+                text: 'Baada ya kujisajili na kuingia, dashibodi yako inakuletea watu ambao wako mkoani na wanataka kwenda mkoa wako, au wako mkoani unakotaka kwenda. Unaweza kuwasiliana nao kupitia simu, SMS au WhatsApp moja kwa moja.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Je, Kubadilishana Portal inasaidia kada gani?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Kubadilishana Portal inasaidia kada zote: Walimu (Msingi na Sekondari), Wauguzi, Madaktari, Wauguzi wa Maabara, Wauguzi wa Meno, Afisa wa Afya, Msaidizi wa Afya, Afisa wa Kilimo, na watumishi wote wa serikali Tanzania. Chagua kada yako na mkoa wako, mfumo utafute mwenzie.',
               },
             },
           ],

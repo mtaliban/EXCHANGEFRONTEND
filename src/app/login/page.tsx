@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: 'Ingia — Kubadilishana Vituo',
     description: 'Ingia kwenye akaunti yako ya Kubadilishana Vituo.',
     url: 'https://esstranfer.com/login',
-    images: [{ url: 'https://esstranfer.com/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: 'https://esstranfer.com/images/LOGOL.jpeg', width: 1200, height: 630 }],
   },
   alternates: { canonical: 'https://esstranfer.com/login' },
 };

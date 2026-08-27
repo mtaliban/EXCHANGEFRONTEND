@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description:
       'Mfumo rasmi wa kubadilishana vituo vya kazi kwa watumishi wa serikali Tanzania.',
     url: 'https://esstranfer.com/about',
-    images: [{ url: 'https://esstranfer.com/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: 'https://esstranfer.com/images/LOGOL.jpeg', width: 1200, height: 630 }],
   },
   alternates: { canonical: 'https://esstranfer.com/about' },
 };

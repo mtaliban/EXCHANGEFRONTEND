@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description:
       'Jisajili sasa upate mtu wa kubadilishana naye vituoni.',
     url: 'https://esstranfer.com/register',
-    images: [{ url: 'https://esstranfer.com/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: 'https://esstranfer.com/images/LOGOL.jpeg', width: 1200, height: 630 }],
   },
   alternates: { canonical: 'https://esstranfer.com/register' },
 };
