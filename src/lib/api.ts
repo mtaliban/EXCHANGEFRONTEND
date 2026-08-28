@@ -344,12 +344,14 @@ export const checkPhone = (phone: string) =>
   client.get<{ available: boolean; phone_normalized?: string; reason?: string }>(
     `${AUTH}/auth/check-phone/${encodeURIComponent(phone)}`
   ).then((r) => r.data);
+export const lookupByName = (full_name: string) =>
+  client.post<{ users: any[] }>(`${AUTH}/auth/lookup-by-name`, { full_name }).then((r) => r.data);
 export const forgotPassword = (phone: string, full_name?: string) =>
   client.post(`${AUTH}/auth/forgot-password`, { phone, full_name }).then((r) => r.data);
 export const getPasswordResetStatus = (phone: string) =>
   client.get<{ status: string; reset_id?: string }>(`${AUTH}/auth/password-reset/status`, { params: { phone } }).then((r) => r.data);
-export const resetPassword = (phone: string, new_password: string, code?: string) =>
-  client.post(`${AUTH}/auth/reset-password`, { phone, new_password, code: code || null }).then((r) => r.data);
+export const resetPassword = (phone: string, new_password: string) =>
+  client.post(`${AUTH}/auth/reset-password`, { phone, new_password }).then((r) => r.data);
 
 /* ── Profile ──────────────────────────────────────── */
 export const getMyProfile = () => client.get(`${USER}/users/me`).then((r) => r.data);

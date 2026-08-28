@@ -139,22 +139,13 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
       if (p.user_id && p.user_id !== uid) return;
       getMe(true).then((me) => setUser(me)).catch(() => {});
     });
-    // REAL-TIME: admin amekubali password reset → user apate form ya kuweka password mpya
-    const unsubResetApproved = subscribe('user.password_reset_approved', (p: any) => {
+    // REAL-TIME: password reset imekamilika → onyesha taarifa
+    const unsubResetCompleted = subscribe('user.password_reset_completed', (p: any) => {
       if (p.user_id && p.user_id !== uid) return;
       if (isSoundEnabled()) playPingSound();
       showToast({
         emoji: '🔑',
-        title: 'Ombi lako la password limekubaliwa! Weka password mpya sasa.',
-      });
-      router.push(`/reset-password?phone=${encodeURIComponent((user as any)?.phone_primary || '')}`);
-    });
-    const unsubResetRejected = subscribe('user.password_reset_rejected', (p: any) => {
-      if (p.user_id && p.user_id !== uid) return;
-      if (isSoundEnabled()) playPingSound();
-      showToast({
-        emoji: '❌',
-        title: 'Ombi lako la password limekataliwa. Wasiliana na admin.',
+        title: 'Password yako imebadilishwa! Ingia na namba yako ya simu.',
       });
     });
     // Notifications center (payments, profile updates, registrations…)
@@ -178,7 +169,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         }
       });
     });
-    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsubVerified(); unsubContact(); unsubResetApproved(); unsubResetRejected(); unsub4(); };
+    return () => { unsub1(); unsub2(); unsubAcc(); unsubDel(); unsubUpd(); unsubData(); unsubVerified(); unsubContact(); unsubResetCompleted(); unsub4(); };
   }, [user, subscribe, router, pathname, logout, setUser]);
 
   return <>{children}</>;

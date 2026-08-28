@@ -43,7 +43,7 @@ export function notificationRoute(type: string, data: any, isAdmin?: boolean): s
       case 'payment.reply': return '/admin/payments';
       case 'feedback.new':
       case 'feedback.replied': return '/admin/feedback';
-      case 'password_reset.new': return '/admin/password-resets';
+      case 'password_reset.new': return '/admin/events';
       case 'event.new':
       case 'event.created':
       case 'event.updated': return '/admin/events';
