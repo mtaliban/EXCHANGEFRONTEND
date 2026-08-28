@@ -157,17 +157,28 @@ export default function LoginContent() {
           <form onSubmit={twoFA ? (e) => { e.preventDefault(); } : onSubmit} className="space-y-3.5">
             {/* Email/Password — toujours visible, disabled wakati wa 2FA */}
             <div>
-              <label className="label">{t('login.phone_label')}</label>
+              <label className="label">{identifier.includes('@') ? 'Email ya Admin' : t('login.phone_label')}</label>
               <div className="relative">
-                <input type="text" className="input pl-9" placeholder="0712345678"
+                <input type="text" className="input pl-9" placeholder={identifier.includes('@') ? 'admin@kubadilishana.go.tz' : '0712345678'}
                   value={identifier} onChange={(e) => setIdentifier(e.target.value)}
                   required autoComplete="username" disabled={!!twoFA} />
                 <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-400" />
               </div>
-              <p className="text-[11px] text-brand-grey-400 mt-1">Weka namba ya simu uliyojisajilia nayo</p>
+              <p className="text-[11px] text-brand-grey-400 mt-1">
+                {identifier.includes('@')
+                  ? 'Admin: weka email yako, OTP itatumwa kwa email'
+                  : 'Weka namba ya simu uliyojisajilia nayo — au email kama wewe ni admin'}
+              </p>
             </div>
 
             {error && <ErrorAlert msg={error} type={errorType} />}
+
+            {twoFA && (
+              <div className="flex items-center gap-2 bg-green-50 text-green-700 text-xs font-semibold rounded-xl px-3 py-2 border border-green-200">
+                <AlertCircle size={14} className="text-green-500 flex-shrink-0" />
+                <span>Code ya tarakimu 6 imetumwa kwa <strong>{twoFA.email}</strong> — angalia email yako</span>
+              </div>
+            )}
 
             {/* ═══ SEHEMU MOJA: button au code input — pale pale ═══ */}
             {!twoFA ? (
@@ -208,6 +219,9 @@ export default function LoginContent() {
           </form>
 
 
+          <p className="text-center text-xs text-brand-grey-500 mt-3">
+            <Link href="/forgot-password" className="text-brand-blue hover:underline font-medium">Sahau namba yako?</Link>
+          </p>
           <div className="mt-4">
             <Link href="/register" className="w-full flex items-center justify-center gap-2 rounded-lg border border-brand-blue/30 px-4 py-1.5 text-xs font-bold text-brand-blue hover:bg-brand-blue-50 active:scale-[0.98] transition">
               {t('login.register_now')}
