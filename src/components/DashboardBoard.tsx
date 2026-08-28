@@ -494,7 +494,8 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   const t = useT();
   const initial = getInitial(c.full_name);
   const from = c.current_station;
-  const to = c.desired_destinations?.[0];
+  // Onyesha destination inayokuja kwako — backend inatoa matching_destination
+  const to = c.matching_destination || c.desired_destinations?.[0];
   const createdTs = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? now) : now;
   const ago = timeAgo(createdTs, lang);
   const fresh = now - createdTs < FRESH_MS;
