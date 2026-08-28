@@ -270,7 +270,7 @@ export interface RegisterPayload {
   full_name: string;
   phone_primary: string;
   phone_alt?: string;
-  password: string;
+  password?: string;
   category: string;
   cadre_code: string;
   subjects: string[];
