@@ -291,8 +291,8 @@ export interface AuthResponse {
 }
 export const register = (body: RegisterPayload) =>
   client.post<AuthResponse>(`${AUTH}/auth/register`, body).then((r) => r.data);
-export const login = (identifier: string, password: string) =>
-  client.post<AuthResponse>(`${AUTH}/auth/login`, { phone: identifier, password }).then((r) => r.data);
+export const login = (identifier: string, password?: string) =>
+  client.post<AuthResponse>(`${AUTH}/auth/login`, { phone: identifier, password: password || null }).then((r) => r.data);
 export const login2FA = (email: string, code: string) =>
   client.post<AuthResponse>(`${AUTH}/auth/login/2fa`, { email, code }).then((r) => r.data);
 
