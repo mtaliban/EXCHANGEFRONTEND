@@ -64,7 +64,7 @@ export const metadata: Metadata = {
       'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi na watumishi wote wa serikali.',
     images: [
       {
-        url: 'https://esstranfer.com/images/LOGOL.jpeg',
+        url: 'https://esstranfer.com/images/LOGOL.png',
         width: 1200,
         height: 630,
         alt: 'Kubadilishana Portal — Tafuta Mwenye Kubadilishana Nawe Tanzania',
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     title: 'Kubadilishana Portal — Tanzania',
     description:
       'Kubadilishana Portal — Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi na watumishi wote.',
-    images: ['https://esstranfer.com/images/LOGOL.jpeg'],
+    images: ['https://esstranfer.com/images/LOGOL.png'],
   },
   robots: {
     index: true,
@@ -90,9 +90,15 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/images/LOGOL.jpeg',
-    shortcut: '/images/LOGOL.jpeg',
-    apple: '/images/LOGOL.jpeg',
+    icon: [
+      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  other: {
+    'msapplication-TileColor': '#2563eb',
   },
 };
 
@@ -105,6 +111,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* interactive-widget=resizes-content: keyboard ya simu inakandamiza
             layout viewport → composer wa chat anakaa mahali pake (hajiruki juu) */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+        {/* Schema.org JSON-LD — helps Google understand the site structure */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Kubadilishana Portal',
+              url: 'https://esstranfer.com',
+              description: 'Tafuta mtu wa kubadilishana naye vituo vya kazi Tanzania. Bure kwa Walimu, Madaktari, Wauguzi na watumishi wote wa serikali.',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: 'https://esstranfer.com/search?q={search_term_string}',
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
       </head>
       <body className="min-h-screen flex flex-col">
         <ThemeInit />
