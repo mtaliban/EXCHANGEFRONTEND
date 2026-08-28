@@ -1,8 +1,16 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ThemeInit from '@/components/ThemeInit';
+import Script from 'next/script';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
+};
 
 export const metadata: Metadata = {
   title: {
@@ -104,13 +112,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="sw">
-      <head>
-        {/* Apply persisted theme BEFORE first paint to avoid a light flash */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=JSON.parse(localStorage.getItem('kv_theme'));var th=(t&&t.state&&t.state.theme)||'light';var r=document.documentElement;r.classList.toggle('dark',th==='dark');r.style.colorScheme=th;}catch(e){}})();` }} />
-        {/* interactive-widget=resizes-content: keyboard ya simu inakandamiza
-            layout viewport → composer wa chat anakaa mahali pake (hajiruki juu) */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <html lang="sw" suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col">
+        {/* Theme init — inatumika kabla ya first paint */}
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: `(function(){try{var t=JSON.parse(localStorage.getItem('kv_theme'));var th=(t&&t.state&&t.state.theme)||'light';var r=document.documentElement;r.classList.toggle('dark',th==='dark');r.style.colorScheme=th;}catch(e){}})();` }} />
         {/* Schema.org JSON-LD — helps Google understand the site structure */}
         <script
           type="application/ld+json"
@@ -129,8 +134,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
-      </head>
-      <body className="min-h-screen flex flex-col">
         <ThemeInit />
         <Navbar />
         <main className="flex-1">{children}</main>
