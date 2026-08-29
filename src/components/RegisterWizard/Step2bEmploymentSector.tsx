@@ -36,8 +36,8 @@ export default function Step2bEmploymentSector({ initial, onBack, onNext }: Prop
           onChange={(e) => { setSector(e.target.value); setError(null); }}
         >
           <option value="">-- Chagua --</option>
-          <option value="wizara_afya">Wizara</option>
-          <option value="tamisemi">Halmashauri</option>
+          <option value="wizara_afya">Wizara ya Afya</option>
+          <option value="tamisemi">TAMISEMI</option>
         </select>
       </div>
 

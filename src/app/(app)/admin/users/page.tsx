@@ -1125,8 +1125,8 @@ function CreateUserModal({ onClose, onCreated }: any) {
             <div><label className="label">Wizara</label>
               <select className="input" value={employment_sector} onChange={(e) => setEmploymentSector(e.target.value)}>
                 <option value="">--</option>
-                <option value="wizara_afya">Wizara</option>
-                <option value="tamisemi">Halmashauri</option>
+                <option value="wizara_afya">Wizara ya Afya</option>
+                <option value="tamisemi">TAMISEMI</option>
               </select>
             </div>
           )}
