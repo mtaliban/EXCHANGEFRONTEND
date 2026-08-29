@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getRegions, getDistricts, type Region, type District, type Destination } from '@/lib/api';
+import { getRegions, getDistricts, getFacilities, type Region, type District, type Facility, type Destination } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { AlertCircle, Plus, Trash2, MapPin, ChevronDown } from 'lucide-react';
@@ -18,6 +18,8 @@ interface DestEntry {
   region_name: string;
   district_id: number | null;
   district_name: string | null;
+  facility_id: string | null;
+  facility_name: string | null;
 }
 
 export default function Step4Destinations({ initial, onBack, onSubmit, submitting }: Props) {
@@ -28,6 +30,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   const [error, setError] = useState<string | null>(null);
 
   // Initialize from existing data or default with one empty entry
+  const category: 'health' | 'education' = initial.category;
+
   const initDests: DestEntry[] = (() => {
     const existing = initial.desired_destinations;
     if (Array.isArray(existing) && existing.length > 0) {
@@ -36,9 +40,11 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         region_name: d.region_name || '',
         district_id: d.district_id || null,
         district_name: d.district_name || null,
+        facility_id: d.facility_id || null,
+        facility_name: d.facility_name || null,
       }));
     }
-    return [{ region_id: '', region_name: '', district_id: null, district_name: null }];
+    return [{ region_id: '', region_name: '', district_id: null, district_name: null, facility_id: null, facility_name: null }];
   })();
   const [dests, setDests] = useState<DestEntry[]>(initDests);
 
@@ -54,6 +60,17 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     });
   }, [dests, destDistricts]);
 
+  // Load facilities when district is chosen
+  const [destFacilities, setDestFacilities] = useState<Record<number, Facility[]>>({});
+  useEffect(() => {
+    const uncached = dests.filter((d) => d.district_id && !destFacilities[d.district_id as number]);
+    uncached.forEach((d) => {
+      getFacilities(Number(d.district_id), category).then((list) => {
+        setDestFacilities((m) => ({ ...m, [d.district_id as number]: list }));
+      }).catch(() => {});
+    });
+  }, [dests, destFacilities, category]);
+
   function updateDest(i: number, patch: Partial<DestEntry>) {
     setDests((prev) => prev.map((d, idx) => (idx === i ? { ...d, ...patch } : d)));
     if (patch.region_id) {
@@ -62,10 +79,14 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         getDistricts(r.id).then((list) => setDestDistricts((m) => ({ ...m, [r.id]: list })));
       }
     }
+    // District ikibadilika — futa facility ya zamani
+    if (patch.district_id !== undefined && !patch.facility_id) {
+      setDests((prev) => prev.map((d, idx) => (idx === i ? { ...d, facility_id: null, facility_name: null } : d)));
+    }
   }
 
   function addDest() {
-    setDests([...dests, { region_id: '', region_name: '', district_id: null, district_name: null }]);
+    setDests([...dests, { region_id: '', region_name: '', district_id: null, district_name: null, facility_id: null, facility_name: null }]);
   }
 
   function removeDest(i: number) {
@@ -87,13 +108,15 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
       const region = regions.find((r) => r.id === Number(d.region_id))!;
       const distList = destDistricts[d.region_id as number] || [];
       const district = d.district_id ? distList.find((x) => x.id === Number(d.district_id)) : null;
+      const facList = destFacilities[d.district_id as number] || [];
+      const facility = d.facility_id ? facList.find((f: any) => String(f.id || f.code) === d.facility_id) : null;
       return {
         region_id: region.id,
         region_name: region.name,
         district_id: district?.id || null,
         district_name: district?.name || null,
-        facility_id: null,
-        facility_name: null,
+        facility_id: facility ? String(facility.id || facility.code) : null,
+        facility_name: facility?.name || null,
         notes: null,
       };
     });
@@ -154,6 +177,24 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
                 <option value="">Wilaya yote ya mkoa huu</option>
                 {(destDistricts[d.region_id as number] || []).map((x) => (
                   <option key={x.id} value={x.id}>{x.name}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Facility select (optional) — hospitali/kituo, sawa na Step3Station */}
+            {d.district_id && (
+              <select className="input text-sm" value={d.facility_id || ''}
+                onChange={(e) => {
+                  const fid = e.target.value || null;
+                  const facList = destFacilities[d.district_id as number] || [];
+                  const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
+                  updateDest(i, { facility_id: fid, facility_name: fac?.name || null });
+                }}>
+                <option value="">{category === 'health' ? 'Hospitali/Kituo chote cha wilaya hii' : 'Shule zote za wilaya hii'}</option>
+                {(destFacilities[d.district_id as number] || []).map((f: any) => (
+                  <option key={f.id || f.code} value={String(f.id || f.code)}>
+                    {f.name}{f.type ? ` (${f.type})` : ''}
+                  </option>
                 ))}
               </select>
             )}

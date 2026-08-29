@@ -191,6 +191,7 @@ function EditProfile({ profile, onSaved }: any) {
   const [facility_id, setFacilityId] = useState<string>(profile.current_station?.facility_id || '');
   const [destinations, setDestinations] = useState<any[]>(profile.desired_destinations || []);
   const [destDistricts, setDestDistricts] = useState<Record<number, District[]>>({});
+  const [destFacilities, setDestFacilities] = useState<Record<number, Facility[]>>({});
   const [curPassword, setCurPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -249,6 +250,20 @@ function EditProfile({ profile, onSaved }: any) {
       }).catch(() => {});
     }
   }, [destinations]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load facilities for destination districts
+  useEffect(() => {
+    const uncached = (destinations || []).filter((d: any) => d.district_id && !destFacilities[d.district_id]);
+    if (uncached.length) {
+      Promise.all(uncached.map((d: any) => getFacilities(d.district_id, (category as 'health' | 'education') || 'health').then((list) => ({ id: d.district_id, list })))).then((results) => {
+        setDestFacilities((m) => {
+          const next = { ...m };
+          for (const { id, list } of results) next[id] = list;
+          return next;
+        });
+      }).catch(() => {});
+    }
+  }, [destinations, category]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function saveProfile() {
     setSaving(true); setError(null);
@@ -404,7 +419,7 @@ function EditProfile({ profile, onSaved }: any) {
           <div key={i} className="space-y-2 p-3 rounded-xl bg-brand-grey-50 dark:bg-brand-grey-100">
             <div className="flex gap-2 items-center">
               <select className="input flex-1" value={d.region_id || 0}
-                onChange={(e) => updateDest(i, { region_id: Number(e.target.value), region_name: regions.find((r) => r.id === Number(e.target.value))?.name || '', district_id: null })}>
+                onChange={(e) => updateDest(i, { region_id: Number(e.target.value), region_name: regions.find((r) => r.id === Number(e.target.value))?.name || '', district_id: null, facility_id: null, facility_name: null })}>
                 <option value={0}>{t('profile.choose')}</option>
                 {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
@@ -412,9 +427,23 @@ function EditProfile({ profile, onSaved }: any) {
             </div>
             {d.region_id ? (
               <select className="input w-full" value={d.district_id || ''}
-                onChange={(e) => updateDest(i, { district_id: e.target.value ? Number(e.target.value) : null, district_name: (destDistricts[d.region_id] || []).find((x) => x.id === Number(e.target.value))?.name || null })}>
+                onChange={(e) => updateDest(i, { district_id: e.target.value ? Number(e.target.value) : null, district_name: (destDistricts[d.region_id] || []).find((x) => x.id === Number(e.target.value))?.name || null, facility_id: null, facility_name: null })}>
                 <option value="">{t('step4.any_district')}</option>
                 {(destDistricts[d.region_id] || []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+              </select>
+            ) : null}
+            {d.district_id ? (
+              <select className="input w-full" value={d.facility_id || ''}
+                onChange={(e) => {
+                  const fid = e.target.value || null;
+                  const facList = destFacilities[d.district_id] || [];
+                  const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
+                  updateDest(i, { facility_id: fid, facility_name: fac?.name || null });
+                }}>
+                <option value="">{category === 'health' ? 'Hospitali/Kituo chote cha wilaya hii' : 'Shule zote za wilaya hii'}</option>
+                {(destFacilities[d.district_id] || []).map((f: any) => (
+                  <option key={f.id || f.code} value={String(f.id || f.code)}>{f.name}{f.type ? ` (${f.type})` : ''}</option>
+                ))}
               </select>
             ) : null}
           </div>
