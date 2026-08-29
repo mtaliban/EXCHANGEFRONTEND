@@ -1016,6 +1016,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
   const [dests, setDests] = useState<{ region_id: number | ''; district_id: number | '' }[]>([{ region_id: '', district_id: '' }]);
   const [is_admin, setAdmin] = useState(false);
   const [status, setStatus] = useState('active');
+  const [employment_sector, setEmploymentSector] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // REAL-TIME: admin akibadilisha data (masomo/kada/mikoa) → form inajirefresh
@@ -1074,6 +1075,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
       await adminCreateUser({
         full_name, phone_primary: phone, phone_alt: phone_alt || undefined, password,
         category, cadre_code, subjects,
+        employment_sector: (category === 'health' && employment_sector) ? employment_sector as any : undefined,
         current_station: station,
         desired_destinations: desired_destinations.length ? desired_destinations : undefined,
         is_admin, status,
@@ -1119,6 +1121,15 @@ function CreateUserModal({ onClose, onCreated }: any) {
               {cadres.map((c) => <option key={c.code} value={c.code}>{c.display_name}</option>)}
             </select>
           </div>
+          {category === 'health' && (
+            <div><label className="label">Wizara</label>
+              <select className="input" value={employment_sector} onChange={(e) => setEmploymentSector(e.target.value)}>
+                <option value="">--</option>
+                <option value="wizara_afya">Wizara</option>
+                <option value="tamisemi">Halmashauri</option>
+              </select>
+            </div>
+          )}
           <div><label className="label">{t('admin.status')}</label>
             <select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="active">{t('admin.status_active')}</option>

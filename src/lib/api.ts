@@ -475,6 +475,7 @@ export const adminCreateUser = (body: {
   category?: string;
   cadre_code?: string;
   subjects?: string[];
+  employment_sector?: 'wizara_afya' | 'tamisemi';
   current_station?: Station | null;
   desired_destinations?: Destination[];
   is_verified?: boolean;
