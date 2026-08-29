@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getRegions, getDistricts, getFacilities, type Region, type District, type Facility } from '@/lib/api';
+import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Region, type District, type Facility } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { AlertCircle } from 'lucide-react';
@@ -19,6 +19,11 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const isTeacherSecondary = initial.cadre_code === 'TEACHER_SECONDARY';
   const level = isTeacherPrimary ? 'Primary' : isTeacherSecondary ? 'Secondary' : undefined;
   const category: 'health' | 'education' = initial.category;
+  const employmentSector: string | undefined = initial.employment_sector;
+
+  // ── Wizara ya Afya: Mkoa + Hospitali (skip wilaya) ──
+  const isWizara = category === 'health' && employmentSector === 'wizara_afya';
+  // ── TAMISEMI / Elimu: Mkoa + Wilaya + Kituo ──
 
   const [regions, setRegions] = useState<Region[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -28,50 +33,92 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const [facility_id, setFacilityId] = useState<string>(cs.facility_id || '');
   const [facility_name_manual, setFacilityNameManual] = useState<string>(cs.facility_name && !cs.facility_id ? cs.facility_name : '');
   const [error, setError] = useState<string | null>(null);
+  const [regionFacilitiesLoading, setRegionFacilitiesLoading] = useState(false);
 
   const dv = useDataVersion();
   useEffect(() => { getRegions().then(setRegions).catch(() => setError(t('step3.err_load'))); }, [dv]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── TAMISEMI/Elimu: load districts when region is chosen ──
   useEffect(() => {
-    if (region_id) {
+    if (!isWizara && region_id) {
       getDistricts(Number(region_id)).then(setDistricts).catch(() => {});
     } else {
       setDistricts([]);
     }
-    setDistrictId(''); setFacilityId(''); setFacilities([]);
-  }, [region_id]);
+    if (!isWizara) {
+      setDistrictId(''); setFacilityId(''); setFacilities([]);
+    }
+  }, [region_id, isWizara]);
 
+  // ── TAMISEMI/Elimu: load facilities when district is chosen ──
   useEffect(() => {
-    if (district_id) {
+    if (!isWizara && district_id) {
       getFacilities(Number(district_id), category, level as any).then(setFacilities).catch(() => setFacilities([]));
-    } else {
+    } else if (!isWizara) {
       setFacilities([]);
     }
-    setFacilityId('');
-  }, [district_id, category, level]);
+    if (!isWizara) setFacilityId('');
+  }, [district_id, category, level, isWizara]);
+
+  // ── Wizara ya Afya: load ALL facilities in region at once ──
+  useEffect(() => {
+    if (isWizara && region_id) {
+      setRegionFacilitiesLoading(true);
+      setFacilityId('');
+      getFacilitiesByRegion(Number(region_id), 'health')
+        .then(setFacilities)
+        .catch(() => setFacilities([]))
+        .finally(() => setRegionFacilitiesLoading(false));
+    } else if (isWizara) {
+      setFacilities([]);
+    }
+  }, [region_id, isWizara]);
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!region_id || !district_id) { setError(t('step3.err_region_district')); return; }
-    const region = regions.find((r) => r.id === Number(region_id))!;
-    const district = districts.find((d) => d.id === Number(district_id))!;
-    const facility = facilities.find(
-      (f: any) => String(f.id || f.code) === facility_id
-    );
-    onNext({
-      current_station: {
-        region_id: region.id, region_name: region.name,
-        district_id: district.id, district_name: district.name,
-        facility_id: facility_id || null,
-        facility_name: facility?.name || facility_name_manual || null,
-        facility_type: (facility as any)?.type || (facility as any)?.level || null,
-      },
-    });
+
+    if (isWizara) {
+      // Wizara ya Afya: Mkoa + Hospitali
+      if (!region_id) { setError('Chagua Mkoa'); return; }
+      const region = regions.find((r) => r.id === Number(region_id))!;
+      const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
+      onNext({
+        current_station: {
+          region_id: region.id, region_name: region.name,
+          district_id: facility?.district_id || null,
+          district_name: facility?.district || null,
+          facility_id: facility_id || null,
+          facility_name: facility?.name || null,
+          facility_type: (facility as any)?.type || (facility as any)?.type_category || null,
+        },
+      });
+    } else {
+      // TAMISEMI/Elimu: Mkoa + Wilaya + Kituo
+      if (!region_id || !district_id) { setError(t('step3.err_region_district')); return; }
+      const region = regions.find((r) => r.id === Number(region_id))!;
+      const district = districts.find((d) => d.id === Number(district_id))!;
+      const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
+      onNext({
+        current_station: {
+          region_id: region.id, region_name: region.name,
+          district_id: district.id, district_name: district.name,
+          facility_id: facility_id || null,
+          facility_name: facility?.name || facility_name_manual || null,
+          facility_type: (facility as any)?.type || (facility as any)?.level || null,
+        },
+      });
+    }
   }
 
   return (
     <form onSubmit={submit} className="space-y-3.5">
       <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step3.title')}</h2>
+
+      {isWizara && (
+        <p className="text-xs text-brand-blue font-medium bg-brand-blue-50 dark:bg-brand-blue-900/20 rounded-lg p-2">
+          🏥 Wizara ya Afya — Chagua Mkoa kisha Jina la Hospitali
+        </p>
+      )}
 
       <div>
         <label className="label">{t('step3.region')} *</label>
@@ -81,16 +128,39 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
         </select>
       </div>
 
-      {region_id !== '' && (
+      {/* ── Wizara ya Afya: Hospitali selection (skip wilaya) ── */}
+      {isWizara && region_id !== '' && (
         <div>
-          <label className="label">{t('step3.district')} *</label>            <select className="input" value={district_id} onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : '')} required>
+          <label className="label">
+            Hospitali / Kituo cha Afya *
+          </label>
+          {regionFacilitiesLoading ? (
+            <div className="text-sm text-brand-grey-400 py-3">Inapakia hospitali za mkoa huu...</div>
+          ) : (
+            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)} required>
+              <option value="">Chagua Hospitali</option>
+              {facilities.map((f: any) => (
+                <option key={f.id || f.code} value={String(f.id || f.code)}>
+                  {f.name}{f.type ? ` (${f.type})` : ''}{f.district ? ` — ${f.district}` : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
+      {/* ── TAMISEMI/Elimu: Wilaya + Kituo ── */}
+      {!isWizara && region_id !== '' && (
+        <div>
+          <label className="label">{t('step3.district')} *</label>
+            <select className="input" value={district_id} onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : '')} required>
             <option value="">Chagua Wilaya</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </div>
       )}
 
-      {district_id !== '' && (
+      {!isWizara && district_id !== '' && (
         <div>
           <label className="label">
             {t('step3.facility')} ({category === 'health' ? t('step3.facility_health') : t('step3.facility_school')}) — {t('msg.optional')}

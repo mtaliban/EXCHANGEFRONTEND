@@ -222,6 +222,7 @@ export interface Facility {
   id?: number; code?: string; name: string;
   level?: string; type?: string; type_category?: string;
   ownership?: string; ownership_category?: string;
+  district?: string; district_id?: number;
 }
 export interface Cadre {
   code: string; category: 'health' | 'education';
@@ -248,6 +249,16 @@ export const getFacilities = (
   if (q) params.q = q;
   return client.get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
 };
+/** Get all health facilities across a whole region (for Wizara ya Afya users). */
+export const getFacilitiesByRegion = (
+  regionId: number,
+  category: 'health' | 'education' = 'health',
+  q?: string
+) => {
+  const params: any = { category };
+  if (q) params.q = q;
+  return client.get<Facility[]>(`${LOC}/locations/regions/${regionId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
+};
 export const getCadres = (category?: string, bypass = false) =>
   client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined, ttl: 60_000, bypassCache: bypass } as any).then((r) => r.data);
 export const getSubjects = (level?: 'Primary' | 'Secondary', bypass = false) =>
@@ -272,6 +283,7 @@ export interface RegisterPayload {
   phone_alt?: string;
   password?: string;
   category: string;
+  employment_sector?: 'wizara_afya' | 'tamisemi';
   cadre_code: string;
   subjects: string[];
   current_station: Station;
@@ -361,6 +373,7 @@ export const updateProfile = (body: {
   phone_alt?: string | null;
   subjects?: string[];
   cadre_code?: string;
+  employment_sector?: 'wizara_afya' | 'tamisemi';
   current_station?: Station;
   desired_destinations?: Destination[];
 }) =>

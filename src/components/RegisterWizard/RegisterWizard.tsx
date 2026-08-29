@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { AlertCircle } from 'lucide-react';
 import Step1Identity from './Step1Identity';
 import Step2Cadre from './Step2Cadre';
+import Step2bEmploymentSector from './Step2bEmploymentSector';
 import Step3Station from './Step3Station';
 import Step4Destinations from './Step4Destinations';
 import type { RegisterPayload } from '@/lib/api';
@@ -57,12 +58,26 @@ export default function RegisterWizard({ onComplete }: Props) {
     }
   }
 
-  const STEPS = [
-    { n: 1, title: t('wizard.step1') },
-    { n: 2, title: t('wizard.step2') },
-    { n: 3, title: t('wizard.step3') },
-    { n: 4, title: t('wizard.step4') },
-  ];
+  const isHealth = data.category === 'health';
+  // Health workers: 5 steps (identity, cadre, sector, station, dest)
+  // Education workers: 4 steps (identity, cadre, station, dest)
+  const totalSteps = isHealth ? 5 : 4;
+  const currentStep = step; // step already goes 1→5 for health, 1→4 for education
+
+  const STEPS = isHealth
+    ? [
+        { n: 1, title: t('wizard.step1') },
+        { n: 2, title: t('wizard.step2') },
+        { n: 3, title: 'Ajira' },
+        { n: 4, title: t('wizard.step3') },
+        { n: 5, title: t('wizard.step4') },
+      ]
+    : [
+        { n: 1, title: t('wizard.step1') },
+        { n: 2, title: t('wizard.step2') },
+        { n: 3, title: t('wizard.step3') },
+        { n: 4, title: t('wizard.step4') },
+      ];
 
   return (
     <div>
@@ -74,9 +89,9 @@ export default function RegisterWizard({ onComplete }: Props) {
               <div
                 className={clsx(
                   'w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition flex-shrink-0',
-                  step > s.n
+                  currentStep > s.n
                     ? 'bg-brand-blue text-white border-brand-blue'
-                    : step === s.n
+                    : currentStep === s.n
                       ? 'bg-brand-blue text-white border-brand-blue'
                       : 'bg-white text-brand-grey-500 border-brand-grey-300'
                 )}
@@ -85,7 +100,7 @@ export default function RegisterWizard({ onComplete }: Props) {
               </div>
               <span className={clsx(
                 'text-[10px] sm:text-xs mt-1 text-center truncate w-full px-1 hidden min-[380px]:block',
-                step >= s.n ? 'text-brand-grey-900 font-semibold' : 'text-brand-grey-500'
+                currentStep >= s.n ? 'text-brand-grey-900 font-semibold' : 'text-brand-grey-500'
               )}>
                 {s.title}
               </span>
@@ -93,7 +108,7 @@ export default function RegisterWizard({ onComplete }: Props) {
             {i < STEPS.length - 1 && (
               <div className={clsx(
                 'h-1 flex-1 mx-1 rounded transition min-w-0',
-                step > s.n ? 'bg-brand-blue' : 'bg-brand-grey-200'
+                currentStep > s.n ? 'bg-brand-blue' : 'bg-brand-grey-200'
               )} />
             )}
           </div>
@@ -110,8 +125,10 @@ export default function RegisterWizard({ onComplete }: Props) {
       <div className="card p-4 sm:p-5">
         {step === 1 && <Step1Identity initial={data} onNext={next} />}
         {step === 2 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
-        {step === 3 && <Step3Station initial={data} onBack={back} onNext={next} />}
-        {step === 4 && (
+        {isHealth && step === 3 && <Step2bEmploymentSector initial={data} onBack={back} onNext={next} />}
+        {!isHealth && step === 3 && <Step3Station initial={data} onBack={back} onNext={next} />}
+        {isHealth && step === 4 && <Step3Station initial={data} onBack={back} onNext={next} />}
+        {((!isHealth && step === 4) || (isHealth && step === 5)) && (
           <Step4Destinations
             initial={data}
             onBack={back}

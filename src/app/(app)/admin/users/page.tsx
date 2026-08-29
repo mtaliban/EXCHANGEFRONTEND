@@ -655,7 +655,14 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
             {user.is_admin && <ShieldCheck size={16} className="text-brand-blue" />}
           </div>
           {!user.is_admin && (
-            <div className="text-xs text-brand-grey-500">{user.cadre_display || user.cadre_code || '—'}</div>
+            <>
+              <div className="text-xs text-brand-grey-500">{user.cadre_display || user.cadre_code || '—'}</div>
+              {user.category === 'health' && user.employment_sector && (
+                <div className="text-[10px] text-brand-blue font-medium">
+                  {user.employment_sector === 'wizara_afya' ? '🏥 Wizara ya Afya' : '🏛️ TAMISEMI'}
+                </div>
+              )}
+            </>
           )}
         </div>
         <div className="rounded-xl border border-brand-grey-100 p-3 divide-y divide-brand-grey-100">

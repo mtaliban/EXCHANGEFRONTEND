@@ -65,7 +65,7 @@ export default function ProfilePage() {
         ) : (
           <EditProfile profile={profile} onSaved={(p: any) => {
             setProfile(p);
-            setUser({ ...user!, full_name: p.full_name, phone_primary: p.phone_primary, category: p.category, cadre_code: p.cadre_code, cadre_display: p.cadre_display, current_station: p.current_station, desired_destinations: p.desired_destinations, subjects: p.subjects } as any);
+            setUser({ ...user!, full_name: p.full_name, phone_primary: p.phone_primary, category: p.category, cadre_code: p.cadre_code, cadre_display: p.cadre_display, employment_sector: p.employment_sector, current_station: p.current_station, desired_destinations: p.desired_destinations, subjects: p.subjects } as any);
             setMode('view');
             setMessage(t('msg.saved'));
             setTimeout(() => setMessage(null), 3000);
@@ -144,6 +144,9 @@ function ViewProfile({ profile }: any) {
           <Row label={t('label.phone')} value={profile.phone_primary} />
           {profile.phone_alt && <Row label={t('profile.alt_phone')} value={profile.phone_alt} />}
           <Row label={t('label.category')} value={profile.category === 'health' ? t('label.category_health') : t('label.category_education')} />
+          {profile.category === 'health' && profile.employment_sector && (
+            <Row label="Sehemu ya Ajira" value={profile.employment_sector === 'wizara_afya' ? 'Wizara ya Afya' : 'TAMISEMI'} />
+          )}
           <Row label={t('label.cadre')} value={profile.cadre_display || profile.cadre_code} />
           {profile.subjects?.length > 0 && <Row label={t('label.subjects')} value={profile.subjects.join(', ')} />}
         </div>
