@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
-  adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk,
+  adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk, adminTrashRestoreBulk,
   getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
   adminUserMatches, adminLoginAsUser, toggleUserContact,
   type Region, type District, type Cadre, type Subject,
@@ -453,6 +453,10 @@ export default function AdminUsersPage() {
               <Trash2 size={18} className="text-brand-red" /> {t('admin.trash_title')} <span className="text-xs font-semibold text-brand-grey-500">({trashTotal})</span>
             </h2>
             <div className="flex items-center gap-2">
+              <button onClick={restoreAllTrash} disabled={trash.length === 0}
+                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition disabled:opacity-40">
+                <RotateCcw size={11} /> {t('admin.trash_restore_all')}
+              </button>
               <button onClick={purgeAllTrash} disabled={trash.length === 0}
                 className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red text-white font-semibold hover:bg-brand-red-600 transition disabled:opacity-40">
                 <Trash2 size={11} /> {t('admin.trash_purge_all')}
@@ -562,16 +566,42 @@ export default function AdminUsersPage() {
     setTimeout(() => setMessage(null), 3000);
   }
 
-  async function purgeAllTrash() {
+  async function restoreAllTrash() {
+    const ids = trash.map((u: any) => u._id);
+    if (!ids.length) return;
     const ok = await askConfirm({
-      title: `${t('admin.trash_purge_all_confirm')} (${trash.length})`,
+      title: `${t('admin.trash_restore_all_confirm') || 'Rudisha akaunti zote?'} (${ids.length})`,
+      danger: false,
+    });
+    if (!ok) return;
+    try {
+      const r = await adminTrashRestoreBulk(ids);
+      setMessage(`${t('admin.trash_restored')} ${r.restored} ${t('admin.users')}`);
+      setTrash([]);
+      setTrashTotal(0);
+      load(true);
+    } catch (e: any) {
+      setMessage(e?.response?.data?.detail || t('admin.failed'));
+    }
+    setTimeout(() => setMessage(null), 3000);
+  }
+
+  async function purgeAllTrash() {
+    const ids = trash.map((u: any) => u._id);
+    if (!ids.length) return;
+    const ok = await askConfirm({
+      title: `${t('admin.trash_purge_all_confirm')} (${ids.length})`,
       danger: true,
     });
     if (!ok) return;
-    const r = await adminTrashPurgeBulk(trash.map((u) => u._id));
-    setMessage(`${t('admin.trash_purged')} ${r.purged} ${t('admin.users')}`);
-    setTrash([]);
-    setTrashTotal(0);
+    try {
+      const r = await adminTrashPurgeBulk(ids);
+      setMessage(`${t('admin.trash_purged')} ${r.purged} ${t('admin.users')}`);
+      setTrash([]);
+      setTrashTotal(0);
+    } catch (e: any) {
+      setMessage(e?.response?.data?.detail || t('admin.failed'));
+    }
     setTimeout(() => setMessage(null), 3000);
   }
 }

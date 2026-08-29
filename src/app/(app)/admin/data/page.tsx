@@ -968,7 +968,8 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
                 setData(prev => prev ? prev.map(x => String(editing._category === 'education' ? x.id : x.code) === String(fid) ? { ...x, ...body } : x) : prev);
               } else {
                 const created = await adminAddFacility(body);
-                setData(prev => prev ? [{ ...body, ...(created || {}) }, ...prev] : prev);
+                const newFac = created?.facility || created;
+                setData(prev => prev ? [{ ...body, ...newFac }, ...prev] : prev);
               }
               markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
