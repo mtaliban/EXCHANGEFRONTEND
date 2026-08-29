@@ -5,6 +5,7 @@ import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Re
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { AlertCircle } from 'lucide-react';
+import HospitalSearch from './HospitalSearch';
 
 interface Props {
   initial: any;
@@ -116,7 +117,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
       {isWizara && (
         <p className="text-xs text-brand-blue font-medium bg-brand-blue-50 dark:bg-brand-blue-900/20 rounded-lg p-2">
-          🏥 Wizara ya Afya — Chagua Mkoa kisha Jina la Hospitali
+          Wizara ya Afya — Chagua Mkoa kisha Jina la Hospitali
         </p>
       )}
 
@@ -134,18 +135,14 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
           <label className="label">
             Hospitali / Kituo cha Afya *
           </label>
-          {regionFacilitiesLoading ? (
-            <div className="text-sm text-brand-grey-400 py-3">Inapakia hospitali za mkoa huu...</div>
-          ) : (
-            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)} required>
-              <option value="">Chagua Hospitali</option>
-              {facilities.map((f: any) => (
-                <option key={f.id || f.code} value={String(f.id || f.code)}>
-                  {f.name}{f.type ? ` (${f.type})` : ''}{f.district ? ` — ${f.district}` : ''}
-                </option>
-              ))}
-            </select>
-          )}
+          <HospitalSearch
+            facilities={facilities}
+            value={facility_id}
+            onChange={(id) => setFacilityId(id)}
+            placeholder="Tafuta hospitali kwa jina..."
+            required
+            loading={regionFacilitiesLoading}
+          />
         </div>
       )}
 

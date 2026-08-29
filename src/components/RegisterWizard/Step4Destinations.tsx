@@ -5,6 +5,7 @@ import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Re
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { AlertCircle, Plus, Trash2, MapPin, ChevronDown } from 'lucide-react';
+import HospitalSearch from './HospitalSearch';
 
 interface Props {
   initial: any;
@@ -169,7 +170,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         </p>
         {isWizara && (
           <p className="text-xs text-brand-blue font-medium mt-1">
-            🏥 Wizara ya Afya — Chagua Mkoa kisha Jina la Hospitali unakotaka kuhamia
+            Wizara ya Afya — Chagua Mkoa kisha Jina la Hospitali unakotaka kuhamia
           </p>
         )}
       </div>
@@ -205,24 +206,16 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
               ))}
             </select>
 
-            {/* ── Wizara ya Afya: Hospitali selection (skip wilaya) ── */}
+            {/* ── Wizara ya Afya: Hospitali search (skip wilaya) ── */}
             {isWizara && d.region_id && (
-              <select className="input text-sm" value={d.facility_id || ''}
-                onChange={(e) => {
-                  const fid = e.target.value || null;
-                  const facList = regionFacilities[d.region_id as number] || [];
-                  const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
-                  updateDest(i, { facility_id: fid, facility_name: fac?.name || null });
-                }} required>
-                <option value="">
-                  {regionFacLoading[d.region_id as number] ? 'Inapakia hospitali...' : 'Chagua Hospitali unakotaka kuhamia'}
-                </option>
-                {(regionFacilities[d.region_id as number] || []).map((f: any) => (
-                  <option key={f.id || f.code} value={String(f.id || f.code)}>
-                    {f.name}{f.type ? ` (${f.type})` : ''}{f.district ? ` — ${f.district}` : ''}
-                  </option>
-                ))}
-              </select>
+              <HospitalSearch
+                facilities={regionFacilities[d.region_id as number] || []}
+                value={d.facility_id || ''}
+                onChange={(id, name) => updateDest(i, { facility_id: id || null, facility_name: name })}
+                placeholder="Tafuta hospitali unakotaka kuhamia..."
+                required
+                loading={!!regionFacLoading[d.region_id as number]}
+              />
             )}
 
             {/* ── TAMISEMI/Elimu: Wilaya + Kituo ── */}

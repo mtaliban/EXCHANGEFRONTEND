@@ -689,7 +689,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
               <div className="text-xs text-brand-grey-500">{user.cadre_display || user.cadre_code || '—'}</div>
               {user.category === 'health' && user.employment_sector && (
                 <div className="text-[10px] text-brand-blue font-medium">
-                  {user.employment_sector === 'wizara_afya' ? '🏥 Wizara ya Afya' : '🏛️ TAMISEMI'}
+                  {user.employment_sector === 'wizara_afya' ? 'Wizara ya Afya' : 'TAMISEMI'}
                 </div>
               )}
             </>
@@ -721,7 +721,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
                         if (d.password_plain) {
                           setShowPw(d.password_plain);
                         } else if (d.status === 'hash_only') {
-                          setShowPw('🔒 Password imeshahashwa — reset ili kuiona');
+                          setShowPw('Password imeshahashwa — reset ili kuiona');
                         } else {
                           setShowPw(d.message || 'Haijawekwa');
                         }
