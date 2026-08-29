@@ -1,7 +1,7 @@
 'use client';
 
-import { AlertCircle, Building2, Building } from 'lucide-react';
 import { useState } from 'react';
+import { AlertCircle } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -15,75 +15,30 @@ export default function Step2bEmploymentSector({ initial, onBack, onNext }: Prop
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!sector) { setError('Chagua sehemu ya ajira'); return; }
+    if (!sector) { setError('Chagua wizara'); return; }
     onNext({ employment_sector: sector });
   }
 
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-brand-grey-900 mb-1">Sehemu ya Ajira</h2>
+        <h2 className="text-base font-bold text-brand-grey-900 mb-1">Wizara</h2>
         <p className="text-sm text-brand-grey-500">
-          Je, unafanya kazi chini ya taasisi gani? Hii itasaidia mfumo kuonyesha vituo sahihi.
+          Je, unafanya kazi chini ya taasisi gani?
         </p>
       </div>
 
-      <div className="space-y-3">
-        {/* Wizara ya Afya */}
-        <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition ${
-          sector === 'wizara_afya'
-            ? 'border-brand-blue bg-brand-blue-50 dark:bg-brand-blue-900/20'
-            : 'border-brand-grey-200 dark:border-brand-grey-700 hover:border-brand-blue/50'
-        }`}>
-          <input
-            type="radio"
-            name="employment_sector"
-            value="wizara_afya"
-            checked={sector === 'wizara_afya'}
-            onChange={(e) => setSector(e.target.value)}
-            className="mt-1 w-4 h-4 text-brand-blue"
-          />
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <Building2 size={18} className={sector === 'wizara_afya' ? 'text-brand-blue' : 'text-brand-grey-500'} />
-              <span className="font-semibold text-brand-grey-900">Wizara ya Afya</span>
-            </div>
-            <p className="text-xs text-brand-grey-500 mt-1">
-              Hospitali za Rufaa (RRH), Hospitali za Taifa (Muhimbili, Ocean Road, n.k.)
-            </p>
-            <p className="text-xs text-brand-blue font-medium mt-1">
-              Utaandika: Mkoa + Jina la Hospitali
-            </p>
-          </div>
-        </label>
-
-        {/* TAMISEMI */}
-        <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition ${
-          sector === 'tamisemi'
-            ? 'border-brand-blue bg-brand-blue-50 dark:bg-brand-blue-900/20'
-            : 'border-brand-grey-200 dark:border-brand-grey-700 hover:border-brand-blue/50'
-        }`}>
-          <input
-            type="radio"
-            name="employment_sector"
-            value="tamisemi"
-            checked={sector === 'tamisemi'}
-            onChange={(e) => setSector(e.target.value)}
-            className="mt-1 w-4 h-4 text-brand-blue"
-          />
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <Building size={18} className={sector === 'tamisemi' ? 'text-brand-blue' : 'text-brand-grey-500'} />
-              <span className="font-semibold text-brand-grey-900">TAMISEMI</span>
-            </div>
-            <p className="text-xs text-brand-grey-500 mt-1">
-              Halmashauri — Zahanati, Vituo vya Afya, Hospitali za Wilaya/Manispaa
-            </p>
-            <p className="text-xs text-brand-blue font-medium mt-1">
-              Utaandika: Mkoa + Halmashauri + Kituo
-            </p>
-          </div>
-        </label>
+      <div>
+        <label className="label">Wizara</label>
+        <select
+          className="input"
+          value={sector}
+          onChange={(e) => { setSector(e.target.value); setError(null); }}
+        >
+          <option value="">-- Chagua --</option>
+          <option value="wizara_afya">Wizara</option>
+          <option value="tamisemi">Halmashauri</option>
+        </select>
       </div>
 
       {error && (
