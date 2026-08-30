@@ -621,7 +621,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
             </div>
             {from.facility_name && (
               <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-                <span className="ml-4">🏥 {from.facility_name}</span>
+                <span className="ml-4">{from.facility_name}</span>
               </div>
             )}
             {to && (
@@ -631,7 +631,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
             )}
             {to?.facility_name && (
               <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-                <span className="ml-4">🏥 {to.facility_name}</span>
+                <span className="ml-4">{to.facility_name}</span>
               </div>
             )}
           <div className="text-brand-blue font-extrabold">↓ {t('board.coming_to_you')} <span className="text-brand-grey-900 dark:text-white">{myRegionName}</span></div>
