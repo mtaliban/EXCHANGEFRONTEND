@@ -252,8 +252,15 @@ export interface Cadre {
 }
 export interface Subject { code: string; name: string; level: string; }
 
+const VALID_REGIONS = new Set([
+  'arusha','coast','dar es salaam','dodoma','geita','iringa','kagera','katavi',
+  'kigoma','kilimanjaro','lindi','manyara','mara','mbeya','morogoro','mtwara',
+  'mwanza','njombe','rukwa','ruvuma','shinyanga','simiyu','singida','songwe',
+  'tabora','tanga',
+]);
 export const getRegions = () =>
-  client.get<Region[]>(`${LOC}/locations/regions`, { ttl: _STATIC_TTL } as any).then((r) => r.data);
+  client.get<Region[]>(`${LOC}/locations/regions`, { ttl: _STATIC_TTL } as any)
+    .then((r) => r.data.filter((reg) => VALID_REGIONS.has(reg.name.trim().toLowerCase())));
 export interface Department { code: string; name: string; status: string; icon?: string | null; }
 export const getDepartments = (bypassCache = false) =>
   client.get<Department[]>(`${LOC}/locations/departments`, { ttl: 60_000, bypassCache } as any).then((r) => r.data);
