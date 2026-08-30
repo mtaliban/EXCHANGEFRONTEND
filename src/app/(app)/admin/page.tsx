@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { adminStats, adminReports, adminUsers, adminListDepartments } from '@/lib/api';
+import { adminStats, adminReports, adminUsers, adminListDepartments, extractErrorMessage } from '@/lib/api';
 import { API_URL } from '@/lib/config';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
@@ -85,7 +85,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     adminStats().then((s) => { setStats(s); setLoading(false); })
-      .catch((e) => { setError(e?.response?.data?.detail || t('admin.no_permission')); setLoading(false); });
+      .catch((e) => { setError(extractErrorMessage(e, t('admin.no_permission'))); setLoading(false); });
     adminReports(365).then(setReports).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

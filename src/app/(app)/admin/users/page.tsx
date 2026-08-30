@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
   adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk, adminTrashRestoreBulk,
   getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
-  adminUserMatches, adminLoginAsUser, toggleUserContact,
+  adminUserMatches, adminLoginAsUser, toggleUserContact, extractErrorMessage,
   type Region, type District, type Cadre, type Subject,
 } from '@/lib/api';
 import {
@@ -1124,7 +1124,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
         current_station: station,
       });
     } catch (e: any) {
-      setError(e?.response?.data?.detail || t('admin.failed'));
+      setError(extractErrorMessage(e, t('admin.failed')));
     } finally { setSaving(false); }
   }
 
@@ -1249,7 +1249,7 @@ function AddAdminModal({ onClose, onCreated }: any) {
         full_name, email, phone_primary: phone || undefined, is_admin: true, status: 'active', is_verified: true,
       });
     } catch (e: any) {
-      setError(e?.response?.data?.detail || t('admin.failed'));
+      setError(extractErrorMessage(e, t('admin.failed')));
     } finally { setSaving(false); }
   }
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, AlertCircle, WifiOff, X, Phone } from 'lucide-react';
-import { login, login2FA } from '@/lib/api';
+import { login, login2FA, extractErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 
@@ -115,7 +115,7 @@ export default function LoginContent() {
         setError(t('login.error_network'));
         setErrorType('network');
       } else {
-        setError(err?.response?.data?.detail || t('login.error_user'));
+        setError(extractErrorMessage(err, t('login.error_user')));
         setErrorType('validation');
       }
     } finally { setTwoFALoading(false); }

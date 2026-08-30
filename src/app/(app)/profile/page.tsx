@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, getCadres, bustGetCache, type Region, type District, type Subject, type Facility, type Cadre, type Station, type Destination } from '@/lib/api';
+import { getMyProfile, updateProfile, changeMyPassword, getRegions, getDistricts, getFacilities, getSubjects, getCadres, bustGetCache, extractErrorMessage, type Region, type District, type Subject, type Facility, type Cadre, type Station, type Destination } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { useLive } from '@/lib/liveSocket';
 import { useAuth } from '@/lib/auth';
@@ -110,7 +110,7 @@ function EditAdminProfile({ profile, onSaved }: any) {
       const fresh = await getMyProfile();
       onSaved(fresh);
     } catch (e: any) {
-      setError(e?.response?.data?.detail || 'Save failed');
+      setError(extractErrorMessage(e, 'Save failed'));
     } finally { setSaving(false); }
   }
 
@@ -311,7 +311,7 @@ function EditProfile({ profile, onSaved }: any) {
       const fresh = await getMyProfile();
       onSaved(fresh);
     } catch (e: any) {
-      setError(e?.response?.data?.detail || 'Save failed');
+      setError(extractErrorMessage(e, 'Save failed'));
     } finally { setSaving(false); }
   }
 
@@ -323,7 +323,7 @@ function EditProfile({ profile, onSaved }: any) {
       setCurPassword(''); setNewPassword('');
       setTimeout(() => setPwdMsg(null), 4000);
     } catch (e: any) {
-      setError(e?.response?.data?.detail || 'Password imeshindikana kubadilika');
+      setError(extractErrorMessage(e, 'Password imeshindikana kubadilika'));
     }
   }
 

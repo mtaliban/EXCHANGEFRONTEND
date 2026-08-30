@@ -202,6 +202,27 @@ export async function exportErrorText(e: any): Promise<string> {
   }
 }
 
+/**
+ * Extract a safe string from an axios error response.
+ * Backend Pydantic validation errors can return:
+ *  - string: "Some message"
+ *  - array: [{type, loc, msg, input}, ...]
+ *  - object: {type, loc, msg, input}
+ * All of these MUST be rendered as strings in React — never as objects.
+ */
+export function extractErrorMessage(e: any, fallback = 'Kuna hitilafu imetokea'): string {
+  try {
+    const detail = e?.response?.data?.detail;
+    if (!detail) return fallback;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) return detail.map((d: any) => d.msg || String(d)).join(', ');
+    if (typeof detail === 'object' && detail.msg) return detail.msg;
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 client.interceptors.request.use((cfg) => {
   if (typeof window !== 'undefined') {
     const raw = localStorage.getItem('kv_auth');

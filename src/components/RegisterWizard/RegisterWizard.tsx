@@ -10,7 +10,7 @@ import Step2bEmploymentSector from './Step2bEmploymentSector';
 import Step3Station from './Step3Station';
 import Step4Destinations from './Step4Destinations';
 import type { RegisterPayload } from '@/lib/api';
-import { register } from '@/lib/api';
+import { register, extractErrorMessage } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 
 type WizardData = Partial<RegisterPayload> & { subjects: string[] };
@@ -46,13 +46,8 @@ export default function RegisterWizard({ onComplete }: Props) {
       // Backend inareturn access_token — tumia ku-auto-login
       onComplete({ ...merged, access_token: res.access_token, user_id: res.user_id });
     } catch (err: any) {
-      const detail = err?.response?.data?.detail;
       setError(
-        typeof detail === 'string'
-          ? detail
-          : Array.isArray(detail)
-            ? detail.map((d: any) => d.msg).join(', ')
-            : t('wizard.submit_error')
+        extractErrorMessage(err, t('wizard.submit_error'))
       );
     } finally {
       setSubmitting(false);

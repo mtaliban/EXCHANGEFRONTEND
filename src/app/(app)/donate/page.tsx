@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getDonationInfo, submitDonation, myDonations, bustGetCache } from '@/lib/api';
+import { getDonationInfo, submitDonation, myDonations, bustGetCache, extractErrorMessage } from '@/lib/api';
 import { parseServerDate } from '@/lib/dates';
 import { timeAgo } from '@/lib/timeAgo';
 import { useAuth } from '@/lib/auth';
@@ -120,7 +120,7 @@ export default function DonatePage() {
       setStatus('sent');
     } catch (err: any) {
       setStatus('idle');
-      setError(err?.response?.data?.detail || t('donate.err_network'));
+      setError(extractErrorMessage(err, t('donate.err_network')));
     }
   }
 

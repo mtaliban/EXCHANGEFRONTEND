@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { resetPassword } from '@/lib/api';
+import { resetPassword, extractErrorMessage } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import Spinner from '@/components/Spinner';
 import { CheckCircle2, AlertCircle, Loader2, KeyRound, ArrowLeft } from 'lucide-react';
@@ -30,7 +30,7 @@ function ResetPasswordInner() {
       setMessage(res.message);
       setTimeout(() => router.push('/login'), 1800);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || t('msg.error'));
+      setError(extractErrorMessage(err, t('msg.error')));
     } finally { setLoading(false); }
   }
 

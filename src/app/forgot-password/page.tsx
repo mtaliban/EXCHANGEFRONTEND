@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { lookupByName, forgotPassword, resetPassword } from '@/lib/api';
+import { lookupByName, forgotPassword, resetPassword, extractErrorMessage } from '@/lib/api';
 import { ArrowLeft, AlertCircle, CheckCircle2, User, Phone, KeyRound, Loader2, Search, ArrowRight } from 'lucide-react';
 
 type Step = 'lookup' | 'pick' | 'done';
@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
       setUsers(res.users || []);
       setStep('pick');
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Hakuna mtumiaji aliye na jina hili');
+      setError(extractErrorMessage(err, 'Hakuna mtumiaji aliye na jina hili'));
     } finally { setLoading(false); }
   }
 
