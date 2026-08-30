@@ -504,16 +504,19 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
 
   // CONTACT PERMISSION: canContact = True pale ambapo:
   //   - require_payment_for_contact = False (admin amezima kwa wote), AU
-  //   - is_verified = True (mtumiaji amelipa), AU
-  //   - contact_enabled = True (admin amemruhusu mtu huyu binafsi)
+  //   - mimi (viewer) amelipa — is_verified ya MTU AMBAYE NINAONEKANA NAYE
+  //     si muhimu; kila mtu anaonekana, lakini kulia piga depends na mimi
   const requirePayment = !!(me as any)?.require_payment_for_contact;
   const contactEnabled = !!(me as any)?.contact_enabled;
   const canContact = !requirePayment || !!isVerified || contactEnabled;
+  // Badge: onyesha kama huyu mtu amelipia — kwa mujibu wa model mpya:
+  // default names wameshaandikwa PAID automatically
+  const targetPaid = !!(c as any).is_verified;
 
   async function onCall() {
     if (!c.phone_primary) return;
     if (!canContact) {
-      showCardToast('Changia TZS 3,000 upate namba', c.user_id);
+      showCardToast('Changia TZS 5,000 upate namba', c.user_id);
       return;
     }
     showCardToast(`Piga ${c.full_name}`, c.user_id);
@@ -524,7 +527,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   function onSMS() {
     if (!c.phone_primary) return;
     if (!canContact) {
-      showCardToast('Changia TZS 3,000 upate namba', c.user_id);
+      showCardToast('Changia TZS 5,000 upate namba', c.user_id);
       return;
     }
     showCardToast(`SMS kwa ${c.full_name}`, c.user_id);
@@ -534,7 +537,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   function onWhatsApp() {
     if (!c.phone_alt) return;
     if (!canContact) {
-      showCardToast('Changia TZS 3,000 upate namba', c.user_id);
+      showCardToast('Changia TZS 5,000 upate namba', c.user_id);
       return;
     }
     showCardToast(`WhatsApp kwa ${c.full_name}`, c.user_id);
@@ -575,6 +578,15 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
               </span>
             )}
             {c.online && <span className="text-[10px] font-bold text-green-600">● {t('board.live')}</span>}
+            {targetPaid ? (
+              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-emerald-500 dark:bg-emerald-600 px-1.5 py-0.5 rounded-full">
+                ✓ PAID
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-red-400 dark:bg-red-500 px-1.5 py-0.5 rounded-full">
+                ✗ HAJALIPIA
+              </span>
+            )}
           </div>
           {/* NI NANI: idara (Afya/Elimu) + kada — majina yote yanaonekana (hakuna kukata) */}
           <div className="flex items-center gap-1 flex-wrap mt-0.5">

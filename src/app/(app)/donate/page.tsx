@@ -23,7 +23,7 @@ export default function DonatePage() {
   const { subscribe } = useLive();
   const [adminPhone, setAdminPhone] = useState('');
   const [currency, setCurrency] = useState('TZS');
-  const [amount, setAmount] = useState<number | ''>(3000);
+  const [amount, setAmount] = useState<number | ''>(5000);
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
