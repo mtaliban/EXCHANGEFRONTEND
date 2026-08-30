@@ -263,6 +263,12 @@ export const getFacilitiesByRegion = (
 };
 // Hardcoded fallback cadres — first time kutoka DB, kisha kutoka cache
 const FALLBACK_HEALTH_CADRES: Cadre[] = [
+  { code: 'MED_SPECIALIST', category: 'health', display_name: 'Medical Specialist', requires_subjects: false },
+  { code: 'DENTAL_SPECIALIST', category: 'health', display_name: 'Dental Specialist', requires_subjects: false },
+  { code: 'BIOMED_ENG_2', category: 'health', display_name: 'Biomedical Engineer II', requires_subjects: false },
+  { code: 'CHEM_2', category: 'health', display_name: 'Chemist II', requires_subjects: false },
+  { code: 'HEALTH_RECORDER_2', category: 'health', display_name: 'Health Recorder II', requires_subjects: false },
+  { code: 'OPHTHALMIC', category: 'health', display_name: 'Ophthalmic Optician II', requires_subjects: false },
   { code: 'CO', category: 'health', display_name: 'Clinical Officer', requires_subjects: false },
   { code: 'ACO', category: 'health', display_name: 'Assistant Clinical Officer', requires_subjects: false },
   { code: 'CA', category: 'health', display_name: 'Clinical Assistant', requires_subjects: false },
@@ -289,7 +295,7 @@ export const getCadres = (category?: string, sector?: string, bypass = false) =>
   return client.get<Cadre[]>(`${LOC}/cadres`, { params, ttl: 60_000, bypassCache: bypass } as any)
     .then((r) => r.data)
     .catch(() => {
-      // Fallback — DB haijapatikana, tumia hardcoded data
+      // Fallback — DB haijapatikana, tumia hardcoded data (zote kwa afya)
       if (category === 'health') return FALLBACK_HEALTH_CADRES;
       return [];
     });
