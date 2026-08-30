@@ -364,6 +364,7 @@ export default function AdminUsersPage() {
               <th className="px-3 py-2 text-left">{t('admin.col_cadre')}</th>
               <th className="px-3 py-2 text-left">{t('admin.col_region_short')}</th>
               <th className="px-3 py-2 text-left">{t('admin.status')}</th>
+              <th className="px-3 py-2 text-left">Malipo</th>
               <th className="px-3 py-2 text-left">{t('admin.col_admin')}</th>
               <th className="px-3 py-2 text-right">{t('admin.col_actions')}</th>
             </tr>
@@ -390,6 +391,11 @@ export default function AdminUsersPage() {
                   {u.status === 'disabled'
                     ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-brand-red-50 text-brand-red font-semibold"><UserX size={11} /> {t('admin.status_disabled')}</span>
                     : <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-green-50 text-green-600 font-semibold"><UserCheck size={11} /> {t('admin.status_active')}</span>}
+                </td>
+                <td className="px-3 py-2">
+                  {u.is_verified
+                    ? <span className="text-[10px] font-bold text-white bg-emerald-500 px-1.5 py-0.5 rounded-full">✓ PAID</span>
+                    : <span className="text-[10px] font-bold text-white bg-red-400 px-1.5 py-0.5 rounded-full">✗ HAJALIPIA</span>}
                 </td>
                 <td className="px-3 py-2">
                   <button onClick={() => toggleAdmin(u)}

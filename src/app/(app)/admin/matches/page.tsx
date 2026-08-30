@@ -129,6 +129,13 @@ export default function AdminMatchesPage() {
     return nameMatch || phoneMatch || cadreMatch || districtMatch;
   });
 
+  // Sort: za karibuni kabisa juu (newest first)
+  filtered.sort((a: any, b: any) => {
+    const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return tb - ta;
+  });
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
@@ -261,7 +268,11 @@ function UserCard({ user: u, destRegion }: { user: any; destRegion: string }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{u.full_name}</span>
-            {u.is_verified && <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">✓</span>}
+            {u.is_verified ? (
+              <span className="text-[9px] font-bold text-white bg-emerald-500 px-1.5 py-0.5 rounded-full">✓ PAID</span>
+            ) : (
+              <span className="text-[9px] font-bold text-white bg-red-400 px-1.5 py-0.5 rounded-full">✗ HAJALIPIA</span>
+            )}
           </div>
           <div className="text-xs text-brand-grey-500 truncate">
             <span className="font-semibold text-brand-blue-600">{categoryLabel(u.category)}</span> · {cadreLabel(u.cadre_code)}
