@@ -46,14 +46,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [hydrated, token, router]);
 
   // Admin guard: mtu wa kawaida haingii kwenye /admin/*
+  // NB: TUMA render-time check pamoja na useEffect ili isionekane content
+  // kabla ya ku-redirect.
+  const isAdminPath = hydrated && pathname?.startsWith('/admin');
+  const isAdmin = (user as any)?.is_admin;
   useEffect(() => {
     if (!hydrated || !user || !pathname) return;
-    const isAdminPath = pathname.startsWith('/admin');
-    const isAdmin = (user as any)?.is_admin;
     if (isAdminPath && !isAdmin) {
       router.replace('/dashboard');
     }
-  }, [hydrated, user, pathname, router]);
+  }, [hydrated, user, pathname, router, isAdminPath, isAdmin]);
 
   // Background refresh (once per session)
   useEffect(() => {
@@ -80,6 +82,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // Only block the render if we truly have nothing yet (after hydration)
   if (!token) return null;
   if (!user) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Spinner label={t('msg.loading')} />
+      </div>
+    );
+  }
+
+  // Block rendering kabla ya ku-redirect — mtu wa kawaida haioni admin content
+  if (isAdminPath && !isAdmin) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Spinner label={t('msg.loading')} />
