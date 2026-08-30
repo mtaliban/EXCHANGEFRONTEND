@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Region, type District, type Facility, type Destination } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { AlertCircle, Plus, Trash2, MapPin, ChevronDown } from 'lucide-react';
+import { AlertCircle, Plus, Trash2, ChevronDown } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -163,15 +163,6 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
       <div>
         <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step4.title')}</h2>
         <p className="text-sm text-brand-grey-500 mb-1">{t('step4.subtitle')}</p>
-        <p className="text-xs text-brand-blue font-medium">
-          <MapPin size={12} className="inline mr-1" />
-          Unaweza kuweka mikoa mingi — utaonekana kwenye dashboard ya watu wa kila mkoa
-        </p>
-        {isWizara && (
-          <p className="text-xs text-brand-blue font-medium mt-1">
-            Wizara ya Afya — Chagua Mkoa kisha Jina la Hospitali unakotaka kuhamia
-          </p>
-        )}
       </div>
 
       {/* Destination entries */}

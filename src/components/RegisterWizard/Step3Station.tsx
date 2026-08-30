@@ -114,12 +114,6 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
     <form onSubmit={submit} className="space-y-3.5">
       <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step3.title')}</h2>
 
-      {isWizara && (
-        <p className="text-xs text-brand-blue font-medium bg-brand-blue-50 dark:bg-brand-blue-900/20 rounded-lg p-2">
-          Wizara ya Afya — Chagua Mkoa kisha Jina la Hospitali
-        </p>
-      )}
-
       <div>
         <label className="label">{t('step3.region')} *</label>
         <select className="input" value={region_id} onChange={(e) => setRegionId(e.target.value ? Number(e.target.value) : '')} required>
