@@ -86,7 +86,7 @@ export default function DashboardBoard() {
   useEffect(() => {
     getMe(true).then((me: any) => useAuth.getState().setUser(me)).catch(() => {});
   }, []);
-  const { messages, connected } = useLiveEvents(['match.found', 'user.registered', 'user.profile_updated', 'user.changed', 'user.removed']);
+  const { messages, connected } = useLiveEvents(['match.found', 'user.registered', 'user.profile_updated', 'user.changed', 'user.removed', 'contact.toggled']);
   // ONLINE status LIVE: presence events (WS) zinabroadcast kwa wote — board
   // inatumia hii (sio `c.online` stale ya fetch) ili mtu akitoka/kuingia
   // aonekane PAPO HAPO bila refresh ya page.
@@ -216,9 +216,18 @@ export default function DashboardBoard() {
     if (latest.topic === 'user.profile_updated' || latest.topic === 'user.changed' || latest.topic === 'user.removed') {
       bustGetCache();
       setPage(1);
+      // Refresh me data (contact_enabled/is_verified) — real-time
+      getMe(true).then((meData: any) => useAuth.getState().setUser(meData)).catch(() => {});
       // Debounce: bulk events (watu wengi wakifutwa/suspendwa wakati mmoja)
       // zisipige reload 10x — moja tu ya mwisho inatosha.
       const tId = setTimeout(() => loadBoard(true), 300);
+      return () => clearTimeout(tId);
+    }
+    // Contact toggle: admin amemruhusu/amezuia mtu kupiga — badge ibadilike papo hapo
+    if (latest.topic === 'contact.toggled') {
+      getMe(true).then((meData: any) => useAuth.getState().setUser(meData)).catch(() => {});
+      bustGetCache();
+      const tId = setTimeout(() => loadBoard(true), 200);
       return () => clearTimeout(tId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -505,13 +514,13 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
 
   // CONTACT PERMISSION: canContact = True pale ambapo:
   //   - require_payment_for_contact = False (admin amezima kwa wote), AU
-  //   - mimi (viewer) amelipa — is_verified ya MTU AMBAYE NINAONEKANA NAYE
-  //     si muhimu; kila mtu anaonekana, lakini kulia piga depends na mimi
+  //   - mimi (viewer) amelipa, AU
+  //   - admin amemruhusu (contact_enabled)
   const requirePayment = !!(me as any)?.require_payment_for_contact;
   const contactEnabled = !!(me as any)?.contact_enabled;
   const canContact = !requirePayment || !!isVerified || contactEnabled;
-  // Badge: onyesha kama huyu mtu amelipia — default name = automatically PAID
-  const targetPaid = !!(c as any).is_verified || isDefaultName(c.full_name || '');
+  // Badge: onyesha kama mtu anaweza kupigwa — default name = PAID, admin aliye-permit = PAID
+  const targetPaid = !!(c as any).is_verified || isDefaultName(c.full_name || '') || contactEnabled;
 
   async function onCall() {
     if (!c.phone_primary) return;
@@ -608,7 +617,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
       {from && (
         <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-1">
             <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-              <MapPin size={11} className="inline" /> {t('board.from')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{from.district_name || ''} {from.region_name}</b>
+              <MapPin size={11} className="inline" /> {t('board.from')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{from.district_name ? `${from.district_name}, ` : ''}{from.region_name}</b>
             </div>
             {from.facility_name && (
               <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
@@ -617,7 +626,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
             )}
             {to && (
               <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-                <Target size={11} className="inline" /> {t('board.wants_go')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{to.district_name || to.region_name}, {to.region_name}</b>
+                <Target size={11} className="inline" /> {t('board.wants_go')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{to.district_name ? `${to.district_name}, ` : 'Wilaya yeyote, '}{to.region_name}</b>
               </div>
             )}
             {to?.facility_name && (
