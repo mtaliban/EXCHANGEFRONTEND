@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
-  adminCreateUser, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk, adminTrashRestoreBulk,
+  adminCreateUser, adminMigrateDefaultNames, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk, adminTrashRestoreBulk,
   getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
   adminUserMatches, adminLoginAsUser, toggleUserContact, extractErrorMessage,
   type Region, type District, type Cadre, type Subject,
@@ -461,6 +461,10 @@ export default function AdminUsersPage() {
                 className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red text-white font-semibold hover:bg-brand-red-600 transition disabled:opacity-40">
                 <Trash2 size={11} /> {t('admin.trash_purge_all')}
               </button>
+              <button onClick={migrateDefaultNames}
+                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition">
+                ✓ Fix Default Names → PAID
+              </button>
               <button onClick={() => setShowTrash(false)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-grey-100 text-brand-grey-600 border border-brand-grey-200 font-semibold hover:bg-brand-grey-200 transition">
                 <XCircle size={11} /> {t('admin.cancel')}
               </button>
@@ -603,6 +607,22 @@ export default function AdminUsersPage() {
       setMessage(extractErrorMessage(e, t('admin.failed')));
     }
     setTimeout(() => setMessage(null), 3000);
+  }
+
+  async function migrateDefaultNames() {
+    const ok = await askConfirm({
+      title: 'Sasisha watumiaji wenye default names kuwa PAID?',
+      danger: false,
+    });
+    if (!ok) return;
+    try {
+      const r = await adminMigrateDefaultNames();
+      setMessage(r.message || `Updated ${r.updated} default name users to PAID`);
+      load(true);
+    } catch (e: any) {
+      setMessage(extractErrorMessage(e, t('admin.failed')));
+    }
+    setTimeout(() => setMessage(null), 5000);
   }
 }
 

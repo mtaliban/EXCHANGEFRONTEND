@@ -531,6 +531,10 @@ export const adminBulkUsers = (user_ids: string[], action: 'delete' | 'disable' 
   client.post<{ ok: boolean; action: string; processed: number; skipped_admin: number }>(
     `${ADMIN}/admin/users/bulk`, { user_ids, action }
   ).then((r) => r.data);
+export const adminMigrateDefaultNames = () =>
+  client.post<{ ok: boolean; updated: number; message: string }>(
+    `${ADMIN}/admin/users/migrate-default-names`
+  ).then((r) => r.data);
 export const adminCreateUser = (body: {
   full_name: string;
   email?: string;
