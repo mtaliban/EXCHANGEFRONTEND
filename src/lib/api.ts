@@ -546,12 +546,16 @@ export const adminTrashList = (q?: string) =>
   client.get<{ total: number; items: any[] }>(`${ADMIN}/admin/users/trash`, { params: q ? { q } : {}, bypassCache: true } as any).then((r) => r.data);
 export const adminTrashRestore = (user_id: string) =>
   client.post(`${ADMIN}/admin/users/trash/${user_id}/restore`).then((r) => r.data);
-export const adminTrashRestoreBulk = (user_ids: string[]) =>
-  client.post(`${ADMIN}/admin/users/trash/restore`, null, { params: { ids: user_ids } }).then((r) => r.data);
+export const adminTrashRestoreBulk = (user_ids: string[]) => {
+  const qs = user_ids.map((id) => `ids=${encodeURIComponent(id)}`).join('&');
+  return client.post(`${ADMIN}/admin/users/trash/restore?${qs}`).then((r) => r.data);
+};
 export const adminTrashPurge = (user_id: string) =>
   client.delete(`${ADMIN}/admin/users/trash/${user_id}`).then((r) => r.data);
-export const adminTrashPurgeBulk = (user_ids: string[]) =>
-  client.delete(`${ADMIN}/admin/users/trash`, { params: { ids: user_ids } }).then((r) => r.data);
+export const adminTrashPurgeBulk = (user_ids: string[]) => {
+  const qs = user_ids.map((id) => `ids=${encodeURIComponent(id)}`).join('&');
+  return client.delete(`${ADMIN}/admin/users/trash?${qs}`).then((r) => r.data);
+};
 
 /* ── Admin: data management (idara/masomo/kada/mikoa/wilaya/vituo) ── */
 export const adminListDepartments = (bypass = false) =>

@@ -208,7 +208,7 @@ export default function AdminUsersPage() {
       });
       if (action === 'delete') loadTrash();
     } catch (e: any) {
-      setMessage(e?.response?.data?.detail || t('admin.failed'));
+      setMessage(extractErrorMessage(e, t('admin.failed')));
     } finally { setBulkBusy(false); }
     setTimeout(() => setMessage(null), 5000);
   }
@@ -245,7 +245,7 @@ export default function AdminUsersPage() {
       setData((prev: any) => prev ? { ...prev, users: prev.users.map((x: any) => x._id === u._id ? { ...x, contact_enabled: r.contact_enabled } : x) } : prev);
       setTimeout(() => setMessage(null), 3000);
     } catch (e: any) {
-      setMessage(e?.response?.data?.detail || t('admin.failed'));
+      setMessage(extractErrorMessage(e, t('admin.failed')));
       setTimeout(() => setMessage(null), 3000);
     }
   }
@@ -547,7 +547,7 @@ export default function AdminUsersPage() {
       setTrashTotal((n) => Math.max(0, n - 1));
       load(true);
     } catch (e: any) {
-      setMessage(e?.response?.data?.detail || 'Imeshindwa kumrudisha mtumiaji');
+      setMessage(extractErrorMessage(e, 'Imeshindwa kumrudisha mtumiaji'));
     }
     setTimeout(() => setMessage(null), 4000);
   }
@@ -581,7 +581,7 @@ export default function AdminUsersPage() {
       setTrashTotal(0);
       load(true);
     } catch (e: any) {
-      setMessage(e?.response?.data?.detail || t('admin.failed'));
+      setMessage(extractErrorMessage(e, t('admin.failed')));
     }
     setTimeout(() => setMessage(null), 3000);
   }
@@ -600,7 +600,7 @@ export default function AdminUsersPage() {
       setTrash([]);
       setTrashTotal(0);
     } catch (e: any) {
-      setMessage(e?.response?.data?.detail || t('admin.failed'));
+      setMessage(extractErrorMessage(e, t('admin.failed')));
     }
     setTimeout(() => setMessage(null), 3000);
   }
@@ -820,7 +820,7 @@ function ViewUserModal({ user, onClose, onEdit }: any) {
                   window.location.href = '/dashboard';
                 }
               } catch (e: any) {
-                alert(e?.response?.data?.detail || 'Imeshindwa');
+                alert(extractErrorMessage(e, 'Imeshindwa'));
               } finally { setLoggingIn(false); }
             }} disabled={loggingIn}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-gold text-white text-sm font-semibold hover:bg-brand-gold-600 transition disabled:opacity-40">
@@ -928,7 +928,7 @@ function EditUserModal({ user, onClose, onSaved }: any) {
       await adminUpdateUser(user._id, changes);
       onSaved({ ...user, ...changes, phone_alt: changes.phone_alt || user.phone_alt || null });
     } catch (e: any) {
-      alert(e?.response?.data?.detail || `${t('admin.failed')} save`);
+      alert(extractErrorMessage(e, `${t('admin.failed')} save`));
     } finally { setSaving(false); }
   }
 
