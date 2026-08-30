@@ -83,7 +83,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     const uncached = dests.filter((d) => d.region_id && !regionFacilities[d.region_id as number]);
     uncached.forEach((d) => {
       setRegionFacLoading((m) => ({ ...m, [d.region_id as number]: true }));
-      getFacilitiesByRegion(Number(d.region_id), 'health').then((list) => {
+      getFacilitiesByRegion(Number(d.region_id), 'health', undefined, isWizara ? 'wizara_afya' : 'tamisemi').then((list) => {
         setRegionFacilities((m) => ({ ...m, [d.region_id as number]: list }));
       }).catch(() => {}).finally(() => {
         setRegionFacLoading((m) => ({ ...m, [d.region_id as number]: false }));

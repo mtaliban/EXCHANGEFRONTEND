@@ -66,7 +66,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
     if (isWizara && region_id) {
       setRegionFacilitiesLoading(true);
       setFacilityId('');
-      getFacilitiesByRegion(Number(region_id), 'health')
+      getFacilitiesByRegion(Number(region_id), 'health', undefined, employmentSector as 'wizara_afya' | 'tamisemi' | undefined)
         .then(setFacilities)
         .catch(() => setFacilities([]))
         .finally(() => setRegionFacilitiesLoading(false));

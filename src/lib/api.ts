@@ -253,10 +253,12 @@ export const getFacilities = (
 export const getFacilitiesByRegion = (
   regionId: number,
   category: 'health' | 'education' = 'health',
-  q?: string
+  q?: string,
+  sector?: 'wizara_afya' | 'tamisemi'
 ) => {
   const params: any = { category };
   if (q) params.q = q;
+  if (sector) params.sector = sector;
   return client.get<Facility[]>(`${LOC}/locations/regions/${regionId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
 };
 export const getCadres = (category?: string, bypass = false) =>
