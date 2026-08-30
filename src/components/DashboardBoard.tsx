@@ -301,52 +301,10 @@ export default function DashboardBoard() {
     [candidates, safePage]
   );
 
-  // Walio online kwenye grid yako — wana rangi ya kijani (tofauti na notification)
-  const onlineCount = candidates.filter((c) => c.online).length;
-
-  // Hesabu ya WAPYA (ndani ya nusu saa) — inaoneshwa juu kwenye LIVE panel
-  const freshCount = useMemo(() => {
-    return candidates.filter((c) => {
-      const ts = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? 0) : 0;
-      return ts && now - ts < FRESH_MS;
-    }).length;
-  }, [candidates, now]);
-
-
   return (
     <div className="space-y-4">
-      {/* ═══ LIVE — Wazi: Watu Wanakotoka [X] Wanaokuja [Y] ═══ */}
-      <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 px-3 py-2.5">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-brand-grey-300'} inline-block animate-pulse flex-shrink-0`} />
-            <span className="font-bold text-[13px] text-brand-grey-900 dark:text-white">
-              <span className="text-brand-blue">Wanaohamia</span>{' '}
-              <span className="font-extrabold text-brand-grey-900 dark:text-white">{myStation.region_name || 'Mkoa Wako'}</span>{' '}
-              <span className="text-brand-blue mx-1">—</span>{' '}
-              <span className="text-brand-blue">wakitokea</span>{' '}
-              <span className="font-extrabold text-brand-grey-900 dark:text-white">{activeSourceRegionName || 'Mikoa Yote'}</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 pl-3.5">
-            <span className="inline-flex items-center gap-1 text-[12px] font-extrabold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2.5 py-0.5 rounded-full">
-              <Users size={12} /> {board?.total ?? 0}
-            </span>
-            {onlineCount > 0 && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950 px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> {onlineCount}
-              </span>
-            )}
-            {freshCount > 0 && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-blue bg-brand-blue-50 dark:bg-brand-blue-950 px-2 py-0.5 rounded-full animate-[newPulse_1s_ease-in-out_infinite]">
-                +{freshCount}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
+
       <div className="bg-white dark:bg-brand-grey-900 rounded-lg border border-brand-grey-200 dark:border-brand-grey-600 px-3 pt-2.5 pb-3">
           <label className="text-[11px] font-bold text-brand-grey-700 dark:text-brand-grey-300">{t('board.filter_source')}</label>
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5 mt-1">

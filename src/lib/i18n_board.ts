@@ -5,16 +5,16 @@
 export function boardEmptyMessage(regionName: string | null | undefined, lang: 'sw' | 'en') {
   if (lang === 'en') {
     const base = regionName
-      ? `No travelers heading to ${regionName} yet.`
-      : 'No travelers heading to your region yet.';
-    const hint = 'When they register and choose your region, they will appear here instantly.';
+      ? `No one from other regions heading to ${regionName} yet.`
+      : 'No one heading to your region yet.';
+    const hint = 'Register and choose your region to get started.';
     return { title: base, hint };
   }
-  // Swahili — maneno clear, kila mtu aelewe
+  // Swahili — maneno mafupi, rahisi
   const base = regionName
-    ? `Hakuna mtu bado anaokuja ${regionName}.`
-    : 'Hakuna mtu bado anaokuja mkoni kwako.';
-  const hint = 'Watakapojisajili na kuchagua mkoa wako, wataonekana hapa papo hapo.';
+    ? `Hakuna mtu wa mkoa mwingine kuja ${regionName}.`
+    : 'Hakuna mtu anaokuja mkoa wako.';
+  const hint = 'Jisajili na uchague mkoa wako ili uanze.';
   return { title: base, hint };
 }
 
@@ -24,10 +24,10 @@ export function boardEmptyMessage(regionName: string | null | undefined, lang: '
 export function boardStatsEmptyMessage(regionName: string | null | undefined, lang: 'sw' | 'en') {
   if (lang === 'en') {
     return regionName
-      ? `No stats for ${regionName} yet. When travelers register, stats will appear here.`
-      : 'No stats yet. When travelers register, stats will appear here.';
+      ? `No stats for ${regionName} yet.`
+      : 'No stats yet.';
   }
   return regionName
-    ? `Hakuna takwimu za ${regionName} bado. Wasafiri wanapojisajili, takwimu zitaonekana hapa.`
-    : 'Hakuna takwimu bado. Wasafiri wanapojisajili, takwimu zitaonekana hapa.';
+    ? `Hakuna takwimu za ${regionName} bado.`
+    : 'Hakuna takwimu bado.';
 }
