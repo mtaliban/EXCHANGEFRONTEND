@@ -734,3 +734,25 @@ export const adminDeleteAnnouncement = (announcement_id: string) =>
   client.delete<{ ok: boolean }>(`${API}/admin/announcements/${announcement_id}`).then((r) => r.data);
 
 export const MSG_WS_URL = () => WS_URL;
+
+/** Tambua kama jina ni default/placeholder (mfano 'CO — 5', 'Mwana Afya 3'). */
+export function isDefaultName(name: string): boolean {
+  const n = name.trim().toLowerCase();
+  // Pattern 1: jina + nambari ya mwisho
+  if (/\d+$/.test(n)) {
+    const base = n.replace(/\d+$/, '').trim();
+    const prefixes = ['mwana afya', 'mwanafunzi', 'mwuguzi', 'mwalimu', 'mganga', 'mpgasii', 'mlinzii', 'mhudumu', 'mtumishi', 'afya mwananchi', 'afya ya jamii'];
+    for (const p of prefixes) { if (base.startsWith(p) || base === p) return true; }
+  }
+  // Pattern 2: cadre code + — + nambari (CO — 5, RN 3)
+  const m = n.match(/^([a-z]+)\s*[—–-]\s*\d+$/);
+  if (m) {
+    const cadreCodes = new Set(['co', 'rn', 'ano', 'no', 'en', 'ha', 'md', 'ca', 'aco', 'lab', 'pharm', 'dt', 'ot', 'ho', 'rad', 'physio', 'dent', 'n.o', 'h/a', 'm/a', 'r.n', 'c.o', 'e.n']);
+    if (cadreCodes.has(m[1])) return true;
+  }
+  // Pattern 3: single word cadre code
+  const words = n.split(' ');
+  const singleCodes = new Set(['co', 'rn', 'ano', 'no', 'en', 'ha', 'md', 'ca']);
+  if (words.length === 1 && words[0].length <= 3 && singleCodes.has(words[0])) return true;
+  return false;
+}
