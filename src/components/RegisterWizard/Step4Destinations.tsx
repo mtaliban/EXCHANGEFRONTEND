@@ -5,7 +5,6 @@ import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Re
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { AlertCircle, Plus, Trash2, MapPin, ChevronDown } from 'lucide-react';
-import HospitalSearch from './HospitalSearch';
 
 interface Props {
   initial: any;
@@ -208,14 +207,24 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
 
             {/* ── Wizara ya Afya: Hospitali search (skip wilaya) ── */}
             {isWizara && d.region_id && (
-              <HospitalSearch
-                facilities={regionFacilities[d.region_id as number] || []}
-                value={d.facility_id || ''}
-                onChange={(id, name) => updateDest(i, { facility_id: id || null, facility_name: name })}
-                placeholder="Tafuta hospitali unakotaka kuhamia..."
-                required
-                loading={!!regionFacLoading[d.region_id as number]}
-              />
+              regionFacLoading[d.region_id as number] ? (
+                <div className="input text-sm text-brand-grey-400">Inapakia...</div>
+              ) : (
+                <select className="input text-sm" value={d.facility_id || ''}
+                  onChange={(e) => {
+                    const fid = e.target.value || null;
+                    const facList = regionFacilities[d.region_id as number] || [];
+                    const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
+                    updateDest(i, { facility_id: fid, facility_name: fac?.name || null });
+                  }} required>
+                  <option value="">Chagua Hospitali ya Rufaa</option>
+                  {(regionFacilities[d.region_id as number] || []).map((f: any) => (
+                    <option key={f.id || f.code} value={String(f.id || f.code)}>
+                      {f.name}{f.type ? ` (${f.type})` : ''}
+                    </option>
+                  ))}
+                </select>
+              )
             )}
 
             {/* ── TAMISEMI/Elimu: Wilaya + Kituo ── */}

@@ -5,7 +5,6 @@ import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Re
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { AlertCircle } from 'lucide-react';
-import HospitalSearch from './HospitalSearch';
 
 interface Props {
   initial: any;
@@ -132,17 +131,19 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       {/* ── Wizara ya Afya: Hospitali selection (skip wilaya) ── */}
       {isWizara && region_id !== '' && (
         <div>
-          <label className="label">
-            Hospitali / Kituo cha Afya *
-          </label>
-          <HospitalSearch
-            facilities={facilities}
-            value={facility_id}
-            onChange={(id) => setFacilityId(id)}
-            placeholder="Tafuta hospitali kwa jina..."
-            required
-            loading={regionFacilitiesLoading}
-          />
+          <label className="label">Hospitali ya Rufaa *</label>
+          {regionFacilitiesLoading ? (
+            <div className="input text-sm text-brand-grey-400">Inapakia...</div>
+          ) : (
+            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)} required>
+              <option value="">Chagua Hospitali</option>
+              {facilities.map((f: any) => (
+                <option key={f.id || f.code} value={String(f.id || f.code)}>
+                  {f.name}{f.type ? ` (${f.type})` : ''}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       )}
 
