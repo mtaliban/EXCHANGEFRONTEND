@@ -4,6 +4,7 @@ import { useState } from 'react';
 import clsx from 'clsx';
 import { AlertCircle } from 'lucide-react';
 import Step1Identity from './Step1Identity';
+import Step1bIdara from './Step1bIdara';
 import Step2Cadre from './Step2Cadre';
 import Step2bEmploymentSector from './Step2bEmploymentSector';
 import Step3Station from './Step3Station';
@@ -59,24 +60,26 @@ export default function RegisterWizard({ onComplete }: Props) {
   }
 
   const isHealth = data.category === 'health';
-  // Health workers: 5 steps (identity, wizara, cadre, station, dest)
-  // Education workers: 4 steps (identity, cadre, station, dest)
-  const totalSteps = isHealth ? 5 : 4;
+  // Health workers: 6 steps (identity, idara, wizara, cadre, station, dest)
+  // Education workers: 5 steps (identity, idara, cadre, station, dest)
+  const totalSteps = isHealth ? 6 : 5;
   const currentStep = step;
 
   const STEPS = isHealth
     ? [
         { n: 1, title: t('wizard.step1') },
-        { n: 2, title: 'Wizara' },
-        { n: 3, title: t('wizard.step2') },
-        { n: 4, title: t('wizard.step3') },
-        { n: 5, title: t('wizard.step4') },
+        { n: 2, title: 'Idara' },
+        { n: 3, title: 'Wizara' },
+        { n: 4, title: t('wizard.step2') },
+        { n: 5, title: t('wizard.step3') },
+        { n: 6, title: t('wizard.step4') },
       ]
     : [
         { n: 1, title: t('wizard.step1') },
-        { n: 2, title: t('wizard.step2') },
-        { n: 3, title: t('wizard.step3') },
-        { n: 4, title: t('wizard.step4') },
+        { n: 2, title: 'Idara' },
+        { n: 3, title: t('wizard.step2') },
+        { n: 4, title: t('wizard.step3') },
+        { n: 5, title: t('wizard.step4') },
       ];
 
   return (
@@ -123,18 +126,21 @@ export default function RegisterWizard({ onComplete }: Props) {
       )}
 
       <div className="card p-4 sm:p-5">
+        {/* Step 1: Identity — Jina, Simu, WhatsApp */}
         {step === 1 && <Step1Identity initial={data} onNext={next} />}
-        {/* Health: step 2 = Wizara, step 3 = Kada */}
-        {isHealth && step === 2 && <Step2bEmploymentSector initial={data} onBack={back} onNext={next} />}
-        {isHealth && step === 3 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
-        {isHealth && step === 4 && <Step3Station initial={data} onBack={back} onNext={next} />}
-        {isHealth && step === 5 && (
+        {/* Step 2: Idara — Afya / Elimu (wote) */}
+        {step === 2 && <Step1bIdara initial={data} onBack={back} onNext={next} />}
+        {/* Health: step 3 = Wizara, step 4 = Kada, step 5 = Station, step 6 = Dest */}
+        {isHealth && step === 3 && <Step2bEmploymentSector initial={data} onBack={back} onNext={next} />}
+        {isHealth && step === 4 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
+        {isHealth && step === 5 && <Step3Station initial={data} onBack={back} onNext={next} />}
+        {isHealth && step === 6 && (
           <Step4Destinations initial={data} onBack={back} onSubmit={submit} submitting={submitting} />
         )}
-        {/* Education: step 2 = Kada, step 3 = Station, step 4 = Dest */}
-        {!isHealth && step === 2 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
-        {!isHealth && step === 3 && <Step3Station initial={data} onBack={back} onNext={next} />}
-        {!isHealth && step === 4 && (
+        {/* Education: step 3 = Kada, step 4 = Station, step 5 = Dest */}
+        {!isHealth && step === 3 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
+        {!isHealth && step === 4 && <Step3Station initial={data} onBack={back} onNext={next} />}
+        {!isHealth && step === 5 && (
           <Step4Destinations initial={data} onBack={back} onSubmit={submit} submitting={submitting} />
         )}
       </div>

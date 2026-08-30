@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useT } from '@/lib/i18n';
 import { checkPhone } from '@/lib/api';
-import { AlertCircle, Phone, MessageCircle, User, Loader2, CheckCircle2, Heart, GraduationCap, type LucideIcon } from 'lucide-react';
+import { AlertCircle, Phone, MessageCircle, User, Loader2, CheckCircle2, type LucideIcon } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -34,7 +34,6 @@ export default function Step1Identity({ initial, onNext }: Props) {
   const [full_name, setName] = useState(initial.full_name || '');
   const [phone_primary, setPhone] = useState(initial.phone_primary || '');
   const [phone_alt, setPhoneAlt] = useState(initial.phone_alt || '');
-  const [category, setCategory] = useState(initial.category || '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   // PHONE CHECK: real-time availability check (debounced)
   const [phoneCheck, setPhoneCheck] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
@@ -81,7 +80,6 @@ export default function Step1Identity({ initial, onNext }: Props) {
     } else if (phoneCheck === 'taken') {
       e.phone_primary = 'Namba hii tayari inatumiwa';
     }
-    if (!category) e.category = 'Chagua idara';
     if (!phone_alt) {
       e.phone_alt = t('step1.err_phone_alt_required');
     } else if (!/^(\+?255|0)\d{9}$/.test(phone_alt.replace(/[\s-]/g, ''))) {
@@ -100,7 +98,6 @@ export default function Step1Identity({ initial, onNext }: Props) {
       full_name: full_name.trim(),
       phone_primary,
       phone_alt: phone_alt || undefined,
-      category,
     });
   }
 
@@ -160,16 +157,6 @@ export default function Step1Identity({ initial, onNext }: Props) {
         <FieldError msg={errors.phone_alt} />
       </div>
 
-
-      <div>
-        <FieldLabel icon={Heart}>{t('step2.department')} *</FieldLabel>
-        <select className="input" value={category} onChange={(e) => setCategory(e.target.value)} required>
-          <option value="">-- Chagua Idara --</option>
-          <option value="health">Afya</option>
-          <option value="education">Elimu</option>
-        </select>
-        <FieldError msg={errors.category} />
-      </div>
 
       <div className="flex justify-end pt-2">
         <button type="submit" className="btn-primary">{t('wizard.next')}</button>
