@@ -1,19 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getCadres, getDepartments, getSubjects, type Cadre, type Department, type Subject } from '@/lib/api';
+import { getCadres, getSubjects, type Cadre, type Subject } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { AlertCircle, Loader2, Heart, GraduationCap, BookOpen, Briefcase } from 'lucide-react';
-
-/** Icon mapping kwa department codes — tumia lucide icons, sio emojis */
-const DEPT_ICONS: Record<string, React.ReactNode> = {
-  health: <Heart size={16} className="text-red-500" />,
-  education: <GraduationCap size={16} className="text-blue-500" />,
-};
-function DeptIcon({ code }: { code: string }) {
-  return <>{DEPT_ICONS[code] || <Briefcase size={16} className="text-brand-grey-500" />}</>;
-}
+import { AlertCircle, Loader2, BookOpen } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -23,8 +14,8 @@ interface Props {
 
 export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const t = useT();
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [category, setCategory] = useState<string>('');
+  const category: string = initial.category || 'health';
+  const employmentSector: string | undefined = initial.employment_sector;
   const [cadres, setCadres] = useState<Cadre[]>([]);
   const [cadre_code, setCadreCode] = useState<string>(initial.cadre_code || '');
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -33,8 +24,6 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
 
   const dv = useDataVersion();
-  // EVENT-DRIVEN: refetch on focus (user rudi kutoka tab/kingine) + emitDataChanged
-  // (admin anapoongeza/badilisha data). Hakuna polling ya 30s — inasababisha flicker.
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const onFocus = () => setTick((t) => t + 1);
@@ -43,24 +32,11 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   }, []);
   const forceRefresh = dv + tick;
 
-  useEffect(() => {
-    getDepartments()
-      .then((list) => {
-        const active = list.filter((d) => d.status !== 'disabled');
-        setDepartments(active);
-        if (initial.category && active.some((d) => d.code === initial.category)) {
-          setCategory(initial.category);
-        } else if (!category && active.length > 0) {
-          setCategory(active[0].code);
-        }
-      })
-      .catch(() => setError(t('step2.err_load_cadres')));
-  }, [forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  // Load cadres — first time kutoka DB, kisha kutoka cache. Fallback ni hardcoded.
   useEffect(() => {
     if (!category) { setCadres([]); return; }
-    getCadres(category).then(setCadres).catch(() => setError(t('step2.err_load_cadres')));
-  }, [category, forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
+    getCadres(category, employmentSector).then(setCadres).catch(() => setError(t('step2.err_load_cadres')));
+  }, [category, employmentSector, forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentCadre = cadres.find((c) => c.code === cadre_code);
   const needsSubjects = currentCadre?.requires_subjects;
@@ -103,29 +79,17 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
   return (
     <form onSubmit={submit} className="space-y-3.5">
-      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step2.title')}</h2>
+      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step2.cadre')}</h2>
 
       <div>
-        <label className="label">{t('step2.department')} *</label>          <select className="input" value={category} onChange={(e) => { setCategory(e.target.value); setCadreCode(''); }} required>
-          <option value="">-- Chagua Idara --</option>
-          {departments.map((d) => (
-            <option key={d.code} value={d.code}>{d.name}</option>
+        <label className="label">{t('step2.cadre')} *</label>
+        <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
+          <option value="">{t('step2.choose_cadre')}</option>
+          {cadres.map((c) => (
+            <option key={c.code} value={c.code}>{c.display_name}</option>
           ))}
         </select>
-
-      </div>
-
-      {category && (
-        <div>
-          <label className="label">{t('step2.cadre')} *</label>
-          <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
-            <option value="">{t('step2.choose_cadre')}</option>
-            {cadres.map((c) => (
-              <option key={c.code} value={c.code}>{c.display_name}</option>
-            ))}
-          </select>
-        </div>
-      )}          {showSubjects && (
+      </div>          {showSubjects && (
         <div>
           <label className="label flex items-center gap-1.5">
             {t('step2.subject')} <span className="text-brand-red text-xs">*</span>

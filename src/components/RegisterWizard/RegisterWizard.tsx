@@ -59,16 +59,16 @@ export default function RegisterWizard({ onComplete }: Props) {
   }
 
   const isHealth = data.category === 'health';
-  // Health workers: 5 steps (identity, cadre, sector, station, dest)
+  // Health workers: 5 steps (identity, wizara, cadre, station, dest)
   // Education workers: 4 steps (identity, cadre, station, dest)
   const totalSteps = isHealth ? 5 : 4;
-  const currentStep = step; // step already goes 1→5 for health, 1→4 for education
+  const currentStep = step;
 
   const STEPS = isHealth
     ? [
         { n: 1, title: t('wizard.step1') },
-        { n: 2, title: t('wizard.step2') },
-        { n: 3, title: 'Ajira' },
+        { n: 2, title: 'Wizara' },
+        { n: 3, title: t('wizard.step2') },
         { n: 4, title: t('wizard.step3') },
         { n: 5, title: t('wizard.step4') },
       ]
@@ -124,17 +124,18 @@ export default function RegisterWizard({ onComplete }: Props) {
 
       <div className="card p-4 sm:p-5">
         {step === 1 && <Step1Identity initial={data} onNext={next} />}
-        {step === 2 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
-        {isHealth && step === 3 && <Step2bEmploymentSector initial={data} onBack={back} onNext={next} />}
-        {!isHealth && step === 3 && <Step3Station initial={data} onBack={back} onNext={next} />}
+        {/* Health: step 2 = Wizara, step 3 = Kada */}
+        {isHealth && step === 2 && <Step2bEmploymentSector initial={data} onBack={back} onNext={next} />}
+        {isHealth && step === 3 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
         {isHealth && step === 4 && <Step3Station initial={data} onBack={back} onNext={next} />}
-        {((!isHealth && step === 4) || (isHealth && step === 5)) && (
-          <Step4Destinations
-            initial={data}
-            onBack={back}
-            onSubmit={submit}
-            submitting={submitting}
-          />
+        {isHealth && step === 5 && (
+          <Step4Destinations initial={data} onBack={back} onSubmit={submit} submitting={submitting} />
+        )}
+        {/* Education: step 2 = Kada, step 3 = Station, step 4 = Dest */}
+        {!isHealth && step === 2 && <Step2Cadre initial={data} onBack={back} onNext={next} />}
+        {!isHealth && step === 3 && <Step3Station initial={data} onBack={back} onNext={next} />}
+        {!isHealth && step === 4 && (
+          <Step4Destinations initial={data} onBack={back} onSubmit={submit} submitting={submitting} />
         )}
       </div>
     </div>

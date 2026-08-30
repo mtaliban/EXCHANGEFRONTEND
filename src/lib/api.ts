@@ -261,8 +261,39 @@ export const getFacilitiesByRegion = (
   if (sector) params.sector = sector;
   return client.get<Facility[]>(`${LOC}/locations/regions/${regionId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
 };
-export const getCadres = (category?: string, bypass = false) =>
-  client.get<Cadre[]>(`${LOC}/cadres`, { params: category ? { category } : undefined, ttl: 60_000, bypassCache: bypass } as any).then((r) => r.data);
+// Hardcoded fallback cadres — first time kutoka DB, kisha kutoka cache
+const FALLBACK_HEALTH_CADRES: Cadre[] = [
+  { code: 'CO', category: 'health', display_name: 'Clinical Officer', requires_subjects: false },
+  { code: 'ACO', category: 'health', display_name: 'Assistant Clinical Officer', requires_subjects: false },
+  { code: 'CA', category: 'health', display_name: 'Clinical Assistant', requires_subjects: false },
+  { code: 'AMO', category: 'health', display_name: 'Assistant Medical Officer', requires_subjects: false },
+  { code: 'MD', category: 'health', display_name: 'Medical Doctor (MD)', requires_subjects: false },
+  { code: 'ANO', category: 'health', display_name: 'Assistant Nursing Officer (ANO)', requires_subjects: false },
+  { code: 'NO', category: 'health', display_name: 'Nursing Officer (NO)', requires_subjects: false },
+  { code: 'EN', category: 'health', display_name: 'Enrolled Nurse (EN)', requires_subjects: false },
+  { code: 'RN', category: 'health', display_name: 'Registered Nurse (RN)', requires_subjects: false },
+  { code: 'LAB_TECH_1', category: 'health', display_name: 'Laboratory Technologist I', requires_subjects: false },
+  { code: 'LAB_TECH_2', category: 'health', display_name: 'Laboratory Technologist II', requires_subjects: false },
+  { code: 'LAB_SCI_2', category: 'health', display_name: 'Laboratory Scientist II', requires_subjects: false },
+  { code: 'LAB_ASST', category: 'health', display_name: 'Laboratory Assistant', requires_subjects: false },
+  { code: 'SR_LAB_ASST', category: 'health', display_name: 'Senior Laboratory Assistant I', requires_subjects: false },
+  { code: 'MALT', category: 'health', display_name: 'Medical Laboratory Technologist', requires_subjects: false },
+  { code: 'PHARM_2', category: 'health', display_name: 'Pharmacist II', requires_subjects: false },
+  { code: 'HA', category: 'health', display_name: 'Health Assistant (HA)', requires_subjects: false },
+  { code: 'MA', category: 'health', display_name: 'Medical Attendant (MA)', requires_subjects: false },
+];
+export const getCadres = (category?: string, sector?: string, bypass = false) => {
+  const params: Record<string, string> = {};
+  if (category) params.category = category;
+  if (sector) params.sector = sector;
+  return client.get<Cadre[]>(`${LOC}/cadres`, { params, ttl: 60_000, bypassCache: bypass } as any)
+    .then((r) => r.data)
+    .catch(() => {
+      // Fallback — DB haijapatikana, tumia hardcoded data
+      if (category === 'health') return FALLBACK_HEALTH_CADRES;
+      return [];
+    });
+};
 export const getSubjects = (level?: 'Primary' | 'Secondary', bypass = false) =>
   client.get<Subject[]>(`${LOC}/cadres/subjects`, { params: level ? { level } : undefined, ttl: 60_000, bypassCache: bypass } as any).then((r) => r.data);
 
