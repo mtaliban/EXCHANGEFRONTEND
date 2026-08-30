@@ -4,13 +4,7 @@ import { useEffect, useState } from 'react';
 import { getDepartments, type Department } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { AlertCircle, Heart, GraduationCap, Briefcase, Loader2 } from 'lucide-react';
-
-const DEPT_ICONS: Record<string, React.ReactNode> = {
-  health: <Heart size={28} />,
-  education: <GraduationCap size={28} />,
-};
-const DEFAULT_ICON = <Briefcase size={28} />;
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -68,26 +62,19 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
           <span className="text-sm">Inapakia...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {departments.map((d) => (
-            <button
-              key={d.code}
-              type="button"
-              onClick={() => { setCategory(d.code); setError(null); }}
-              className={`p-4 rounded-xl border-2 text-center transition-all ${
-                category === d.code
-                  ? 'border-brand-blue bg-brand-blue-50 dark:bg-brand-blue-900/20'
-                  : 'border-brand-grey-200 dark:border-brand-grey-700 hover:border-brand-blue/50'
-              }`}
-            >
-              <div className={`mx-auto mb-2 ${category === d.code ? 'text-brand-blue' : 'text-brand-grey-400'}`}>
-                {DEPT_ICONS[d.code] || DEFAULT_ICON}
-              </div>
-              <div className={`text-sm font-bold ${category === d.code ? 'text-brand-blue' : 'text-brand-grey-700 dark:text-brand-grey-300'}`}>
-                {d.name}
-              </div>
-            </button>
-          ))}
+        <div>
+          <label className="label">Chagua Idara *</label>
+          <select
+            className="input"
+            value={category}
+            onChange={(e) => { setCategory(e.target.value); setError(null); }}
+            required
+          >
+            <option value="">-- Chagua Idara --</option>
+            {departments.map((d) => (
+              <option key={d.code} value={d.code}>{d.name}</option>
+            ))}
+          </select>
         </div>
       )}
 
