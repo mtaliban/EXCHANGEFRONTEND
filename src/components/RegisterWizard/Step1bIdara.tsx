@@ -1,7 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { AlertCircle, Heart, GraduationCap } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { getDepartments, type Department } from '@/lib/api';
+import { useDataVersion } from '@/lib/useDataVersion';
+import { useT } from '@/lib/i18n';
+import { AlertCircle, Heart, GraduationCap, Briefcase, Loader2 } from 'lucide-react';
+
+const DEPT_ICONS: Record<string, React.ReactNode> = {
+  health: <Heart size={28} />,
+  education: <GraduationCap size={28} />,
+};
+const DEFAULT_ICON = <Briefcase size={28} />;
 
 interface Props {
   initial: any;
@@ -10,8 +19,33 @@ interface Props {
 }
 
 export default function Step1bIdara({ initial, onBack, onNext }: Props) {
+  const t = useT();
   const [category, setCategory] = useState<string>(initial.category || '');
   const [error, setError] = useState<string | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const dv = useDataVersion();
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const onFocus = () => setTick((t) => t + 1);
+    window.addEventListener('focus', onFocus);
+    return () => { window.removeEventListener('focus', onFocus); };
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    getDepartments()
+      .then((list) => {
+        const active = list.filter((d) => d.status !== 'disabled');
+        setDepartments(active);
+        if (initial.category && active.some((d) => d.code === initial.category)) {
+          setCategory(initial.category);
+        }
+      })
+      .catch(() => setError('Imeshindikana kupata idara'))
+      .finally(() => setLoading(false));
+  }, [dv, tick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
@@ -28,43 +62,34 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={() => { setCategory('health'); setError(null); }}
-          className={`p-4 rounded-xl border-2 text-center transition-all ${
-            category === 'health'
-              ? 'border-brand-blue bg-brand-blue-50 dark:bg-brand-blue-900/20'
-              : 'border-brand-grey-200 dark:border-brand-grey-700 hover:border-brand-blue/50'
-          }`}
-        >
-          <Heart size={28} className={`mx-auto mb-2 ${category === 'health' ? 'text-brand-blue' : 'text-brand-grey-400'}`} />
-          <div className={`text-sm font-bold ${category === 'health' ? 'text-brand-blue' : 'text-brand-grey-700 dark:text-brand-grey-300'}`}>
-            Afya
-          </div>
-          <div className="text-[10px] text-brand-grey-400 mt-0.5">
-            Madaktari, Wauguzi, nk
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => { setCategory('education'); setError(null); }}
-          className={`p-4 rounded-xl border-2 text-center transition-all ${
-            category === 'education'
-              ? 'border-brand-blue bg-brand-blue-50 dark:bg-brand-blue-900/20'
-              : 'border-brand-grey-200 dark:border-brand-grey-700 hover:border-brand-blue/50'
-          }`}
-        >
-          <GraduationCap size={28} className={`mx-auto mb-2 ${category === 'education' ? 'text-brand-blue' : 'text-brand-grey-400'}`} />
-          <div className={`text-sm font-bold ${category === 'education' ? 'text-brand-blue' : 'text-brand-grey-700 dark:text-brand-grey-300'}`}>
-            Elimu
-          </div>
-          <div className="text-[10px] text-brand-grey-400 mt-0.5">
-            Walimu wa Msingi/Sekondari
-          </div>
-        </button>
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-8 text-brand-grey-400">
+          <Loader2 size={20} className="animate-spin mr-2" />
+          <span className="text-sm">Inapakia...</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          {departments.map((d) => (
+            <button
+              key={d.code}
+              type="button"
+              onClick={() => { setCategory(d.code); setError(null); }}
+              className={`p-4 rounded-xl border-2 text-center transition-all ${
+                category === d.code
+                  ? 'border-brand-blue bg-brand-blue-50 dark:bg-brand-blue-900/20'
+                  : 'border-brand-grey-200 dark:border-brand-grey-700 hover:border-brand-blue/50'
+              }`}
+            >
+              <div className={`mx-auto mb-2 ${category === d.code ? 'text-brand-blue' : 'text-brand-grey-400'}`}>
+                {DEPT_ICONS[d.code] || DEFAULT_ICON}
+              </div>
+              <div className={`text-sm font-bold ${category === d.code ? 'text-brand-blue' : 'text-brand-grey-700 dark:text-brand-grey-300'}`}>
+                {d.name}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && (
         <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3">
@@ -74,8 +99,8 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
       )}
 
       <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
-        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">Rudi</button>
-        <button type="submit" className="btn-primary flex-1 sm:flex-none">Endelea</button>
+        <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
+        <button type="submit" className="btn-primary flex-1 sm:flex-none">{t('wizard.next')}</button>
       </div>
     </form>
   );
