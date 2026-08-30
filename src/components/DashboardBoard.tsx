@@ -614,29 +614,27 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
         </div>
       </div>
 
-      {from && (
-        <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-1">
+      {from && (() => {
+        const isWizara = (me as any)?.employment_sector === 'wizara_afya';
+        return (
+          <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-1">
             <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-              <MapPin size={11} className="inline" /> {t('board.from')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{from.district_name ? `${from.district_name}, ` : ''}{from.region_name}</b>
+              <MapPin size={11} className="inline" /> Kutoka: <b className="text-brand-grey-800 dark:text-brand-grey-200">{from.region_name}</b>
+              {isWizara && from.facility_name && <>, {from.facility_name}</>}
+              {!isWizara && from.district_name && <>, {from.district_name}</>}
             </div>
-            {from.facility_name && (
-              <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-                <span className="ml-4">{from.facility_name}</span>
-              </div>
-            )}
             {to && (
               <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-                <Target size={11} className="inline" /> {t('board.wants_go')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{to.district_name ? `${to.district_name}, ` : 'Wilaya yeyote, '}{to.region_name}</b>
+                <Target size={11} className="inline" /> Kwenda: <b className="text-brand-grey-800 dark:text-brand-grey-200">{to.region_name}</b>
+                {isWizara && to.facility_name && <>, {to.facility_name}</>}
+                {!isWizara && to.district_name && <>, {to.district_name}</>}
+                {!isWizara && !to.district_name && <>, Wilaya yeyote</>}
               </div>
             )}
-            {to?.facility_name && (
-              <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-                <span className="ml-4">{to.facility_name}</span>
-              </div>
-            )}
-          <div className="text-brand-blue font-extrabold">↓ {t('board.coming_to_you')} <span className="text-brand-grey-900 dark:text-white">{myRegionName}</span></div>
-        </div>
-      )}
+          <div className="text-brand-blue font-extrabold">↓ Anakwenda <span className="text-brand-grey-900 dark:text-white">{myRegionName}</span></div>
+          </div>
+        );
+      })()}
 
       {c.subjects?.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
