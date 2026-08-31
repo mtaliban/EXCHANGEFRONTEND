@@ -225,22 +225,25 @@ function ModalShell({ title, children, onClose, onSave, saveLabel, busy, canSave
 /* ═══ IDARA ═══ */
 function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boolean) => void; tick: number; markOwnAction: () => void }) {
   const t = useT();
-  const [data, setData] = useState<any[] | null>(null);
+  const [allData, setAllData] = useState<any[] | null>(null);
+  const [q, setQ] = useState('');
   const [editing, setEditing] = useState<any>(null);
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   async function load() {
-    try { setData(await adminListDepartments(true)); } catch (e) { flash(await errText(e), false); }
+    try { setAllData(await adminListDepartments(true)); } catch (e) { flash(await errText(e), false); }
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tick]);
+
+  const data = allData?.filter((d: any) => !q || (d.code || '').toLowerCase().includes(q.toLowerCase()) || (d.name || '').toLowerCase().includes(q.toLowerCase())) ?? null;
 
   if (!data) return <div className="p-6"><Spinner /></div>;
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2 items-center">
-        <p className="text-xs text-brand-grey-500">{t('data.departments_hint')}</p>
+        <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_department')}</button>
       </div>
@@ -274,7 +277,7 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
                     onEdit={() => setEditing(d)}
                     onDelete={async () => {
                       if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
-                      try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== d.code) : prev); }
+                      try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.code !== d.code) : prev); }
                       catch (e: any) { flash(e?.response?.data?.detail || await errText(e), false); }
                     }}
                   />
@@ -307,10 +310,10 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
             try {
               if (editing) {
                 await adminUpdateDepartment(editing.code, body);
-                setData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body } : x) : prev);
+                setAllData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body } : x) : prev);
               } else {
                 const created = await adminAddDepartment(body);
-                setData(prev => prev ? [{ ...body, ...(created || {}) }, ...prev] : prev);
+                setAllData(prev => prev ? [{ ...body, ...(created || {}) }, ...prev] : prev);
               }
               markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
@@ -357,17 +360,19 @@ function DepartmentModal({ initial, onClose, onSaved }: { initial: any; onClose:
 /* ═══ MASOMO ═══ */
 function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boolean) => void; tick: number; markOwnAction: () => void }) {
   const t = useT();
-  const [data, setData] = useState<any[] | null>(null);
+  const [allData, setAllData] = useState<any[] | null>(null);
   const [level, setLevel] = useState('');
+  const [q, setQ] = useState('');
   const [editing, setEditing] = useState<any>(null);
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  // bypass wakati level imechaguliwa au tick (SSE event) inabadilika
   async function load(bypass = false) {
-    try { setData(await adminListSubjects(level || undefined, bypass || !!level)); } catch (e) { flash(await errText(e), false); }
+    try { setAllData(await adminListSubjects(level || undefined, bypass || !!level)); } catch (e) { flash(await errText(e), false); }
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [level, tick]);
+
+  const data = allData?.filter((s: any) => !q || (s.code || '').toLowerCase().includes(q.toLowerCase()) || (s.name || '').toLowerCase().includes(q.toLowerCase())) ?? null;
 
   if (!data) return <div className="p-6"><Spinner /></div>;
 
@@ -379,6 +384,7 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
           <option value="Primary">Primary (Msingi)</option>
           <option value="Secondary">Secondary (Sekondari)</option>
         </select>
+        <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_subject')}</button>
       </div>
@@ -401,7 +407,7 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(s)} onEdit={() => setEditing(s)} onDelete={async () => {
                     if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
-                    try { await adminDeleteSubject(s.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== s.code) : prev); }
+                    try { await adminDeleteSubject(s.code); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.code !== s.code) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
                 </td>
@@ -431,10 +437,10 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
             try {
               if (editing) {
                 await adminUpdateSubject(editing.code, body);
-                setData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body } : x) : prev);
+                setAllData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body } : x) : prev);
               } else {
                 const created = await adminAddSubject(body);
-                setData(prev => prev ? [{ ...body, ...(created || {}) }, ...prev] : prev);
+                setAllData(prev => prev ? [{ ...body, ...(created || {}) }, ...prev] : prev);
               }
               markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
@@ -479,22 +485,26 @@ function SubjectModal({ initial, onClose, onSaved }: { initial: any; onClose: ()
 /* ═══ KADA ═══ */
 function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boolean) => void; tick: number; markOwnAction: () => void }) {
   const t = useT();
-  const [data, setData] = useState<any[] | null>(null);
+  const [allData, setAllData] = useState<any[] | null>(null);
+  const [q, setQ] = useState('');
   const [editing, setEditing] = useState<any>(null);
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   async function load(bypass = false) {
-    try { setData(await adminListCadres(undefined, bypass)); } catch (e) { flash(await errText(e), false); }
+    try { setAllData(await adminListCadres(undefined, bypass)); } catch (e) { flash(await errText(e), false); }
   }
   useEffect(() => { load(true); /* eslint-disable-next-line */ }, [tick]);
+
+  const data = allData?.filter((c: any) => !q || (c.code || '').toLowerCase().includes(q.toLowerCase()) || (c.display_name || '').toLowerCase().includes(q.toLowerCase()) || (c.category || '').toLowerCase().includes(q.toLowerCase())) ?? null;
 
   if (!data) return <div className="p-6"><Spinner /></div>;
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
+      <div className="flex flex-wrap gap-2 items-center">
+        <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_cadre')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
@@ -518,7 +528,7 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(c)} onEdit={() => setEditing(c)} onDelete={async () => {
                     if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
-                    try { await adminDeleteCadre(c.code); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.code !== c.code) : prev); }
+                    try { await adminDeleteCadre(c.code); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.code !== c.code) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
                 </td>
@@ -550,10 +560,10 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
             try {
               if (editing) {
                 await adminUpdateCadre(editing.code, body);
-                setData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body, display_name: body.display_name || body.name || x.display_name } : x) : prev);
+                setAllData(prev => prev ? prev.map(x => x.code === editing.code ? { ...x, ...body, display_name: body.display_name || body.name || x.display_name } : x) : prev);
               } else {
                 const created = await adminAddCadre(body);
-                setData(prev => prev ? [{ ...body, display_name: body.display_name || body.name || '', ...(created || {}) }, ...prev] : prev);
+                setAllData(prev => prev ? [{ ...body, display_name: body.display_name || body.name || '', ...(created || {}) }, ...prev] : prev);
               }
               markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
@@ -620,22 +630,26 @@ function CadreModal({ initial, onClose, onSaved }: { initial: any; onClose: () =
 /* ═══ MIKOA ═══ */
 function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boolean) => void; tick: number; markOwnAction: () => void }) {
   const t = useT();
-  const [data, setData] = useState<any[] | null>(null);
+  const [allData, setAllData] = useState<any[] | null>(null);
+  const [q, setQ] = useState('');
   const [editing, setEditing] = useState<any>(null);
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
   async function load(bypass = false) {
-    try { setData(await adminListRegions(bypass)); } catch (e) { flash(await errText(e), false); }
+    try { setAllData(await adminListRegions(bypass)); } catch (e) { flash(await errText(e), false); }
   }
   useEffect(() => { load(true); /* eslint-disable-next-line */ }, [tick]);
+
+  const data = allData?.filter((r: any) => !q || (r.name || '').toLowerCase().includes(q.toLowerCase()) || String(r.id).includes(q)) ?? null;
 
   if (!data) return <div className="p-6"><Spinner /></div>;
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
+      <div className="flex flex-wrap gap-2 items-center">
+        <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_region')}</button>
       </div>
       <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
@@ -655,7 +669,7 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(r)} onEdit={() => setEditing(r)} onDelete={async () => {
                     if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
-                    try { await adminDeleteRegion(r.id); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.id !== r.id) : prev); }
+                    try { await adminDeleteRegion(r.id); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.id !== r.id) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
                 </td>
@@ -686,11 +700,11 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
             try {
               if (editing) {
                 await adminUpdateRegion(editing.id, { id: Number(body.id), name: body.name });
-                setData(prev => prev ? prev.map(x => x.id === editing.id ? { ...x, id: Number(body.id), name: body.name } : x) : prev);
+                setAllData(prev => prev ? prev.map(x => x.id === editing.id ? { ...x, id: Number(body.id), name: body.name } : x) : prev);
               } else {
                 await adminAddRegion({ id: body.id ? Number(body.id) : 0, name: body.name });
                 const created = { id: body.id ? Number(body.id) : 0, name: body.name };
-                setData(prev => prev ? [created, ...prev] : prev);
+                setAllData(prev => prev ? [created, ...prev] : prev);
               }
               markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
@@ -703,20 +717,22 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
 /* ═══ WILAYA ═══ */
 function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boolean) => void; tick: number; markOwnAction: () => void }) {
   const t = useT();
-  const [data, setData] = useState<any[] | null>(null);
+  const [allData, setAllData] = useState<any[] | null>(null);
   const [regions, setRegions] = useState<any[]>([]);
   const [regionFilter, setRegionFilter] = useState<number | ''>('');
+  const [q, setQ] = useState('');
   const [editing, setEditing] = useState<any>(null);
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
 
-  // bypass wakati mkoa umechaguliwa au tick (SSE event) inabadilika
   async function load(bypass = false) {
-    try { setData(await adminListDistricts(regionFilter || undefined, bypass || !!regionFilter)); }
+    try { setAllData(await adminListDistricts(regionFilter || undefined, bypass || !!regionFilter)); }
     catch (e) { flash(await errText(e), false); }
   }
   useEffect(() => { load(true); /* eslint-disable-next-line */ }, [regionFilter, tick]);
   useEffect(() => { adminListRegions(true).then(setRegions).catch(() => {}); }, [tick]);
+
+  const data = allData?.filter((d: any) => !q || (d.name || '').toLowerCase().includes(q.toLowerCase()) || String(d.id).includes(q) || (regions.find((r) => r.id === d.region_id)?.name || '').toLowerCase().includes(q.toLowerCase())) ?? null;
 
   if (!data) return <div className="p-6"><Spinner /></div>;
 
@@ -727,6 +743,7 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
           <option value="">{t('data.all_regions')}</option>
           {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
+        <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_district')}</button>
       </div>
@@ -749,7 +766,7 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
                 <td className="px-3 py-2 text-right">
                   <RowAction onView={() => setViewing(d)} onEdit={() => setEditing(d)} onDelete={async () => {
                     if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
-                    try { await adminDeleteDistrict(d.id); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => x.id !== d.id) : prev); }
+                    try { await adminDeleteDistrict(d.id); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.id !== d.id) : prev); }
                     catch (e) { flash(await errText(e), false); }
                   }} />
                 </td>
@@ -783,11 +800,11 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
             try {
               if (editing) {
                 await adminUpdateDistrict(editing.id, { id: Number(body.id), name: body.name, region_id: Number(body.region_id) });
-                setData(prev => prev ? prev.map(x => x.id === editing.id ? { ...x, id: Number(body.id), name: body.name, region_id: Number(body.region_id) } : x) : prev);
+                setAllData(prev => prev ? prev.map(x => x.id === editing.id ? { ...x, id: Number(body.id), name: body.name, region_id: Number(body.region_id) } : x) : prev);
               } else {
                 await adminAddDistrict({ id: body.id ? Number(body.id) : 0, name: body.name, region_id: Number(body.region_id) });
                 const created = { id: body.id ? Number(body.id) : 0, name: body.name, region_id: Number(body.region_id) };
-                setData(prev => prev ? [created, ...prev] : prev);
+                setAllData(prev => prev ? [created, ...prev] : prev);
               }
               markOwnAction(); setEditing(null); setCreating(false); flash(t('data.saved'));
             } catch (e) { throw e; }
