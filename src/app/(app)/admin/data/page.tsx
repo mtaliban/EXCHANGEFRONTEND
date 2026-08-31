@@ -869,75 +869,37 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
   const [regionFilter, setRegionFilter] = useState<number | ''>('');
   const [districtFilter, setDistrictFilter] = useState<number | ''>('');
   const [q, setQ] = useState('');
-  const [rawData, setRawData] = useState<any[]>([]);
   const [data, setData] = useState<any[] | null>(null);
   const [editing, setEditing] = useState<any>(null);
   const [viewing, setViewing] = useState<any>(null);
   const [creating, setCreating] = useState(false);
   const qTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Pata data kutoka backend — data yote kwa category hii
+  // Pata data — TUMA filters ZOTE kwenye backend (si client-side tu)
   async function load(bypass = false) {
     try {
-      const r = await adminListFacilities({ category }, bypass);
-      const items = r.items || [];
-      setRawData(items);
+      const r = await adminListFacilities({
+        category,
+        region_id: regionFilter || undefined,
+        district_id: districtFilter || undefined,
+        q: q || undefined,
+      }, bypass || !!(regionFilter || districtFilter || q));
+      setData(r.items || []);
     } catch (e) { flash(await errText(e), false); }
   }
-  // Pata data ya kwanza / mara nyingine pale category/SS inapobadilika
-  useEffect(() => { load(true); /* eslint-disable-next-line */ }, [category, tick]);
+  // Reload pale category, region, district, au tick inapobadilika
+  useEffect(() => { load(true); /* eslint-disable-next-line */ }, [category, regionFilter, districtFilter, tick]);
+  // Debounced search — herufi 200ms baada ya acha kuandika
+  useEffect(() => {
+    const timer = setTimeout(() => load(true), 200);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line
+  }, [q]);
   useEffect(() => { adminListRegions(true).then(setRegions).catch(() => {}); }, [tick]);
   useEffect(() => {
     if (regionFilter) adminListDistricts(regionFilter, true).then(setDistricts).catch(() => setDistricts([]));
     else setDistricts([]);
   }, [regionFilter, tick]);
-
-  // Client-side filtering — kila rawData, regionFilter, districtFilter, q inapobadilika
-  useEffect(() => {
-    let items = rawData;
-    // 1. Filter by district
-    if (districtFilter) {
-      const dId = Number(districtFilter);
-      if (category === 'education') {
-        items = items.filter((f: any) => f.district_id === dId);
-      } else {
-        // health: district stored as name
-        const dist = districts.find((d: any) => d.id === dId);
-        if (dist) {
-          const dn = dist.name.toLowerCase();
-          items = items.filter((f: any) => (f.district || '').toLowerCase() === dn || (f.district_name || '').toLowerCase() === dn);
-        }
-      }
-    } else if (regionFilter) {
-      // 2. Filter by region (when no district selected)
-      const rId = Number(regionFilter);
-      if (category === 'education') {
-        items = items.filter((f: any) => f.region_id === rId);
-      } else {
-        const reg = regions.find((r: any) => r.id === rId);
-        if (reg) {
-          const rn = reg.name.toLowerCase();
-          items = items.filter((f: any) => (f.region || '').toLowerCase() === rn || (f.region_name || '').toLowerCase() === rn);
-        }
-      }
-    }
-    // 3. Search by name/code
-    if (q.trim()) {
-      const ql = q.trim().toLowerCase();
-      items = items.filter((f: any) =>
-        (f.name || '').toLowerCase().includes(ql) ||
-        (f.code || '').toLowerCase().includes(ql) ||
-        (f.school_code || '').toLowerCase().includes(ql)
-      );
-    }
-    setData(items);
-  }, [rawData, regionFilter, districtFilter, q, category, regions, districts]);
-
-  // Debounced search — ishirini milisekunde
-  const handleSearch = (val: string) => {
-    if (qTimer.current) clearTimeout(qTimer.current);
-    qTimer.current = setTimeout(() => setQ(val), 200);
-  };
 
   if (data === null) return <div className="p-6"><Spinner /></div>;
 
@@ -956,7 +918,7 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
           <option value="">{t('data.all_districts')}</option>
           {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
-        <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => handleSearch(e.target.value)} />
+        <input className="input w-48" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_facility')}</button>
       </div>
