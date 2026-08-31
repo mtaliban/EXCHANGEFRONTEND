@@ -475,6 +475,8 @@ export const getMatches = (params?: { region_id?: number; district_id?: number; 
   client.get<{ total: number; filtered: number; matches: Match[] }>(`${MATCH}/matches/me`, { params }).then((r) => r.data);
 export const getMatchStats = () =>
   client.get(`${MATCH}/matches/stats`).then((r) => r.data);
+export const getTrueMatches = (limit = 50) =>
+  client.get(`${MATCH}/matches/true`, { params: { limit }, bypassCache: true } as any).then((r) => r.data);
 
 /* ── Messaging (call logging + presence only — in-app chat imeondolewa) ── */
 export const logCall = (to_user_id: string, outcome: string = 'initiated') =>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import {
   getBoard, getRegions, getDistricts, getFacilities, logCall, bustGetCache, getCadres, isDefaultName,
+  getTrueMatches,
   type Region, type District, type Facility, type Cadre,
 } from '@/lib/api';
 import { useLiveEvents } from '@/lib/useLiveEvents';
@@ -24,6 +25,24 @@ import {
 
 const FRESH_MS = 30 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya NUSU SAA (30min)
 const PAGE_SIZE = 5; // Wageni 5 wa kwanza pale juu — zilizobaki pagination (Next)
+
+/* Helpers — kada + category labels */
+const CADRE_LABELS: Record<string, string> = {
+  'TEACHER_PRIMARY': 'Mwalimu wa Msingi', 'TEACHER_SECONDARY': 'Mwalimu wa Sekondari',
+  'TEACHER_SPECIAL': 'Mwalimu wa Elimu ya Pekee',
+  'MD': 'Daktari (MD)', 'CO': 'Afisa wa Afya (CO)', 'ACO': 'Msaidizi wa Afisa wa Afya',
+  'CA': 'Msaidizi wa Kliniki', 'AMO': 'Msaidizi wa Daktari', 'NO': 'Afisa wa Ugojaji (NO)',
+  'RN': 'Muuguzi Aliyesajiliwa (RN)', 'EN': 'Muuguzi Aliyeandikwa (EN)',
+  'ANO': 'Msaidizi wa Ugojaji (ANO)', 'HA': 'Msaidizi wa Afya (HA)', 'MA': 'Msaidizi wa Matibabu (MA)',
+  'LAB_TECH_1': 'Teknolojia ya Maabara I', 'LAB_TECH_2': 'Teknolojia ya Maabara II',
+  'LAB_SCI_2': 'Wanasayansi wa Maabara II', 'LAB_ASST': 'Msaidizi wa Maabara',
+};
+function cadreLabel(code: string): string { return CADRE_LABELS[code] || code || '—'; }
+function categoryLabel(cat: string): string {
+  if (cat === 'education') return 'Elimu';
+  if (cat === 'health') return 'Afya';
+  return cat || '—';
+}
 
 export default function DashboardBoard() {
   const t = useT();
@@ -74,6 +93,8 @@ export default function DashboardBoard() {
   const [page, setPage] = useState(1);
   const [lastArrivalKey, setLastArrivalKey] = useState<string | null>(null);
   const [cadres, setCadres] = useState<Cadre[]>([]);
+  const [trueMatches, setTrueMatches] = useState<any[]>([]);
+  const [showTrueMatches, setShowTrueMatches] = useState(true);
 
   // Load cadres dynamically based on category
   useEffect(() => {
@@ -194,6 +215,18 @@ export default function DashboardBoard() {
   }, [districtId, myCategory, isAdmin]);
 
   useEffect(() => { loadBoard(true); }, [loadBoard]);  // ALWAYS force fresh — filter/cache hazipaswi kuzuia data mpya
+
+  // MATCH ZA KWELI — load kwenye mount na kila WS event
+  useEffect(() => {
+    getTrueMatches(30).then((r: any) => setTrueMatches(r.matches || [])).catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!messages.length) return;
+    const latest = messages[messages.length - 1];
+    if (latest.topic === 'match.found' || latest.topic === 'user.registered' || latest.topic === 'user.profile_updated') {
+      getTrueMatches(30).then((r: any) => setTrueMatches(r.matches || [])).catch(() => {});
+    }
+  }, [messages.length]);
 
   // Auto-refresh on live events — FRESH data (bust cache) + sauti + kurudi page 1
   useEffect(() => {
@@ -449,6 +482,29 @@ export default function DashboardBoard() {
       </div>
 
 
+
+      {/* ═══ MATCH ZA KWELI — reciprocal matches tu ═══ */}
+      {trueMatches.length > 0 && (
+        <div className="rounded-xl border-2 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 p-3">
+          <button type="button" onClick={() => setShowTrueMatches(!showTrueMatches)}
+            className="flex items-center gap-2 w-full text-left">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+            <span className="text-sm font-bold text-emerald-800 dark:text-emerald-300 flex-1">
+              Match za Kweli ({trueMatches.length})
+            </span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              {showTrueMatches ? 'Ficha' : 'Onyesha'}
+            </span>
+          </button>
+          {showTrueMatches && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3">
+              {trueMatches.map((m: any) => (
+                <TrueMatchCard key={m.user_id} m={m} now={now} lang={lang} mySubjects={mySubjects} me={user as any} myRegionName={myStation.region_name || ''} isVerified={!!(user as any)?.is_verified} showCardToast={showCardToast} myToast={cardToast?.uid === m.user_id ? cardToast : null} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ═══ GRID YA WANAOKUJA MKOA WAKO — 10 kwa ukurasa + pagination ═══ */}
       {loading && candidates.length === 0 ? (
@@ -710,6 +766,111 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
           <span className="text-brand-blue font-bold text-sm flex-shrink-0 bg-brand-blue/10 rounded-md px-2 py-0.5">Changia →</span>
         </a>
       )}
+    </div>
+  );
+}
+
+/* ═══ TrueMatchCard — match za KWELI (reciprocal) ═══ */
+function TrueMatchCard({ m, now, lang, mySubjects, me, myRegionName, isVerified, showCardToast, myToast }: { m: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string; isVerified?: boolean; showCardToast: (msg: string, uid: string) => void; myToast: { msg: string } | null }) {
+  const t = useT();
+  const initial = getInitial(m.full_name);
+  const from = m.current_station;
+  const to = m.matching_destination;
+  const isEdu = m.category !== 'health';
+  const anySubjectMatch = (m.subjects || []).some((s: string) => mySubjects.includes(s));
+
+  const requirePayment = !!(me as any)?.require_payment_for_contact;
+  const contactEnabled = !!(me as any)?.contact_enabled;
+  const canContact = !requirePayment || !!isVerified || contactEnabled;
+  const targetPaid = !!(m as any).is_verified || isDefaultName(m.full_name || '') || contactEnabled;
+
+  const introMsg = `Habari ${m.full_name?.split(' ')[0] || ''}, nina furaha kukupata hapa. Nina hamu ya kubadilishana nafasi na wewe.`;
+
+  async function onCall() {
+    if (!m.phone_primary) return;
+    if (!canContact) { showCardToast('Changia TZS 5,000 upate namba', m.user_id); return; }
+    showCardToast(`Piga ${m.full_name}`, m.user_id);
+    try { await logCall(m.user_id, 'initiated'); } catch {}
+    window.location.href = `tel:${m.phone_primary}`;
+  }
+
+  const scorePercent = Math.round((m.score || 0) * 100);
+
+  return (
+    <div className="rounded-xl bg-white dark:bg-brand-grey-900 border-2 border-emerald-300 dark:border-emerald-700 p-3 flex flex-col gap-2.5 hover:border-emerald-400 dark:hover:border-emerald-600 transition shadow-sm hover:shadow-md relative overflow-hidden">
+      {/* Score badge */}
+      <div className="absolute top-2 right-2">
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+          m.score >= 1.0 ? 'bg-emerald-500 text-white' :
+          m.score >= 0.85 ? 'bg-emerald-400 text-white' :
+          'bg-emerald-300 text-emerald-900'
+        }`}>🎯 {scorePercent}%</span>
+      </div>
+      {/* Jina + Avatar */}
+      <div className="flex items-center gap-2.5">
+        <div className="relative flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
+            {initial}
+          </div>
+          {m.online && <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-green-500 border border-white dark:border-brand-grey-900" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{m.full_name}</span>
+            {targetPaid && <span className="text-[8px] font-bold text-emerald-700 bg-emerald-100 px-1 py-0.5 rounded-full">✓ PAID</span>}
+          </div>
+          <div className="text-[11px] text-brand-grey-500">
+            <span className="font-semibold text-emerald-700 dark:text-emerald-400">{categoryLabel(m.category)}</span> · {cadreLabel(m.cadre_code)}
+          </div>
+        </div>
+      </div>
+      {/* Kutoka → Kuja */}
+      <div className="bg-emerald-50 dark:bg-emerald-950/50 rounded-lg px-2.5 py-1.5 text-[11px] space-y-1">
+        <div className="text-brand-grey-600 dark:text-brand-grey-300">
+          <MapPin size={10} className="inline" /> Kutoka: <b>{from?.region_name || '—'}{from?.district_name ? `, ${from.district_name}` : ''}{from?.facility_name ? `, ${from.facility_name}` : ''}</b>
+        </div>
+        {to && (
+          <div className="text-emerald-700 dark:text-emerald-400 font-bold">
+            <ArrowLeftRight size={10} className="inline" /> Kuja: <b>{to.region_name || myRegionName}{to.district_name ? `, ${to.district_name}` : ''}{to.facility_name ? `, ${to.facility_name}` : ''}</b>
+          </div>
+        )}
+      </div>
+      {/* Miaka ya kazi */}
+      {m.years_of_service && (
+        <div className="text-[10px] text-brand-grey-500 font-medium">
+          Miaka ya kazi: {m.years_of_service === 3 ? '3+ (miaka 3 au zaidi)' : `${m.years_of_service} ${m.years_of_service === 1 ? 'mwaka' : 'miaka'}`}
+        </div>
+      )}
+      {/* Masomo */}
+      {m.subjects?.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {m.subjects.slice(0, 4).map((s: string) => (
+            <span key={s} className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${anySubjectMatch && mySubjects.includes(s) ? 'bg-emerald-500 text-white' : 'bg-brand-blue-50 text-brand-blue-700 border border-brand-blue/10'}`}>{s}</span>
+          ))}
+          {m.subjects.length > 4 && <span className="text-brand-grey-400 text-[10px]">+{m.subjects.length - 4}</span>}
+        </div>
+      )}
+      {/* Actions */}
+      <div className="flex items-center gap-1.5 mt-auto pt-1">
+        {m.phone_primary && (
+          <button type="button" onClick={onCall}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex-1 justify-center transition ${
+              canContact ? 'bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white hover:border-emerald-400' : 'bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-400 border border-brand-grey-200 dark:border-brand-grey-600'
+            }`}>
+            <Phone size={11} /> Piga
+          </button>
+        )}
+        {m.phone_alt && canContact && (
+          <a href={`https://wa.me/${(m.phone_alt || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-[11px] font-semibold text-brand-grey-900 dark:text-white hover:border-emerald-400 transition flex-1 justify-center">
+            WhatsApp
+          </a>
+        )}
+      </div>
+      {/* Score indicator bar */}
+      <div className="w-full h-1 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 overflow-hidden">
+        <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${scorePercent}%` }} />
+      </div>
     </div>
   );
 }
