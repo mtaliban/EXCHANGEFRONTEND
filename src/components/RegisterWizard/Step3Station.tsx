@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Region, type District, type Facility } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { AlertCircle, Search, X } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -31,18 +31,9 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const [region_id, setRegionId] = useState<number | ''>(cs.region_id || '');
   const [district_id, setDistrictId] = useState<number | ''>(cs.district_id || '');
   const [facility_id, setFacilityId] = useState<string>(cs.facility_id || '');
-  const [facility_name_manual, setFacilityNameManual] = useState<string>(cs.facility_name && !cs.facility_id ? cs.facility_name : '');
+
   const [error, setError] = useState<string | null>(null);
   const [regionFacilitiesLoading, setRegionFacilitiesLoading] = useState(false);
-  const [facSearch, setFacSearch] = useState('');
-  const [showCustomFac, setShowCustomFac] = useState(false);
-
-  // Filtered facilities by search
-  const filteredFacilities = facilities.filter((f: any) => {
-    if (!facSearch) return true;
-    const q = facSearch.toLowerCase();
-    return f.name?.toLowerCase().includes(q) || f.type?.toLowerCase().includes(q);
-  });
 
   const dv = useDataVersion();
   useEffect(() => { getRegions().then(setRegions).catch(() => setError(t('step3.err_load'))); }, [dv]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -97,7 +88,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
           district_id: facility?.district_id || null,
           district_name: facility?.district || null,
           facility_id: facility_id || null,
-          facility_name: facility?.name || (showCustomFac ? facility_name_manual : null) || null,
+          facility_name: facility?.name || null,
           facility_type: (facility as any)?.type || (facility as any)?.type_category || null,
         },
       });
@@ -112,7 +103,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
           region_id: region.id, region_name: region.name,
           district_id: district.id, district_name: district.name,
           facility_id: facility_id || null,
-          facility_name: facility?.name || facility_name_manual || null,
+          facility_name: facility?.name || null,
           facility_type: (facility as any)?.type || (facility as any)?.level || null,
         },
       });
@@ -138,42 +129,14 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
           {regionFacilitiesLoading ? (
             <div className="input text-sm text-brand-grey-400">Inapakia...</div>
           ) : (
-            <div className="space-y-1">
-              <div className="relative">
-                <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400" />
-                <input className="input text-sm pl-8 pr-8" placeholder="Chuja jina la hospitali..."
-                  value={facSearch} onChange={(e) => { setFacSearch(e.target.value); setFacilityId(''); }} />
-                {facSearch && (
-                  <button type="button" onClick={() => { setFacSearch(''); setFacilityId(''); }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-red"><X size={13} /></button>
-                )}
-              </div>
-              {!showCustomFac ? (
-                <>
-                  <select className="input" value={facility_id} onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '__custom__') { setShowCustomFac(true); setFacilityId(''); setFacSearch(''); return; }
-                    setFacilityId(val);
-                  }} required>
-                    <option value="">Chagua Hospitali</option>
-                    {filteredFacilities.map((f: any) => (
-                      <option key={f.id || f.code} value={String(f.id || f.code)}>
-                        {f.name}{f.type ? ` (${f.type})` : ''}
-                      </option>
-                    ))}
-                    <option value="__custom__">— Andika mwenyewe (kama haipo) —</option>
-                  </select>
-                </>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <input className="input text-sm flex-1" placeholder="Andika jina la hospitali..."
-                    value={facility_name_manual}
-                    onChange={(e) => setFacilityNameManual(e.target.value)} required />
-                  <button type="button" onClick={() => { setShowCustomFac(false); setFacilityNameManual(''); }}
-                    className="text-brand-grey-400 hover:text-brand-red p-1.5"><X size={14} /></button>
-                </div>
-              )}
-            </div>
+            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)} required>
+              <option value="">Chagua Hospitali</option>
+              {facilities.map((f: any) => (
+                <option key={f.id || f.code} value={String(f.id || f.code)}>
+                  {f.name}{f.type ? ` (${f.type})` : ''}
+                </option>
+              ))}
+            </select>
           )}
         </div>
       )}
@@ -192,44 +155,16 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       {!isWizara && district_id !== '' && (
         <div>
           <label className="label">
-            {t('step3.facility')} ({category === 'health' ? t('step3.facility_health') : t('step3.facility_school')}) — {t('msg.optional')}
+            {t('step3.facility')} ({category === 'health' ? t('step3.facility_health') : t('step3.facility_school')})
           </label>
-          <div className="space-y-1">
-            <div className="relative">
-              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400" />
-              <input className="input text-sm pl-8 pr-8" placeholder={`Chuja ${category === 'health' ? 'hospitali' : 'shule'}...`}
-                value={facSearch} onChange={(e) => { setFacSearch(e.target.value); setFacilityId(''); }} />
-              {facSearch && (
-                <button type="button" onClick={() => { setFacSearch(''); setFacilityId(''); }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-red"><X size={13} /></button>
-              )}
-            </div>
-            {!showCustomFac ? (
-              <>
-                <select className="input" value={facility_id} onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === '__custom__') { setShowCustomFac(true); setFacilityId(''); setFacSearch(''); return; }
-                  setFacilityId(val);
-                }}>
-                  <option value="">{t('step3.facility_none')}</option>
-                  {filteredFacilities.map((f: any) => (
-                    <option key={f.id || f.code} value={String(f.id || f.code)}>
-                      {f.name}{f.type ? ` (${f.type})` : ''}
-                    </option>
-                  ))}
-                  <option value="__custom__">— Andika mwenyewe (kama haipo) —</option>
-                </select>
-              </>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <input className="input text-sm flex-1" placeholder={`Andika jina la ${category === 'health' ? 'hospitali' : 'shule'}...`}
-                  value={facility_name_manual}
-                  onChange={(e) => setFacilityNameManual(e.target.value)} />
-                <button type="button" onClick={() => { setShowCustomFac(false); setFacilityNameManual(''); }}
-                  className="text-brand-grey-400 hover:text-brand-red p-1.5"><X size={14} /></button>
-              </div>
-            )}
-          </div>
+          <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)} required>
+            <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule'}</option>
+            {facilities.map((f: any) => (
+              <option key={f.id || f.code} value={String(f.id || f.code)}>
+                {f.name}{f.type ? ` (${f.type})` : ''}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 

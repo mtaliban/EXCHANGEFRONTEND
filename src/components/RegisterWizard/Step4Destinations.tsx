@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Region, type District, type Facility, type Destination } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { AlertCircle, Plus, Trash2, ChevronDown, Search, X } from 'lucide-react';
+import { AlertCircle, Plus, Trash2, ChevronDown, X } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -18,8 +18,6 @@ interface DistrictEntry {
   district_name: string | null;
   facility_id: string | null;
   facility_name: string | null;
-  custom_facility: string;  // mtu akiandika kituo kisichopo
-  facility_search: string;  // search filter
 }
 
 interface DestEntry {
@@ -59,8 +57,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
           district_name: d.district_name || null,
           facility_id: d.facility_id || null,
           facility_name: d.facility_name || null,
-          custom_facility: '',
-          facility_search: '',
+
         });
       }
       return Array.from(byRegion.values());
@@ -68,7 +65,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     return [{
       region_id: '',
       region_name: '',
-      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null, custom_facility: '', facility_search: '' }],
+      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null }],
     }];
   })();
   const [dests, setDests] = useState<DestEntry[]>(initDests);
@@ -113,13 +110,13 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   function updateRegion(i: number, regionId: number | '', regionName: string) {
     setDests((prev) => prev.map((d, idx) => idx === i ? {
       ...d, region_id: regionId, region_name: regionName,
-      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null, custom_facility: '', facility_search: '' }],
+      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null }],
     } : d));
   }
 
   function addDistrict(i: number) {
     setDests((prev) => prev.map((d, idx) => idx === i ? {
-      ...d, districts: [...d.districts, { district_id: null, district_name: null, facility_id: null, facility_name: null, custom_facility: '', facility_search: '' }],
+      ...d, districts: [...d.districts, { district_id: null, district_name: null, facility_id: null, facility_name: null }],
     } : d));
   }
 
@@ -141,7 +138,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   function addDest() {
     setDests([...dests, {
       region_id: '', region_name: '',
-      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null, custom_facility: '', facility_search: '' }],
+      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null }],
     }]);
   }
 
@@ -171,8 +168,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
             district_id: facility?.district_id || null,
             district_name: facility?.district || null,
             facility_id: facility ? String(facility.id || facility.code) : null,
-            facility_name: facility?.name || dd.custom_facility || null,
-            notes: dd.custom_facility ? `custom:${dd.custom_facility}` : null,
+            facility_name: facility?.name || null,
+            notes: null,
           });
         } else {
           // TAMISEMI/Elimu: Mkoa + Wilaya + Kituo
@@ -186,8 +183,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
             district_id: district?.id || null,
             district_name: district?.name || null,
             facility_id: facility ? String(facility.id || facility.code) : null,
-            facility_name: facility?.name || dd.custom_facility || null,
-            notes: dd.custom_facility ? `custom:${dd.custom_facility}` : null,
+            facility_name: facility?.name || null,
+            notes: null,
           });
         }
       }
@@ -195,22 +192,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
 
     if (destinations.length === 0) { setError('Ongeza angalau wilaya moja'); return; }
 
-    // Collect custom facilities kwa backend auto-add
-    const customFacilities = destinations
-      .filter((d) => d.notes?.startsWith('custom:'))
-      .map((d) => ({
-        name: d.notes!.replace('custom:', ''),
-        region_id: d.region_id,
-        region_name: d.region_name,
-        district_id: d.district_id,
-        district_name: d.district_name,
-        category,
-      }));
-
     await onSubmit({
       desired_destinations: destinations,
       years_of_service: yearsOfService ? Number(yearsOfService) : null,
-      custom_facilities: customFacilities.length > 0 ? customFacilities : undefined,
     });
   }
 
@@ -341,15 +325,6 @@ function DistrictRow({ dd, destIdx, distIdx, isWizara, category, regionId, distr
   onUpdate: (destIdx: number, distIdx: number, patch: Partial<DistrictEntry>) => void;
   onRemove: (destIdx: number, distIdx: number) => void;
 }) {
-  const [showCustom, setShowCustom] = useState(false);
-
-  // Filtered facilities by search
-  const filteredFacilities = useMemo(() => {
-    if (!dd.facility_search) return facilities;
-    const q = dd.facility_search.toLowerCase();
-    return facilities.filter((f: any) => f.name?.toLowerCase().includes(q) || f.type?.toLowerCase().includes(q));
-  }, [facilities, dd.facility_search]);
-
   return (
     <div className="bg-white dark:bg-brand-grey-900 rounded-lg p-2.5 space-y-2 border border-brand-grey-200 dark:border-brand-grey-700">
       <div className="flex items-center gap-2">
@@ -367,35 +342,19 @@ function DistrictRow({ dd, destIdx, distIdx, isWizara, category, regionId, distr
         facLoading ? (
           <div className="input text-sm text-brand-grey-400">Inapakia hospitali...</div>
         ) : (
-          <div className="space-y-1">
-            {/* Search */}
-            <div className="relative">
-              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400" />
-              <input className="input text-xs pl-7 pr-7"
-                placeholder="Chuja jina la hospitali..."
-                value={dd.facility_search}
-                onChange={(e) => onUpdate(destIdx, distIdx, { facility_search: e.target.value, facility_id: null, facility_name: null })} />
-              {dd.facility_search && (
-                <button type="button" onClick={() => onUpdate(destIdx, distIdx, { facility_search: '', facility_id: null, facility_name: null })}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-red">
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-            <select className="input text-sm" value={dd.facility_id || ''}
-              onChange={(e) => {
-                const fid = e.target.value || null;
-                const fac = fid ? filteredFacilities.find((f: any) => String(f.id || f.code) === fid) : null;
-                onUpdate(destIdx, distIdx, { facility_id: fid, facility_name: fac?.name || null, facility_search: '' });
-              }} required>
-              <option value="">Chagua Hospitali ya Rufaa</option>
-              {filteredFacilities.map((f: any) => (
-                <option key={f.id || f.code} value={String(f.id || f.code)}>
-                  {f.name}{f.type ? ` (${f.type})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select className="input text-sm" value={dd.facility_id || ''}
+            onChange={(e) => {
+              const fid = e.target.value || null;
+              const fac = fid ? facilities.find((f: any) => String(f.id || f.code) === fid) : null;
+              onUpdate(destIdx, distIdx, { facility_id: fid, facility_name: fac?.name || null });
+            }} required>
+            <option value="">Chagua Hospitali ya Rufaa</option>
+            {facilities.map((f: any) => (
+              <option key={f.id || f.code} value={String(f.id || f.code)}>
+                {f.name}{f.type ? ` (${f.type})` : ''}
+              </option>
+            ))}
+          </select>
         )
       )}
 
@@ -406,7 +365,7 @@ function DistrictRow({ dd, destIdx, distIdx, isWizara, category, regionId, distr
             onChange={(e) => {
               const did = e.target.value ? Number(e.target.value) : null;
               const dname = districts.find((x) => x.id === did)?.name || null;
-              onUpdate(destIdx, distIdx, { district_id: did, district_name: dname, facility_id: null, facility_name: null, custom_facility: '', facility_search: '' });
+              onUpdate(destIdx, distIdx, { district_id: did, district_name: dname, facility_id: null, facility_name: null });
             }} required>
             <option value="">— Chagua Wilaya —</option>
             {districts.map((x) => (
@@ -415,59 +374,19 @@ function DistrictRow({ dd, destIdx, distIdx, isWizara, category, regionId, distr
           </select>
 
           {dd.district_id && (
-            <div className="space-y-1">
-              {/* Search */}
-              <div className="relative">
-                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400" />
-                <input className="input text-xs pl-7 pr-7"
-                  placeholder={`Chuja ${category === 'health' ? 'hospitali' : 'shule'}...`}
-                  value={dd.facility_search}
-                  onChange={(e) => onUpdate(destIdx, distIdx, { facility_search: e.target.value })} />
-                {dd.facility_search && (
-                  <button type="button" onClick={() => onUpdate(destIdx, distIdx, { facility_search: '' })}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-red">
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
-
-              {!showCustom ? (
-                <>
-                  <select className="input text-sm" value={dd.facility_id || ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === '__custom__') {
-                        setShowCustom(true);
-                        onUpdate(destIdx, distIdx, { facility_id: null, facility_name: null, custom_facility: '', facility_search: '' });
-                      } else {
-                        const fid = val || null;
-                        const fac = fid ? filteredFacilities.find((f: any) => String(f.id || f.code) === fid) : null;
-                        onUpdate(destIdx, distIdx, { facility_id: fid, facility_name: fac?.name || null, facility_search: '' });
-                      }
-                    }}>
-                    <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule'}</option>
-                    {filteredFacilities.map((f: any) => (
-                      <option key={f.id || f.code} value={String(f.id || f.code)}>
-                        {f.name}{f.type ? ` (${f.type})` : ''}
-                      </option>
-                    ))}
-                    <option value="__custom__">— Andika mwenyewe (kama haipo) —</option>
-                  </select>
-                </>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <input className="input text-sm flex-1"
-                    placeholder={category === 'health' ? 'Andika jina la hospitali/kituo...' : 'Andika jina la shule...'}
-                    value={dd.custom_facility}
-                    onChange={(e) => onUpdate(destIdx, distIdx, { custom_facility: e.target.value })}
-                    required />
-                  <button type="button" onClick={() => { setShowCustom(false); onUpdate(destIdx, distIdx, { custom_facility: '' }); }}
-                    className="text-brand-grey-400 hover:text-brand-red p-1.5">
-                    <X size={14} />
-                  </button>
-                </div>
-              )}
-            </div>
+            <select className="input text-sm" value={dd.facility_id || ''}
+              onChange={(e) => {
+                const fid = e.target.value || null;
+                const fac = fid ? facilities.find((f: any) => String(f.id || f.code) === fid) : null;
+                onUpdate(destIdx, distIdx, { facility_id: fid, facility_name: fac?.name || null });
+              }} required>
+              <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule'}</option>
+              {facilities.map((f: any) => (
+                <option key={f.id || f.code} value={String(f.id || f.code)}>
+                  {f.name}{f.type ? ` (${f.type})` : ''}
+                </option>
+              ))}
+            </select>
           )}
         </>
       )}
