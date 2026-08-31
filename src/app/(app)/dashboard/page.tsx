@@ -48,6 +48,12 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+        {/* Namba ya kulipia — kisomi, si ya kubofya */}
+        <div className="flex-shrink-0 text-right">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-brand-grey-400">Lipa kwa</div>
+          <div className="text-[13px] font-extrabold text-brand-grey-900 dark:text-white tracking-wide">0763 795 801</div>
+          <div className="text-[9px] text-brand-grey-400">M-Pesa / Tigo / Airtel</div>
+        </div>
       </div>
 
       {/* ═══ BOARD MOJA: Wanaokuja {mkoa} (live mpya juu, kijani=online) ═══ */}

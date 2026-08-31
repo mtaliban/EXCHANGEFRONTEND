@@ -502,6 +502,7 @@ export default function DashboardBoard() {
 
 function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, showCardToast, myToast }: { c: any; now: number; lang: 'sw' | 'en'; mySubjects: string[]; me?: any; myRegionName?: string; isVerified?: boolean; showCardToast: (msg: string, uid: string) => void; myToast: { msg: string } | null }) {
   const t = useT();
+  const isMe = c.user_id === (me as any)?.user_id;
   const initial = getInitial(c.full_name);
   const from = c.current_station;
   // Onyesha destination inayokuja kwako — backend inatoa matching_destination
@@ -587,14 +588,17 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
               </span>
             )}
             {c.online && <span className="text-[10px] font-bold text-green-600">● {t('board.live')}</span>}
-            {targetPaid ? (
-              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-emerald-500 dark:bg-emerald-600 px-1.5 py-0.5 rounded-full">
-                ✓ PAID
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-red-400 dark:bg-red-500 px-1.5 py-0.5 rounded-full">
-                ✗ HAJALIPIA
-              </span>
+            {/* Payment status — muhusika tu aone, wengine waone bila badge */}
+            {isMe && (
+              targetPaid ? (
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-emerald-500 dark:bg-emerald-600 px-1.5 py-0.5 rounded-full">
+                  ✓ PAID
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-red-400 dark:bg-red-500 px-1.5 py-0.5 rounded-full">
+                  ✗ HAJALIPIA
+                </span>
+              )
             )}
           </div>
           {/* NI NANI: idara (Afya/Elimu) + kada — majina yote yanaonekana (hakuna kukata) */}
