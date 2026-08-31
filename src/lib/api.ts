@@ -275,7 +275,7 @@ export const getFacilities = (
   const params: any = { category };
   if (level) params.level = level;
   if (q) params.q = q;
-  return client.get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
+  return client.get<Facility[]>(`${LOC}/locations/districts/${districtId}/facilities`, { params, ttl: 60_000 } as any).then((r) => r.data);
 };
 /** Get all health facilities across a whole region (for Wizara ya Afya users). */
 export const getFacilitiesByRegion = (
@@ -287,7 +287,7 @@ export const getFacilitiesByRegion = (
   const params: any = { category };
   if (q) params.q = q;
   if (sector) params.sector = sector;
-  return client.get<Facility[]>(`${LOC}/locations/regions/${regionId}/facilities`, { params, ttl: _STATIC_TTL } as any).then((r) => r.data);
+  return client.get<Facility[]>(`${LOC}/locations/regions/${regionId}/facilities`, { params, ttl: 60_000 } as any).then((r) => r.data);
 };
 // Hardcoded fallback cadres — first time kutoka DB, kisha kutoka cache
 const FALLBACK_HEALTH_CADRES: Cadre[] = [
