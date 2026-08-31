@@ -28,6 +28,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   const [regions, setRegions] = useState<Region[]>([]);
   const [destDistricts, setDestDistricts] = useState<Record<number, District[]>>({});
   const [error, setError] = useState<string | null>(null);
+  const [yearsOfService, setYearsOfService] = useState<string>(initial.years_of_service ? String(initial.years_of_service) : '');
 
   const category: 'health' | 'education' = initial.category;
   const employmentSector: string | undefined = initial.employment_sector;
@@ -155,7 +156,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
       }
     });
 
-    await onSubmit({ desired_destinations: destinations });
+    await onSubmit({ desired_destinations: destinations, years_of_service: yearsOfService ? Number(yearsOfService) : null });
   }
 
   return (
@@ -259,6 +260,17 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         <Plus size={16} />
         Ongeza Mkoa Mwingine
       </button>
+
+      {/* Years of Service — lazima */}
+      <div className="pt-2">
+        <label className="label">Umefanya kazi kwa miaka mingapi? *</label>
+        <select className="input" value={yearsOfService} onChange={(e) => setYearsOfService(e.target.value)} required>
+          <option value="">Chagua miaka ya kazi</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3+ (miaka 3 au zaidi)</option>
+        </select>
+      </div>
 
       {error && (
         <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-xs rounded-xl p-3">

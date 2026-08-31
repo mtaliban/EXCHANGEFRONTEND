@@ -118,7 +118,7 @@ describe('Step2Cadre', () => {
     );
   });
 
-  it('passes chosen subjects when a teacher selects one checkbox', async () => {
+  it('rejects submission with only one subject (lazima masomo 2)', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     vi.mocked(getSubjects).mockResolvedValue(SUBJECTS);
     const onNext = vi.fn();
@@ -134,16 +134,14 @@ describe('Step2Cadre', () => {
       expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(2);
     });
 
-    // Select only one subject
+    // Select only one subject — should be rejected
     const checkboxes = screen.getAllByRole('checkbox');
     fireEvent.click(checkboxes[0]); // MATH only
     fireEvent.click(screen.getByText('Endelea →'));
 
-    await waitFor(() =>
-      expect(onNext).toHaveBeenCalledWith({
-        category: 'education', cadre_code: 'TEACHER_SECONDARY', subjects: ['MATH'],
-      })
-    );
+    // Should show error, NOT call onNext
+    expect(await screen.findByText(/lazima somo 2/)).toBeInTheDocument();
+    expect(onNext).not.toHaveBeenCalled();
   });
 
   it('allows selecting two subjects via checkboxes', async () => {

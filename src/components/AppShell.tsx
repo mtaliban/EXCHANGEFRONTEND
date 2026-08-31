@@ -39,8 +39,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         { href: '/admin/data', label: t('nav.data'), icon: Database },
         { href: '/admin/announcements', label: t('nav.announcements'), icon: MegaphoneIcon },
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
-        { href: '/admin/events', label: t('nav.events'), icon: Zap },
-        { href: '/admin/reports', label: t('nav.reports'), icon: BarChart3 },
         { href: '/admin/feedback', label: t('nav.feedback'), icon: ClipboardList },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ]

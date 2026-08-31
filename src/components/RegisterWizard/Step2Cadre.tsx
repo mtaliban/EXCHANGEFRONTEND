@@ -73,7 +73,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
     if (!category || !cadre_code) { setError(t('step2.err_choose')); return; }
-    if (showSubjects && selectedSubjects.length < 1) { setError('Chagua somo unalofundisha — ni lazima.'); return; }
+    if (showSubjects && selectedSubjects.length < 2) { setError('Chagua masomo 2 — ni lazima kabisa.'); return; }
     onNext({ category, cadre_code, subjects: selectedSubjects });
   }
 
@@ -93,7 +93,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
         <div>
           <label className="label flex items-center gap-1.5">
             {t('step2.subject')} <span className="text-brand-red text-xs">*</span>
-            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">(lazima angalau somo 1)</span>
+            <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">(lazima somo 2)</span>
           </label>
 
           {loadingSubjects ? (

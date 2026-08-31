@@ -291,6 +291,13 @@ function UserCard({ user: u, destRegion }: { user: any; destRegion: string }) {
         </div>
       </div>
 
+      {/* Miaka ya kazi */}
+      {u.years_of_service && (
+        <div className="text-[11px] text-brand-grey-500 font-medium">
+          Miaka ya kazi: {u.years_of_service === 3 ? '3+ (miaka 3 au zaidi)' : `${u.years_of_service} ${u.years_of_service === 1 ? 'mwaka' : 'miaka'}`}
+        </div>
+      )}
+
       {/* Masomo */}
       {u.subjects?.length > 0 && (
         <div className="flex flex-wrap gap-1.5">

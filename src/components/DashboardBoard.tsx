@@ -636,6 +636,13 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
         );
       })()}
 
+      {/* Miaka ya kazi */}
+      {c.years_of_service && (
+        <div className="text-[11px] text-brand-grey-500 font-medium">
+          Miaka ya kazi: {c.years_of_service === 3 ? '3+ (miaka 3 au zaidi)' : `${c.years_of_service} ${c.years_of_service === 1 ? 'mwaka' : 'miaka'}`}
+        </div>
+      )}
+
       {c.subjects?.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
           <span className="text-brand-grey-500 font-semibold">{t('board.subjects')}:</span>
