@@ -13,17 +13,12 @@ interface Props {
   submitting: boolean;
 }
 
-interface DistrictEntry {
-  district_id: number | null;
-  district_name: string | null;
-  facility_id: string | null;
-  facility_name: string | null;
-}
-
 interface DestEntry {
   region_id: number | '';
   region_name: string;
-  districts: DistrictEntry[];
+  selected_districts: number[];  // empty = wilaya yote
+  facility_id: string | null;
+  facility_name: string | null;
 }
 
 export default function Step4Destinations({ initial, onBack, onSubmit, submitting }: Props) {
@@ -37,11 +32,11 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   const employmentSector: string | undefined = initial.employment_sector;
   const isWizara = category === 'health' && employmentSector === 'wizara_afya';
 
-  // ── Mfumo mpya: kila destination = mkoa mmoja + wilaya nyingi ──
+  // ── Destinations ──
   const initDests: DestEntry[] = (() => {
     const existing = initial.desired_destinations;
     if (Array.isArray(existing) && existing.length > 0) {
-      // Group by region_id
+      // Group by region_id — kila mkoa = destination moja
       const byRegion = new Map<number, DestEntry>();
       for (const d of existing) {
         const rid = d.region_id;
@@ -49,23 +44,24 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
           byRegion.set(rid, {
             region_id: rid,
             region_name: d.region_name || '',
-            districts: [],
+            selected_districts: [],
+            facility_id: d.facility_id || null,
+            facility_name: d.facility_name || null,
           });
         }
-        byRegion.get(rid)!.districts.push({
-          district_id: d.district_id || null,
-          district_name: d.district_name || null,
-          facility_id: d.facility_id || null,
-          facility_name: d.facility_name || null,
-
-        });
+        const entry = byRegion.get(rid)!;
+        if (d.district_id) {
+          entry.selected_districts.push(d.district_id);
+        }
       }
       return Array.from(byRegion.values());
     }
     return [{
       region_id: '',
       region_name: '',
-      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null }],
+      selected_districts: [],
+      facility_id: null,
+      facility_name: null,
     }];
   })();
   const [dests, setDests] = useState<DestEntry[]>(initDests);
@@ -80,16 +76,6 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
       getDistricts(rid).then((list) => setRegionDistricts((m) => ({ ...m, [rid]: list }))).catch(() => {});
     });
   }, [dests, regionDistricts]);
-
-  // ── Facilities cache per district (TAMISEMI/Elimu) ──
-  const [districtFacilities, setDistrictFacilities] = useState<Record<number, Facility[]>>({});
-  useEffect(() => {
-    if (isWizara) return;
-    const districtIds = dests.flatMap((d) => d.districts).filter((dd) => dd.district_id && !districtFacilities[dd.district_id as number]).map((dd) => dd.district_id as number);
-    [...new Set(districtIds)].forEach((did) => {
-      getFacilities(did, category).then((list) => setDistrictFacilities((m) => ({ ...m, [did]: list }))).catch(() => {});
-    });
-  }, [dests, districtFacilities, category, isWizara]);
 
   // ── Facilities per region (Wizara ya Afya) ──
   const [regionFacilities, setRegionFacilities] = useState<Record<number, Facility[]>>({});
@@ -107,38 +93,36 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     });
   }, [dests, regionFacilities, isWizara]);
 
-  function updateRegion(i: number, regionId: number | '', regionName: string) {
-    setDests((prev) => prev.map((d, idx) => idx === i ? {
-      ...d, region_id: regionId, region_name: regionName,
-      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null }],
-    } : d));
+  // ── Facilities per district (TAMISEMI/Elimu) — lazima kila wilaya iwe na kituo ──
+  const [districtFacilities, setDistrictFacilities] = useState<Record<number, Facility[]>>({});
+  useEffect(() => {
+    if (isWizara) return;
+    const districtIds = dests.flatMap((d) => d.selected_districts).filter((did) => !districtFacilities[did]);
+    [...new Set(districtIds)].forEach((did) => {
+      getFacilities(did, category).then((list) => setDistrictFacilities((m) => ({ ...m, [did]: list }))).catch(() => {});
+    });
+  }, [dests, districtFacilities, category, isWizara]);
+
+  function updateDest(i: number, patch: Partial<DestEntry>) {
+    setDests((prev) => prev.map((d, idx) => idx === i ? { ...d, ...patch } : d));
   }
 
-  function addDistrict(i: number) {
-    setDests((prev) => prev.map((d, idx) => idx === i ? {
-      ...d, districts: [...d.districts, { district_id: null, district_name: null, facility_id: null, facility_name: null }],
-    } : d));
-  }
-
-  function removeDistrict(destIdx: number, distIdx: number) {
+  function toggleDistrict(destIdx: number, districtId: number) {
     setDests((prev) => prev.map((d, idx) => {
       if (idx !== destIdx) return d;
-      if (d.districts.length <= 1) return d;
-      return { ...d, districts: d.districts.filter((_, di) => di !== distIdx) };
-    }));
-  }
-
-  function updateDistrict(destIdx: number, distIdx: number, patch: Partial<DistrictEntry>) {
-    setDests((prev) => prev.map((d, idx) => {
-      if (idx !== destIdx) return d;
-      return { ...d, districts: d.districts.map((dd, di) => di === distIdx ? { ...dd, ...patch } : dd) };
+      const current = d.selected_districts;
+      const next = current.includes(districtId)
+        ? current.filter((id) => id !== districtId)
+        : [...current, districtId];
+      return { ...d, selected_districts: next };
     }));
   }
 
   function addDest() {
     setDests([...dests, {
       region_id: '', region_name: '',
-      districts: [{ district_id: null, district_name: null, facility_id: null, facility_name: null }],
+      selected_districts: [],
+      facility_id: null, facility_name: null,
     }]);
   }
 
@@ -153,44 +137,101 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     const validDests = dests.filter((d) => d.region_id);
     if (validDests.length === 0) { setError(t('step4.err_region')); return; }
 
-    // Flattened destinations: kila district = destination moja
     const destinations: Destination[] = [];
     for (const d of validDests) {
       const region = regions.find((r) => r.id === Number(d.region_id))!;
-      for (const dd of d.districts) {
-        if (isWizara) {
-          // Wizara ya Afya: Mkoa + Hospitali
-          const facList = regionFacilities[d.region_id as number] || [];
-          const facility = dd.facility_id ? facList.find((f: any) => String(f.id || f.code) === dd.facility_id) : null;
-          destinations.push({
-            region_id: region.id,
-            region_name: region.name,
-            district_id: facility?.district_id || null,
-            district_name: facility?.district || null,
-            facility_id: facility ? String(facility.id || facility.code) : null,
-            facility_name: facility?.name || null,
-            notes: null,
-          });
-        } else {
-          // TAMISEMI/Elimu: Mkoa + Wilaya + Kituo
+
+      if (isWizara) {
+        // Wizara ya Afya: Mkoa + Hospitali (hakuna wilaya)
+        const facList = regionFacilities[d.region_id as number] || [];
+        const facility = d.facility_id ? facList.find((f: any) => String(f.id || f.code) === d.facility_id) : null;
+        if (!d.facility_id) { setError(`Chagua hospitali kwa mkoa ${region.name}`); return; }
+        destinations.push({
+          region_id: region.id,
+          region_name: region.name,
+          district_id: facility?.district_id || null,
+          district_name: facility?.district || null,
+          facility_id: facility ? String(facility.id || facility.code) : null,
+          facility_name: facility?.name || null,
+          notes: null,
+        });
+      } else {
+        // TAMISEMI/Elimu: Mkoa + Wilaya(s) + Kituo kwa kila wilaya
+        const selectedDistricts = d.selected_districts;
+
+        if (selectedDistricts.length === 0) {
+          // "Wilaya yeyote" — moja tu bila wilaya maalum
+          // Lazima aweke kituo kama kuna wilaya moja tu
           const distList = regionDistricts[d.region_id as number] || [];
-          const district = dd.district_id ? distList.find((x) => x.id === Number(dd.district_id)) : null;
-          const facList = dd.district_id ? (districtFacilities[dd.district_id as number] || []) : [];
-          const facility = dd.facility_id ? facList.find((f: any) => String(f.id || f.code) === dd.facility_id) : null;
-          destinations.push({
-            region_id: region.id,
-            region_name: region.name,
-            district_id: district?.id || null,
-            district_name: district?.name || null,
-            facility_id: facility ? String(facility.id || facility.code) : null,
-            facility_name: facility?.name || null,
-            notes: null,
-          });
+          if (distList.length === 1) {
+            // Wilaya moja tu — weka moja kwa moja
+            const onlyDistrict = distList[0];
+            const facList = districtFacilities[onlyDistrict.id] || [];
+            const facility = d.facility_id ? facList.find((f: any) => String(f.id || f.code) === d.facility_id) : null;
+            if (!d.facility_id) { setError(`Chagua shule/hospitali kwa ${region.name} — ${onlyDistrict.name}`); return; }
+            destinations.push({
+              region_id: region.id,
+              region_name: region.name,
+              district_id: onlyDistrict.id,
+              district_name: onlyDistrict.name,
+              facility_id: facility ? String(facility.id || facility.code) : null,
+              facility_name: facility?.name || null,
+              notes: null,
+            });
+          } else {
+            // Wilaya nyingi — "Wilaya yeyote"
+            if (!d.facility_id) {
+              // Hakuna kituo — weka kwa kila wilaya bila kituo
+              destinations.push({
+                region_id: region.id,
+                region_name: region.name,
+                district_id: null,
+                district_name: null,
+                facility_id: null,
+                facility_name: null,
+                notes: null,
+              });
+            } else {
+              // Kuna kituo — weka kwa kila wilaya
+              for (const dist of distList) {
+                const facList = districtFacilities[dist.id] || [];
+                const facility = facList.find((f: any) => String(f.id || f.code) === d.facility_id);
+                destinations.push({
+                  region_id: region.id,
+                  region_name: region.name,
+                  district_id: dist.id,
+                  district_name: dist.name,
+                  facility_id: facility ? String(facility.id || facility.code) : null,
+                  facility_name: facility?.name || null,
+                  notes: null,
+                });
+              }
+            }
+          }
+        } else {
+          // Wilaya maalum zilizochaguliwa
+          for (const did of selectedDistricts) {
+            const distList = regionDistricts[d.region_id as number] || [];
+            const district = distList.find((x) => x.id === did);
+            if (!district) continue;
+            const facList = districtFacilities[did] || [];
+            const facility = d.facility_id ? facList.find((f: any) => String(f.id || f.code) === d.facility_id) : null;
+            if (!d.facility_id) { setError(`Chagua shule/hospitali kwa ${region.name} — ${district.name}`); return; }
+            destinations.push({
+              region_id: region.id,
+              region_name: region.name,
+              district_id: district.id,
+              district_name: district.name,
+              facility_id: facility ? String(facility.id || facility.code) : null,
+              facility_name: facility?.name || null,
+              notes: null,
+            });
+          }
         }
       }
     }
 
-    if (destinations.length === 0) { setError('Ongeza angalau wilaya moja'); return; }
+    if (destinations.length === 0) { setError('Ongeza angalau mkoa mmoja'); return; }
 
     await onSubmit({
       desired_destinations: destinations,
@@ -205,7 +246,6 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         <p className="text-sm text-brand-grey-500 mb-1">{t('step4.subtitle')}</p>
       </div>
 
-      {/* Destination entries — kila moja ni mkoa + wilaya nyingi */}
       <div className="space-y-4">
         {dests.map((d, i) => (
           <div key={i} className="relative p-3 rounded-xl bg-brand-grey-50 dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 space-y-3">
@@ -228,7 +268,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
               onChange={(e) => {
                 const rid = e.target.value ? Number(e.target.value) : '';
                 const rname = regions.find((r) => r.id === rid)?.name || '';
-                updateRegion(i, rid, rname);
+                updateDest(i, { region_id: rid, region_name: rname, selected_districts: [], facility_id: null, facility_name: null });
               }} required>
               <option value="">— Chagua Mkoa wa Lengo —</option>
               {regions.map((r) => (
@@ -236,41 +276,86 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
               ))}
             </select>
 
-            {/* Wilaya za mkoa huu */}
-            {d.region_id && (
-              <div className="space-y-2 pl-3 border-l-2 border-brand-blue/30">
+            {/* ── Wizara ya Afya: Hospitali tu (hakuna wilaya) ── */}
+            {isWizara && d.region_id && (
+              regionFacLoading[d.region_id as number] ? (
+                <div className="input text-sm text-brand-grey-400">Inapakia hospitali...</div>
+              ) : (
+                <select className="input text-sm" value={d.facility_id || ''}
+                  onChange={(e) => {
+                    const fid = e.target.value || null;
+                    const facList = regionFacilities[d.region_id as number] || [];
+                    const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
+                    updateDest(i, { facility_id: fid, facility_name: fac?.name || null });
+                  }} required>
+                  <option value="">Chagua Hospitali ya Rufaa</option>
+                  {(regionFacilities[d.region_id as number] || []).map((f: any) => (
+                    <option key={f.id || f.code} value={String(f.id || f.code)}>
+                      {f.name}{f.type ? ` (${f.type})` : ''}
+                    </option>
+                  ))}
+                </select>
+              )
+            )}
+
+            {/* ── TAMISEMI/Elimu: Checkboxes za wilaya + Kituo ── */}
+            {!isWizara && d.region_id && (
+              <div className="space-y-2">
                 <span className="text-[10px] font-bold text-brand-grey-500 uppercase">Wilaya za lengo</span>
 
-                {d.districts.map((dd, di) => (
-                  <DistrictRow
-                    key={di}
-                    dd={dd}
-                    destIdx={i}
-                    distIdx={di}
-                    isWizara={isWizara}
-                    category={category}
-                    regionId={d.region_id as number}
-                    districts={regionDistricts[d.region_id as number] || []}
-                    facilities={isWizara ? (regionFacilities[d.region_id as number] || []) : (dd.district_id ? (districtFacilities[dd.district_id as number] || []) : [])}
-                    facLoading={isWizara ? !!regionFacLoading[d.region_id as number] : false}
-                    canRemove={d.districts.length > 1}
-                    onUpdate={updateDistrict}
-                    onRemove={removeDistrict}
-                  />
-                ))}
+                {/* Checkboxes za wilaya */}
+                <div className="bg-white dark:bg-brand-grey-900 rounded-lg p-2 border border-brand-grey-200 dark:border-brand-grey-700 space-y-1.5">
+                  {/* Default: Wilaya yeyote */}
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input type="checkbox"
+                      className="w-3.5 h-3.5 rounded border-brand-grey-300 text-brand-blue focus:ring-brand-blue"
+                      checked={d.selected_districts.length === 0}
+                      onChange={() => updateDest(i, { selected_districts: [], facility_id: null, facility_name: null })} />
+                    <span className="font-semibold text-brand-grey-700 dark:text-brand-grey-300">Wilaya yeyote</span>
+                  </label>
 
-                <button type="button" onClick={() => addDistrict(i)}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-brand-blue hover:text-brand-blue/80 transition mt-1">
-                  <Plus size={12} />
-                  Ongeza Wilaya
-                </button>
+                  {/* Wilaya zote za mkoa */}
+                  {(regionDistricts[d.region_id as number] || []).map((dist) => (
+                    <label key={dist.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input type="checkbox"
+                        className="w-3.5 h-3.5 rounded border-brand-grey-300 text-brand-blue focus:ring-brand-blue"
+                        checked={d.selected_districts.includes(dist.id)}
+                        onChange={() => toggleDistrict(i, dist.id)} />
+                      <span className="text-brand-grey-600 dark:text-brand-grey-400">{dist.name}</span>
+                    </label>
+                  ))}
+                </div>
+
+                {/* Kituo — lazima */}
+                <select className="input text-sm" value={d.facility_id || ''}
+                  onChange={(e) => {
+                    const fid = e.target.value || null;
+                    // Find facility in any district
+                    let facName: string | null = null;
+                    for (const did of (d.selected_districts.length > 0 ? d.selected_districts : (regionDistricts[d.region_id as number] || []).map((x) => x.id))) {
+                      const facList = districtFacilities[did] || [];
+                      const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
+                      if (fac) { facName = fac.name; break; }
+                    }
+                    updateDest(i, { facility_id: fid, facility_name: facName });
+                  }} required>
+                  <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule'}</option>
+                  {/* Onyesha vituo vya wilaya zilizochaguliwa, au zote kama "wilaya yeyote" */}
+                  {[...(d.selected_districts.length > 0 ? d.selected_districts : (regionDistricts[d.region_id as number] || []).map((x) => x.id))].flatMap((did) => {
+                    const facList = districtFacilities[did] || [];
+                    return facList.map((f: any) => (
+                      <option key={`${did}-${f.id || f.code}`} value={String(f.id || f.code)}>
+                        {f.name}{f.type ? ` (${f.type})` : ''}
+                      </option>
+                    ));
+                  })}
+                </select>
               </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* Add more region button */}
       <button type="button" onClick={addDest}
         className="flex items-center gap-1.5 text-sm font-semibold text-brand-blue hover:text-brand-blue/80 transition">
         <Plus size={16} />
@@ -307,89 +392,5 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         </button>
       </div>
     </form>
-  );
-}
-
-/* ═══ DistrictRow — kila wilaya ndani ya mkoa ═══════════════════════════ */
-function DistrictRow({ dd, destIdx, distIdx, isWizara, category, regionId, districts, facilities, facLoading, canRemove, onUpdate, onRemove }: {
-  dd: DistrictEntry;
-  destIdx: number;
-  distIdx: number;
-  isWizara: boolean;
-  category: string;
-  regionId: number;
-  districts: District[];
-  facilities: Facility[];
-  facLoading: boolean;
-  canRemove: boolean;
-  onUpdate: (destIdx: number, distIdx: number, patch: Partial<DistrictEntry>) => void;
-  onRemove: (destIdx: number, distIdx: number) => void;
-}) {
-  return (
-    <div className="bg-white dark:bg-brand-grey-900 rounded-lg p-2.5 space-y-2 border border-brand-grey-200 dark:border-brand-grey-700">
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] font-bold text-brand-grey-400">Wilaya {distIdx + 1}</span>
-        {canRemove && (
-          <button type="button" onClick={() => onRemove(destIdx, distIdx)}
-            className="text-brand-red/60 hover:text-brand-red p-0.5 rounded transition ml-auto">
-            <X size={12} />
-          </button>
-        )}
-      </div>
-
-      {/* ── Wizara ya Afya: Hospitali tu (skip wilaya) ── */}
-      {isWizara && (
-        facLoading ? (
-          <div className="input text-sm text-brand-grey-400">Inapakia hospitali...</div>
-        ) : (
-          <select className="input text-sm" value={dd.facility_id || ''}
-            onChange={(e) => {
-              const fid = e.target.value || null;
-              const fac = fid ? facilities.find((f: any) => String(f.id || f.code) === fid) : null;
-              onUpdate(destIdx, distIdx, { facility_id: fid, facility_name: fac?.name || null });
-            }} required>
-            <option value="">Chagua Hospitali ya Rufaa</option>
-            {facilities.map((f: any) => (
-              <option key={f.id || f.code} value={String(f.id || f.code)}>
-                {f.name}{f.type ? ` (${f.type})` : ''}
-              </option>
-            ))}
-          </select>
-        )
-      )}
-
-      {/* ── TAMISEMI/Elimu: Wilaya + Kituo ── */}
-      {!isWizara && (
-        <>
-          <select className="input text-sm" value={dd.district_id || ''}
-            onChange={(e) => {
-              const did = e.target.value ? Number(e.target.value) : null;
-              const dname = districts.find((x) => x.id === did)?.name || null;
-              onUpdate(destIdx, distIdx, { district_id: did, district_name: dname, facility_id: null, facility_name: null });
-            }} required>
-            <option value="">— Chagua Wilaya —</option>
-            {districts.map((x) => (
-              <option key={x.id} value={x.id}>{x.name}</option>
-            ))}
-          </select>
-
-          {dd.district_id && (
-            <select className="input text-sm" value={dd.facility_id || ''}
-              onChange={(e) => {
-                const fid = e.target.value || null;
-                const fac = fid ? facilities.find((f: any) => String(f.id || f.code) === fid) : null;
-                onUpdate(destIdx, distIdx, { facility_id: fid, facility_name: fac?.name || null });
-              }} required>
-              <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule'}</option>
-              {facilities.map((f: any) => (
-                <option key={f.id || f.code} value={String(f.id || f.code)}>
-                  {f.name}{f.type ? ` (${f.type})` : ''}
-                </option>
-              ))}
-            </select>
-          )}
-        </>
-      )}
-    </div>
   );
 }

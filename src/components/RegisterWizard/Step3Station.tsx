@@ -80,6 +80,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
     if (isWizara) {
       // Wizara ya Afya: Mkoa + Hospitali
       if (!region_id) { setError('Chagua Mkoa'); return; }
+      if (!facility_id) { setError('Chagua Hospitali — ni lazima'); return; }
       const region = regions.find((r) => r.id === Number(region_id))!;
       const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
       onNext({
@@ -95,6 +96,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
     } else {
       // TAMISEMI/Elimu: Mkoa + Wilaya + Kituo
       if (!region_id || !district_id) { setError(t('step3.err_region_district')); return; }
+      if (!facility_id) { setError('Chagua Shule/Hospitali — ni lazima'); return; }
       const region = regions.find((r) => r.id === Number(region_id))!;
       const district = districts.find((d) => d.id === Number(district_id))!;
       const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
