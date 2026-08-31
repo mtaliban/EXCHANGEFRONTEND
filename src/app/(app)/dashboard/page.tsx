@@ -5,6 +5,7 @@ import DashboardBoard from '@/components/DashboardBoard';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { useT } from '@/lib/i18n';
 import { getInitial } from '@/lib/initials';
+import { isDefaultName } from '@/lib/api';
 import { MapPin } from 'lucide-react';
 
 const WA_GROUP_LINK = 'https://chat.whatsapp.com/Gm43LFnroiZLV9wynX3FpP?s=cl&p=a&ilr=0';
@@ -48,11 +49,17 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-        {/* Namba ya kulipia — kisomi, si ya kubofya */}
-        <div className="flex-shrink-0 text-right">
-          <div className="text-[9px] font-bold uppercase tracking-wider text-brand-grey-400">Lipa kwa</div>
-          <div className="text-[13px] font-extrabold text-brand-grey-900 dark:text-white tracking-wide">0763 795 801</div>
-          <div className="text-[9px] text-brand-grey-400">M-Pesa / Tigo / Airtel</div>
+        {/* Payment status + Namba ya kulipia */}
+        <div className="flex-shrink-0 text-right space-y-1">
+          {/* Status ya malipo — nyekundu kama hajalipia, kijani kama amelipia */}
+          {(user as any)?.is_admin ? null : (
+            (user as any)?.is_verified || isDefaultName(user?.full_name || '') || (user as any)?.contact_enabled ? (
+              <div className="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">AMELIIPIA</div>
+            ) : (
+              <div className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full">HAJALIPIA</div>
+            )
+          )}
+          <div className="text-[12px] font-extrabold text-brand-grey-900 dark:text-white tracking-wide">0763795801</div>
         </div>
       </div>
 
