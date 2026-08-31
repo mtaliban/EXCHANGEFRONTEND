@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';import { adminUsers, adminUpdateUser, adminDeleteUser, adminBulkUsers, adminGrant, adminRevoke,
-  adminCreateUser, adminMigrateDefaultNames, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk, adminTrashRestoreBulk,
+  adminCreateUser, adminMigrateDefaultNames, adminCleanupDepartments, adminTrashList, adminTrashRestore, adminTrashPurge, adminTrashPurgeBulk, adminTrashRestoreBulk,
   getRegions, getDistricts, getFacilities, getCadres, getDepartments, getSubjects,
   adminUserMatches, toggleUserContact, extractErrorMessage,
   type Region, type District, type Cadre, type Subject,
@@ -471,6 +471,10 @@ export default function AdminUsersPage() {
                 className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition">
                 ✓ Fix Default Names → PAID
               </button>
+              <button onClick={cleanupDepartments}
+                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-orange-500 text-white font-semibold hover:bg-orange-600 transition">
+                Futa Departments Old
+              </button>
               <button onClick={() => setShowTrash(false)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-grey-100 text-brand-grey-600 border border-brand-grey-200 font-semibold hover:bg-brand-grey-200 transition">
                 <XCircle size={11} /> {t('admin.cancel')}
               </button>
@@ -625,6 +629,21 @@ export default function AdminUsersPage() {
       const r = await adminMigrateDefaultNames();
       setMessage(r.message || `Updated ${r.updated} default name users to PAID`);
       load(true);
+    } catch (e: any) {
+      setMessage(extractErrorMessage(e, t('admin.failed')));
+    }
+    setTimeout(() => setMessage(null), 5000);
+  }
+
+  async function cleanupDepartments() {
+    const ok = await askConfirm({
+      title: 'Futa departments zote isipokuwa Afya, Elimu, Watumishi wa Umma?',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      const r = await adminCleanupDepartments();
+      setMessage(`Imefanikiwa — ${r.removed} departments zimefutwa. Zilizobaki: ${r.remaining.map((d: any) => d.name).join(', ')}`);
     } catch (e: any) {
       setMessage(extractErrorMessage(e, t('admin.failed')));
     }

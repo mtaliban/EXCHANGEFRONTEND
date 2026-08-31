@@ -535,6 +535,10 @@ export const adminMigrateDefaultNames = () =>
   client.post<{ ok: boolean; updated: number; message: string }>(
     `${ADMIN}/admin/users/migrate-default-names`
   ).then((r) => r.data);
+export const adminCleanupDepartments = () =>
+  client.post<{ ok: boolean; removed: number; remaining: any[] }>(
+    `${ADMIN}/admin/departments/cleanup`
+  ).then((r) => r.data);
 export const adminCreateUser = (body: {
   full_name: string;
   email?: string;
