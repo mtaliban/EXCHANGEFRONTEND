@@ -96,7 +96,6 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
     } else {
       // TAMISEMI/Elimu: Mkoa + Wilaya + Kituo
       if (!region_id || !district_id) { setError(t('step3.err_region_district')); return; }
-      if (!facility_id) { setError('Chagua Shule/Hospitali — ni lazima'); return; }
       const region = regions.find((r) => r.id === Number(region_id))!;
       const district = districts.find((d) => d.id === Number(district_id))!;
       const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
@@ -158,9 +157,8 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
         <div>
           <label className="label">
             {t('step3.facility')} ({category === 'health' ? t('step3.facility_health') : t('step3.facility_school')})
-          </label>
-          <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)} required>
-            <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule'}</option>
+          </label>            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)}>
+              <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule (hiari)'}</option>
             {facilities.map((f: any) => (
               <option key={f.id || f.code} value={String(f.id || f.code)}>
                 {f.name}{f.type ? ` (${f.type})` : ''}

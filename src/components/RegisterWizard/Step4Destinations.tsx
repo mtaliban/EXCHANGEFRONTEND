@@ -168,7 +168,6 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
             const onlyDistrict = distList[0];
             const facList = districtFacilities[onlyDistrict.id] || [];
             const facility = d.facility_id ? facList.find((f: any) => String(f.id || f.code) === d.facility_id) : null;
-            if (!d.facility_id) { setError(`Chagua shule/hospitali kwa ${region.name} — ${onlyDistrict.name}`); return; }
             destinations.push({
               region_id: region.id,
               region_name: region.name,
@@ -216,7 +215,6 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
             if (!district) continue;
             const facList = districtFacilities[did] || [];
             const facility = d.facility_id ? facList.find((f: any) => String(f.id || f.code) === d.facility_id) : null;
-            if (!d.facility_id) { setError(`Chagua shule/hospitali kwa ${region.name} — ${district.name}`); return; }
             destinations.push({
               region_id: region.id,
               region_name: region.name,
@@ -338,8 +336,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
                       if (fac) { facName = fac.name; break; }
                     }
                     updateDest(i, { facility_id: fid, facility_name: facName });
-                  }} required>
-                  <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule'}</option>
+                  }}>
+                  <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo (hiari)' : 'Chagua Shule (hiari)'}</option>
                   {/* Onyesha vituo vya wilaya zilizochaguliwa, au zote kama "wilaya yeyote" */}
                   {[...(d.selected_districts.length > 0 ? d.selected_districts : (regionDistricts[d.region_id as number] || []).map((x) => x.id))].flatMap((did) => {
                     const facList = districtFacilities[did] || [];
