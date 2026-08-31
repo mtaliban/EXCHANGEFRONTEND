@@ -914,7 +914,14 @@ function EditUserModal({ user, onClose, onSaved }: any) {
   function updateDest(i: number, field: 'region_id' | 'district_id', v: number | '') {
     const copy = dests.map((d) => ({ ...d }));
     copy[i][field] = v;
-    if (field === 'region_id') copy[i].district_id = '';
+    if (field === 'region_id') {
+      copy[i].district_id = '';
+      if (v) {
+        getDistricts(Number(v)).then((dd) => { copy[i]._districts = dd; setDests([...copy]); }).catch(() => { copy[i]._districts = []; setDests([...copy]); });
+      } else {
+        copy[i]._districts = [];
+      }
+    }
     setDests(copy);
   }
 
@@ -1069,7 +1076,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
   const [region_id, setRegionId] = useState<number | ''>('');
   const [district_id, setDistrictId] = useState<number | ''>('');
   const [facility_id, setFacilityId] = useState<string | ''>('');
-  const [dests, setDests] = useState<{ region_id: number | ''; district_id: number | '' }[]>([{ region_id: '', district_id: '' }]);
+  const [dests, setDests] = useState<{ region_id: number | ''; district_id: number | ''; _districts: any[] }[]>([{ region_id: '', district_id: '', _districts: [] }]);
   const [is_admin, setAdmin] = useState(false);
   const [status, setStatus] = useState('active');
   const [employment_sector, setEmploymentSector] = useState<string>('');
@@ -1102,7 +1109,14 @@ function CreateUserModal({ onClose, onCreated }: any) {
   function updateDest(i: number, field: 'region_id' | 'district_id', v: number | '') {
     const copy = dests.map((d) => ({ ...d }));
     copy[i][field] = v;
-    if (field === 'region_id') copy[i].district_id = '';
+    if (field === 'region_id') {
+      copy[i].district_id = '';
+      if (v) {
+        getDistricts(Number(v)).then((dd) => { copy[i]._districts = dd; setDests([...copy]); }).catch(() => { copy[i]._districts = []; setDests([...copy]); });
+      } else {
+        copy[i]._districts = [];
+      }
+    }
     setDests(copy);
   }
 
@@ -1217,7 +1231,11 @@ function CreateUserModal({ onClose, onCreated }: any) {
 
           {/* Destinations (nyingi) */}
           <div className="col-span-2">
-            <label className="label">{t('admin.destinations')}</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="label mb-0">{t('admin.destinations')}</label>
+              <button type="button" onClick={() => setDests([...dests, { region_id: '', district_id: '', _districts: [] }])}
+                className="text-[11px] font-bold text-brand-blue hover:underline">+ Ongeza Mkoa</button>
+            </div>
             <div className="space-y-2">
               {dests.map((d, i) => (
                 <div key={i} className="flex gap-2 items-center">
@@ -1227,8 +1245,12 @@ function CreateUserModal({ onClose, onCreated }: any) {
                   </select>
                   <select className="input flex-1" value={d.district_id} onChange={(e) => updateDest(i, 'district_id', Number(e.target.value) || '')} disabled={!d.region_id}>
                     <option value="">{t('step4.any_district')}</option>
-                    {d.region_id && districts.filter((x) => x.region_id === Number(d.region_id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                    {(d._districts || districts.filter((x) => x.region_id === Number(d.region_id))).map((x: any) => <option key={x.id} value={x.id}>{x.name}</option>)}
                   </select>
+                  {dests.length > 1 && (
+                    <button type="button" onClick={() => setDests(dests.filter((_, j) => j !== i))}
+                      className="text-brand-red text-xs px-1 hover:underline flex-shrink-0">✕</button>
+                  )}
                 </div>
               ))}
             </div>
