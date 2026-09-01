@@ -89,7 +89,7 @@ export default function AdminUsersPage() {
   const [live, setLive] = useState(false);
   const lastEvent = useRef(0);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 5;
+  const PAGE_SIZE = 20;
   const [regionFilter, setRegionFilter] = useState<number | ''>('');
   const [districtFilter, setDistrictFilter] = useState<number | ''>('');
   const [facilityFilter, setFacilityFilter] = useState<string>('');
@@ -134,7 +134,14 @@ export default function AdminUsersPage() {
     } catch {}
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, category, regionFilter, districtFilter, facilityFilter, subjectFilter]);
+  // Debounce search — usipige API kila herufi
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => load(!!q), q ? 300 : 0);
+    return () => clearTimeout(debounceRef.current);
+    // eslint-disable-next-line
+  }, [q, category, regionFilter, districtFilter, facilityFilter, subjectFilter]);
   // Trash ifunguke na iwe IMEJAA data tangu mwanzo (mtu akifutwa, aonekane
   // hapo papo hapo) — bila hii, trash inaonekana tupu mpaka tukio lingine
   // litokee. Event-driven: delete → SSE user.deleted → loadTrash pia.
