@@ -11,9 +11,9 @@ type Props = {
 };
 
 const CATEGORIES = [
-  { value: 'education', label: 'Elimu', icon: '📚' },
-  { value: 'health', label: 'Afya', icon: '🏥' },
-  { value: 'service', label: 'Utumishi', icon: '🏛️' },
+  { value: 'education', label: 'Elimu' },
+  { value: 'health', label: 'Afya' },
+  { value: 'service', label: 'Utumishi' },
 ];
 
 export default function BulkImportModal({ onClose, onImported }: Props) {
@@ -73,9 +73,8 @@ export default function BulkImportModal({ onClose, onImported }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white dark:bg-brand-grey-900 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl border border-brand-grey-100">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-brand-grey-100">
-          <h2 className="font-bold text-brand-grey-900 flex items-center gap-2">
-            <FileSpreadsheet size={18} className="text-brand-blue" />
+        <div className="flex items-center justify-between px-4 py-3 border-b border-brand-grey-100">
+          <h2 className="font-semibold text-sm text-brand-grey-900">
             Ongeza Watumiaji kwa Excel
           </h2>
           <button onClick={onClose} className="text-brand-grey-400 hover:text-brand-grey-600 transition">
@@ -83,19 +82,18 @@ export default function BulkImportModal({ onClose, onImported }: Props) {
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-4 space-y-4">
           {/* 1. Chagua Idara */}
           <div>
             <label className="text-xs font-bold text-brand-grey-600 mb-2 block">Chagua Idara</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex gap-2">
               {CATEGORIES.map((c) => (
                 <button key={c.value} onClick={() => { setCategory(c.value); setFile(null); setResult(null); }}
-                  className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl border text-sm font-semibold transition ${
+                  className={`px-4 py-1.5 rounded-lg border text-xs font-semibold transition ${
                     category === c.value
                       ? 'border-brand-blue bg-brand-blue-50 text-brand-blue'
                       : 'border-brand-grey-200 text-brand-grey-600 hover:border-brand-grey-300'
                   }`}>
-                  <span className="text-lg">{c.icon}</span>
                   {c.label}
                 </button>
               ))}
@@ -103,14 +101,11 @@ export default function BulkImportModal({ onClose, onImported }: Props) {
           </div>
 
           {/* 2. Download template */}
-          <div className="flex items-center justify-between bg-brand-grey-50 rounded-xl px-4 py-3">
-            <div className="text-xs text-brand-grey-600">
-              <p className="font-semibold text-brand-grey-800">1. Pakua Template</p>
-              <p className="mt-0.5">Pakua faili ya Excel yenye headers sahihi.</p>
-            </div>
+          <div className="flex items-center justify-between bg-brand-grey-50 rounded-lg px-3 py-2.5">
+            <span className="text-[11px] text-brand-grey-600">Pakua template ya Excel</span>
             <button onClick={downloadTemplate}
-              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
-              <Download size={13} /> Pakua
+              className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-md bg-brand-grey-100 text-brand-grey-700 font-semibold hover:bg-brand-grey-200 transition">
+              <Download size={11} /> Pakua
             </button>
           </div>
 
@@ -120,7 +115,7 @@ export default function BulkImportModal({ onClose, onImported }: Props) {
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
             onClick={() => inputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition ${
+            className={`border border-dashed rounded-lg py-4 text-center cursor-pointer transition ${
               dragOver ? 'border-brand-blue bg-brand-blue-50' : file ? 'border-green-300 bg-green-50' : 'border-brand-grey-200 hover:border-brand-grey-300'
             }`}
           >
@@ -136,20 +131,19 @@ export default function BulkImportModal({ onClose, onImported }: Props) {
               </div>
             ) : (
               <>
-                <Upload size={24} className="mx-auto text-brand-grey-400 mb-2" />
-                <p className="text-sm font-medium text-brand-grey-600">Bonyeza au drag faili ya Excel hapa</p>
-                <p className="text-[11px] text-brand-grey-400 mt-1">.xlsx tu</p>
+                <p className="text-xs text-brand-grey-500">Bonyeza au drag faili ya Excel hapa</p>
+                <p className="text-[10px] text-brand-grey-400 mt-0.5">.xlsx tu</p>
               </>
             )}
           </div>
 
           {/* 4. Import button */}
           <button onClick={doImport} disabled={!file || busy}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-brand-blue text-white font-bold text-sm hover:bg-brand-blue-700 disabled:opacity-40 transition">
+            className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-brand-blue text-white font-semibold text-xs hover:bg-brand-blue-700 disabled:opacity-40 transition">
             {busy ? (
-              <><Loader2 size={16} className="animate-spin" /> Inaingiza...</>
+              <><Loader2 size={13} className="animate-spin" /> Inaingiza...</>
             ) : (
-              <><Upload size={16} /> Ingiza Watumiaji</>
+              <><Upload size={13} /> Ingiza</>
             )}
           </button>
 
@@ -182,9 +176,9 @@ export default function BulkImportModal({ onClose, onImported }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-brand-grey-100 flex justify-end">
+        <div className="px-4 py-2.5 border-t border-brand-grey-100 flex justify-end">
           <button onClick={onClose}
-            className="text-xs px-4 py-2 rounded-lg border border-brand-grey-200 text-brand-grey-600 font-semibold hover:bg-brand-grey-50 transition">
+            className="text-[11px] px-3 py-1.5 rounded-md border border-brand-grey-200 text-brand-grey-500 font-semibold hover:bg-brand-grey-50 transition">
             Funga
           </button>
         </div>

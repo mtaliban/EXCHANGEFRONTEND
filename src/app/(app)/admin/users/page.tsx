@@ -291,7 +291,7 @@ export default function AdminUsersPage() {
             <ShieldCheck size={12} /> {t('admin.add_admin')}
           </button>
           <button onClick={() => setShowImport(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition">
-            <Download size={12} /> Import Excel
+            <Download size={11} /> Import
           </button>
         </div>
       </div>
