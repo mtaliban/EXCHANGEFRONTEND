@@ -290,8 +290,8 @@ export default function AdminUsersPage() {
           <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition">
             <ShieldCheck size={12} /> {t('admin.add_admin')}
           </button>
-          <button onClick={() => setShowImport(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition">
-            <Download size={11} /> Import
+          <button onClick={() => setShowImport(true)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200 font-semibold transition">
+            <Download size={10} /> Import
           </button>
         </div>
       </div>

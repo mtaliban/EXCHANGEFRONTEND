@@ -69,113 +69,86 @@ export default function BulkImportModal({ onClose, onImported }: Props) {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      setTemplateError('Imeshindwa kupakua template');
+      setTemplateError('Imeshindwa kupakua');
       setTimeout(() => setTemplateError(null), 4000);
     }
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-xl w-full max-w-md max-h-[85vh] overflow-y-auto shadow-xl border border-brand-grey-100">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-brand-grey-100">
-          <h2 className="font-semibold text-sm text-brand-grey-900">Ingiza Watumiaji</h2>
-          <button onClick={onClose} className="text-brand-grey-400 hover:text-brand-grey-600 transition">
-            <X size={16} />
-          </button>
+      <div className="bg-white rounded-xl w-full max-w-xs shadow-xl border border-brand-grey-100">
+        <div className="flex items-center justify-between px-3 py-2.5 border-b border-brand-grey-100">
+          <h2 className="font-semibold text-xs text-brand-grey-900">Ingiza Watumiaji</h2>
+          <button onClick={onClose} className="text-brand-grey-400 hover:text-brand-grey-600"><X size={14} /></button>
         </div>
 
-        <div className="p-4 space-y-3">
-          {/* 1. Chagua Idara */}
-          <div>
-            <label className="text-[11px] font-semibold text-brand-grey-500 mb-1.5 block">Idara</label>
-            <div className="flex gap-1.5">
-              {CATEGORIES.map((c) => (
-                <button key={c.value} onClick={() => { setCategory(c.value); setFile(null); setResult(null); setFileError(null); }}
-                  className={`px-3 py-1 rounded-md border text-[11px] font-semibold transition ${
-                    category === c.value
-                      ? 'border-brand-blue bg-brand-blue-50 text-brand-blue'
-                      : 'border-brand-grey-200 text-brand-grey-500 hover:border-brand-grey-300'
-                  }`}>
-                  {c.label}
-                </button>
-              ))}
-            </div>
+        <div className="p-3 space-y-2.5">
+          {/* Idara tabs */}
+          <div className="flex gap-1">
+            {CATEGORIES.map((c) => (
+              <button key={c.value} onClick={() => { setCategory(c.value); setFile(null); setResult(null); setFileError(null); }}
+                className={`px-2.5 py-0.5 rounded text-[10px] font-semibold border transition ${
+                  category === c.value ? 'border-brand-blue bg-brand-blue-50 text-brand-blue' : 'border-brand-grey-200 text-brand-grey-500 hover:border-brand-grey-300'
+                }`}>
+                {c.label}
+              </button>
+            ))}
           </div>
 
-          {/* 2. Download template */}
-          <div className="flex items-center justify-between bg-brand-grey-50 rounded-md px-3 py-2">
-            <span className="text-[11px] text-brand-grey-500">Pakua template</span>
-            <button onClick={downloadTemplate}
-              className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-brand-grey-100 text-brand-grey-600 font-semibold hover:bg-brand-grey-200 transition">
-              <Download size={10} /> Pakua
+          {/* Download template */}
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-brand-grey-400">Pakua template</span>
+            <button onClick={downloadTemplate} className="text-[10px] px-2 py-0.5 rounded bg-brand-grey-100 text-brand-grey-600 font-semibold hover:bg-brand-grey-200 transition">
+              <Download size={9} className="inline mr-0.5" />Pakua
             </button>
           </div>
-          {templateError && (
-            <div className="text-[11px] text-brand-red-600 bg-brand-red-50 rounded-md px-3 py-1.5 border border-brand-red-100">
-              {templateError}
-            </div>
-          )}
+          {templateError && <p className="text-[10px] text-brand-red-500">{templateError}</p>}
 
-          {/* 3. Upload */}
+          {/* Upload area */}
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
             onClick={() => inputRef.current?.click()}
-            className={`border border-dashed rounded-md py-3 text-center cursor-pointer transition ${
+            className={`border border-dashed rounded py-2 text-center cursor-pointer transition ${
               dragOver ? 'border-brand-blue bg-brand-blue-50' : file ? 'border-green-300 bg-green-50' : 'border-brand-grey-200 hover:border-brand-grey-300'
-            }`}
-          >
-            <input ref={inputRef} type="file" accept=".xlsx" className="hidden"
-              onChange={(e) => handleFile(e.target.files?.[0] || null)} />
+            }`}>
+            <input ref={inputRef} type="file" accept=".xlsx" className="hidden" onChange={(e) => handleFile(e.target.files?.[0] || null)} />
             {file ? (
-              <div className="flex items-center justify-center gap-2">
-                <FileSpreadsheet size={16} className="text-green-600" />
-                <div className="text-left">
-                  <p className="text-xs font-semibold text-green-700">{file.name}</p>
-                  <p className="text-[10px] text-brand-grey-400">{(file.size / 1024).toFixed(1)} KB</p>
-                </div>
+              <div className="flex items-center justify-center gap-1.5">
+                <FileSpreadsheet size={13} className="text-green-600" />
+                <span className="text-[10px] font-semibold text-green-700">{file.name}</span>
               </div>
             ) : (
-              <p className="text-[11px] text-brand-grey-500">Bonyeza au drag faili ya Excel hapa</p>
+              <p className="text-[10px] text-brand-grey-400">Bonyeza au drag .xlsx</p>
             )}
           </div>
-          {fileError && (
-            <div className="text-[11px] text-brand-red-600 bg-brand-red-50 rounded-md px-3 py-1.5 border border-brand-red-100">
-              {fileError}
-            </div>
-          )}
+          {fileError && <p className="text-[10px] text-brand-red-500">{fileError}</p>}
 
-          {/* 4. Import button */}
+          {/* Import btn */}
           <button onClick={doImport} disabled={!file || busy}
-            className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-md bg-brand-blue text-white font-semibold text-xs hover:bg-brand-blue-700 disabled:opacity-40 transition">
-            {busy ? (
-              <><Loader2 size={12} className="animate-spin" /> Inaingiza...</>
-            ) : (
-              <><Upload size={12} /> Ingiza</>
-            )}
+            className="w-full py-1.5 rounded bg-brand-blue text-white text-[11px] font-semibold hover:bg-brand-blue-700 disabled:opacity-40 transition">
+            {busy ? <Loader2 size={12} className="animate-spin inline mr-1" /> : null}
+            {busy ? 'Inaingiza...' : 'Ingiza'}
           </button>
 
-          {/* 5. Results */}
+          {/* Results */}
           {result && (
-            <div className={`rounded-md p-3 text-xs space-y-1.5 ${
-              result.created > 0 ? 'bg-green-50 border border-green-200' : 'bg-brand-red-50 border border-brand-red-200'
-            }`}>
+            <div className={`rounded p-2 text-[10px] space-y-1 ${result.created > 0 ? 'bg-green-50 border border-green-200' : 'bg-brand-red-50 border border-brand-red-200'}`}>
               {result.created > 0 && (
-                <div className="flex items-center gap-1.5 text-green-700 font-bold">
-                  <CheckCircle2 size={13} /> {result.created} watumiaji wameongezwa
+                <div className="flex items-center gap-1 text-green-700 font-bold">
+                  <CheckCircle2 size={11} /> {result.created} wameongezwa
                 </div>
               )}
               {result.skipped > 0 && (
-                <div className="flex items-center gap-1.5 text-orange-600 font-semibold">
-                  <AlertTriangle size={12} /> {result.skipped} zimeachwa
+                <div className="flex items-center gap-1 text-orange-600 font-semibold">
+                  <AlertTriangle size={10} /> {result.skipped} zimeachwa
                 </div>
               )}
               {result.errors.length > 0 && (
-                <div className="max-h-36 overflow-y-auto space-y-1 mt-1.5">
+                <div className="max-h-28 overflow-y-auto space-y-0.5 mt-1">
                   {result.errors.map((e, i) => (
-                    <div key={i} className="text-[10px] text-brand-red-600 bg-white rounded px-2 py-1 border border-brand-red-100">
+                    <div key={i} className="text-[9px] text-brand-red-600 bg-white rounded px-2 py-0.5 border border-brand-red-100">
                       <span className="font-bold">Mstari {e.row}:</span> {e.name && <span>{e.name} — </span>}{e.error}
                     </div>
                   ))}
@@ -183,14 +156,6 @@ export default function BulkImportModal({ onClose, onImported }: Props) {
               )}
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 py-2 border-t border-brand-grey-100 flex justify-end">
-          <button onClick={onClose}
-            className="text-[11px] px-3 py-1 rounded-md border border-brand-grey-200 text-brand-grey-500 font-semibold hover:bg-brand-grey-50 transition">
-            Funga
-          </button>
         </div>
       </div>
     </div>
