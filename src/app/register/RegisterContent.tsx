@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import RegisterWizard from '@/components/RegisterWizard/RegisterWizard';
+import DataVersionPoller from '@/components/DataVersionPoller';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 
@@ -56,6 +57,7 @@ export default function RegisterContent() {
         <p className="text-brand-grey-500 dark:text-brand-grey-400 mt-1">{t('reg.subtitle')}</p>
       </div>
 
+      <DataVersionPoller />
       <RegisterWizard onComplete={(d) => onComplete(d)} />
 
       <p className="text-center text-sm text-brand-grey-500 dark:text-brand-grey-400 mt-6">
