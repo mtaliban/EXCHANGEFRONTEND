@@ -168,9 +168,11 @@ export default function DashboardBoard() {
   // Load regions kwa dropdown ya chanzo
   // REAL-TIME: admin akibadilisha mikoa (Data Management) → dropdown hii
   // inajirefresh PAPO HAPO bila refresh ya page (event-driven).
+  // NOTE: bypassCache=True pale data change inapotokea — hii inahakikisha
+  //   hata kama Redis cache imekuwa fresh, frontend inapata data mpya.
   const dv = useDataVersion();
   useEffect(() => {
-    getRegions().then(setRegions).catch(() => {});
+    getRegions(true).then(setRegions).catch(() => {});
   }, [dv]);
 
   // Sync: default ni '__all__' — onyesha WATU WOTE wa mikoa yote wanaokuja

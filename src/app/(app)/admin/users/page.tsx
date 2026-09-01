@@ -895,7 +895,7 @@ function EditUserModal({ user, onClose, onSaved }: any) {
 
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, [dv]);
   useEffect(() => { getCadres(category).then(setCadres).catch(() => {}); }, [category, dv]);
-  useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, [dv]);
+  useEffect(() => { getRegions(true).then(setRegions).catch(() => {}); }, [dv]);
   useEffect(() => {
     if (region_id) {
       getDistricts(Number(region_id)).then(setDistricts).catch(() => setDistricts([]));
@@ -1086,7 +1086,7 @@ function CreateUserModal({ onClose, onCreated }: any) {
   // PAPO HAPO bila refresh ya page (event-driven).
   const dv = useDataVersion();
 
-  useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, [dv]);
+  useEffect(() => { getRegions(true).then(setRegions).catch(() => {}); }, [dv]);
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, [dv]);
   useEffect(() => { getCadres(category).then(setCadres).catch(() => {}); }, [category, dv]);
   useEffect(() => {

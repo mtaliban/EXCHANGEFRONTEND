@@ -36,7 +36,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const [regionFacilitiesLoading, setRegionFacilitiesLoading] = useState(false);
 
   const dv = useDataVersion();
-  useEffect(() => { getRegions().then(setRegions).catch(() => setError(t('step3.err_load'))); }, [dv]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { getRegions(true).then(setRegions).catch(() => setError(t('step3.err_load'))); }, [dv]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── TAMISEMI/Elimu: load districts when region is chosen ──
   useEffect(() => {

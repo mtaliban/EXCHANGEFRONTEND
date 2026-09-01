@@ -66,7 +66,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   })();
   const [dests, setDests] = useState<DestEntry[]>(initDests);
 
-  useEffect(() => { getRegions().then(setRegions).catch(() => {}); }, [dv]);
+  useEffect(() => { getRegions(true).then(setRegions).catch(() => {}); }, [dv]);
 
   // ── Districts cache per region ──
   const [regionDistricts, setRegionDistricts] = useState<Record<number, District[]>>({});

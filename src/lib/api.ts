@@ -258,8 +258,8 @@ const VALID_REGIONS = new Set([
   'mwanza','njombe','rukwa','ruvuma','shinyanga','simiyu','singida','songwe',
   'tabora','tanga',
 ]);
-export const getRegions = () =>
-  client.get<Region[]>(`${LOC}/locations/regions`, { ttl: _STATIC_TTL } as any)
+export const getRegions = (bypassCache = false) =>
+  client.get<Region[]>(`${LOC}/locations/regions`, { ttl: _STATIC_TTL, bypassCache } as any)
     .then((r) => r.data.filter((reg) => VALID_REGIONS.has(reg.name.trim().toLowerCase())));
 export interface Department { code: string; name: string; status: string; icon?: string | null; }
 export const getDepartments = (bypassCache = false) =>
