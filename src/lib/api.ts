@@ -552,6 +552,37 @@ export const adminCreateUser = (body: {
   is_verified?: boolean;
 }) =>
   client.post(`${ADMIN}/admin/users`, body).then((r) => r.data);
+
+/** Bulk import users from Excel — admin uploads .xlsx file. */
+export const adminImportUsers = async (file: File, category: string) => {
+  const fd = new FormData();
+  fd.append('file', file);
+  const raw = localStorage.getItem('kv_auth');
+  const token = raw ? (JSON.parse(raw)?.state?.token || '') : '';
+  const res = await fetch(`${ADMIN}/admin/users/import?category=${encodeURIComponent(category)}`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: fd,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Import failed (${res.status})`);
+  }
+  return res.json();
+};
+
+/** Download Excel import template for a given category. */
+export const adminImportTemplate = (category: string) => {
+  const raw = localStorage.getItem('kv_auth');
+  const token = raw ? (JSON.parse(raw)?.state?.token || '') : '';
+  return fetch(`${ADMIN}/admin/users/import/template?category=${encodeURIComponent(category)}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }).then((res) => {
+    if (!res.ok) throw new Error('Template download failed');
+    return res.blob();
+  });
+};
+
 /* ── Admin: Trash (soft delete → restore | permanent) ── */
 export const adminTrashList = (q?: string) =>
   client.get<{ total: number; items: any[] }>(`${ADMIN}/admin/users/trash`, { params: q ? { q } : {}, bypassCache: true } as any).then((r) => r.data);

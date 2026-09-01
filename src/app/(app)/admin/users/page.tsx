@@ -16,6 +16,7 @@ import { API_URL } from '@/lib/config';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { askConfirm } from '@/components/confirm';
+import BulkImportModal from '@/components/BulkImportModal';
 import { emitDataChanged } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 
@@ -84,6 +85,7 @@ export default function AdminUsersPage() {
   const [trash, setTrash] = useState<any[]>([]);
   const [trashTotal, setTrashTotal] = useState(0);
   const [addingAdmin, setAddingAdmin] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [live, setLive] = useState(false);
   const lastEvent = useRef(0);
   const [page, setPage] = useState(1);
@@ -287,6 +289,9 @@ export default function AdminUsersPage() {
           </button>
           <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition">
             <ShieldCheck size={12} /> {t('admin.add_admin')}
+          </button>
+          <button onClick={() => setShowImport(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition">
+            <Download size={12} /> Import Excel
           </button>
         </div>
       </div>
@@ -541,6 +546,14 @@ export default function AdminUsersPage() {
           // PAPO HAPO — mtumiaji mpya anaongezwa juu bila refetch (event-driven).
           setData((prev: any) => prev ? { ...prev, users: [{ ...created }, ...prev.users], total: (prev.total || prev.users.length) + 1 } : prev);
           setCreating(false); setMessage(t('admin.user_created')); setTimeout(() => setMessage(null), 3000);
+        }} />
+      )}
+      {showImport && (
+        <BulkImportModal onClose={() => setShowImport(false)} onImported={(r) => {
+          setShowImport(false);
+          setMessage(`✅ Imefanikiwa — ${r.created} watumiaji wameongezwa`);
+          load(true);
+          setTimeout(() => setMessage(null), 5000);
         }} />
       )}
       {addingAdmin && (
