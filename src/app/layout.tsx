@@ -4,16 +4,12 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ThemeInit from '@/components/ThemeInit';
 import Script from 'next/script';
-import PWAInit from '@/components/PWAInit';
-import PushNotificationManager from '@/components/PushNotificationManager';
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: 'cover',
   interactiveWidget: 'resizes-content',
-  themeColor: '#2563eb',
 };
 
 export const metadata: Metadata = {
@@ -111,9 +107,6 @@ export const metadata: Metadata = {
   },
   other: {
     'msapplication-TileColor': '#2563eb',
-    'apple-mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-status-bar-style': 'default',
-    'mobile-web-app-capable': 'yes',
   },
 };
 
@@ -142,9 +135,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <ThemeInit />
-        <PWAInit />
-        <PushNotificationManager />
-        <link rel="manifest" href="/manifest.json" />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
