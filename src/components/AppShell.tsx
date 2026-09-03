@@ -12,7 +12,7 @@ import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
   BarChart3, Bell, Crown, Database, GitMerge, HandCoins, Heart, LayoutDashboard,
-  LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, User, Users, Wallet, Zap,
+  LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, Phone, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -39,6 +39,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         { href: '/admin/data', label: t('nav.data'), icon: Database },
         { href: '/admin/announcements', label: t('nav.announcements'), icon: MegaphoneIcon },
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },
+        { href: '/admin/contacts', label: t('nav.contacts', 'Waliopigiana'), icon: Phone },
         { href: '/admin/feedback', label: t('nav.feedback'), icon: ClipboardList },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ]

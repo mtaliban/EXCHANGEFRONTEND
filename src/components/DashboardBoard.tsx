@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import {
-  getBoard, getRegions, getDistricts, getFacilities, logCall, bustGetCache, getCadres, isDefaultName,
+  getBoard, getRegions, getDistricts, getFacilities, logContact, bustGetCache, getCadres, isDefaultName,
   getTrueMatches,
   type Region, type District, type Facility, type Cadre,
 } from '@/lib/api';
@@ -588,27 +588,29 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
       return;
     }
     showCardToast(`Piga ${c.full_name}`, c.user_id);
-    try { await logCall(c.user_id, 'initiated'); } catch {}
+    try { await logContact(c.user_id, 'call', 'initiated'); } catch {}
     window.location.href = `tel:${c.phone_primary}`;
   }
 
-  function onSMS() {
+  async function onSMS() {
     if (!c.phone_primary) return;
     if (!canContact) {
       showCardToast('Changia TZS 5,000 upate namba', c.user_id);
       return;
     }
     showCardToast(`SMS kwa ${c.full_name}`, c.user_id);
+    try { await logContact(c.user_id, 'sms', 'initiated'); } catch {}
     window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(introMsg)}`;
   }
 
-  function onWhatsApp() {
+  async function onWhatsApp() {
     if (!c.phone_alt) return;
     if (!canContact) {
       showCardToast('Changia TZS 5,000 upate namba', c.user_id);
       return;
     }
     showCardToast(`WhatsApp kwa ${c.full_name}`, c.user_id);
+    try { await logContact(c.user_id, 'whatsapp', 'initiated'); } catch {}
     const digits = c.phone_alt.replace(/\D/g, '').replace(/^0/, '255');
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(introMsg)}`, '_blank');
   }
@@ -792,7 +794,7 @@ function TrueMatchCard({ m, now, lang, mySubjects, me, myRegionName, isVerified,
     if (!m.phone_primary) return;
     if (!canContact) { showCardToast('Changia TZS 5,000 upate namba', m.user_id); return; }
     showCardToast(`Piga ${m.full_name}`, m.user_id);
-    try { await logCall(m.user_id, 'initiated'); } catch {}
+    try { await logContact(m.user_id, 'call', 'initiated'); } catch {}
     window.location.href = `tel:${m.phone_primary}`;
   }
 

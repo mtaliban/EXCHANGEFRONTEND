@@ -472,11 +472,16 @@ export const getMatchStats = () =>
 export const getTrueMatches = (limit = 50) =>
   client.get(`${MATCH}/matches/true`, { params: { limit }, bypassCache: true } as any).then((r) => r.data);
 
-/* ── Messaging (call logging + presence only — in-app chat imeondolewa) ── */
+/* ── Messaging (call/SMS/WhatsApp logging + presence) ── */
+export const logContact = (to_user_id: string, contact_type: string = 'call', outcome: string = 'initiated') =>
+  client.post(`${MSG}/messages/call`, { to_user_id, contact_type, outcome }).then((r) => r.data);
+/** @deprecated use logContact */
 export const logCall = (to_user_id: string, outcome: string = 'initiated') =>
-  client.post(`${MSG}/messages/call`, { to_user_id, outcome }).then((r) => r.data);
+  logContact(to_user_id, 'call', outcome);
 export const listCalls = () =>
   client.get(`${MSG}/messages/calls`).then((r) => r.data);
+export const getAdminContacts = (limit = 100, bypass = false) =>
+  client.get(`${ADMIN}/messages/admin/contacts`, { params: { limit }, bypassCache: bypass } as any).then((r) => r.data);
 export const getPresence = (bypassCache = false) =>
   client.get<{ online_user_ids: string[]; count: number }>(`${MSG}/messages/presence`, { bypassCache } as any).then((r) => r.data);
 
