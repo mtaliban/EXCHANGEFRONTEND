@@ -164,11 +164,7 @@ export default function LoginContent() {
                   required autoComplete="username" disabled={!!twoFA} />
                 <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-400" />
               </div>
-              <p className="text-[11px] text-brand-grey-400 mt-1">
-                {identifier.includes('@')
-                  ? 'Admin: weka email yako, OTP itatumwa kwa email'
-                  : 'Weka namba ya simu uliyojisajilia nayo — au email kama wewe ni admin'}
-              </p>
+
             </div>
 
             {error && <ErrorAlert msg={error} type={errorType} />}
