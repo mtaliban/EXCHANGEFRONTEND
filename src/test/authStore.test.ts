@@ -12,7 +12,7 @@ const USER = {
 
 beforeEach(() => {
   useAuth.setState({ token: null, user: null });
-  sessionStorage.clear();
+  localStorage.clear();
 });
 
 describe('useAuth store', () => {
@@ -47,8 +47,8 @@ describe('useAuth store', () => {
     act(() => useAuth.getState().setAuth('persisted-token', USER));
     const stored = JSON.parse(localStorage.getItem('kv_auth') || '{}');
     expect(stored?.state?.token).toBe('persisted-token');
-    // Hakikisha token HAIISHI kwenye sessionStorage.
-    expect(sessionStorage.getItem('kv_auth')).toBeNull();
+    // Hakikisha token iko kwenye localStorage (si sessionStorage tena).
+    expect(localStorage.getItem('kv_auth')).not.toBeNull();
   });
 });
 

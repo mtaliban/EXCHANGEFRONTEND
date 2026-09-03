@@ -186,12 +186,12 @@ export default function AdminPasswordResetsPage() {
                     <button onClick={() => approve(item.id)} disabled={busyId === item.id}
                       className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-green-50 text-green-700 font-semibold border border-green-200 hover:bg-green-100 transition disabled:opacity-40">
                       {busyId === item.id ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle2 size={11} />}
-                      Kubali
+                      {t('pwdreset.approve')}
                     </button>
                     <button onClick={() => reject(item.id)} disabled={busyId === item.id}
                       className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition disabled:opacity-40">
                       <XCircle size={11} />
-                      Kataa
+                      {t('pwdreset.reject')}
                     </button>
                   </div>
                 )}
