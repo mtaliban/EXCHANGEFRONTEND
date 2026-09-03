@@ -183,7 +183,7 @@ export default function LoginContent() {
             {/* ═══ SEHEMU MOJA: button au code input — pale pale ═══ */}
             {!twoFA ? (
               /* BUTTON YA KAWAIDA — "Ingia" */
-              <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-brand-blue-700 active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed">
+              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
                 {loading ? (
                   <>
                     <span className="inline-block w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
@@ -223,7 +223,7 @@ export default function LoginContent() {
             <Link href="/forgot-password" className="text-brand-blue hover:underline font-medium">Sahau namba yako?</Link>
           </p>
           <div className="mt-4">
-            <Link href="/register" className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-brand-blue/30 px-5 py-3 text-sm font-bold text-brand-blue hover:bg-brand-blue-50 active:scale-[0.98] transition">
+            <Link href="/register" className="btn-primary w-full flex items-center justify-center gap-2" style={{ background: 'transparent', color: 'rgb(var(--brand-blue))', border: '2px solid rgb(var(--brand-blue) / 0.3)' }}>
               {t('login.register_now')}
             </Link>
           </div>
