@@ -16,6 +16,7 @@ import { API_URL } from '@/lib/config';
 import { conversationTime } from '@/lib/dates';
 import { useT } from '@/lib/i18n';
 import { askConfirm } from '@/components/confirm';
+import { useAuth } from '@/lib/auth';
 import BulkImportModal from '@/components/BulkImportModal';
 import { emitDataChanged } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
@@ -72,6 +73,8 @@ function useLiveUsersRefresh(onEvent: (ev: any) => void) {
 
 export default function AdminUsersPage() {
   const t = useT();
+  const { user: me } = useAuth();
+  const myUserId = me?.user_id;
   const [data, setData] = useState<any>(null);
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
@@ -223,9 +226,26 @@ export default function AdminUsersPage() {
   }
 
   async function toggleAdmin(u: any) {
-    if (u.is_admin) await adminRevoke(u._id);
-    else await adminGrant(u._id);
-    setMessage(`${u.full_name}: ${u.is_admin ? t('admin.revoked') : t('admin.granted')}`);
+    // Usije ukondoa admin yako mwenyewe
+    if (u._id === myUserId) {
+      setMessage('Hujawezi kuondoa admin mwenyewe!');
+      setTimeout(() => setMessage(null), 3000);
+      return;
+    }
+    if (u.is_admin) {
+      // Ondoa admin —omba uthibitisho
+      const ok = await askConfirm({
+        title: 'Ondoa Admin?',
+        message: `${u.full_name} (${u.phone_primary}) atapoteza hadhi ya Admin. Endelea?`,
+        danger: true,
+      });
+      if (!ok) return;
+      await adminRevoke(u._id);
+      setMessage(`${u.full_name}: admin revoked`);
+    } else {
+      await adminGrant(u._id);
+      setMessage(`${u.full_name}: admin granted`);
+    }
     setData((prev: any) => prev ? { ...prev, users: prev.users.map((x: any) => x._id === u._id ? { ...x, is_admin: !u.is_admin } : x) } : prev);
     setTimeout(() => setMessage(null), 3000);
   }
@@ -422,6 +442,11 @@ export default function AdminUsersPage() {
                   <button onClick={() => setEditing(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-600 font-medium hover:bg-brand-blue-100 transition">
                     <Pencil size={11} /> {t('action.edit')}
                   </button>
+                  {u.is_admin && u._id !== myUserId && (
+                    <button onClick={() => toggleAdmin(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
+                      <Shield size={11} /> Ondoa Admin
+                    </button>
+                  )}
                   {!u.is_admin && (
                     <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium hover:bg-orange-100 transition">
                       {u.status === 'disabled' ? <><CheckCircle2 size={11} /> {t('admin.unsuspend_btn')}</> : <><Ban size={11} /> {t('admin.suspend_btn')}</>}
