@@ -3,14 +3,18 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getAdminContacts, bustGetCache } from '@/lib/api';
-import { useI18n, useT } from '@/lib/i18n';
-import { Phone, MessageSquare, Globe, ArrowLeftRight, Clock, Filter, Users } from 'lucide-react';
+import { useT } from '@/lib/i18n';
+import { parseServerDate } from '@/lib/dates';
+import {
+  Phone, MessageSquare, Globe, ArrowLeftRight, Clock, Filter,
+  Users, TrendingUp, ChevronRight,
+} from 'lucide-react';
 import Spinner from '@/components/Spinner';
 
-const CONTACT_ICONS: Record<string, { icon: any; color: string; label: string }> = {
-  call: { icon: Phone, color: 'text-green-600 bg-green-50 dark:bg-green-950', label: 'Simu' },
-  sms: { icon: MessageSquare, color: 'text-blue-600 bg-blue-50 dark:bg-blue-950', label: 'SMS' },
-  whatsapp: { icon: Globe, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950', label: 'WhatsApp' },
+const CONTACT_CONFIG: Record<string, { icon: any; color: string; label: string; bg: string }> = {
+  call:    { icon: Phone,         color: 'text-green-700',   bg: 'bg-green-50 border-green-200',   label: 'Simu' },
+  sms:     { icon: MessageSquare, color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200',     label: 'SMS' },
+  whatsapp:{ icon: Globe,         color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', label: 'WhatsApp' },
 };
 
 export default function AdminContactsPage() {
@@ -18,56 +22,71 @@ export default function AdminContactsPage() {
   const { user } = useAuth();
   const [contacts, setContacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState<string>('');
+  const [filterType, setFilterType] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [sseConnected, setSseConnected] = useState(false);
-  const evtSourceRef = useRef<EventSource | null>(null);
+  const lastEvent = useRef(0);
+  const PAGE_SIZE = 20;
 
   const loadContacts = useCallback(async (bust = false) => {
     try {
-      const data = await getAdminContacts(200, bust);
+      const data = await getAdminContacts(300, bust);
       setContacts(data.contacts || []);
     } catch { /* */ } finally {
       setLoading(false);
     }
   }, []);
 
-  // Initial load
   useEffect(() => { loadContacts(true); }, [loadContacts]);
 
   // Real-time SSE — admin live events
   useEffect(() => {
-    const token = localStorage.getItem('kv_auth');
+    const raw = localStorage.getItem('kv_auth');
+    if (!raw) return;
+    let token: string | null = null;
+    try { token = JSON.parse(raw)?.state?.token || null; } catch {}
     if (!token) return;
-    try {
-      const parsed = JSON.parse(token);
-      const accessToken = parsed?.state?.token;
-      if (!accessToken) return;
+    let stopped = false;
+    let retry: any = null;
+    let aborter: AbortController | null = null;
 
-      const sse = new EventSource(`/admin/live-events?token=${accessToken}`);
-      evtSourceRef.current = sse;
-
-      sse.onmessage = () => {
-        // Any admin SSE event → reload contacts
-        bustGetCache();
-        loadContacts(true);
-      };
-
-      sse.onerror = () => {
-        setSseConnected(false);
-        sse.close();
-        // Reconnect after 3s
-        setTimeout(() => {
-          if (evtSourceRef.current === sse) {
-            evtSourceRef.current = null;
+    async function connect() {
+      try {
+        aborter = new AbortController();
+        const res = await fetch(`/admin/live-events?token=${token}`, { signal: aborter.signal });
+        if (!res.ok || !res.body) throw new Error('sse failed');
+        setSseConnected(true);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (!stopped) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let idx;
+          while ((idx = buffer.indexOf('\n\n')) !== -1) {
+            const chunk = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 2);
+            const line = chunk.split('\n').find((l) => l.startsWith('data: '));
+            if (line) {
+              const now = Date.now();
+              if (now - lastEvent.current > 1500) {
+                lastEvent.current = now;
+                bustGetCache();
+                loadContacts(true);
+              }
+            }
           }
-        }, 3000);
-      };
-
-      sse.onopen = () => setSseConnected(true);
-
-      return () => { sse.close(); evtSourceRef.current = null; };
-    } catch { /* */ }
+        }
+      } catch { /* */ }
+      if (!stopped) {
+        setSseConnected(false);
+        retry = setTimeout(connect, 3000);
+      }
+    }
+    connect();
+    return () => { stopped = true; aborter?.abort(); if (retry) clearTimeout(retry); setSseConnected(false); };
   }, [loadContacts]);
 
   // Filter + search
@@ -85,6 +104,10 @@ export default function AdminContactsPage() {
     return true;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
   // Stats
   const stats = {
     total: contacts.length,
@@ -95,96 +118,162 @@ export default function AdminContactsPage() {
 
   function formatTime(ts: string) {
     if (!ts) return '—';
-    const d = new Date(ts);
+    const d = parseServerDate(ts) || new Date(ts);
     return d.toLocaleString('sw-TZ', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
+  if (loading) return <div className="p-10"><Spinner label={t('msg.loading')} /></div>;
+
   return (
-    <div className="space-y-4">
+    <div className="p-4 md:p-6 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users size={20} className="text-brand-blue" />
-          <h1 className="text-lg font-bold text-brand-grey-900 dark:text-white">Waliopigiana</h1>
-          {sseConnected && (
-            <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-950 px-2 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> LIVE
-            </span>
-          )}
-        </div>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
+          <Phone size={22} className="text-brand-blue" />
+          Waliopigiana
+          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${sseConnected ? 'bg-green-50 text-green-600 border-green-300' : 'bg-brand-grey-50 text-brand-grey-400 border-brand-grey-200'}`}>
+            <span className={`w-2 h-2 rounded-full ${sseConnected ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-300'}`} />
+            {sseConnected ? 'LIVE' : 'Offline'}
+          </span>
+        </h1>
         <span className="text-xs font-semibold text-brand-grey-500">{filtered.length} / {contacts.length}</span>
       </div>
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-4 gap-2">
-        {[
-          { key: '', label: 'Zote', count: stats.total, color: 'bg-brand-blue-50 text-brand-blue-700 dark:bg-brand-blue-950 dark:text-brand-blue-300' },
-          { key: 'call', label: 'Simu', count: stats.calls, color: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' },
-          { key: 'sms', label: 'SMS', count: stats.sms, color: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300' },
-          { key: 'whatsapp', label: 'WA', count: stats.whatsapp, color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },
-        ].map((s) => (
-          <button key={s.key} type="button" onClick={() => setFilterType(s.key)}
-            className={`rounded-lg px-2.5 py-2 text-center border transition ${filterType === s.key ? 'border-brand-blue ring-1 ring-brand-blue/30' : 'border-brand-grey-200 dark:border-brand-grey-600'} ${s.color}`}>
-            <div className="text-lg font-bold">{s.count}</div>
-            <div className="text-[10px] font-semibold">{s.label}</div>
-          </button>
-        ))}
+      {/* Stats — compact chips kama payments page */}
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => setFilterType('')}
+          className={`inline-flex items-center gap-2 border rounded-full px-3 py-1.5 transition ${filterType === '' ? 'bg-brand-blue-50 border-brand-blue text-brand-blue' : 'bg-white border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue'}`}>
+          <TrendingUp size={13} className={filterType === '' ? 'text-brand-blue' : 'text-brand-grey-400'} />
+          <span className="text-xs font-bold">{stats.total}</span>
+          <span className="text-[10px]">Zote</span>
+        </button>
+        <button type="button" onClick={() => setFilterType(filterType === 'call' ? '' : 'call')}
+          className={`inline-flex items-center gap-2 border rounded-full px-3 py-1.5 transition ${filterType === 'call' ? CONTACT_CONFIG.call.bg + ' ' + CONTACT_CONFIG.call.color + ' border' : 'bg-white border-brand-grey-200 text-brand-grey-600 hover:border-green-300'}`}>
+          <Phone size={13} />
+          <span className="text-xs font-bold">{stats.calls}</span>
+          <span className="text-[10px]">Simu</span>
+        </button>
+        <button type="button" onClick={() => setFilterType(filterType === 'sms' ? '' : 'sms')}
+          className={`inline-flex items-center gap-2 border rounded-full px-3 py-1.5 transition ${filterType === 'sms' ? CONTACT_CONFIG.sms.bg + ' ' + CONTACT_CONFIG.sms.color + ' border' : 'bg-white border-brand-grey-200 text-brand-grey-600 hover:border-blue-300'}`}>
+          <MessageSquare size={13} />
+          <span className="text-xs font-bold">{stats.sms}</span>
+          <span className="text-[10px]">SMS</span>
+        </button>
+        <button type="button" onClick={() => setFilterType(filterType === 'whatsapp' ? '' : 'whatsapp')}
+          className={`inline-flex items-center gap-2 border rounded-full px-3 py-1.5 transition ${filterType === 'whatsapp' ? CONTACT_CONFIG.whatsapp.bg + ' ' + CONTACT_CONFIG.whatsapp.color + ' border' : 'bg-white border-brand-grey-200 text-brand-grey-600 hover:border-emerald-300'}`}>
+          <Globe size={13} />
+          <span className="text-xs font-bold">{stats.whatsapp}</span>
+          <span className="text-[10px]">WhatsApp</span>
+        </button>
       </div>
 
       {/* Search */}
       <div className="relative">
-        <input type="text" className="input text-xs py-1.5 w-full pl-8" placeholder="Tafuta kwa jina au namba..."
-          value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input type="text" className="input text-xs py-1.5 w-full pl-8"
+          placeholder="Tafuta kwa jina au namba ya simu..."
+          value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         <Filter size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400" />
       </div>
 
-      {/* List */}
-      {loading ? (
-        <div className="py-8"><Spinner label="Inapakia..." /></div>
-      ) : filtered.length === 0 ? (
-        <div className="card text-center py-8">
-          <Phone size={24} className="mx-auto text-brand-grey-300 mb-2" />
-          <p className="text-sm font-semibold text-brand-grey-600">Hakuna mawasiliano bado</p>
-          <p className="text-xs text-brand-grey-400 mt-1">Watumiaji wataonekana hapa wanapotuma SIMU, SMS, au WhatsApp</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filtered.map((c) => {
-            const ci = CONTACT_ICONS[c.contact_type] || CONTACT_ICONS.call;
-            const Icon = ci.icon;
-            return (
-              <div key={c.call_id} className="bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 rounded-xl p-3 flex items-center gap-3 hover:border-brand-blue/30 transition">
-                {/* Contact type badge */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${ci.color}`}>
-                  <Icon size={16} />
-                </div>
+      {/* Table — kama payments/users page */}
+      <div className="bg-white rounded-xl border border-brand-grey-200 overflow-hidden overflow-x-auto">
+        {pageItems.length === 0 ? (
+          <div className="p-8 text-center">
+            <Phone size={28} className="mx-auto text-brand-grey-300 mb-2" />
+            <p className="text-sm text-brand-grey-500 font-medium">Hakuna mawasiliano bado</p>
+            <p className="text-[11px] text-brand-grey-400 mt-1">Watumiaji wataonekana hapa wanapotuma SIMU, SMS, au WhatsApp</p>
+          </div>
+        ) : (
+          <table className="w-full text-sm min-w-[800px]">
+            <thead className="bg-brand-grey-50 text-[10px] uppercase tracking-wider font-bold text-brand-grey-500">
+              <tr>
+                <th className="px-3 py-2 text-center w-8">#</th>
+                <th className="px-3 py-2 text-left">Aina</th>
+                <th className="px-3 py-2 text-left">Mtumaji</th>
+                <th className="px-3 py-2 text-left">Mpokeaji</th>
+                <th className="px-3 py-2 text-left">Mikoa</th>
+                <th className="px-3 py-2 text-left">Wakati</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-brand-grey-100">
+              {pageItems.map((c, i) => {
+                const ci = CONTACT_CONFIG[c.contact_type] || CONTACT_CONFIG.call;
+                const Icon = ci.icon;
+                return (
+                  <tr key={c.call_id} className="hover:bg-brand-grey-50 align-top">
+                    <td className="px-3 py-2.5 text-center text-xs font-bold text-brand-grey-400">{(safePage - 1) * PAGE_SIZE + i + 1}</td>
 
-                {/* Details */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 text-[12px]">
-                    <span className="font-bold text-brand-grey-900 dark:text-white truncate">{c.from_full_name}</span>
-                    <ArrowLeftRight size={10} className="text-brand-grey-400 flex-shrink-0" />
-                    <span className="font-bold text-brand-grey-900 dark:text-white truncate">{c.to_full_name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] text-brand-grey-500 mt-0.5">
-                    <span>{ci.label}</span>
-                    <span>•</span>
-                    <span>{c.from_category === 'education' ? 'Elimu' : 'Afya'} → {c.to_category === 'education' ? 'Elimu' : 'Afya'}</span>
-                    {c.from_region && <><span>•</span><span>{c.from_region}</span></>}
-                  </div>
-                </div>
+                    {/* Aina */}
+                    <td className="px-3 py-2.5">
+                      <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-semibold border ${ci.bg} ${ci.color}`}>
+                        <Icon size={11} /> {ci.label}
+                      </span>
+                    </td>
 
-                {/* Time */}
-                <div className="text-right flex-shrink-0">
-                  <div className="text-[10px] font-medium text-brand-grey-500 flex items-center gap-1">
-                    <Clock size={10} /> {formatTime(c.initiated_at)}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                    {/* Mtumaji */}
+                    <td className="px-3 py-2.5">
+                      <div className="font-medium text-brand-grey-900 text-xs">{c.from_full_name}</div>
+                      <div className="text-[10px] text-brand-grey-500 mt-0.5">
+                        {c.from_category === 'education' ? 'Elimu' : 'Afya'} · {c.from_cadre || '—'}
+                      </div>
+                    </td>
+
+                    {/* Mpokeaji */}
+                    <td className="px-3 py-2.5">
+                      <div className="font-medium text-brand-grey-900 text-xs">{c.to_full_name}</div>
+                      <div className="text-[10px] text-brand-grey-500 mt-0.5">
+                        {c.to_category === 'education' ? 'Elimu' : 'Afya'} · {c.to_cadre || '—'}
+                      </div>
+                    </td>
+
+                    {/* Mikoa */}
+                    <td className="px-3 py-2.5 text-[11px] text-brand-grey-600">
+                      <div className="flex items-center gap-1">
+                        <ArrowLeftRight size={10} className="text-brand-grey-400 flex-shrink-0" />
+                        <span className="truncate max-w-[120px]">{c.from_region || '—'}</span>
+                      </div>
+                      <div className="text-[10px] text-brand-grey-400 mt-0.5 pl-4">→ {c.to_region || '—'}</div>
+                    </td>
+
+                    {/* Wakati */}
+                    <td className="px-3 py-2.5 text-[11px] text-brand-grey-500 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock size={10} className="text-brand-grey-400" />
+                        {formatTime(c.initiated_at)}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Pagination — numbers + Next */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1 pt-2 flex-wrap">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 10).map((n) => (
+            <button key={n} onClick={() => setPage(n)}
+              className={`inline-flex items-center justify-center min-w-[32px] h-8 rounded-full text-xs font-bold transition ${
+                n === safePage
+                  ? 'bg-brand-blue text-white border border-brand-blue'
+                  : 'border border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue hover:text-brand-blue'
+              }`}>
+              {n}
+            </button>
+          ))}
+          {totalPages > 10 && <span className="text-brand-grey-400 text-xs">...</span>}
+          <button disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}
+            className="inline-flex items-center justify-center h-8 px-3 rounded-full border border-brand-grey-200 text-brand-grey-600 text-xs font-bold disabled:opacity-40 hover:border-brand-blue hover:text-brand-blue transition gap-1">
+            {t('board.next')} <ChevronRight size={14} />
+          </button>
         </div>
       )}
+
+      <p className="text-[11px] text-brand-grey-400 text-center">
+        Mawasiliano yote (SIMU, SMS, WhatsApp) yanaoneshwa hapa kwa real-time. Bofya aina ya kuichuja.
+      </p>
     </div>
   );
 }
