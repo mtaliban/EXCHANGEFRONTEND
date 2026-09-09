@@ -25,14 +25,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isAdmin = (user as any)?.is_admin;
 
-  // Hydrate language from localStorage on mount (avoid SSR mismatch)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('kv_lang');
-      if (saved === 'en' || saved === 'sw') useI18n.getState().setLang(saved);
-    } catch {}
-  }, []);
-
   // Clear badge ya route unayofungua
   useEffect(() => {
     if (pathname && routeCounts[pathname] > 0) clearRoute(pathname);
