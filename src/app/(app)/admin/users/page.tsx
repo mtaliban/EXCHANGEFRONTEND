@@ -300,11 +300,7 @@ export default function AdminUsersPage() {
       <div className="flex items-start justify-between gap-3">
         <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2 flex-shrink-0">
           {t('nav.users')}
-          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-full border ${
-            live ? 'bg-green-50 text-green-600 border-green-300' : 'bg-brand-grey-50 text-brand-grey-400 border-brand-grey-200'}`}>
-            <span className={`w-2 h-2 rounded-full ${live ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-300'}`} />
-            {t('data.live')}
-          </span>
+          <span className={`text-[11px] font-bold ${live ? 'text-green-500' : 'text-brand-grey-300'}`}>● Live</span>
         </h1>
         <div className="flex flex-wrap justify-end gap-1.5">
           <button onClick={() => { if (!showTrash) loadTrash(); setShowTrash((v) => !v); }}
@@ -425,39 +421,36 @@ export default function AdminUsersPage() {
                 {u.is_admin ? t('admin.admin_role') : t('admin.user_role')}
               </span>
             </div>
-            {/* Vitendo — 2 safu: ya kwanza View+Edit, ya pili secondary actions */}
-            <div className="flex flex-col gap-1 px-3 pb-3">
-              <div className="flex gap-1.5">
-                <button onClick={() => setViewing(u)} className="flex-1 inline-flex items-center justify-center gap-1 text-xs py-1.5 rounded-lg bg-brand-grey-100 text-brand-grey-700 font-medium hover:bg-brand-grey-200 transition">
-                  <Eye size={12} /> {t('action.view')}
+            {/* Vitendo */}
+            <div className="px-3 pb-3 space-y-1.5">
+              <div className="flex gap-2">
+                <button onClick={() => setViewing(u)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-grey-100 text-brand-grey-700 text-xs font-semibold">
+                  <Eye size={13} /> Angalia
                 </button>
-                <button onClick={() => setEditing(u)} className="flex-1 inline-flex items-center justify-center gap-1 text-xs py-1.5 rounded-lg bg-brand-blue-50 text-brand-blue font-medium hover:bg-brand-blue-100 transition">
-                  <Pencil size={12} /> {t('action.edit')}
+                <button onClick={() => setEditing(u)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-blue-50 text-brand-blue text-xs font-semibold">
+                  <Pencil size={13} /> Hariri
                 </button>
               </div>
-              {/* Secondary actions — zinaonekana kulingana na hali ya mtumiaji */}
-              <div className="flex flex-wrap gap-1">
-                {u.is_admin && u._id !== myUserId && (
-                  <button onClick={() => toggleAdmin(u)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
-                    <Shield size={11} /> Ondoa Admin
+              {!u.is_admin && (
+                <div className="flex gap-2">
+                  <button onClick={() => toggleSuspend(u)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-orange-50 text-orange-600 text-xs font-semibold">
+                    {u.status === 'disabled' ? <><CheckCircle2 size={13} /> Fungua</> : <><Ban size={13} /> Funga</>}
                   </button>
-                )}
-                {!u.is_admin && (
-                  <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-orange-50 text-orange-600 font-medium hover:bg-orange-100 transition">
-                    {u.status === 'disabled' ? <><CheckCircle2 size={11} /> {t('admin.unsuspend_btn')}</> : <><Ban size={11} /> {t('admin.suspend_btn')}</>}
+                  {!u.is_verified && (
+                    <button onClick={() => toggleContact(u)} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold ${u.contact_enabled ? 'bg-green-50 text-green-700' : 'bg-brand-grey-100 text-brand-grey-600'}`}>
+                      <Phone size={13} /> {u.contact_enabled ? 'Ameruhusu' : 'Ruhusu'}
+                    </button>
+                  )}
+                  <button onClick={() => del(u)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-semibold">
+                    <Trash2 size={13} /> Futa
                   </button>
-                )}
-                {!u.is_admin && !u.is_verified && (
-                  <button onClick={() => toggleContact(u)} className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg font-medium transition ${u.contact_enabled ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200'}`}>
-                    <Phone size={11} /> {u.contact_enabled ? 'Ameruhusu' : 'Ruhusu'}
-                  </button>
-                )}
-                {!u.is_admin && (
-                  <button onClick={() => del(u)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
-                    <Trash2 size={11} /> {t('action.delete')}
-                  </button>
-                )}
-              </div>
+                </div>
+              )}
+              {u.is_admin && u._id !== myUserId && (
+                <button onClick={() => toggleAdmin(u)} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-semibold">
+                  <Shield size={13} /> Ondoa Admin
+                </button>
+              )}
             </div>
           </div>
         ))}
