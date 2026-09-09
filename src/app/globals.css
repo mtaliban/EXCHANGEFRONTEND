@@ -85,7 +85,7 @@ body {
   padding: 0;
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: var(--brand-grey-50);
+  background: #ffffff;
   color: var(--brand-grey-900);
   /* ── Mobile guards ─────────────────────────────────────────────── */
   /* Hakuna horizontal scroll kwenye device yoyote — content ina-constrain */
@@ -99,6 +99,10 @@ body {
   /* KWA MAKINI: scroll-behavior: smooth HAIWEKWI hapa — inasababisha page
    * "kushake"/kuteleza unapobofya link (Next.js ina-scroll juu kwa smooth
    * kwenye kila navigation). Tumia `scroll-smooth` class mahali maalum tu. */
+}
+
+.dark body, .dark html {
+  background: rgb(var(--brand-grey-50));
 }
 
 /* Vipengee vyote vya interactive — hakuna 300ms tap-delay (mobile browsers) */

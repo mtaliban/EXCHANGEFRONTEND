@@ -175,8 +175,57 @@ export default function AdminContactsPage() {
         <Filter size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400" />
       </div>
 
-      {/* Table — kama payments/users page */}
-      <div className="bg-white rounded-xl border border-brand-grey-200 overflow-hidden overflow-x-auto">
+      {/* ─── Mobile cards — md:hidden ─── */}
+      <div className="md:hidden">
+        {pageItems.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-brand-grey-200 p-8 text-center">
+            <Phone size={28} className="mx-auto text-brand-grey-300 mb-2" />
+            <p className="text-sm text-brand-grey-500 font-medium">Hakuna mawasiliano bado</p>
+            <p className="text-[11px] text-brand-grey-400 mt-1">Watumiaji wataonekana hapa wanapotuma SIMU, SMS, au WhatsApp</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {pageItems.map((c, i) => {
+              const ci = CONTACT_CONFIG[c.contact_type] || CONTACT_CONFIG.call;
+              const Icon = ci.icon;
+              return (
+                <div key={c.call_id} className="bg-white rounded-2xl border border-brand-grey-200 p-3 shadow-sm">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-semibold border ${ci.bg} ${ci.color}`}>
+                      <Icon size={11} /> {ci.label}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-brand-grey-400">
+                      <Clock size={10} />
+                      {formatTime(c.initiated_at)}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-brand-grey-50 rounded-lg px-2.5 py-2">
+                      <div className="text-[10px] text-brand-grey-400 font-semibold uppercase mb-0.5">Mtumaji</div>
+                      <div className="font-bold text-brand-grey-900 truncate">{c.from_full_name || '—'}</div>
+                      <div className="text-[10px] text-brand-grey-500 mt-0.5">
+                        {c.from_category === 'education' ? 'Elimu' : 'Afya'} · {c.from_cadre || '—'}
+                      </div>
+                      <div className="text-[10px] text-brand-blue font-medium mt-0.5">{c.from_region || '—'}</div>
+                    </div>
+                    <div className="bg-brand-blue-50 rounded-lg px-2.5 py-2">
+                      <div className="text-[10px] text-brand-blue font-semibold uppercase mb-0.5">Mpokeaji</div>
+                      <div className="font-bold text-brand-grey-900 truncate">{c.to_full_name || '—'}</div>
+                      <div className="text-[10px] text-brand-grey-500 mt-0.5">
+                        {c.to_category === 'education' ? 'Elimu' : 'Afya'} · {c.to_cadre || '—'}
+                      </div>
+                      <div className="text-[10px] text-brand-blue font-medium mt-0.5">{c.to_region || '—'}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ─── Desktop table — hidden md:block ─── */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-200 overflow-hidden overflow-x-auto">
         {pageItems.length === 0 ? (
           <div className="p-8 text-center">
             <Phone size={28} className="mx-auto text-brand-grey-300 mb-2" />

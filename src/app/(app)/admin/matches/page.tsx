@@ -254,40 +254,41 @@ function UserCard({ user: u, destRegion }: { user: any; destRegion: string }) {
   const initials = (u.full_name || '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-4 flex flex-col gap-3 hover:border-brand-blue dark:hover:border-brand-grey-500 transition shadow-sm hover:shadow-md">
+    <div className="rounded-xl bg-white border border-brand-grey-200 p-4 flex flex-col gap-3 hover:border-brand-blue hover:shadow-md transition shadow-sm">
       {/* Jina + Avatar */}
       <div className="flex items-center gap-3">
         <div className="relative flex-shrink-0">
-          <div className="w-11 h-11 rounded-full bg-brand-blue text-white flex items-center justify-center text-sm font-bold">
+          <div className="w-10 h-10 rounded-full bg-brand-blue-50 border border-brand-blue-200 text-brand-blue-700 flex items-center justify-center text-sm font-bold">
             {initials}
           </div>
           {u.online && (
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border border-white dark:border-brand-grey-900" />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{u.full_name}</span>
+            <span className="text-sm font-bold text-brand-grey-900 truncate">{u.full_name}</span>
             {u.is_verified ? (
               <span className="text-[9px] font-bold text-white bg-emerald-500 px-1.5 py-0.5 rounded-full">✓ PAID</span>
             ) : (
               <span className="text-[9px] font-bold text-white bg-red-400 px-1.5 py-0.5 rounded-full">✗ HAJALIPIA</span>
             )}
           </div>
-          <div className="text-xs text-brand-grey-500 truncate">
-            <span className="font-semibold text-brand-blue-600">{categoryLabel(u.category)}</span> · {cadreLabel(u.cadre_code)}
+          <div className="text-xs text-brand-grey-500 truncate mt-0.5">
+            <span className="font-semibold text-brand-blue">{categoryLabel(u.category)}</span> · {cadreLabel(u.cadre_code)}
           </div>
         </div>
       </div>
 
       {/* Kutoka → Kuja */}
-      <div className="bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-3 py-2 text-xs space-y-1.5">
-        <div className="text-brand-grey-600 dark:text-brand-grey-300 font-medium">
-          <MapPin size={10} className="inline" /> Kutoka: <b className="text-brand-grey-800 dark:text-brand-grey-200">{u.current_region}{u.current_district ? `, ${u.current_district}` : ''}</b>
+      <div className="bg-brand-blue-50 border border-brand-blue-100 rounded-xl px-2.5 py-2 text-xs space-y-1.5">
+        <div className="flex items-center gap-1 text-brand-grey-700">
+          <MapPin size={10} className="flex-shrink-0 text-brand-grey-400" />
+          <span>Kutoka: <b className="text-brand-grey-900">{u.current_region}{u.current_district ? `, ${u.current_district}` : ''}</b></span>
         </div>
-        <div className="text-brand-blue font-bold">
-          <ArrowLeftRight size={10} className="inline" /> Kuja: <b>{destRegion}</b>
-          {u.destination_district && <span className="font-medium">, {u.destination_district}</span>}
+        <div className="flex items-center gap-1 text-brand-blue font-bold">
+          <ArrowLeftRight size={10} className="flex-shrink-0" />
+          <span>Anataka Kuja: <b>{destRegion}</b>{u.destination_district ? `, ${u.destination_district}` : ''}</span>
         </div>
       </div>
 
@@ -302,20 +303,19 @@ function UserCard({ user: u, destRegion }: { user: any; destRegion: string }) {
       {u.subjects?.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {u.subjects.slice(0, 5).map((s: string) => (
-            <span key={s} className="px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 text-xs font-semibold border border-brand-blue/10">{s}</span>
+            <span key={s} className="px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 text-[11px] font-semibold border border-brand-blue/10">{s}</span>
           ))}
           {u.subjects.length > 5 && <span className="text-brand-grey-400 text-xs">+{u.subjects.length - 5}</span>}
         </div>
       )}
 
       {/* Simu */}
-      <div className="flex items-center gap-2 mt-auto pt-1">
-        {u.phone_primary && (
-          <a href={`tel:${u.phone_primary}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-xs font-semibold text-brand-grey-900 dark:text-white hover:border-brand-blue transition flex-1 justify-center">
-            <Phone size={12} /> {u.phone_primary}
-          </a>
-        )}
-      </div>
+      {u.phone_primary && (
+        <a href={`tel:${u.phone_primary}`}
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-brand-grey-200 text-xs font-semibold text-brand-grey-900 hover:border-brand-blue transition w-full justify-center mt-auto">
+          <Phone size={12} /> {u.phone_primary}
+        </a>
+      )}
     </div>
   );
 }

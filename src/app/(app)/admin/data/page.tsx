@@ -131,10 +131,10 @@ export default function AdminDataPage() {
         </div>
       )}
 
-      <div className="flex gap-2 border-b border-brand-grey-200 flex-wrap">
+      <div className="flex border-b border-brand-grey-200 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
         {(['departments', 'subjects', 'cadres', 'regions', 'districts', 'facilities'] as Tab[]).map((tb) => (
           <button key={tb} onClick={() => setTab(tb)}
-            className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${tab === tb ? 'border-brand-blue text-brand-blue' : 'border-transparent text-brand-grey-500 hover:text-brand-grey-900'}`}>
+            className={`px-3 py-2 text-xs md:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0 ${tab === tb ? 'border-brand-blue text-brand-blue' : 'border-transparent text-brand-grey-500 hover:text-brand-grey-900'}`}>
             {tb === 'departments' ? t('data.departments') : tb === 'subjects' ? t('data.subjects') : tb === 'cadres' ? t('data.cadres') : tb === 'regions' ? t('data.regions') : tb === 'districts' ? t('data.districts') : t('data.facilities')}
           </button>
         ))}
@@ -247,7 +247,29 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_department')}</button>
       </div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+      {/* Mobile list */}
+      <div className="md:hidden bg-white rounded-2xl border border-brand-grey-100 overflow-hidden divide-y divide-brand-grey-100">
+        {data.length === 0 ? <div className="p-6 text-center text-sm text-brand-grey-400">{t('msg.no_data')}</div> : data.map((d: any) => (
+          <div key={d.code} className={`flex items-center gap-3 px-4 py-3 ${d.status === 'disabled' ? 'opacity-50' : ''}`}>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs text-brand-grey-500">{d.icon ? `${d.icon} ` : ''}{d.code}</span>
+                {d.status === 'disabled'
+                  ? <span className="text-[10px] font-bold bg-brand-red-50 text-brand-red px-1.5 py-0.5 rounded">{t('admin.status_disabled')}</span>
+                  : <span className="text-[10px] font-bold bg-green-50 text-green-600 px-1.5 py-0.5 rounded">● {t('admin.status_active')}</span>}
+              </div>
+              <div className="font-medium text-brand-grey-900 text-sm mt-0.5">{d.name}</div>
+            </div>
+            <RowAction onView={() => setViewing(d)} onEdit={() => setEditing(d)} onDelete={async () => {
+              if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
+              try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.code !== d.code) : prev); }
+              catch (e: any) { flash(e?.response?.data?.detail || await errText(e), false); }
+            }} />
+          </div>
+        ))}
+      </div>
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>
@@ -272,15 +294,11 @@ function DepartmentsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?
                 <td className="px-3 py-2 text-xs">—</td>
                 <td className="px-3 py-2 text-xs">—</td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
-                  <RowAction
-                    onView={() => setViewing(d)}
-                    onEdit={() => setEditing(d)}
-                    onDelete={async () => {
-                      if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
-                      try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.code !== d.code) : prev); }
-                      catch (e: any) { flash(e?.response?.data?.detail || await errText(e), false); }
-                    }}
-                  />
+                  <RowAction onView={() => setViewing(d)} onEdit={() => setEditing(d)} onDelete={async () => {
+                    if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
+                    try { await adminDeleteDepartment(d.code); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.code !== d.code) : prev); }
+                    catch (e: any) { flash(e?.response?.data?.detail || await errText(e), false); }
+                  }} />
                 </td>
               </tr>
             ))}
@@ -388,7 +406,27 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_subject')}</button>
       </div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+      {/* Mobile list */}
+      <div className="md:hidden bg-white rounded-2xl border border-brand-grey-100 overflow-hidden divide-y divide-brand-grey-100">
+        {data.length === 0 ? <div className="p-6 text-center text-sm text-brand-grey-400">{t('msg.no_data')}</div> : data.map((s: any) => (
+          <div key={s.code} className="flex items-center gap-3 px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs text-brand-grey-500">{s.code}</span>
+                <span className="badge-gold">{s.level}</span>
+              </div>
+              <div className="font-medium text-brand-grey-900 text-sm mt-0.5">{s.name}</div>
+            </div>
+            <RowAction onView={() => setViewing(s)} onEdit={() => setEditing(s)} onDelete={async () => {
+              if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
+              try { await adminDeleteSubject(s.code); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.code !== s.code) : prev); }
+              catch (e) { flash(await errText(e), false); }
+            }} />
+          </div>
+        ))}
+      </div>
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[480px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>
@@ -507,7 +545,30 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_cadre')}</button>
       </div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+      {/* Mobile list */}
+      <div className="md:hidden bg-white rounded-2xl border border-brand-grey-100 overflow-hidden divide-y divide-brand-grey-100">
+        {data.length === 0 ? <div className="p-6 text-center text-sm text-brand-grey-400">{t('msg.no_data')}</div> : data.map((c: any) => (
+          <div key={c.code} className="flex items-center gap-3 px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs text-brand-grey-500">{c.code}</span>
+                <span className="text-[10px] font-bold bg-brand-blue-50 text-brand-blue-700 px-1.5 py-0.5 rounded">
+                  {c.category === 'health' ? t('admin.health') : c.category === 'education' ? t('admin.education') : c.category}
+                </span>
+                {c.level && <span className="badge-gold text-[10px]">{c.level}</span>}
+              </div>
+              <div className="font-medium text-brand-grey-900 text-sm mt-0.5">{c.display_name}</div>
+            </div>
+            <RowAction onView={() => setViewing(c)} onEdit={() => setEditing(c)} onDelete={async () => {
+              if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
+              try { await adminDeleteCadre(c.code); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.code !== c.code) : prev); }
+              catch (e) { flash(await errText(e), false); }
+            }} />
+          </div>
+        ))}
+      </div>
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>
@@ -652,7 +713,24 @@ function RegionsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: bo
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_region')}</button>
       </div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+      {/* Mobile list */}
+      <div className="md:hidden bg-white rounded-2xl border border-brand-grey-100 overflow-hidden divide-y divide-brand-grey-100">
+        {data.length === 0 ? <div className="p-6 text-center text-sm text-brand-grey-400">{t('msg.no_data')}</div> : data.map((r: any) => (
+          <div key={r.id} className="flex items-center gap-3 px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <span className="font-mono text-xs text-brand-grey-500">{r.id}</span>
+              <div className="font-medium text-brand-grey-900 text-sm mt-0.5">{r.name}</div>
+            </div>
+            <RowAction onView={() => setViewing(r)} onEdit={() => setEditing(r)} onDelete={async () => {
+              if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
+              try { await adminDeleteRegion(r.id); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.id !== r.id) : prev); }
+              catch (e) { flash(await errText(e), false); }
+            }} />
+          </div>
+        ))}
+      </div>
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[420px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>
@@ -747,7 +825,31 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_district')}</button>
       </div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+      {/* Mobile list */}
+      <div className="md:hidden bg-white rounded-2xl border border-brand-grey-100 overflow-hidden divide-y divide-brand-grey-100">
+        {data.length === 0 ? <div className="p-6 text-center text-sm text-brand-grey-400">{t('msg.no_data')}</div> : data.map((d: any) => (
+          <div key={d.id} className="flex items-center gap-3 px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs text-brand-grey-500">{d.id}</span>
+                {regions.find((r) => r.id === d.region_id)?.name && (
+                  <span className="text-[10px] font-bold bg-brand-blue-50 text-brand-blue-700 px-1.5 py-0.5 rounded">
+                    {regions.find((r) => r.id === d.region_id)?.name}
+                  </span>
+                )}
+              </div>
+              <div className="font-medium text-brand-grey-900 text-sm mt-0.5">{d.name}</div>
+            </div>
+            <RowAction onView={() => setViewing(d)} onEdit={() => setEditing(d)} onDelete={async () => {
+              if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
+              try { await adminDeleteDistrict(d.id); markOwnAction(); flash(t('data.deleted')); setAllData(prev => prev ? prev.filter(x => x.id !== d.id) : prev); }
+              catch (e) { flash(await errText(e), false); }
+            }} />
+          </div>
+        ))}
+      </div>
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>
@@ -922,7 +1024,43 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
         <span className="ml-auto text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">          {data.length} {t('data.total')}</span>
         <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_facility')}</button>
       </div>
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+      {/* Mobile list */}
+      <div className="md:hidden bg-white rounded-2xl border border-brand-grey-100 overflow-hidden divide-y divide-brand-grey-100">
+        {data.length === 0 ? <div className="p-6 text-center text-sm text-brand-grey-400">{t('msg.no_data')}</div> : data.map((f: any) => {
+          const fid = category === 'education' ? f.id : f.code;
+          const regionName = f.region_name || f.region || '';
+          const districtName = f.district_name || f.district || '';
+          const typeOrLevel = category === 'education' ? f.level : (f.type || f.type_category || '');
+          return (
+            <div key={String(fid)} className="flex items-center gap-3 px-4 py-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-xs text-brand-grey-500">{f.school_code || f.code}</span>
+                  {typeOrLevel && (
+                    <span className="text-[10px] font-bold bg-brand-blue-50 text-brand-blue-700 px-1.5 py-0.5 rounded">{typeOrLevel}</span>
+                  )}
+                </div>
+                <div className="font-medium text-brand-grey-900 text-sm mt-0.5 truncate">{f.name}</div>
+                {(regionName || districtName) && (
+                  <div className="text-[11px] text-brand-grey-500 mt-0.5 truncate">
+                    {[regionName, districtName].filter(Boolean).join(' · ')}
+                  </div>
+                )}
+              </div>
+              <RowAction
+                onView={() => setViewing({ ...f, _category: category })}
+                onEdit={() => setEditing({ ...f, _category: category })}
+                onDelete={async () => {
+                  if (!(await askConfirm({ title: t('data.confirm_delete'), danger: true }))) return;
+                  try { await adminDeleteFacility(fid, category); markOwnAction(); flash(t('data.deleted')); setData(prev => prev ? prev.filter(x => String(category === 'education' ? x.id : x.code) !== String(fid)) : prev); }
+                  catch (e) { flash(await errText(e), false); }
+                }} />
+            </div>
+          );
+        })}
+      </div>
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[640px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>

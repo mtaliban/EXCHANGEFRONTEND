@@ -244,7 +244,7 @@ function MatchCard({ match: m }: { match: any }) {
   const sb = scoreBadge(m.score);
 
   return (
-    <div className="rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-4 hover:border-green-400 dark:hover:border-green-600 transition shadow-sm hover:shadow-md">
+    <div className="rounded-xl bg-white border border-brand-grey-200 p-4 hover:border-green-400 hover:shadow-md transition shadow-sm">
       {/* Header: Score + Cadre + Common Subjects */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -270,13 +270,23 @@ function MatchCard({ match: m }: { match: any }) {
         </div>
       )}
 
-      {/* Two users side by side */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-center">
+      {/* Two users — side by side on desktop, stacked on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-start">
         {/* User A */}
         <UserHalf user={a} side="A" />
 
-        {/* Arrow */}
-        <div className="hidden sm:flex flex-col items-center justify-center">
+        {/* Mobile separator — visible on sm- only */}
+        <div className="flex sm:hidden items-center gap-2 py-0.5">
+          <div className="flex-1 h-px bg-green-200" />
+          <div className="inline-flex items-center gap-1.5 bg-green-50 border border-green-300 rounded-full px-3 py-1 flex-shrink-0">
+            <ArrowLeftRight size={13} className="text-green-600" />
+            <span className="text-[10px] font-bold text-green-700 uppercase tracking-wide">Kubadilishana</span>
+          </div>
+          <div className="flex-1 h-px bg-green-200" />
+        </div>
+
+        {/* Desktop arrow — hidden on mobile */}
+        <div className="hidden sm:flex flex-col items-center justify-center pt-8">
           <ArrowLeftRight size={20} className="text-green-600" />
           <span className="text-[9px] text-brand-grey-400 mt-0.5">KUBADILISHANA</span>
         </div>
@@ -293,28 +303,30 @@ function UserHalf({ user: u, side }: { user: any; side: string }) {
   const initials = (u.full_name || '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div className="rounded-lg bg-brand-grey-50 dark:bg-brand-grey-800 p-3 space-y-2">
+    <div className="rounded-lg bg-brand-grey-50 dark:bg-brand-grey-100 border border-brand-grey-200 dark:border-brand-grey-200 p-3 space-y-2">
       {/* Name + Avatar */}
       <div className="flex items-center gap-2">
         <div className="w-9 h-9 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
           {initials}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1">
-            <span className="text-sm font-bold text-brand-grey-900 dark:text-white truncate">{u.full_name}</span>
-            {u.is_verified && <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 py-0.5 rounded-full">✓</span>}
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="text-sm font-bold text-brand-grey-900 truncate">{u.full_name}</span>
+            {u.is_verified
+              ? <span className="text-[9px] font-bold text-white bg-emerald-500 px-1.5 py-0.5 rounded-full flex-shrink-0">✓ PAID</span>
+              : <span className="text-[9px] font-bold text-white bg-red-400 px-1.5 py-0.5 rounded-full flex-shrink-0">✗</span>}
           </div>
-          <div className="text-[11px] text-brand-grey-500 truncate">{u.cadre_display}</div>
+          <div className="text-[11px] text-brand-grey-500 truncate">{u.cadre_display || u.cadre_code || '—'}</div>
         </div>
       </div>
 
       {/* Location */}
-      <div className="text-xs space-y-1">
+      <div className="text-xs space-y-1 bg-white rounded-md px-2.5 py-2 border border-brand-grey-100">
         <div className="flex items-center gap-1 text-brand-grey-600">
-          <MapPin size={10} className="flex-shrink-0" />
-          <span>Kutoka: <b>{u.current_region}{u.current_district ? `, ${u.current_district}` : ''}</b></span>
+          <MapPin size={10} className="flex-shrink-0 text-brand-grey-400" />
+          <span>Kutoka: <b className="text-brand-grey-900">{u.current_region}{u.current_district ? `, ${u.current_district}` : ''}</b></span>
         </div>
-        <div className="flex items-center gap-1 text-green-700 font-semibold">
+        <div className="flex items-center gap-1 text-brand-blue font-semibold">
           <ArrowLeftRight size={10} className="flex-shrink-0" />
           <span>Anataka: <b>{u.destinations?.join(', ') || '—'}</b></span>
         </div>
@@ -324,7 +336,7 @@ function UserHalf({ user: u, side }: { user: any; side: string }) {
       {u.subjects && u.subjects.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {u.subjects.map((s: string) => (
-            <span key={s} className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            <span key={s} className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-brand-blue-50 text-brand-blue-700 border border-brand-blue/10">
               {s}
             </span>
           ))}
@@ -334,7 +346,7 @@ function UserHalf({ user: u, side }: { user: any; side: string }) {
       {/* Phone */}
       {u.phone_primary && (
         <a href={`tel:${u.phone_primary}`}
-          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-brand-grey-700 border border-brand-grey-200 dark:border-brand-grey-600 text-[11px] font-semibold text-brand-grey-900 dark:text-white hover:border-green-400 transition w-full justify-center">
+          className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-white border border-brand-grey-200 text-[11px] font-semibold text-brand-grey-900 hover:border-green-400 transition w-full justify-center">
           <Phone size={10} /> {u.phone_primary}
         </a>
       )}

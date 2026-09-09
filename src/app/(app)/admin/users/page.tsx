@@ -382,7 +382,86 @@ export default function AdminUsersPage() {
 
       <div className="text-xs text-brand-grey-500">{t('admin.total')} {data?.total ?? '...'}</div>
 
-      <div className="bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
+      {/* ═══ MOBILE: Cards (md:hidden) — sawa na web table ═══ */}
+      <div className="md:hidden bg-white rounded-2xl border border-brand-grey-100 overflow-hidden">
+        {pageItems.length === 0 ? (
+          <div className="text-center py-10 text-brand-grey-400 text-sm">{t('msg.no_data')}</div>
+        ) : pageItems.map((u: any, i: number) => (
+          <div key={u._id} className={`border-b border-brand-grey-100 last:border-0 ${u.status === 'disabled' ? 'opacity-60' : ''}`}>
+            {/* Safu ya juu: checkbox + avatar + jina + simu */}
+            <div className="flex items-center gap-2.5 px-3 pt-3 pb-2">
+              <input type="checkbox" checked={selected.has(u._id)} onChange={() => toggleOne(u._id)}
+                disabled={u.is_admin} className="w-4 h-4 accent-brand-blue flex-shrink-0" />
+              <div className="w-8 h-8 rounded-full bg-brand-blue-50 border border-brand-blue-100 flex items-center justify-center text-sm font-bold text-brand-blue-700 flex-shrink-0">
+                {u.full_name?.slice(0, 1)?.toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-bold text-brand-grey-900 text-sm truncate">{u.full_name}</span>
+                  {u.is_admin && <ShieldCheck size={13} className="text-brand-blue flex-shrink-0" />}
+                </div>
+                <a href={`tel:${u.phone_primary}`} className="text-xs text-brand-blue font-semibold hover:underline">
+                  {u.phone_primary}
+                </a>
+              </div>
+            </div>
+            {/* Safu ya kati: kada · mkoa · hali · malipo · role */}
+            <div className="flex flex-wrap items-center gap-1.5 px-3 pb-2">
+              {u.cadre_code && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-blue-50 text-brand-blue-700 text-[11px] font-semibold">
+                  <BookOpen size={10} />{u.cadre_code}
+                </span>
+              )}
+              {u.current_station?.region_name && (
+                <span className="text-[11px] text-brand-grey-600 font-medium">{u.current_station.region_name}</span>
+              )}
+              {u.status === 'disabled'
+                ? <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-brand-red-50 text-brand-red px-2 py-0.5 rounded"><UserX size={9} /> {t('admin.status_disabled')}</span>
+                : <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-green-50 text-green-600 px-2 py-0.5 rounded"><UserCheck size={9} /> {t('admin.status_active')}</span>}
+              {u.is_verified
+                ? <span className="text-[10px] font-bold text-white bg-emerald-500 px-1.5 py-0.5 rounded-full">✓ PAID</span>
+                : <span className="text-[10px] font-bold text-white bg-red-400 px-1.5 py-0.5 rounded-full">✗ HAJALIPIA</span>}
+              {/* Admin toggle — sawa na web table */}
+              <button onClick={() => toggleAdmin(u)}
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded ${u.is_admin ? 'bg-brand-gold-100 text-brand-gold-600' : 'bg-brand-grey-100 text-brand-grey-500'}`}>
+                {u.is_admin ? t('admin.admin_role') : t('admin.user_role')}
+              </button>
+            </div>
+            {/* Vitendo — sawa na web table */}
+            <div className="flex flex-wrap gap-1 px-3 pb-3">
+              <button onClick={() => setViewing(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-600 font-medium hover:bg-brand-grey-200 transition">
+                <Eye size={11} /> {t('action.view')}
+              </button>
+              <button onClick={() => setEditing(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-600 font-medium hover:bg-brand-blue-100 transition">
+                <Pencil size={11} /> {t('action.edit')}
+              </button>
+              {u.is_admin && u._id !== myUserId && (
+                <button onClick={() => toggleAdmin(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
+                  <Shield size={11} /> Ondoa Admin
+                </button>
+              )}
+              {!u.is_admin && (
+                <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium hover:bg-orange-100 transition">
+                  {u.status === 'disabled' ? <><CheckCircle2 size={11} /> {t('admin.unsuspend_btn')}</> : <><Ban size={11} /> {t('admin.suspend_btn')}</>}
+                </button>
+              )}
+              {!u.is_admin && !u.is_verified && (
+                <button onClick={() => toggleContact(u)} className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium transition ${u.contact_enabled ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200'}`}>
+                  <Phone size={11} /> {u.contact_enabled ? 'Ame-Ruhusu' : 'Ruhusu Piga'}
+                </button>
+              )}
+              {!u.is_admin && (
+                <button onClick={() => del(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
+                  <Trash2 size={11} /> {t('action.delete')}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ═══ DESKTOP: Table (hidden on mobile) ═══ */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-100 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[760px]">
           <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
             <tr>
@@ -523,41 +602,74 @@ export default function AdminUsersPage() {
               <p className="text-sm text-brand-grey-500 font-medium">{t('admin.trash_empty')}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[640px]">
-                <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
-                  <tr>
-                    <th className="px-3 py-2 text-left w-8 text-center">#</th>
-                    <th className="px-3 py-2 text-left">{t('admin.col_name')}</th>
-                    <th className="px-3 py-2 text-left">{t('admin.col_phone')}</th>
-                    <th className="px-3 py-2 text-left">{t('admin.col_cadre')}</th>
-                    <th className="px-3 py-2 text-left">{t('admin.col_region_short')}</th>
-                    <th className="px-3 py-2 text-right">{t('admin.col_actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand-grey-100">
-                  {trash.map((u: any, i: number) => (
-                    <tr key={u._id} className="hover:bg-brand-grey-50">
-                      <td className="px-3 py-2 text-center text-xs font-bold text-brand-grey-400">{i + 1}</td>
-                      <td className="px-3 py-2 font-medium">{u.full_name}</td>
-                      <td className="px-3 py-2 text-brand-blue text-xs">{u.phone_primary || '—'}</td>
-                      <td className="px-3 py-2 text-xs"><span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-grey-100 text-brand-grey-600 font-semibold"><BookOpen size={10} />{u.cadre_code || '—'}</span></td>
-                      <td className="px-3 py-2 text-xs">{u.current_station?.region_name || '—'}</td>
-                      <td className="px-3 py-2 text-right whitespace-nowrap">
-                        <button onClick={() => restore(u)}
-                          className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-green-50 text-green-700 font-semibold border border-green-200 hover:bg-green-100 transition">
-                          <RotateCcw size={11} /> {t('admin.trash_restore')}
-                        </button>
-                        <button onClick={() => purge(u)}
-                          className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition ml-1.5">
-                          <Trash2 size={11} /> {t('admin.trash_permanent')}
-                        </button>
-                      </td>
+            <>
+              {/* Mobile trash cards */}
+              <div className="md:hidden divide-y divide-brand-grey-100">
+                {trash.map((u: any, i: number) => (
+                  <div key={u._id} className="flex items-center gap-2.5 px-3 py-2.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-grey-100 flex items-center justify-center text-sm font-bold text-brand-grey-500 flex-shrink-0">
+                      {u.full_name?.slice(0, 1)?.toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-brand-grey-900 text-sm truncate">{u.full_name}</div>
+                      <div className="text-xs text-brand-blue">{u.phone_primary || '—'}</div>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-brand-grey-100 text-brand-grey-600 text-[10px] font-semibold">
+                          <BookOpen size={9} />{u.cadre_code || '—'}
+                        </span>
+                        <span className="text-[10px] text-brand-grey-500">{u.current_station?.region_name || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1 flex-shrink-0">
+                      <button onClick={() => restore(u)}
+                        className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-semibold border border-green-200 hover:bg-green-100 transition">
+                        <RotateCcw size={10} /> {t('admin.trash_restore')}
+                      </button>
+                      <button onClick={() => purge(u)}
+                        className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition">
+                        <Trash2 size={10} /> {t('admin.trash_permanent')}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Desktop trash table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm min-w-[640px]">
+                  <thead className="bg-brand-grey-50 text-xs text-brand-grey-500">
+                    <tr>
+                      <th className="px-3 py-2 text-left w-8 text-center">#</th>
+                      <th className="px-3 py-2 text-left">{t('admin.col_name')}</th>
+                      <th className="px-3 py-2 text-left">{t('admin.col_phone')}</th>
+                      <th className="px-3 py-2 text-left">{t('admin.col_cadre')}</th>
+                      <th className="px-3 py-2 text-left">{t('admin.col_region_short')}</th>
+                      <th className="px-3 py-2 text-right">{t('admin.col_actions')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-brand-grey-100">
+                    {trash.map((u: any, i: number) => (
+                      <tr key={u._id} className="hover:bg-brand-grey-50">
+                        <td className="px-3 py-2 text-center text-xs font-bold text-brand-grey-400">{i + 1}</td>
+                        <td className="px-3 py-2 font-medium">{u.full_name}</td>
+                        <td className="px-3 py-2 text-brand-blue text-xs">{u.phone_primary || '—'}</td>
+                        <td className="px-3 py-2 text-xs"><span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-grey-100 text-brand-grey-600 font-semibold"><BookOpen size={10} />{u.cadre_code || '—'}</span></td>
+                        <td className="px-3 py-2 text-xs">{u.current_station?.region_name || '—'}</td>
+                        <td className="px-3 py-2 text-right whitespace-nowrap">
+                          <button onClick={() => restore(u)}
+                            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-green-50 text-green-700 font-semibold border border-green-200 hover:bg-green-100 transition">
+                            <RotateCcw size={11} /> {t('admin.trash_restore')}
+                          </button>
+                          <button onClick={() => purge(u)}
+                            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition ml-1.5">
+                            <Trash2 size={11} /> {t('admin.trash_permanent')}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       )}

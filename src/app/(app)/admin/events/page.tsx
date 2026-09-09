@@ -386,8 +386,52 @@ export default function AdminEventsPage() {
         <span className="text-[11px] text-brand-grey-500">{t('adminevents.type')}: <b>{type ? (lang === 'en' ? typeLabelEn(type) : typeLabel(type)) : t('adminevents.all_types')}</b></span>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-brand-grey-200 overflow-hidden overflow-x-auto">
+      {/* ─── Mobile cards — md:hidden ─── */}
+      <div className="md:hidden space-y-2">
+        {data.events.length === 0 ? (
+          <div className="bg-white rounded-xl border border-brand-grey-200 p-8 text-center">
+            <Activity size={28} className="mx-auto text-brand-grey-300 mb-2" />
+            <p className="text-sm text-brand-grey-500 font-medium">{t('adminevents.empty')}</p>
+          </div>
+        ) : data.events.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((e: any, i: number) => {
+          const isOpen = expanded.has(e._id);
+          const color = TYPE_COLORS[e.event_type] || 'bg-brand-grey-50 text-brand-grey-600 border border-brand-grey-200';
+          const summary = humanize(e.payload, e.event_type);
+          const EventIcon = TYPE_ICONS[e.event_type] || Activity;
+          return (
+            <div key={e._id} className="bg-white rounded-xl border border-brand-grey-200 p-3 shadow-sm">
+              <div className="flex items-start justify-between gap-2 mb-1.5">
+                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${color}`}>
+                  <EventIcon size={10} />
+                  {lang === 'en' ? typeLabelEn(e.event_type) : typeLabel(e.event_type)}
+                </span>
+                <span className="text-[11px] text-brand-grey-400 whitespace-nowrap flex-shrink-0">
+                  {(parseServerDate(e.occurred_at) || new Date()).toLocaleString('sw-TZ')}
+                </span>
+              </div>
+              <p className="text-xs text-brand-grey-800 line-clamp-2 mb-1.5">
+                {summary || JSON.stringify(e.payload).slice(0, 140)}
+              </p>
+              {e.topic && <p className="text-[10px] text-brand-grey-400 truncate mb-2">{e.topic}</p>}
+              <button onClick={() => setExpanded((prev) => {
+                const next = new Set(prev);
+                if (next.has(e._id)) next.delete(e._id); else next.add(e._id);
+                return next;
+              })} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-brand-grey-100 text-brand-grey-600 font-medium hover:bg-brand-grey-200 transition">
+                {isOpen ? <><EyeOff size={11} /> {t('adminevents.hide')}</> : <><Eye size={11} /> {t('adminevents.show')}</>}
+              </button>
+              {isOpen && (
+                <pre className="mt-2 p-2.5 rounded-lg bg-brand-grey-50 text-[10px] font-mono text-brand-grey-700 overflow-x-auto whitespace-pre-wrap break-all">
+                  {JSON.stringify({ _id: e._id, ...e }, null, 2)}
+                </pre>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ─── Desktop table — hidden md:block ─── */}
+      <div className="hidden md:block bg-white rounded-xl border border-brand-grey-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[820px]">
           <thead className="bg-brand-grey-50 text-[10px] uppercase tracking-wider font-bold text-brand-grey-500">
             <tr>

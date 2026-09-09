@@ -78,7 +78,7 @@ export default function AdminAnnouncementsPage() {
   const [list, setList] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [historyPage, setHistoryPage] = useState(1);
-  const PAGE_SIZE = 1;
+  const PAGE_SIZE = 6;
 
   useEffect(() => { getDepartments().then(setDepartments).catch(() => {}); }, []);
   const liveDepts = useLiveDepartments(() => {
@@ -162,31 +162,31 @@ export default function AdminAnnouncementsPage() {
   return (
     <div className="p-4 md:p-6 max-w-3xl">
       <div className="mb-5">
-        <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
           <Megaphone size={22} className="text-brand-blue" />
           {t('ann.title')}
         </h1>
-        <p className="text-brand-grey-500 dark:text-brand-grey-400 text-sm mt-1">
+        <p className="text-brand-grey-500 text-sm mt-1">
           {t('ann.subtitle')}
         </p>
       </div>
 
       {/* Form ya kutuma tangazo */}
-      <div className="bg-white rounded-xl border border-brand-grey-200 p-4 space-y-4">
+      <div className="bg-white rounded-2xl border border-brand-grey-200 p-4 md:p-5 space-y-4 shadow-sm">
         <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-brand-grey-500 mb-1.5 block">{t('ann.title_label')}</label>
+          <label className="label">{t('ann.title_label')}</label>
           <input className="input"
             value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('ann.title_ph')} maxLength={120} />
         </div>
 
         <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-brand-grey-500 mb-1.5 block">{t('ann.message_label')}</label>
-          <textarea className="input min-h-[100px]"
+          <label className="label">{t('ann.message_label')}</label>
+          <textarea className="input min-h-[120px] resize-none"
             value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('ann.message_ph')} maxLength={2000} />
         </div>
 
         <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-brand-grey-500 mb-1.5 block">{t('ann.audience_label')}</label>
+          <label className="label">{t('ann.audience_label')}</label>
           <div className="flex flex-wrap gap-1.5">
             {[
               { v: 'all', label: t('ann.aud_all') },
@@ -231,10 +231,10 @@ export default function AdminAnnouncementsPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pt-1">
           <button onClick={submit} disabled={sending || !title.trim() || !message.trim()}
-            className="btn-primary flex items-center gap-1.5">
-            {sending ? <><Loader2 size={13} className="animate-spin" /> {t('ann.sending')}</> : <><Send size={13} /> {t('ann.send')}</>}
+            className="btn-primary flex items-center gap-1.5 px-5">
+            {sending ? <><Loader2 size={14} className="animate-spin" /> {t('ann.sending')}</> : <><Send size={14} /> {t('ann.send')}</>}
           </button>
           {result && (
             <div className={`text-xs font-semibold flex items-center gap-1.5 ${result.type === 'success' ? 'text-green-600' : 'text-brand-red'}`}>
@@ -252,39 +252,39 @@ export default function AdminAnnouncementsPage() {
         </h2>
       </div>
       {list.length === 0 ? (
-        <div className="card text-center py-8">
+        <div className="bg-white rounded-2xl border border-brand-grey-200 text-center py-10">
           <Megaphone size={28} className="mx-auto text-brand-grey-300 mb-2" />
           <p className="text-sm text-brand-grey-500 font-medium">{t('ann.empty')}</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {list.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE).map((a) => (
-            <div key={a.announcement_id} className="bg-white dark:bg-brand-grey-900 rounded-xl border border-brand-grey-200 dark:border-brand-grey-700 p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
+            <div key={a.announcement_id} className="bg-white rounded-2xl border border-brand-grey-200 p-4 shadow-sm">
+              <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Megaphone size={14} className="text-brand-grey-400 flex-shrink-0" />
-                    <span className="font-bold text-brand-grey-900 dark:text-white text-sm">{a.title}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-600 dark:text-brand-grey-300 font-semibold">
+                    <span className="font-bold text-brand-grey-900 text-sm">{a.title}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 border border-brand-blue-100 font-semibold">
                       {audienceLabel(a.audience)}
                     </span>
                   </div>
-                  <p className="text-[13px] text-brand-grey-700 dark:text-brand-grey-300 mt-2 whitespace-pre-wrap break-words leading-relaxed">{a.message}</p>
-                  <div className="flex items-center gap-3 flex-wrap mt-3 text-[11px] text-brand-grey-500 dark:text-brand-grey-400">
-                    <span className="inline-flex items-center gap-1"><Users size={11} /> {t('ann.to_people')}: <b className="text-brand-grey-800 dark:text-brand-grey-200">{a.recipient_count}</b></span>
+                  <p className="text-[13px] text-brand-grey-700 mt-2 whitespace-pre-wrap break-words leading-relaxed">{a.message}</p>
+                  <div className="flex items-center gap-3 flex-wrap mt-2 text-[11px] text-brand-grey-500">
+                    <span className="inline-flex items-center gap-1"><Users size={11} /> {t('ann.to_people')}: <b className="text-brand-grey-800">{a.recipient_count}</b></span>
                     <span className="inline-flex items-center gap-1"><User size={11} /> {a.created_by_name || '—'}</span>
                     <span className="inline-flex items-center gap-1"><Clock size={11} /> {conversationTime(a.created_at)}</span>
                   </div>
-                </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <button onClick={() => resend(a)} disabled={busyId === a.announcement_id}
-                    className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue-50 text-brand-blue-700 font-semibold border border-brand-blue-200 hover:bg-brand-blue-100 transition disabled:opacity-40">
-                    <RefreshCw size={11} /> {t('ann.resend')}
-                  </button>
-                  <button onClick={() => del(a)} disabled={busyId === a.announcement_id}
-                    className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition disabled:opacity-40">
-                    <Trash2 size={11} /> {t('action.delete')}
-                  </button>
+                  <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-brand-grey-100">
+                    <button onClick={() => resend(a)} disabled={busyId === a.announcement_id}
+                      className="inline-flex items-center gap-1 text-[11px] px-3 py-1.5 rounded-full bg-brand-blue-50 text-brand-blue-700 font-semibold border border-brand-blue-200 hover:bg-brand-blue-100 transition disabled:opacity-40">
+                      <RefreshCw size={11} /> {t('ann.resend')}
+                    </button>
+                    <button onClick={() => del(a)} disabled={busyId === a.announcement_id}
+                      className="inline-flex items-center gap-1 text-[11px] px-3 py-1.5 rounded-full bg-brand-red-50 text-brand-red font-semibold border border-brand-red-200 hover:bg-brand-red-100 transition disabled:opacity-40">
+                      <Trash2 size={11} /> {t('action.delete')}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

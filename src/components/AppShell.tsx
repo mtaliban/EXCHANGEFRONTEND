@@ -25,6 +25,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isAdmin = (user as any)?.is_admin;
 
+  // Hydrate language from localStorage on mount (avoid SSR mismatch)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('kv_lang');
+      if (saved === 'en' || saved === 'sw') useI18n.getState().setLang(saved);
+    } catch {}
+  }, []);
+
   // Clear badge ya route unayofungua
   useEffect(() => {
     if (pathname && routeCounts[pathname] > 0) clearRoute(pathname);
@@ -32,7 +40,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const links = isAdmin
     ? [
-        { href: '/admin', label: t('nav.admin'), icon: Crown },
+        { href: '/admin', label: t('nav.admin'), icon: BarChart3 },
         { href: '/admin/users', label: t('nav.users'), icon: Users },
         { href: '/admin/matches', label: t('nav.matches', 'Waliopata Wenzao'), icon: GitMerge },
         { href: '/admin/real-matches', label: t('nav.real_matches', 'Match za Kweli'), icon: Heart },
@@ -66,7 +74,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-brand-grey-50">
+    <div className="min-h-screen bg-white dark:bg-brand-grey-50">
       {/* ═══ MOBILE TOP BAR (md:hidden) — FIXED, haipandi yote ═══ */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm"
         style={{ WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}>
@@ -217,41 +225,41 @@ function MobileTopBar({ links, user, onLogout }: {
       {/* ═══ CENTER: tupu — jina limeondolewa ═══ */}
       <div className="flex-1" />
 
-      {/* ═══ RIGHT: Avatar + Language toggle ═══ */}
-      <div className="flex items-center gap-1.5 flex-shrink-0">
+      {/* ═══ RIGHT: Avatar + Language toggle — profile dropdown ndani ya relative div ═══ */}
+      <div className="relative flex items-center gap-1.5 flex-shrink-0">
         <button
           onClick={() => { setMenuOpen(false); setProfileOpen((v) => !v); }}
-          className="w-8 h-8 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-xs font-bold text-brand-grey-900 dark:text-white flex-shrink-0"
+          className="w-8 h-8 rounded-full bg-brand-blue-50 dark:bg-brand-blue-900/40 border border-brand-blue-200 dark:border-brand-blue-800 flex items-center justify-center text-xs font-bold text-brand-blue-700 dark:text-brand-blue-300 flex-shrink-0"
           aria-label="Profile"
         >
           {initial}
         </button>
         <LangToggle />
-      </div>
 
-      {/* ═══ Profile dropdown — bofya avatar ═══ */}
-      {profileOpen && (
-        <>
-          <div className="fixed inset-0 z-[99]" onClick={closeAll} />
-          <div className="absolute right-0 top-full mt-1 z-[100] w-52 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
-            <Link
-              href="/profile"
-              onClick={closeAll}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition"
-            >
-              <User size={18} strokeWidth={2.2} />
-              <span>{t('nav.profile')}</span>
-            </Link>
-            <button
-              onClick={() => { closeAll(); onLogout(); }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-            >
-              <LogOut size={18} strokeWidth={2.2} />
-              <span>{t('nav.logout')}</span>
-            </button>
-          </div>
-        </>
-      )}
+        {/* Profile dropdown — iko ndani ya relative div, inashikamana kulia */}
+        {profileOpen && (
+          <>
+            <div className="fixed inset-0 z-[99]" onClick={closeAll} />
+            <div className="absolute right-0 top-full mt-2 z-[100] w-44 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
+              <Link
+                href="/profile"
+                onClick={closeAll}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition"
+              >
+                <User size={16} strokeWidth={2.2} />
+                <span>{t('nav.profile')}</span>
+              </Link>
+              <button
+                onClick={() => { closeAll(); onLogout(); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+              >
+                <LogOut size={16} strokeWidth={2.2} />
+                <span>{t('nav.logout')}</span>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </>
   );
 }
@@ -273,7 +281,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
   // Admin: links muhimu zaidi kwa simu (max 5) — zaidi ziko drawer
   const mobileLinks = isAdmin
     ? [
-        { href: '/admin', label: t('nav.admin'), icon: Crown },
+        { href: '/admin', label: t('nav.admin'), icon: BarChart3 },
         { href: '/admin/users', label: t('nav.users'), icon: Users },
         { href: '/admin/matches', label: t('nav.matches', 'Waliopata Wenzao'), icon: GitMerge },
         { href: '/admin/payments', label: t('nav.payments'), icon: Wallet },

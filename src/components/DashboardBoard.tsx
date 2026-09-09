@@ -20,7 +20,7 @@ import Spinner from '@/components/Spinner';
 import { getMe } from '@/lib/api';
 import {
   Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
-  Zap, Filter, HandCoins, ArrowLeftRight, Globe,
+  Zap, Filter, HandCoins, ArrowLeftRight,
 } from 'lucide-react';
 
 const FRESH_MS = 30 * 60 * 1000; // "Mpya" badge kwa waliotokea ndani ya NUSU SAA (30min)
@@ -392,7 +392,7 @@ export default function DashboardBoard() {
 
       {/* ═══ FILTER CASCADING: Chanzo Mkoa → Wilaya/Halmashauri → Kituo ═══ */}
 
-      <div className="bg-white dark:bg-brand-grey-900 rounded-lg border border-brand-grey-200 dark:border-brand-grey-600 px-3 pt-2.5 pb-3">
+      <div className="bg-white dark:bg-brand-grey-900 rounded-lg border border-brand-grey-200 dark:border-brand-grey-600 px-3 pt-2.5 pb-3 overflow-hidden">
           <label className="text-[11px] font-bold text-brand-grey-700 dark:text-brand-grey-300">{t('board.filter_source')}</label>
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5 mt-1">
             <select className="input text-xs py-1.5 w-full sm:flex-1 sm:min-w-[140px]" value={regionSel}
@@ -457,7 +457,7 @@ export default function DashboardBoard() {
                   >{label}</button>
                 ))}
               </div>
-              <div className="flex items-center gap-1.5 max-w-sm">
+              <div className="flex items-center gap-1.5 w-full">
                 <span className="text-brand-grey-400 text-xs"><Search size={12} /></span>
                 <input
                   className="input text-xs py-1"
@@ -528,7 +528,7 @@ export default function DashboardBoard() {
         <>
           {/* Grid ELASTIC: inajiweka yenyewe kwa kila kifaa — simu ndogo sana = 1-2 col,
               simu ya kawaida = 2 col, desktop = 3 col. Hakuna kujibana tena! */}
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(165px,1fr))] gap-2.5 md:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             {pageItems.map((c: any) => (
               <BoardCard key={c.user_id} c={c} now={now} lang={lang} mySubjects={mySubjects} me={user as any} myRegionName={myStation.region_name || ''} isVerified={!!(user as any)?.is_verified} showCardToast={showCardToast} myToast={cardToast?.uid === c.user_id ? cardToast : null} />
             ))}
@@ -626,13 +626,13 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   }, [c, me, t]);
 
   return (
-    <div className={`rounded-xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-3 md:p-3.5 flex flex-col gap-2 hover:border-brand-blue dark:hover:border-brand-grey-500 transition group ${
-      fresh ? 'border-brand-blue ring-1 ring-brand-blue/20'
+    <div className={`rounded-2xl bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-600 p-3.5 md:p-4 flex flex-col gap-2.5 hover:border-brand-blue dark:hover:border-brand-grey-500 transition group shadow-sm hover:shadow-lg ${
+      fresh ? 'border-brand-blue ring-2 ring-brand-blue/20'
       : c.online ? 'border-green-300 dark:border-green-700/50'
       : ''}`}>
       <div className="flex items-center gap-2.5">
         <div className="relative flex-shrink-0">
-          <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-brand-grey-100 dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 flex items-center justify-center text-sm md:text-base font-bold text-brand-grey-900 dark:text-white">
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-brand-blue-50 dark:bg-brand-blue-900/40 border border-brand-blue-200 dark:border-brand-blue-800 flex items-center justify-center text-sm md:text-base font-bold text-brand-blue-700 dark:text-brand-blue-300">
             {initial}
           </div>
           {c.online && (
@@ -681,21 +681,28 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
       {from && (() => {
         const isWizara = (me as any)?.employment_sector === 'wizara_afya';
         return (
-          <div className="text-[11px] bg-brand-grey-50 dark:bg-brand-grey-800 rounded-lg px-2 py-1.5 space-y-1">
-            <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-              <MapPin size={11} className="inline" /> Kutoka: <b className="text-brand-grey-800 dark:text-brand-grey-200">{from.region_name}</b>
-              {isWizara && from.facility_name && <>, {from.facility_name}</>}
-              {!isWizara && from.district_name && <>, {from.district_name}</>}
+          <div className="text-[11px] bg-brand-blue-50 dark:bg-brand-grey-800 rounded-xl px-2.5 py-2 space-y-1.5 border border-brand-blue-100 dark:border-brand-grey-700">
+            <div className="flex items-start gap-1 text-brand-grey-600 dark:text-brand-grey-300 font-medium">
+              <MapPin size={11} className="mt-0.5 flex-shrink-0 text-brand-grey-400" />
+              <span>{t('board.from')}: <b className="text-brand-grey-900 dark:text-white">{from.region_name}</b>
+                {isWizara && from.facility_name && <span className="text-brand-grey-500">, {from.facility_name}</span>}
+                {!isWizara && from.district_name && <span className="text-brand-grey-500">, {from.district_name}</span>}
+              </span>
             </div>
             {to && (
-              <div className="text-brand-grey-600 dark:text-brand-grey-300 break-words font-medium">
-                <Target size={11} className="inline" /> Kwenda: <b className="text-brand-grey-800 dark:text-brand-grey-200">{to.region_name}</b>
-                {isWizara && to.facility_name && <>, {to.facility_name}</>}
-                {!isWizara && to.district_name && <>, {to.district_name}</>}
-                {!isWizara && !to.district_name && <>, Wilaya yeyote</>}
+              <div className="flex items-start gap-1 font-semibold">
+                <Target size={11} className="mt-0.5 flex-shrink-0 text-brand-blue" />
+                <span className="text-brand-blue-700 dark:text-brand-blue-300">{t('board.wants_go')}: <b className="text-brand-grey-900 dark:text-white">{to.region_name}</b>
+                  {isWizara && to.facility_name && <span className="text-brand-grey-500">, {to.facility_name}</span>}
+                  {!isWizara && to.district_name && <span className="text-brand-grey-500">, {to.district_name}</span>}
+                </span>
               </div>
             )}
-          <div className="text-brand-blue font-extrabold">↓ Anakwenda <span className="text-brand-grey-900 dark:text-white">{myRegionName}</span></div>
+            {myRegionName && (
+              <div className="flex items-center gap-1 pt-0.5 border-t border-brand-blue-100 dark:border-brand-grey-700 text-brand-blue font-bold">
+                <span className="text-brand-blue">↓</span> Anakuja: <span className="text-brand-grey-900 dark:text-white">{myRegionName}</span>
+              </div>
+            )}
           </div>
         );
       })()}
@@ -709,19 +716,25 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
 
       {c.subjects?.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
-          <span className="text-brand-grey-500 font-semibold">{t('board.subjects')}:</span>
-          {anySubjectMatch && (
-            <span className="px-1.5 py-0.5 rounded-full bg-brand-blue text-white font-bold"><Target size={10} className="inline" /> {t('board.subjects_match')}</span>
-          )}
+          <span className="text-brand-grey-500 font-semibold w-full">{t('board.subjects')}:</span>
           {c.subjects.map((s: string) => {
             const matched = mySubjects.includes(s);
             return (
               <span key={s} title={matched ? t('board.subject_match') : undefined}
-                className={`px-1.5 py-0.5 rounded-full font-semibold ${matched ? 'bg-brand-blue text-white' : 'bg-brand-grey-100 text-brand-grey-600 dark:bg-brand-grey-200 dark:text-brand-grey-300'}`}>
+                className={`px-2 py-0.5 rounded-full font-bold border ${
+                  matched
+                    ? 'bg-brand-blue text-white border-brand-blue shadow-sm'
+                    : 'bg-white text-brand-grey-700 border-brand-grey-300 dark:bg-brand-grey-800 dark:text-brand-grey-300 dark:border-brand-grey-600'
+                }`}>
                 {s}{matched ? ' ✓' : ''}
               </span>
             );
           })}
+          {anySubjectMatch && (
+            <span className="px-1.5 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-700 border border-brand-blue/20 font-semibold">
+              <Target size={10} className="inline mr-0.5" />{t('board.subjects_match')}
+            </span>
+          )}
         </div>
       )}
 
@@ -755,9 +768,9 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
         </button>
 
         {c.phone_alt && (
-          <button onClick={onWhatsApp} className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-300 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 min-w-0 font-semibold hover:bg-brand-grey-50 dark:hover:bg-brand-grey-700 transition"
+          <button onClick={onWhatsApp} className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#25D366] text-white text-[10px] sm:text-xs px-1.5 sm:px-3 py-1.5 flex-1 min-w-0 font-semibold hover:bg-[#1ebe5c] transition"
             title={t('board.wa_btn')}>
-            <Globe size={12} className="mr-1 flex-shrink-0" />
+            <svg viewBox="0 0 24 24" className="w-3 h-3 flex-shrink-0" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             <span className="hidden min-[360px]:inline">{t('board.wa_btn')}</span>
           </button>
         )}

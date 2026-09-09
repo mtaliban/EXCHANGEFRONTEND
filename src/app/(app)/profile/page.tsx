@@ -163,11 +163,14 @@ function ViewProfile({ profile }: any) {
         <h3 className="font-bold text-brand-grey-900 mb-3">{t('profile.destinations')}</h3>
         <div className="space-y-2">
           {profile.desired_destinations?.map((d: any, i: number) => (
-            <div key={i} className="p-2 rounded-lg bg-brand-grey-50 text-sm">
-              <div className="font-semibold text-brand-grey-900">{d.region_name}</div>
-              <div className="text-xs text-brand-grey-500">
-                {d.district_name || 'Wilaya yoyote'}{d.facility_name ? ` • ${d.facility_name}` : ''}
-                {d.notes ? ` — ${d.notes}` : ''}
+            <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-brand-grey-50 border border-brand-grey-100">
+              <span className="text-brand-blue font-bold text-sm flex-shrink-0 w-5 text-center">{i + 1}</span>
+              <div className="min-w-0">
+                <div className="font-semibold text-brand-grey-900 text-sm">{d.region_name}</div>
+                <div className="text-xs text-brand-grey-500 mt-0.5">
+                  {d.district_name || 'Wilaya yoyote'}{d.facility_name ? ` • ${d.facility_name}` : ''}
+                  {d.notes ? ` — ${d.notes}` : ''}
+                </div>
               </div>
             </div>
           ))}
@@ -419,7 +422,7 @@ function EditProfile({ profile, onSaved }: any) {
           <button onClick={addDest} className="text-brand-blue text-sm">{t('profile.add_dest')}</button>
         </div>
         {destinations.map((d, i) => (
-          <div key={i} className="space-y-2 p-3 rounded-xl bg-brand-grey-50 dark:bg-brand-grey-100">
+          <div key={i} className="space-y-2 p-3 rounded-xl bg-brand-grey-50 border border-brand-grey-100">
             <div className="flex gap-2 items-center">
               <select className="input flex-1" value={d.region_id || 0}
                 onChange={(e) => updateDest(i, { region_id: Number(e.target.value), region_name: regions.find((r) => r.id === Number(e.target.value))?.name || '', district_id: null, facility_id: null, facility_name: null })}>
@@ -456,16 +459,16 @@ function EditProfile({ profile, onSaved }: any) {
       <div className="card space-y-2.5">
         <h3 className="font-bold text-sm">🔑 {t('profile.change_pwd')}</h3>
         {pwdMsg && <div className="bg-green-50 text-green-700 text-xs rounded-lg px-2.5 py-1.5">{pwdMsg}</div>}
-        <div><label className="label">{t('profile.cur_pwd')}</label><input type="password" className="input !py-1.5 text-sm" value={curPassword} onChange={(e) => setCurPassword(e.target.value)} autoComplete="current-password" /></div>
-        <div><label className="label">{t('profile.new_pwd')}</label><input type="password" className="input !py-1.5 text-sm" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" /></div>
-        <button onClick={savePassword} disabled={!curPassword || newPassword.length < 6} className="text-xs px-3 py-1.5 rounded-lg border border-brand-blue text-brand-blue hover:bg-brand-blue-50 transition disabled:opacity-40">
+        <div><label className="label">{t('profile.cur_pwd')}</label><input type="password" className="input" value={curPassword} onChange={(e) => setCurPassword(e.target.value)} autoComplete="current-password" /></div>
+        <div><label className="label">{t('profile.new_pwd')}</label><input type="password" className="input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" /></div>
+        <button onClick={savePassword} disabled={!curPassword || newPassword.length < 6} className="inline-flex items-center gap-1.5 text-sm px-4 py-2 rounded-full border border-brand-blue text-brand-blue hover:bg-brand-blue-50 transition disabled:opacity-40 font-semibold">
           {t('profile.change_pwd_btn')}
         </button>
       </div>
 
       <div className="flex justify-end">
-        <button onClick={saveProfile} disabled={saving} className="btn-primary text-xs px-4 py-1.5">
-          {saving ? '...' : t('profile.save')}
+        <button onClick={saveProfile} disabled={saving} className="btn-primary px-6">
+          {saving ? <span className="inline-flex items-center gap-1.5"><span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" /> {t('action.processing')}</span> : t('profile.save')}
         </button>
       </div>
     </div>
@@ -474,9 +477,9 @@ function EditProfile({ profile, onSaved }: any) {
 
 function Row({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="flex justify-between gap-4">
-      <span className="text-brand-grey-500">{label}:</span>
-      <span className="font-medium text-brand-grey-900 text-right">{value || '-'}</span>
+    <div className="flex justify-between items-start gap-3 py-0.5">
+      <span className="text-brand-grey-500 flex-shrink-0 text-sm">{label}:</span>
+      <span className="font-semibold text-brand-grey-900 text-right text-sm">{value || '—'}</span>
     </div>
   );
 }

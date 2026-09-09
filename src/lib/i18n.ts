@@ -1,7 +1,6 @@
 'use client';
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 type Lang = 'sw' | 'en';
 
@@ -1064,16 +1063,22 @@ interface I18nState {
   toggle: () => void;
 }
 
-export const useI18n = create<I18nState>()(
-  persist(
-    (set, get) => ({
-      lang: 'sw',
-      setLang: (l) => set({ lang: l }),
-      toggle: () => set({ lang: get().lang === 'sw' ? 'en' : 'sw' }),
-    }),
-    { name: 'kv_lang' }
-  )
-);
+const LS_KEY = 'kv_lang';
+function saveLang(l: Lang) {
+  if (typeof window !== 'undefined') {
+    try { localStorage.setItem(LS_KEY, l); } catch {}
+  }
+}
+
+export const useI18n = create<I18nState>()((set, get) => ({
+  lang: 'sw',
+  setLang: (l) => { saveLang(l); set({ lang: l }); },
+  toggle: () => {
+    const next = get().lang === 'sw' ? 'en' : 'sw';
+    saveLang(next);
+    set({ lang: next });
+  },
+}));
 
 export function useT() {
   const lang = useI18n((s) => s.lang);

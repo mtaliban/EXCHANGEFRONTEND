@@ -10,7 +10,7 @@ import { askConfirm } from '@/components/confirm';
 import Spinner from '@/components/Spinner';
 
 type Status = '' | 'open' | 'replied';
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 5;
 
 export default function AdminFeedbackPage() {
   const t = useT();
@@ -78,7 +78,7 @@ export default function AdminFeedbackPage() {
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-brand-grey-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
             <ClipboardList size={22} className="text-brand-blue" />
             {t('fbadmin.title')}
           </h1>
@@ -110,47 +110,59 @@ export default function AdminFeedbackPage() {
       ) : (
         <div className="space-y-2.5">
           {items.map((f: any, i: number) => (
-            <div key={f.id} className="bg-white rounded-xl border border-brand-grey-200 p-4">
-              <div className="flex items-center justify-between gap-2 flex-wrap mb-1.5">
+            <div key={f.id} className="bg-white rounded-2xl border border-brand-grey-200 p-4 shadow-sm">
+              {/* Top: number + name + phone + status + delete */}
+              <div className="flex items-start justify-between gap-2 flex-wrap mb-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[10px] font-bold text-brand-grey-400 w-5 text-center">{(page - 1) * PAGE_SIZE + i + 1}</span>
-                  <span className="font-bold text-brand-grey-900 dark:text-white text-sm truncate">{f.user_name || '—'}</span>
-                  {f.user_phone && <a href={`tel:${f.user_phone}`} className="inline-flex items-center gap-1 text-[11px] text-brand-blue hover:underline whitespace-nowrap"><Phone size={11} /> {f.user_phone}</a>}
+                  <span className="text-[10px] font-bold text-brand-grey-400 w-5 text-center flex-shrink-0">{(page - 1) * PAGE_SIZE + i + 1}</span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-brand-grey-900 text-sm block truncate">{f.user_name || '—'}</span>
+                    {f.user_phone && (
+                      <a href={`tel:${f.user_phone}`} className="inline-flex items-center gap-1 text-[11px] text-brand-blue font-semibold hover:underline">
+                        <Phone size={11} /> {f.user_phone}
+                      </a>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${
                     f.status === 'replied' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'
                   }`}>
                     {f.status === 'replied' ? <><CheckCircle2 size={10} /> {t('fbadmin.replied')}</> : <><Clock size={10} /> {t('fbadmin.open')}</>}
                   </span>
-                  <button onClick={() => del(f)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red border border-brand-red-200 font-medium hover:bg-brand-red-100 transition">
-                    <Trash2 size={10} /> Futa
+                  <button onClick={() => del(f)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red border border-brand-red-200 font-semibold hover:bg-brand-red-100 transition">
+                    <Trash2 size={10} />
                   </button>
                 </div>
               </div>
-              <div className="text-sm font-semibold text-brand-grey-800 dark:text-brand-grey-200">{f.subject}</div>
-              <p className="text-sm text-brand-grey-700 dark:text-brand-grey-300 whitespace-pre-wrap break-words mt-0.5">{f.message}</p>
+
+              {/* Subject + message */}
+              <div className="text-sm font-semibold text-brand-grey-800">{f.subject}</div>
+              <p className="text-sm text-brand-grey-700 whitespace-pre-wrap break-words mt-0.5 leading-relaxed">{f.message}</p>
               <div className="text-[11px] text-brand-grey-400 mt-1.5 flex items-center gap-1">
                 <Clock size={10} />
                 {f.created_at ? (parseServerDate(f.created_at) || new Date()).toLocaleString('sw-TZ') : ''}
               </div>
 
+              {/* Admin reply */}
               {f.admin_reply && (
-                <div className="mt-2 rounded-lg bg-brand-blue-50 dark:bg-brand-blue-100/10 p-2.5">
-                  <div className="text-[10px] font-bold text-brand-blue uppercase tracking-wide mb-0.5 flex items-center gap-1">
+                <div className="mt-3 rounded-xl bg-brand-blue-50 border border-brand-blue-100 p-3">
+                  <div className="text-[10px] font-bold text-brand-blue uppercase tracking-wide mb-1 flex items-center gap-1">
                     <ShieldCheck size={11} /> {t('fbadmin.your_reply')}
                   </div>
-                  <div className="text-sm text-brand-grey-800 dark:text-brand-grey-200 whitespace-pre-wrap break-words">{f.admin_reply}</div>
+                  <div className="text-sm text-brand-grey-800 whitespace-pre-wrap break-words">{f.admin_reply}</div>
                 </div>
               )}
 
-              <div className="mt-2.5 flex gap-2">
-                <input className="input flex-1 !py-1.5 text-sm" value={replyText[f.id] || ''}
+              {/* Reply input */}
+              <div className="mt-3 pt-3 border-t border-brand-grey-100 flex gap-2">
+                <input className="input flex-1 text-sm" value={replyText[f.id] || ''}
                   onChange={(e) => setReplyText((prev) => ({ ...prev, [f.id]: e.target.value }))}
+                  onKeyDown={(e) => { if (e.key === 'Enter') reply(f); }}
                   placeholder={t('fbadmin.reply_ph')} />
                 <button onClick={() => reply(f)} disabled={replying === f.id || !(replyText[f.id] || '').trim()}
-                  className="btn-primary !text-[11px] !px-3 !py-1.5 flex items-center gap-1">
-                  {replying === f.id ? '...' : <><Send size={11} /> {t('fbadmin.reply_btn')}</>}
+                  className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1 flex-shrink-0">
+                  {replying === f.id ? '...' : <><Send size={12} /> {t('fbadmin.reply_btn')}</>}
                 </button>
               </div>
             </div>
@@ -162,12 +174,12 @@ export default function AdminFeedbackPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-1 pt-2 flex-wrap">
           <button disabled={page <= 1} onClick={() => setPage(page - 1)}
-            className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-brand-grey-200 text-brand-grey-600 disabled:opacity-30 hover:border-brand-blue hover:text-brand-blue transition text-[11px] font-bold">
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-30 hover:border-brand-blue hover:text-brand-blue transition text-xs font-bold">
             ←
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
             <button key={p} onClick={() => setPage(p)}
-              className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold transition ${
+              className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold transition ${
                 p === page
                   ? 'bg-brand-blue text-white border border-brand-blue'
                   : 'border border-brand-grey-200 text-brand-grey-600 hover:border-brand-blue hover:text-brand-blue'
@@ -176,7 +188,7 @@ export default function AdminFeedbackPage() {
             </button>
           ))}
           <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}
-            className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-brand-grey-200 text-brand-grey-600 disabled:opacity-30 hover:border-brand-blue hover:text-brand-blue transition text-[11px] font-bold">
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-brand-grey-200 text-brand-grey-600 disabled:opacity-30 hover:border-brand-blue hover:text-brand-blue transition text-xs font-bold">
             →
           </button>
         </div>

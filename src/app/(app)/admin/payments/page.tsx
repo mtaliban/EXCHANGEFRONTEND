@@ -9,7 +9,7 @@ import Spinner from '@/components/Spinner';
 import {
   CreditCard, CheckCircle2, XCircle, Clock, Eye, EyeOff,
   AlertTriangle, Banknote, Users, TrendingUp, ChevronLeft, ChevronRight,
-  Send, MessageSquare,
+  Send, MessageSquare, Phone,
 } from 'lucide-react';
 
 type Status = '' | 'verifying' | 'approved' | 'rejected';
@@ -175,8 +175,97 @@ export default function AdminPaymentsPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-brand-grey-200 overflow-hidden overflow-x-auto">
+      {/* ─── Mobile cards — md:hidden ─── */}
+      <div className="md:hidden">
+        {visiblePayments.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-brand-grey-200 p-8 text-center">
+            <Banknote size={28} className="mx-auto text-brand-grey-300 mb-2" />
+            <p className="text-sm text-brand-grey-500 font-medium">{t('adminpay.empty')}</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {pageItems.map((p: any) => {
+              const st = STATUS_CONFIG[p.status] || STATUS_CONFIG.verifying;
+              const StIcon = st.icon;
+              return (
+                <div key={p.order_id} className="bg-white rounded-2xl border border-brand-grey-200 p-4 shadow-sm">
+                  {/* Top row: name + status badge */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-brand-grey-900 text-sm">
+                          {p.user_name || p.user_id?.slice(-6)}
+                        </span>
+                        {p.expired && p.status === 'verifying' && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-orange-500">
+                            <Clock size={10} /> {t('adminpay.expired')}
+                          </span>
+                        )}
+                      </div>
+                      {p.phone && (
+                        <a href={`tel:${p.phone}`} className="inline-flex items-center gap-1 text-xs text-brand-blue font-semibold hover:underline mt-0.5">
+                          <Phone size={11} /> {p.phone}
+                        </a>
+                      )}
+                    </div>
+                    <span className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-semibold border flex-shrink-0 ${st.color}`}>
+                      <StIcon size={11} />
+                      {t(st.label)}
+                    </span>
+                  </div>
+                  {/* Amount + order ID */}
+                  <div className="flex items-center justify-between gap-2 mb-1.5 bg-brand-grey-50 rounded-xl px-3 py-2">
+                    <span className="text-base font-bold text-brand-grey-900">{p.amount?.toLocaleString()} TZS</span>
+                    <span className="text-[10px] text-brand-grey-400 font-mono truncate max-w-[140px]">{p.order_id}</span>
+                  </div>
+                  <div className="text-[11px] text-brand-grey-400 mb-2.5 flex items-center gap-1 px-1">
+                    <Clock size={10} />
+                    {(parseServerDate(p.created_at) || new Date()).toLocaleString('sw-TZ')}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-0.5">
+                    {(p.status === 'rejected' || (p.messages && p.messages.length > 0)) && (
+                      <button onClick={() => {
+                        const next = !expanded[p.order_id];
+                        setExpanded((e) => ({ ...e, [p.order_id]: next }));
+                        if (next && !chatMessages[p.order_id]) loadChat(p.order_id);
+                      }}
+                        className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue-50 text-brand-blue font-semibold border border-brand-blue-200 hover:bg-brand-blue-100 transition">
+                        <MessageSquare size={11} /> {(chatMessages[p.order_id] || p.messages || []).length || ''}
+                      </button>
+                    )}
+                    <button onClick={() => setExpanded((e) => ({ ...e, [p.order_id]: !expanded[p.order_id] }))}
+                      className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-grey-100 text-brand-grey-600 font-semibold border border-brand-grey-200 hover:bg-brand-grey-200 transition">
+                      {expanded[p.order_id] ? <EyeOff size={11} /> : <Eye size={11} />}
+                      {expanded[p.order_id] ? t('adminpay.hide_sms') : t('adminpay.view')}
+                    </button>
+                    {p.status === 'verifying' && (
+                      <>
+                        <button
+                          onClick={() => act(p.order_id, true)}
+                          disabled={busy === p.order_id}
+                          className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 font-semibold hover:bg-green-100 transition disabled:opacity-40">
+                          <CheckCircle2 size={12} />
+                          {busy === p.order_id ? '...' : t('adminpay.confirm_btn')}
+                        </button>
+                        <button
+                          onClick={() => act(p.order_id, false)}
+                          disabled={busy === p.order_id}
+                          className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red border border-brand-red-200 font-semibold hover:bg-brand-red-100 transition disabled:opacity-40">
+                          <XCircle size={12} />
+                          {t('adminpay.reject_btn')}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ─── Desktop table — hidden md:block ─── */}
+      <div className="hidden md:block bg-white rounded-2xl border border-brand-grey-200 overflow-hidden overflow-x-auto">
         {visiblePayments.length === 0 && (
           <div className="p-8 text-center">
             <Banknote size={28} className="mx-auto text-brand-grey-300 mb-2" />
@@ -309,7 +398,7 @@ export default function AdminPaymentsPage() {
           {visiblePayments.filter((p: any) => expanded[p.order_id]).map((p: any) => {
             const msgs = chatMessages[p.order_id] || p.messages || [];
             return (
-            <div key={p.order_id} className="bg-white rounded-xl border border-brand-grey-200 p-3">
+            <div key={p.order_id} className="bg-white rounded-2xl border border-brand-grey-200 p-4">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] uppercase tracking-wide text-brand-grey-500 font-bold flex items-center gap-1">
                   <CreditCard size={11} /> {t('adminpay.sms_donor')}
