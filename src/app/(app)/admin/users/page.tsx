@@ -297,7 +297,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
           {t('nav.users')}
           <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
@@ -306,41 +306,41 @@ export default function AdminUsersPage() {
             {t('data.live')}
           </span>
         </h1>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
           <button onClick={() => { if (!showTrash) loadTrash(); setShowTrash((v) => !v); }}
-            className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-semibold transition ${showTrash ? 'bg-brand-red-50 text-brand-red border border-brand-red-200' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200'}`}>
+            className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg font-semibold transition flex-shrink-0 ${showTrash ? 'bg-brand-red-50 text-brand-red border border-brand-red-200' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200'}`}>
             <Trash2 size={12} /> {t('admin.trash_btn')}{trashTotal > 0 && ` (${trashTotal})`}
           </button>
-          <button onClick={() => setCreating(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
+          <button onClick={() => setCreating(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition flex-shrink-0">
             <Plus size={12} /> {t('admin.new_user')}
           </button>
-          <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition">
+          <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition flex-shrink-0">
             <ShieldCheck size={12} /> {t('admin.add_admin')}
           </button>
-          <button onClick={() => setShowImport(true)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200 font-semibold transition">
-            <Download size={10} /> Import
+          <button onClick={() => setShowImport(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200 font-semibold transition flex-shrink-0">
+            <Download size={12} /> Import
           </button>
         </div>
       </div>
 
-      {/* ═══ Vitendo vya KUNDI (select-all + futa/funga/fungua wengi mara moja) ═══ */}
-      <div className="flex items-center gap-2 flex-wrap bg-brand-grey-50 dark:bg-brand-grey-100 rounded-xl px-3 py-2">
-        <label className="flex items-center gap-2 text-sm font-semibold text-brand-grey-700">
+      {/* ═══ Vitendo vya KUNDI ═══ */}
+      <div className="bg-brand-grey-50 rounded-xl px-3 py-2 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+        <label className="flex items-center gap-2 text-sm font-semibold text-brand-grey-700 flex-shrink-0">
           <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll}
             className="w-4 h-4 accent-brand-blue" />
           {t('admin.select_all')} ({selected.size})
         </label>
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5">
           <button onClick={() => bulk('enable')} disabled={bulkBusy || selected.size === 0}
-            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 font-semibold hover:bg-green-100 disabled:opacity-40 transition">
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 text-[11px] px-2 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 font-semibold hover:bg-green-100 disabled:opacity-40 transition">
             <CheckCircle2 size={11} /> {t('admin.bulk_enable')}
           </button>
           <button onClick={() => bulk('disable')} disabled={bulkBusy || selected.size === 0}
-            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-semibold hover:bg-orange-100 disabled:opacity-40 transition">
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 text-[11px] px-2 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 font-semibold hover:bg-orange-100 disabled:opacity-40 transition">
             <Ban size={11} /> {t('admin.bulk_suspend')}
           </button>
           <button onClick={() => bulk('delete')} disabled={bulkBusy || selected.size === 0}
-            className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-brand-red-50 text-brand-red border border-brand-red-200 font-semibold hover:bg-brand-red-100 disabled:opacity-40 transition">
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 text-[11px] px-2 py-1.5 rounded-lg bg-brand-red-50 text-brand-red border border-brand-red-200 font-semibold hover:bg-brand-red-100 disabled:opacity-40 transition">
             <Trash2 size={11} /> {t('admin.bulk_delete')}
           </button>
         </div>
@@ -349,30 +349,32 @@ export default function AdminUsersPage() {
       {message && <div className="bg-brand-blue-50 text-brand-blue text-sm rounded-lg p-3">{message}</div>}
 
       <div className="flex flex-col gap-2">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input className="input flex-1 min-w-0" placeholder="Tafuta kwa jina, namba ya simu au kada..."
+        {/* Mstari 1: Tafuta + Idara */}
+        <div className="flex gap-2">
+          <input className="input flex-1 min-w-0" placeholder="Tafuta jina, simu, kada..."
             value={q} onChange={(e) => setQ(e.target.value)} />
-          <select className="input sm:w-auto" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select className="input flex-shrink-0" value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="">{t('admin.all_depts')}</option>
             <option value="health">{t('admin.health')}</option>
             <option value="education">{t('admin.education')}</option>
           </select>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <select className="input sm:flex-1" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
+        {/* Mstari 2: Location filters — grid 2-col kwenye mobile */}
+        <div className="grid grid-cols-2 sm:flex gap-2">
+          <select className="input" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
             <option value="">Mkoa wote</option>
             {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
-          <select className="input sm:flex-1" value={districtFilter} onChange={(e) => setDistrictFilter(Number(e.target.value) || '')} disabled={!regionFilter}>
+          <select className="input" value={districtFilter} onChange={(e) => setDistrictFilter(Number(e.target.value) || '')} disabled={!regionFilter}>
             <option value="">Wilaya zote</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
-          <select className="input sm:flex-1" value={facilityFilter} onChange={(e) => setFacilityFilter(e.target.value)} disabled={!districtFilter}>
+          <select className="input col-span-2 sm:col-auto sm:flex-1" value={facilityFilter} onChange={(e) => setFacilityFilter(e.target.value)} disabled={!districtFilter}>
             <option value="">Vituo vyote</option>
             {facilities.map((f: any) => <option key={f.id || f.code} value={String(f.id || f.code)}>{f.name}</option>)}
           </select>
           {allSubjects.length > 0 && (
-            <select className="input sm:flex-1" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
+            <select className="input col-span-2 sm:col-auto sm:flex-1" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
               <option value="">Masomo yote</option>
               {allSubjects.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
             </select>
@@ -382,30 +384,34 @@ export default function AdminUsersPage() {
 
       <div className="text-xs text-brand-grey-500">{t('admin.total')} {data?.total ?? '...'}</div>
 
-      {/* ═══ MOBILE: Cards (md:hidden) — sawa na web table ═══ */}
+      {/* ═══ MOBILE: Cards (md:hidden) ═══ */}
       <div className="md:hidden bg-white rounded-2xl border border-brand-grey-100 overflow-hidden">
         {pageItems.length === 0 ? (
           <div className="text-center py-10 text-brand-grey-400 text-sm">{t('msg.no_data')}</div>
         ) : pageItems.map((u: any, i: number) => (
           <div key={u._id} className={`border-b border-brand-grey-100 last:border-0 ${u.status === 'disabled' ? 'opacity-60' : ''}`}>
-            {/* Safu ya juu: checkbox + avatar + jina + simu */}
-            <div className="flex items-center gap-2.5 px-3 pt-3 pb-2">
+            {/* Safu ya juu: checkbox + avatar + jina + simu + admin badge */}
+            <div className="flex items-center gap-2.5 px-3 pt-3 pb-1.5">
               <input type="checkbox" checked={selected.has(u._id)} onChange={() => toggleOne(u._id)}
                 disabled={u.is_admin} className="w-4 h-4 accent-brand-blue flex-shrink-0" />
-              <div className="w-8 h-8 rounded-full bg-brand-blue-50 border border-brand-blue-100 flex items-center justify-center text-sm font-bold text-brand-blue-700 flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-brand-blue-50 border border-brand-blue-100 flex items-center justify-center text-sm font-bold text-brand-blue-700 flex-shrink-0">
                 {u.full_name?.slice(0, 1)?.toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-1.5">
                   <span className="font-bold text-brand-grey-900 text-sm truncate">{u.full_name}</span>
                   {u.is_admin && <ShieldCheck size={13} className="text-brand-blue flex-shrink-0" />}
                 </div>
-                <a href={`tel:${u.phone_primary}`} className="text-xs text-brand-blue font-semibold hover:underline">
+                <a href={`tel:${u.phone_primary}`} className="text-xs text-brand-blue font-semibold">
                   {u.phone_primary}
                 </a>
               </div>
+              {/* Malipo badge — pembeni mwa jina, si kwenye safu ya badges */}
+              {u.is_verified
+                ? <span className="text-[10px] font-bold text-white bg-emerald-500 px-1.5 py-0.5 rounded-full flex-shrink-0">✓</span>
+                : <span className="text-[10px] font-bold text-white bg-red-400 px-1.5 py-0.5 rounded-full flex-shrink-0">✗</span>}
             </div>
-            {/* Safu ya kati: kada · mkoa · hali · malipo · role */}
+            {/* Safu ya kati: kada · mkoa · hali — badges ya taarifa tu */}
             <div className="flex flex-wrap items-center gap-1.5 px-3 pb-2">
               {u.cadre_code && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-blue-50 text-brand-blue-700 text-[11px] font-semibold">
@@ -413,48 +419,48 @@ export default function AdminUsersPage() {
                 </span>
               )}
               {u.current_station?.region_name && (
-                <span className="text-[11px] text-brand-grey-600 font-medium">{u.current_station.region_name}</span>
+                <span className="text-[11px] text-brand-grey-500">{u.current_station.region_name}</span>
               )}
               {u.status === 'disabled'
                 ? <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-brand-red-50 text-brand-red px-2 py-0.5 rounded"><UserX size={9} /> {t('admin.status_disabled')}</span>
                 : <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-green-50 text-green-600 px-2 py-0.5 rounded"><UserCheck size={9} /> {t('admin.status_active')}</span>}
-              {u.is_verified
-                ? <span className="text-[10px] font-bold text-white bg-emerald-500 px-1.5 py-0.5 rounded-full">✓ PAID</span>
-                : <span className="text-[10px] font-bold text-white bg-red-400 px-1.5 py-0.5 rounded-full">✗ HAJALIPIA</span>}
-              {/* Admin toggle — sawa na web table */}
-              <button onClick={() => toggleAdmin(u)}
-                className={`text-[10px] font-semibold px-2 py-0.5 rounded ${u.is_admin ? 'bg-brand-gold-100 text-brand-gold-600' : 'bg-brand-grey-100 text-brand-grey-500'}`}>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${u.is_admin ? 'bg-amber-100 text-amber-700' : 'bg-brand-grey-100 text-brand-grey-500'}`}>
                 {u.is_admin ? t('admin.admin_role') : t('admin.user_role')}
-              </button>
+              </span>
             </div>
-            {/* Vitendo — sawa na web table */}
-            <div className="flex flex-wrap gap-1 px-3 pb-3">
-              <button onClick={() => setViewing(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-grey-100 text-brand-grey-600 font-medium hover:bg-brand-grey-200 transition">
-                <Eye size={11} /> {t('action.view')}
-              </button>
-              <button onClick={() => setEditing(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue-600 font-medium hover:bg-brand-blue-100 transition">
-                <Pencil size={11} /> {t('action.edit')}
-              </button>
-              {u.is_admin && u._id !== myUserId && (
-                <button onClick={() => toggleAdmin(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
-                  <Shield size={11} /> Ondoa Admin
+            {/* Vitendo — 2 safu: ya kwanza View+Edit, ya pili secondary actions */}
+            <div className="flex flex-col gap-1 px-3 pb-3">
+              <div className="flex gap-1.5">
+                <button onClick={() => setViewing(u)} className="flex-1 inline-flex items-center justify-center gap-1 text-xs py-1.5 rounded-lg bg-brand-grey-100 text-brand-grey-700 font-medium hover:bg-brand-grey-200 transition">
+                  <Eye size={12} /> {t('action.view')}
                 </button>
-              )}
-              {!u.is_admin && (
-                <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium hover:bg-orange-100 transition">
-                  {u.status === 'disabled' ? <><CheckCircle2 size={11} /> {t('admin.unsuspend_btn')}</> : <><Ban size={11} /> {t('admin.suspend_btn')}</>}
+                <button onClick={() => setEditing(u)} className="flex-1 inline-flex items-center justify-center gap-1 text-xs py-1.5 rounded-lg bg-brand-blue-50 text-brand-blue font-medium hover:bg-brand-blue-100 transition">
+                  <Pencil size={12} /> {t('action.edit')}
                 </button>
-              )}
-              {!u.is_admin && !u.is_verified && (
-                <button onClick={() => toggleContact(u)} className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium transition ${u.contact_enabled ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200'}`}>
-                  <Phone size={11} /> {u.contact_enabled ? 'Ame-Ruhusu' : 'Ruhusu Piga'}
-                </button>
-              )}
-              {!u.is_admin && (
-                <button onClick={() => del(u)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
-                  <Trash2 size={11} /> {t('action.delete')}
-                </button>
-              )}
+              </div>
+              {/* Secondary actions — zinaonekana kulingana na hali ya mtumiaji */}
+              <div className="flex flex-wrap gap-1">
+                {u.is_admin && u._id !== myUserId && (
+                  <button onClick={() => toggleAdmin(u)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
+                    <Shield size={11} /> Ondoa Admin
+                  </button>
+                )}
+                {!u.is_admin && (
+                  <button onClick={() => toggleSuspend(u)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-orange-50 text-orange-600 font-medium hover:bg-orange-100 transition">
+                    {u.status === 'disabled' ? <><CheckCircle2 size={11} /> {t('admin.unsuspend_btn')}</> : <><Ban size={11} /> {t('admin.suspend_btn')}</>}
+                  </button>
+                )}
+                {!u.is_admin && !u.is_verified && (
+                  <button onClick={() => toggleContact(u)} className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg font-medium transition ${u.contact_enabled ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200'}`}>
+                    <Phone size={11} /> {u.contact_enabled ? 'Ameruhusu' : 'Ruhusu'}
+                  </button>
+                )}
+                {!u.is_admin && (
+                  <button onClick={() => del(u)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-brand-red-50 text-brand-red font-medium hover:bg-brand-red-100 transition">
+                    <Trash2 size={11} /> {t('action.delete')}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
