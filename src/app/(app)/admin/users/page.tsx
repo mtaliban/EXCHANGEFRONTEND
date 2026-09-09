@@ -297,50 +297,49 @@ export default function AdminUsersPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2">
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="text-2xl font-bold text-brand-grey-900 flex items-center gap-2 flex-shrink-0">
           {t('nav.users')}
-          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-full border ${
             live ? 'bg-green-50 text-green-600 border-green-300' : 'bg-brand-grey-50 text-brand-grey-400 border-brand-grey-200'}`}>
             <span className={`w-2 h-2 rounded-full ${live ? 'bg-green-500 animate-pulse' : 'bg-brand-grey-300'}`} />
             {t('data.live')}
           </span>
         </h1>
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
+        <div className="flex flex-wrap justify-end gap-1.5">
           <button onClick={() => { if (!showTrash) loadTrash(); setShowTrash((v) => !v); }}
-            className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg font-semibold transition flex-shrink-0 ${showTrash ? 'bg-brand-red-50 text-brand-red border border-brand-red-200' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200'}`}>
-            <Trash2 size={12} /> {t('admin.trash_btn')}{trashTotal > 0 && ` (${trashTotal})`}
+            className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg font-semibold transition ${showTrash ? 'bg-brand-red-50 text-brand-red border border-brand-red-200' : 'bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200'}`}>
+            <Trash2 size={12} /> Trash{trashTotal > 0 && ` (${trashTotal})`}
           </button>
-          <button onClick={() => setCreating(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition flex-shrink-0">
+          <button onClick={() => setCreating(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-blue text-white font-semibold hover:bg-brand-blue-700 transition">
             <Plus size={12} /> {t('admin.new_user')}
           </button>
-          <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition flex-shrink-0">
-            <ShieldCheck size={12} /> {t('admin.add_admin')}
+          <button onClick={() => setAddingAdmin(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-blue-600 text-white font-semibold hover:bg-brand-blue-700 transition">
+            <ShieldCheck size={12} /> Admin
           </button>
-          <button onClick={() => setShowImport(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200 font-semibold transition flex-shrink-0">
+          <button onClick={() => setShowImport(true)} className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-lg bg-brand-grey-100 text-brand-grey-600 hover:bg-brand-grey-200 border border-brand-grey-200 font-semibold transition">
             <Download size={12} /> Import
           </button>
         </div>
       </div>
 
       {/* ═══ Vitendo vya KUNDI ═══ */}
-      <div className="bg-brand-grey-50 rounded-xl px-3 py-2 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-        <label className="flex items-center gap-2 text-sm font-semibold text-brand-grey-700 flex-shrink-0">
-          <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll}
-            className="w-4 h-4 accent-brand-blue" />
+      <div className="bg-brand-grey-50 rounded-xl px-3 py-2 space-y-2">
+        <label className="flex items-center gap-2 text-sm font-semibold text-brand-grey-700">
+          <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} className="w-4 h-4 accent-brand-blue" />
           {t('admin.select_all')} ({selected.size})
         </label>
-        <div className="flex items-center gap-1.5">
+        <div className="flex gap-1.5">
           <button onClick={() => bulk('enable')} disabled={bulkBusy || selected.size === 0}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 text-[11px] px-2 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 font-semibold hover:bg-green-100 disabled:opacity-40 transition">
+            className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 font-semibold disabled:opacity-40">
             <CheckCircle2 size={11} /> {t('admin.bulk_enable')}
           </button>
           <button onClick={() => bulk('disable')} disabled={bulkBusy || selected.size === 0}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 text-[11px] px-2 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 font-semibold hover:bg-orange-100 disabled:opacity-40 transition">
+            className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 font-semibold disabled:opacity-40">
             <Ban size={11} /> {t('admin.bulk_suspend')}
           </button>
           <button onClick={() => bulk('delete')} disabled={bulkBusy || selected.size === 0}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 text-[11px] px-2 py-1.5 rounded-lg bg-brand-red-50 text-brand-red border border-brand-red-200 font-semibold hover:bg-brand-red-100 disabled:opacity-40 transition">
+            className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] py-1.5 rounded-lg bg-brand-red-50 text-brand-red border border-brand-red-200 font-semibold disabled:opacity-40">
             <Trash2 size={11} /> {t('admin.bulk_delete')}
           </button>
         </div>
@@ -349,32 +348,30 @@ export default function AdminUsersPage() {
       {message && <div className="bg-brand-blue-50 text-brand-blue text-sm rounded-lg p-3">{message}</div>}
 
       <div className="flex flex-col gap-2">
-        {/* Mstari 1: Tafuta + Idara */}
         <div className="flex gap-2">
           <input className="input flex-1 min-w-0" placeholder="Tafuta jina, simu, kada..."
             value={q} onChange={(e) => setQ(e.target.value)} />
-          <select className="input flex-shrink-0" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select className="input w-auto" value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="">{t('admin.all_depts')}</option>
             <option value="health">{t('admin.health')}</option>
             <option value="education">{t('admin.education')}</option>
           </select>
         </div>
-        {/* Mstari 2: Location filters — grid 2-col kwenye mobile */}
-        <div className="grid grid-cols-2 sm:flex gap-2">
-          <select className="input" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
+        <div className="flex flex-col gap-2">
+          <select className="input w-full" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
             <option value="">Mkoa wote</option>
             {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
-          <select className="input" value={districtFilter} onChange={(e) => setDistrictFilter(Number(e.target.value) || '')} disabled={!regionFilter}>
+          <select className="input w-full" value={districtFilter} onChange={(e) => setDistrictFilter(Number(e.target.value) || '')} disabled={!regionFilter}>
             <option value="">Wilaya zote</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
-          <select className="input col-span-2 sm:col-auto sm:flex-1" value={facilityFilter} onChange={(e) => setFacilityFilter(e.target.value)} disabled={!districtFilter}>
+          <select className="input w-full" value={facilityFilter} onChange={(e) => setFacilityFilter(e.target.value)} disabled={!districtFilter}>
             <option value="">Vituo vyote</option>
             {facilities.map((f: any) => <option key={f.id || f.code} value={String(f.id || f.code)}>{f.name}</option>)}
           </select>
           {allSubjects.length > 0 && (
-            <select className="input col-span-2 sm:col-auto sm:flex-1" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
+            <select className="input w-full" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
               <option value="">Masomo yote</option>
               {allSubjects.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
             </select>

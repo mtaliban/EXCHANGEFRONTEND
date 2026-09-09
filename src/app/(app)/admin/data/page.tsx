@@ -397,17 +397,15 @@ function SubjectsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: b
   return (
     <div className="space-y-3">
       <div className="flex flex-col gap-2">
+        <select className="input w-full" value={level} onChange={(e) => setLevel(e.target.value)}>
+          <option value="">{t('data.all_levels')}</option>
+          <option value="Primary">Primary (Msingi)</option>
+          <option value="Secondary">Secondary (Sekondari)</option>
+        </select>
         <div className="flex items-center gap-2">
-          <select className="input flex-shrink-0" value={level} onChange={(e) => setLevel(e.target.value)}>
-            <option value="">{t('data.all_levels')}</option>
-            <option value="Primary">Primary (Msingi)</option>
-            <option value="Secondary">Secondary (Sekondari)</option>
-          </select>
           <input className="input flex-1 min-w-0" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">{data.length} {t('data.total')}</span>
-          <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_subject')}</button>
+          <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1 whitespace-nowrap">{data.length}</span>
+          <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5 whitespace-nowrap">+ {t('data.add_subject')}</button>
         </div>
       </div>
       {/* Mobile list */}
@@ -821,16 +819,14 @@ function DistrictsTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: 
   return (
     <div className="space-y-3">
       <div className="flex flex-col gap-2">
+        <select className="input w-full" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
+          <option value="">{t('data.all_regions')}</option>
+          {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
         <div className="flex items-center gap-2">
-          <select className="input flex-shrink-0" value={regionFilter} onChange={(e) => setRegionFilter(Number(e.target.value) || '')}>
-            <option value="">{t('data.all_regions')}</option>
-            {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
           <input className="input flex-1 min-w-0" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1">{data.length} {t('data.total')}</span>
-          <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5">+ {t('data.add_district')}</button>
+          <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1 whitespace-nowrap">{data.length}</span>
+          <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5 whitespace-nowrap">+ {t('data.add_district')}</button>
         </div>
       </div>
       {/* Mobile list */}
@@ -1016,26 +1012,22 @@ function FacilitiesTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?:
   return (
     <div className="space-y-3">
       <div className="flex flex-col gap-2">
-        {/* Mstari 1: Aina + Mkoa + Wilaya (2-col grid kwenye mobile) */}
-        <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2">
-          <select className="input col-span-2 md:col-auto md:w-auto" value={category} onChange={(e) => { setCategory(e.target.value as any); setDistrictFilter(''); }}>
-            <option value="health"> {t('data.fac_health')}</option>
-            <option value="education"> {t('data.fac_schools')}</option>
-          </select>
-          <select className="input" value={regionFilter} onChange={(e) => { setRegionFilter(Number(e.target.value) || ''); setDistrictFilter(''); }}>
-            <option value="">{t('data.all_regions')}</option>
-            {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
-          <select className="input" value={districtFilter} onChange={(e) => setDistrictFilter(Number(e.target.value) || '')} disabled={!regionFilter}>
-            <option value="">{t('data.all_districts')}</option>
-            {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-          </select>
-        </div>
-        {/* Mstari 2: Search + Count + Add */}
+        <select className="input w-full" value={category} onChange={(e) => { setCategory(e.target.value as any); setDistrictFilter(''); }}>
+          <option value="health"> {t('data.fac_health')}</option>
+          <option value="education"> {t('data.fac_schools')}</option>
+        </select>
+        <select className="input w-full" value={regionFilter} onChange={(e) => { setRegionFilter(Number(e.target.value) || ''); setDistrictFilter(''); }}>
+          <option value="">{t('data.all_regions')}</option>
+          {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+        <select className="input w-full" value={districtFilter} onChange={(e) => setDistrictFilter(Number(e.target.value) || '')} disabled={!regionFilter}>
+          <option value="">{t('data.all_districts')}</option>
+          {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
         <div className="flex items-center gap-2">
           <input className="input flex-1 min-w-0" placeholder={t('data.fac_search')} value={q} onChange={(e) => setQ(e.target.value)} />
-          <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1 whitespace-nowrap flex-shrink-0">{data.length} {t('data.total')}</span>
-          <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5 whitespace-nowrap flex-shrink-0">+ {t('data.add_facility')}</button>
+          <span className="text-xs font-bold text-brand-blue bg-brand-blue-50 rounded-full px-2.5 py-1 whitespace-nowrap">{data.length}</span>
+          <button onClick={() => setCreating(true)} className="btn-outline text-xs px-3 py-1.5 whitespace-nowrap">+ {t('data.add_facility')}</button>
         </div>
       </div>
       {/* Mobile list */}
