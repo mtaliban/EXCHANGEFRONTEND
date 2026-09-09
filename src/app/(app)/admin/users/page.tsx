@@ -92,7 +92,7 @@ export default function AdminUsersPage() {
   const [live, setLive] = useState(false);
   const lastEvent = useRef(0);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 5;
   const [regionFilter, setRegionFilter] = useState<number | ''>('');
   const [districtFilter, setDistrictFilter] = useState<number | ''>('');
   const [facilityFilter, setFacilityFilter] = useState<string>('');
@@ -422,35 +422,41 @@ export default function AdminUsersPage() {
               </span>
             </div>
             {/* Vitendo */}
-            <div className="px-3 pb-3 space-y-1.5">
-              <div className="flex gap-2">
-                <button onClick={() => setViewing(u)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-grey-100 text-brand-grey-700 text-xs font-semibold">
-                  <Eye size={13} /> Angalia
+            <div className="px-3 pb-4 pt-1">
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => setViewing(u)}
+                  className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-brand-grey-100 text-brand-grey-700 font-semibold text-xs">
+                  <Eye size={16} /> Angalia
                 </button>
-                <button onClick={() => setEditing(u)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-blue-50 text-brand-blue text-xs font-semibold">
-                  <Pencil size={13} /> Hariri
+                <button onClick={() => setEditing(u)}
+                  className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-brand-blue-50 text-brand-blue font-semibold text-xs">
+                  <Pencil size={16} /> Hariri
                 </button>
+                {!u.is_admin && (
+                  <button onClick={() => toggleSuspend(u)}
+                    className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-orange-50 text-orange-600 font-semibold text-xs">
+                    {u.status === 'disabled' ? <><CheckCircle2 size={16} /> Fungua</> : <><Ban size={16} /> Funga</>}
+                  </button>
+                )}
+                {!u.is_admin && !u.is_verified && (
+                  <button onClick={() => toggleContact(u)}
+                    className={`flex flex-col items-center justify-center gap-1 py-3 rounded-2xl font-semibold text-xs ${u.contact_enabled ? 'bg-green-50 text-green-700' : 'bg-brand-grey-100 text-brand-grey-600'}`}>
+                    <Phone size={16} /> {u.contact_enabled ? 'Ameruhusu' : 'Ruhusu'}
+                  </button>
+                )}
+                {!u.is_admin && (
+                  <button onClick={() => del(u)}
+                    className="flex flex-col items-center justify-center gap-1 py-3 rounded-2xl bg-red-50 text-red-600 font-semibold text-xs">
+                    <Trash2 size={16} /> Futa
+                  </button>
+                )}
+                {u.is_admin && u._id !== myUserId && (
+                  <button onClick={() => toggleAdmin(u)}
+                    className="col-span-2 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-red-50 text-red-600 font-semibold text-xs">
+                    <Shield size={16} /> Ondoa Admin
+                  </button>
+                )}
               </div>
-              {!u.is_admin && (
-                <div className="flex gap-2">
-                  <button onClick={() => toggleSuspend(u)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-orange-50 text-orange-600 text-xs font-semibold">
-                    {u.status === 'disabled' ? <><CheckCircle2 size={13} /> Fungua</> : <><Ban size={13} /> Funga</>}
-                  </button>
-                  {!u.is_verified && (
-                    <button onClick={() => toggleContact(u)} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold ${u.contact_enabled ? 'bg-green-50 text-green-700' : 'bg-brand-grey-100 text-brand-grey-600'}`}>
-                      <Phone size={13} /> {u.contact_enabled ? 'Ameruhusu' : 'Ruhusu'}
-                    </button>
-                  )}
-                  <button onClick={() => del(u)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-semibold">
-                    <Trash2 size={13} /> Futa
-                  </button>
-                </div>
-              )}
-              {u.is_admin && u._id !== myUserId && (
-                <button onClick={() => toggleAdmin(u)} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-semibold">
-                  <Shield size={13} /> Ondoa Admin
-                </button>
-              )}
             </div>
           </div>
         ))}
