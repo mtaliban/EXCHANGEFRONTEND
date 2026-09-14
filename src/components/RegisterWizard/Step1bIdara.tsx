@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getDepartments, type Department } from '@/lib/api';
+import { getDepartments, getCadres, type Department } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -29,12 +29,19 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
 
   useEffect(() => {
     setLoading(true);
-    getDepartments()
-      .then((list) => {
+    Promise.all([getDepartments(), getCadres().catch(() => [])])
+      .then(([list, cadres]) => {
         const active = list.filter((d) => d.status !== 'disabled');
-        setDepartments(active);
-        if (initial.category && active.some((d) => d.code === initial.category)) {
+        // Idara isiyo na kada HAIONYESHWI — mtumiaji asikwame kwenye hatua
+        // ya Kada (dropdown tupu). Idara ikipata kada, inarudi automatically.
+        const withCadres = cadres.length
+          ? active.filter((d) => cadres.some((c) => c.category === d.code))
+          : active;
+        setDepartments(withCadres);
+        if (initial.category && withCadres.some((d) => d.code === initial.category)) {
           setCategory(initial.category);
+        } else {
+          setCategory('');
         }
       })
       .catch(() => setError('Imeshindikana kupata idara'))

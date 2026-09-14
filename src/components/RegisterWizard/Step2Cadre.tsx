@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getCadres, getSubjects, type Cadre, type Subject } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { AlertCircle, Loader2, BookOpen } from 'lucide-react';
+import { AlertCircle, Loader2, BookOpen, Info } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -21,6 +21,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initial.subjects || []);
   const [error, setError] = useState<string | null>(null);
+  const [loadingCadres, setLoadingCadres] = useState(true);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
 
   const dv = useDataVersion();
@@ -34,8 +35,12 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
   // Load cadres — first time kutoka DB, kisha kutoka cache. Fallback ni hardcoded.
   useEffect(() => {
-    if (!category) { setCadres([]); return; }
-    getCadres(category, employmentSector).then(setCadres).catch(() => setError(t('step2.err_load_cadres')));
+    if (!category) { setCadres([]); setLoadingCadres(false); return; }
+    setLoadingCadres(true);
+    getCadres(category, employmentSector)
+      .then(setCadres)
+      .catch(() => setError(t('step2.err_load_cadres')))
+      .finally(() => setLoadingCadres(false));
   }, [category, employmentSector, forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentCadre = cadres.find((c) => c.code === cadre_code);
@@ -72,9 +77,28 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
+    if (!cadres.length) { setError('Idara hii haina kada bado — rudi nyuma uchague idara nyingine.'); return; }
     if (!category || !cadre_code) { setError(t('step2.err_choose')); return; }
     if (showSubjects && selectedSubjects.length < 2) { setError('Chagua masomo 2 — ni lazima kabisa.'); return; }
     onNext({ category, cadre_code, subjects: selectedSubjects });
+  }
+
+  // Idara haina kada — mtumiaji asikwame hapa. Amuache arudi nyuma.
+  if (!loadingCadres && !cadres.length) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step2.cadre')}</h2>
+        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl p-3.5">
+          <Info size={18} className="flex-shrink-0 mt-0.5" />
+          <span className="font-medium">
+            Idara uliyochagua haijawekwa kada bado. Tafadhali rudi nyuma na uchague idara nyingine.
+          </span>
+        </div>
+        <div className="flex justify-between gap-2 pt-3">
+          <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
+        </div>
+      </div>
+    );
   }
 
   return (
