@@ -20,6 +20,9 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const level = isTeacherPrimary ? 'Primary' : isTeacherSecondary ? 'Secondary' : undefined;
   const category: 'health' | 'education' = initial.category;
   const employmentSector: string | undefined = initial.employment_sector;
+  // Vituo vilivyopo ni vya AFYA na SHULE pekee. Idara nyingine (mfano
+  // Watumishi wa Umma) hazina orodha ya vituo — kitufe hicho hakionyeshwi.
+  const showFacility = category === 'health' || category === 'education';
 
   // ── Wizara ya Afya: Mkoa + Hospitali (skip wilaya) ──
   const isWizara = category === 'health' && employmentSector === 'wizara_afya';
@@ -52,13 +55,13 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
   // ── TAMISEMI/Elimu: load facilities when district is chosen ──
   useEffect(() => {
-    if (!isWizara && district_id) {
+    if (!isWizara && district_id && showFacility) {
       getFacilities(Number(district_id), category, level as any).then(setFacilities).catch(() => setFacilities([]));
     } else if (!isWizara) {
       setFacilities([]);
     }
     if (!isWizara) setFacilityId('');
-  }, [district_id, category, level, isWizara]);
+  }, [district_id, category, level, isWizara, showFacility]);
 
   // ── Wizara ya Afya: load ALL facilities in region at once ──
   useEffect(() => {
@@ -153,7 +156,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
         </div>
       )}
 
-      {!isWizara && district_id !== '' && (
+      {!isWizara && showFacility && district_id !== '' && (
         <div>
           <label className="label">
             {t('step3.facility')} ({category === 'health' ? t('step3.facility_health') : t('step3.facility_school')})
