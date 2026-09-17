@@ -353,12 +353,19 @@ function DepartmentModal({ initial, onClose, onSaved }: { initial: any; onClose:
     <ModalShell
       title={initial.code ? t('data.edit_department') : t('data.add_department')}
       onClose={onClose}
-      busy={busy} canSave={!!code && !!name && !busy}
+      busy={busy} canSave={!!name && !busy}
       saveLabel={t('admin.save')} error={error}
       onSave={async () => {
         setBusy(true); setError(null);
         try {
-          await onSaved({ code: code.trim().toLowerCase(), name, status, icon: icon || undefined });
+          // Code auto-slug: "Idara Ya Afya" → "idara_ya_afya" (backend inaruhusu
+          // herufi ndogo/namba/_ pekee — bila hii 422 ilirudishwa kwa input ya kawaida).
+          // Ikiachwa wazi, inatengenezwa kutoka jina.
+          const slug = (code.trim() || name.trim())
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
+          await onSaved({ code: slug, name, status, icon: icon || undefined });
         } catch (e) { setError(await errText(e)); }
         finally { setBusy(false); }
       }}>
