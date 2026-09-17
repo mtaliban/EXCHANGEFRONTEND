@@ -584,7 +584,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   async function onCall() {
     if (!c.phone_primary) return;
     if (!canContact) {
-      showCardToast('Changia TZS 5,000 upate namba', c.user_id);
+      showCardToast('Changia TZS 2,500 upate namba', c.user_id);
       return;
     }
     showCardToast(`Piga ${c.full_name}`, c.user_id);
@@ -595,7 +595,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   async function onSMS() {
     if (!c.phone_primary) return;
     if (!canContact) {
-      showCardToast('Changia TZS 5,000 upate namba', c.user_id);
+      showCardToast('Changia TZS 2,500 upate namba', c.user_id);
       return;
     }
     showCardToast(`SMS kwa ${c.full_name}`, c.user_id);
@@ -606,7 +606,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
   async function onWhatsApp() {
     if (!c.phone_alt) return;
     if (!canContact) {
-      showCardToast('Changia TZS 5,000 upate namba', c.user_id);
+      showCardToast('Changia TZS 2,500 upate namba', c.user_id);
       return;
     }
     showCardToast(`WhatsApp kwa ${c.full_name}`, c.user_id);
@@ -805,7 +805,7 @@ function TrueMatchCard({ m, now, lang, mySubjects, me, myRegionName, isVerified,
 
   async function onCall() {
     if (!m.phone_primary) return;
-    if (!canContact) { showCardToast('Changia TZS 5,000 upate namba', m.user_id); return; }
+    if (!canContact) { showCardToast('Changia TZS 2,500 upate namba', m.user_id); return; }
     showCardToast(`Piga ${m.full_name}`, m.user_id);
     try { await logContact(m.user_id, 'call', 'initiated'); } catch {}
     window.location.href = `tel:${m.phone_primary}`;

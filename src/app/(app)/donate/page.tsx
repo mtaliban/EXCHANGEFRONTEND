@@ -23,7 +23,7 @@ export default function DonatePage() {
   const { subscribe } = useLive();
   const [adminPhone, setAdminPhone] = useState('');
   const [currency, setCurrency] = useState('TZS');
-  const [amount, setAmount] = useState<number | ''>(5000);
+  const [amount, setAmount] = useState<number | ''>(2500);
   const [phone, setPhone] = useState('');
   const [smsText, setSmsText] = useState('');
   const [order, setOrder] = useState<any>(null);
@@ -194,7 +194,7 @@ export default function DonatePage() {
           <label className="label">{t('donate.sms_label')}</label>
           <textarea
             className="input min-h-[90px] resize-y"
-            placeholder="C2H8MZ3JX1 Confirmed. You have received TZS 5,000.00 from JOHN KAMWENDA - 0712345678..."
+            placeholder="C2H8MZ3JX1 Confirmed. You have received TZS 2,500.00 from JOHN KAMWENDA - 0712345678..."
             value={smsText}
             onChange={(e) => { setSmsText(e.target.value); setError(''); }}
             disabled={busy}
