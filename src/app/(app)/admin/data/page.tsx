@@ -624,7 +624,11 @@ function CadresTab({ flash, tick, markOwnAction }: { flash: (m: string, ok?: boo
       )}
       {(editing || creating) && (
         <CadreModal
-          initial={editing || { code: '', display_name: '', category: 'education', requires_subjects: false, level: 'Primary' }}
+          /* Kada mpya: HAKUNA default ya idara/level. Zamani ilikuwa
+             `category: 'education'` + `level: 'Primary'` → kada yoyote
+             iliyoongezwa kimya ilikuwa ya ELIMU na inaonekana kama ya walimu
+             (usajili ukaitaka masomo 2). Sasa admin LAZIMA achague idara. */
+          initial={editing || { code: '', display_name: '', category: '', requires_subjects: false, level: '' }}
           onClose={() => { setEditing(null); setCreating(false); }}
           onSaved={async (body) => {
             try {
@@ -678,7 +682,8 @@ function CadreModal({ initial, onClose, onSaved }: { initial: any; onClose: () =
       <div><label className="label">{t('data.name')}</label><input className="input" value={display_name} onChange={(e) => setName(e.target.value)} disabled={busy} /></div>
       <div><label className="label">{t('admin.department')}</label>
         <select className="input" value={category} onChange={(e) => setCategory(e.target.value)} disabled={busy}>
-          {departments.length === 0 && <option value="health">{t('admin.health')}</option>}
+          {/* placeholder — hivyo admin anaona wazi kwamba LAZIMA achague idara */}
+          <option value="">-- {t('admin.department')} --</option>
           {departments.map((d) => (
             <option key={d.code} value={d.code}>{d.icon ? `${d.icon} ` : ''}{d.name}</option>
           ))}

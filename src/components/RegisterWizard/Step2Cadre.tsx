@@ -37,7 +37,8 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   useEffect(() => {
     if (!category) { setCadres([]); setLoadingCadres(false); return; }
     setLoadingCadres(true);
-    getCadres(category, employmentSector)
+    // bypass cache — kada mpya iliyoongezwa na admin (Data) ionekane PAPO HAPO
+    getCadres(category, employmentSector, true)
       .then(setCadres)
       .catch(() => setError(t('step2.err_load_cadres')))
       .finally(() => setLoadingCadres(false));
@@ -53,7 +54,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
     if (showSubjects && subjectLevel) {
       // Only show loading spinner on FIRST load, not on silent background refresh
       if (!subjects.length) setLoadingSubjects(true);
-      getSubjects(subjectLevel)
+      getSubjects(subjectLevel, true)
         .then((list) => {
           setSubjects(list);
           const codes = new Set(list.map((s) => s.code));

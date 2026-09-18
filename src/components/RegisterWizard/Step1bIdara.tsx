@@ -29,7 +29,9 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
 
   useEffect(() => {
     setLoading(true);
-    getDepartments()
+    // bypass cache — idara mpya ya admin ionekane PAPO HAPO kwenye usajili
+    // (cache ya 60s ilikuwa inaonyesha orodha ya kale hadi dakika moja).
+    getDepartments(true)
       .then((list) => {
         const active = list.filter((d) => d.status !== 'disabled');
         // Onyesha idara zote ACTIVE. Zamani tulificha idara isiyo na kada —
