@@ -17,7 +17,7 @@ import { timeAgo } from '@/lib/timeAgo';
 import { parseServerDate } from '@/lib/dates';
 import { playArrivalSound } from '@/lib/sound';
 import Spinner from '@/components/Spinner';
-import { getMe } from '@/lib/api';
+import { getMe, getDepartments } from '@/lib/api';
 import {
   Users, MapPin, Target, Phone, MessageSquare, Clock, Search,
   Zap, Filter, HandCoins, ArrowLeftRight,
@@ -44,6 +44,13 @@ function categoryLabel(cat: string): string {
   return cat || '—';
 }
 
+/* Majina ya idara (dynamic kutoka DB) — idara mpya ya admin (Mifugo, Kilimo...)
+   inaonekana kwa JINA lake kwenye kadi, sio code ghafi. */
+let DEPT_NAMES: Record<string, string> = {};
+function deptName(cat: string): string {
+  return DEPT_NAMES[cat] || categoryLabel(cat);
+}
+
 export default function DashboardBoard() {
   const t = useT();
   const lang = useI18n((s) => s.lang);
@@ -52,9 +59,11 @@ export default function DashboardBoard() {
   const dests = (user?.desired_destinations || []) as any[];
   const myCategory = user?.category;
   const isAdmin = !!(user as any)?.is_admin;
-  // Idara zote isipokuwa 'health' zinachukuliwa kama zinaweza kuwa na masomo
-  // (elimu + idara nyingine zozote mpya). Admin anaona ZOTE — elimu + afya.
-  const isEdu = isAdmin ? true : myCategory !== 'health';
+  // Kichujio cha masomo ni kwa ELIMU tu (walimu wana masomo). Idara nyingine
+  // (Mifugo, Kilimo, Watumishi wa Umma...) hazina masomo — zamani zote
+  // zisizo 'health' zilionyeshwa vichujio vya masomo na kuhisi kama walimu.
+  // Admin anaona ZOTE (anaweza kuchuja kwa masomo ya walimu).
+  const isEdu = isAdmin ? true : myCategory === 'education';
 
   // Mikoa anayotaka kwenda (k.m. Dar + Pwani) + mikoa aliyoifuata (k.m. Tanga)
   const destRegionIds = useMemo(
@@ -101,6 +110,14 @@ export default function DashboardBoard() {
     const cat = isAdmin ? undefined : myCategory;
     getCadres(cat).then(setCadres).catch(() => {});
   }, [isAdmin, myCategory]);
+
+  // Majina ya idara (dynamic) — kadi za board zinaonyesha jina la idara
+  // halisi (Mifugo, Kilimo...) badala ya code ghafi.
+  useEffect(() => {
+    getDepartments().then((list: any[]) => {
+      DEPT_NAMES = Object.fromEntries((list || []).map((d) => [d.code, `${d.icon ? `${d.icon} ` : ''}${d.name}`]));
+    }).catch(() => {});
+  }, []);
 
   // REFRESH user data on mount — is_verified + contact_enabled lazima ziwe FRESH
   // ili canContact isome data halisi, sio stale ya auth store.
@@ -664,7 +681,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
           {/* NI NANI: idara (Afya/Elimu) + kada — majina yote yanaonekana (hakuna kukata) */}
           <div className="flex items-center gap-1 flex-wrap mt-0.5">
             <span className="text-[10px] font-semibold text-brand-blue-600 dark:text-brand-blue-400">
-              {isEdu ? t('label.category_education') : t('label.category_health')}
+              {deptName(c.category)}
             </span>
             <span className="text-[11px] font-medium text-brand-grey-600 dark:text-brand-grey-300 break-words min-w-0 leading-snug">
               {c.cadre_display || c.cadre_code}
@@ -837,7 +854,7 @@ function TrueMatchCard({ m, now, lang, mySubjects, me, myRegionName, isVerified,
             {targetPaid && <span className="text-[8px] font-bold text-emerald-700 bg-emerald-100 px-1 py-0.5 rounded-full">✓ PAID</span>}
           </div>
           <div className="text-[11px] text-brand-grey-500">
-            <span className="font-semibold text-emerald-700 dark:text-emerald-400">{categoryLabel(m.category)}</span> · {cadreLabel(m.cadre_code)}
+            <span className="font-semibold text-emerald-700 dark:text-emerald-400">{deptName(m.category)}</span> · {cadreLabel(m.cadre_code)}
           </div>
         </div>
       </div>

@@ -77,34 +77,33 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!cadres.length) { setError('Idara hii haina kada bado — rudi nyuma uchague idara nyingine.'); return; }
-    if (!category || !cadre_code) { setError(t('step2.err_choose')); return; }
+    // Idara isiyo na kada bado (k.m. Mifugo/Kilimo mpaka admin aweke kada):
+    // mtumiaji anaendelea BILA kada — matching itampatanisha na wenzake wote wa
+    // idara hiyo. Akiwa na kada, lazima achague (na masomo 2 kama required).
+    if (cadres.length && !cadre_code) { setError(t('step2.err_choose')); return; }
     if (showSubjects && selectedSubjects.length < 2) { setError('Chagua masomo 2 — ni lazima kabisa.'); return; }
-    onNext({ category, cadre_code, subjects: selectedSubjects });
+    onNext({ category, cadre_code: cadres.length ? cadre_code : '', subjects: selectedSubjects });
   }
 
-  // Idara haina kada — mtumiaji asikwame hapa. Amuache arudi nyuma.
-  if (!loadingCadres && !cadres.length) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step2.cadre')}</h2>
-        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl p-3.5">
-          <Info size={18} className="flex-shrink-0 mt-0.5" />
-          <span className="font-medium">
-            Idara uliyochagua haijawekwa kada bado. Tafadhali rudi nyuma na uchague idara nyingine.
-          </span>
-        </div>
-        <div className="flex justify-between gap-2 pt-3">
-          <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">{t('wizard.back')}</button>
-        </div>
-      </div>
-    );
-  }
+  // Idara haina kada bado — mtumiaji anaendelea BILA kada (badge ya maelezo
+  // tuonyeshwa). Aweze kusajiliwa na kupatana na wenzake wa idara hiyo.
 
   return (
     <form onSubmit={submit} className="space-y-3.5">
       <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step2.cadre')}</h2>
 
+      {/* Idara isiyo na kada bado — maelezo tuonyeshwa, mtumiaji anaendelea bila kada */}
+      {!loadingCadres && !cadres.length && (
+        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl p-3">
+          <Info size={16} className="flex-shrink-0 mt-0.5" />
+          <span className="font-medium">
+            Idara hii haijawekwa kada bado — unaweza kuendelea usajili bila kuichagua.
+            Utapatanishwa na wenzako wote wa idara hii.
+          </span>
+        </div>
+      )}
+
+      {cadres.length > 0 && (
       <div>
         <label className="label">{t('step2.cadre')} *</label>
         <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
@@ -113,7 +112,8 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
             <option key={c.code} value={c.code}>{c.display_name}</option>
           ))}
         </select>
-      </div>          {showSubjects && (
+      </div>
+      )}          {showSubjects && (
         <div>
           <label className="label flex items-center gap-1.5">
             {t('step2.subject')} <span className="text-brand-red text-xs">*</span>
