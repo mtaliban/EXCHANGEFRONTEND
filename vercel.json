@@ -1,5 +1,13 @@
 {
   "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.esstranfer.com" }],
+      "destination": "https://esstranfer.com/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
