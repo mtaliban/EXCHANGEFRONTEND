@@ -266,7 +266,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         {dests.map((d, i) => (
           <div key={i} className="relative p-3 rounded-xl bg-white border border-[#e2e8f0] space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-brand-blue">
+              <span className="text-sm font-bold text-brand-blue">
                 {destLabel(i)}
               </span>
               {dests.length > 1 && (
