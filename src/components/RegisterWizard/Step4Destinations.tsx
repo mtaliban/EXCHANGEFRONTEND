@@ -6,6 +6,7 @@ import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { departmentHasFacilities } from './stepHeading';
 import StepTitle from './StepTitle';
+import YearsSelect from './YearsSelect';
 import { AlertCircle, Plus, Trash2, UserPlus, X } from 'lucide-react';
 
 interface Props {
@@ -243,6 +244,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     }
 
     if (destinations.length === 0) { setError('Ongeza angalau mkoa mmoja'); return; }
+    // Uhakiki wetu wenyewe (dropdown yetu haitumii "required" ya kivinjari)
+    if (!yearsOfService) { setError('Tafadhali chagua miaka ya kazi.'); return; }
+    setError(null);
 
     await onSubmit({
       desired_destinations: destinations,
@@ -377,12 +381,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
       {/* Years of Service — lazima */}
       <div className="pt-2">
         <label className="label">Umefanya kazi kwa miaka mingapi?</label>
-        <select className="input" value={yearsOfService} onChange={(e) => setYearsOfService(e.target.value)} required>
-          <option value="">Chagua miaka ya kazi</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3+ (miaka 3 au zaidi)</option>
-        </select>
+        <YearsSelect value={yearsOfService} onChange={setYearsOfService} />
       </div>
 
       {error && (

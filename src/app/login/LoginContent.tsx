@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, AlertCircle, WifiOff, X, Phone } from 'lucide-react';
@@ -15,6 +15,17 @@ function ErrorAlert({ msg, type }: { msg: string; type?: 'network' | 'validation
       <Icon size={16} className="flex-shrink-0 mt-0.5" />
       <span className="leading-relaxed">{msg}</span>
     </div>
+  );
+}
+
+/** Kosa la sehemu moja — mtindo ule ule wa ukurasa wa usajili (register) */
+function FieldError({ msg }: { msg?: string | null }) {
+  if (!msg) return null;
+  return (
+    <p className="flex items-start gap-1 text-brand-red mt-1" style={{ fontSize: 13 }}>
+      <AlertCircle size={13} className="flex-shrink-0 mt-0.5" />
+      <span>{msg}</span>
+    </p>
   );
 }
 
@@ -51,6 +62,27 @@ export default function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<'network' | 'validation' | undefined>(undefined);
+  // Uhakiki wetu wenyewe wa kisanduku cha namba ya simu (badala ya "required" ya kivinjari)
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const identifierRef = useRef<HTMLInputElement>(null);
+
+  /** Hurudisha true kama kisanduku ni sahihi; la sivyo kinaonyesha kosa na kupata focus. */
+  function validateIdentifier(): boolean {
+    const v = identifier.trim();
+    if (!v) {
+      setFieldError(t('login.err_phone_required'));
+      identifierRef.current?.focus();
+      return false;
+    }
+    // Email ya admin hairuhusiwi kulazimishwa muundo wa namba ya simu
+    if (!v.includes('@') && !/^(\+?255|0)\d{9}$/.test(v.replace(/[\s-]/g, ''))) {
+      setFieldError(t('login.err_phone_invalid'));
+      identifierRef.current?.focus();
+      return false;
+    }
+    setFieldError(null);
+    return true;
+  }
 
   function isErrorNetwork(err: any): boolean {
     return !err?.response && (err?.message === 'Network Error' || err?.code === 'ERR_NETWORK' || err?.code === 'ERR_CONNECTION_REFUSED');
@@ -59,6 +91,7 @@ export default function LoginContent() {
   // Submit — kama ni namba ya simu, ingia moja kwa moja; kama ni email, 2FA
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!validateIdentifier()) return;
     setError(null); setErrorType(undefined); setLoading(true);
     try {
       const res: any = await login(identifier.trim());
@@ -154,17 +187,21 @@ export default function LoginContent() {
             <p className="text-brand-grey-500 mt-1 text-sm">{t('login.subtitle')}</p>
           </div>
 
-          <form onSubmit={twoFA ? (e) => { e.preventDefault(); } : onSubmit} className="space-y-3.5">
+          <form onSubmit={twoFA ? (e) => { e.preventDefault(); } : onSubmit} className="space-y-3.5" noValidate>
             {/* Email/Password — toujours visible, disabled wakati wa 2FA */}
             <div>
               <label className="label">{identifier.includes('@') ? 'Email ya Admin' : t('login.phone_label')}</label>
               <div className="relative">
-                <input type="text" className="input pl-9" placeholder={identifier.includes('@') ? 'admin@kubadilishana.go.tz' : '0712345678'}
-                  value={identifier} onChange={(e) => setIdentifier(e.target.value)}
+                <input ref={identifierRef} type="text"
+                  className={`input pl-9 ${fieldError ? '!border-brand-red focus:!ring-brand-red' : ''}`}
+                  placeholder={identifier.includes('@') ? 'admin@kubadilishana.go.tz' : '0712345678'}
+                  value={identifier}
+                  onChange={(e) => { setIdentifier(e.target.value); if (fieldError) setFieldError(null); }}
+                  aria-invalid={!!fieldError}
                   required autoComplete="username" disabled={!!twoFA} />
                 <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-400" />
               </div>
-
+              <FieldError msg={fieldError} />
             </div>
 
             {error && <ErrorAlert msg={error} type={errorType} />}
@@ -221,10 +258,6 @@ export default function LoginContent() {
           <div className="mt-4">
             <Link href="/register" className="btn-primary w-full flex items-center justify-center gap-2" style={{ background: 'transparent', color: 'rgb(var(--brand-blue))', border: '2px solid rgb(var(--brand-blue) / 0.3)' }}>
               {t('login.register_now')}
-              {/* Icon ya 16px kwa nafasi ya 10px — kimo cha kitufe hakibadiliki */}
-              <span className="inline-flex h-0 items-center shrink-0 ml-0.5" aria-hidden="true">
-                <i className="ti ti-user-plus" style={{ fontSize: 16 }} />
-              </span>
             </Link>
           </div>
         </div>
