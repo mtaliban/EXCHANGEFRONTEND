@@ -382,10 +382,11 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
         Ongeza Mkoa Mwingine
       </button>
 
-      {/* Years of Service — kadi yenye classes zilezile za kadi za mikoa,
-          ili kisanduku cha miaka kianzie na kiishie pale pale kisanduku cha
+      {/* Years of Service — HAKUNA kadi wala mstari unaoonekana (usiwe kama
+          kadi ya mkoa). Padding ya p-3 + border isiyoonekana (1px) inafanya
+          kisanduku chake kianzie na kiishie pale pale kisanduku cha
           "Chagua Mkoa" kinapoanzia na kuishia. Hatua hii pekee. */}
-      <div className="relative p-3 rounded-xl bg-white border border-[#e2e8f0] space-y-2">
+      <div className="p-3 border border-transparent space-y-2">
         <label className="label">Umefanya kazi kwa miaka mingapi?</label>
         <YearsSelect value={yearsOfService} onChange={(v) => { setYearsOfService(v); setError(null); }} />
       </div>
