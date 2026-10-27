@@ -290,3 +290,14 @@ html.theme-switching * {
   border-color: rgb(var(--brand-blue));
   box-shadow: inset 0 0 0 1px rgb(var(--brand-blue));
 }
+
+/* ── Kimo kimoja kwa visanduku vyote vya fomu ya usajili ────────────────
+ * element tofauti (input, select ya kivinjari, kitufe cha dropdown) hupata
+ * kimo tofauti — hasa kwenye simu, select ya kivinjari huwa ndefu kuliko
+ * input ya kawaida. Kanuni hii inavilazimisha vyote kuwa 2.25rem (36px)
+ * ndani ya wizard ya usajili pekee, kwenye kila kifaa. Hivyo kisanduku cha
+ * "miaka ya kazi", cha mkoa, cha wilaya na cha kituo vinaonekana sawa.
+ * Haigusi ukurasa mwingine wowote wa app. */
+.reg-wizard .input {
+  height: 2.25rem;
+}

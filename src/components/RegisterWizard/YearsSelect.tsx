@@ -128,9 +128,10 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
                   padding: '8px 12px',
                   borderRadius: 6,
                   fontSize: 14,
-                  /* Chaguo lililochaguliwa: bluu kamili, maandishi meupe — hakuna tiki. */
-                  backgroundColor: isSelected ? '#1e40af' : active === i ? '#f8fafc' : 'transparent',
-                  color: isSelected ? '#ffffff' : '#0f172a',
+                  /* Chaguo lililochaguliwa: highlight ya bluu iliyopauka (#eff6ff) na
+                   * maandishi ya bluu — si bloksi nene ya bluu iliyokolea. Hakuna tiki. */
+                  backgroundColor: isSelected ? '#eff6ff' : active === i ? '#f8fafc' : 'transparent',
+                  color: isSelected ? '#1e40af' : '#0f172a',
                   fontWeight: isSelected ? 600 : 400,
                 }}
               >

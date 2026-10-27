@@ -62,7 +62,7 @@ export default function RegisterWizard({ onComplete }: Props) {
   const progress = Math.round((step / totalSteps) * 100);
 
   return (
-    <div>
+    <div className="reg-wizard">
       {error && (
         <div className="flex items-start gap-2.5 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3.5 mb-4">
           <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
