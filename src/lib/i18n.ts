@@ -130,7 +130,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'label.cadre': 'Kada',
     /* ── Register ── */
     'reg.badge': 'Usajili', 'reg.title': 'Jaza Taarifa Zako',
-    'reg.subtitle': 'Hatua 4 rahisi. Utamaliza chini ya dakika 3.',
+    'reg.subtitle': 'Jaza taarifa chache tu ili ujisajili.',
     'reg.success_title': 'Umefanikiwa Kujisajili!',
     'reg.success_body': 'Karibu', 'reg.success_body2': '. Akaunti yako imeundwa vizuri.',
     'reg.login_now': 'Ingia Sasa', 'reg.have_account': 'Una akaunti tayari?', 'reg.login_link': 'Ingia hapa',
@@ -665,7 +665,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'label.cadre': 'Cadre',
     /* ── Register ── */
     'reg.badge': 'Registration', 'reg.title': 'Fill in Your Details',
-    'reg.subtitle': '4 easy steps. Done in under 3 minutes.',
+    'reg.subtitle': 'Just fill in a few details to register.',
     'reg.success_title': 'Registration Successful!',
     'reg.success_body': 'Welcome', 'reg.success_body2': '. Your account has been created successfully.',
     'reg.login_now': 'Login Now', 'reg.have_account': 'Already have an account?', 'reg.login_link': 'Login here',

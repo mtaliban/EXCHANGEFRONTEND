@@ -15,6 +15,11 @@ export default function RegisterContent() {
   const setAuth = useAuth((s) => s.setAuth);
   const toastShown = useRef(false);
 
+  // Kichwa: neno la kwanza jeusi, maneno yaliyobaki ya bluu
+  const titleWords = t('reg.title').trim().split(' ');
+  const titleFirst = titleWords[0] ?? '';
+  const titleRest = titleWords.slice(1).join(' ');
+
   function onComplete(data?: any) {
     if (!data?.access_token) {
       // Fallback: kama hakuna token, elekeza login
@@ -50,11 +55,11 @@ export default function RegisterContent() {
       </Link>
 
       <div className="text-center mb-6">
-        <span className="inline-flex items-center rounded-full bg-brand-blue-50 border border-brand-blue-100 px-3 py-1 text-xs font-semibold text-brand-blue mb-2">
-          {t('reg.badge')}
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-bold text-brand-grey-900 dark:text-white">{t('reg.title')}</h1>
-        <p className="text-brand-grey-500 dark:text-brand-grey-400 mt-1">{t('reg.subtitle')}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">
+          <span className="text-[#101828]">{titleFirst}</span>{' '}
+          <span className="text-[#1e40af]">{titleRest}</span>
+        </h1>
+        <p className="text-[#101828] mt-1">{t('reg.subtitle')}</p>
       </div>
 
       <DataVersionPoller />
