@@ -186,7 +186,10 @@ export default function LoginContent() {
                     {t('login.logging_in')}
                   </>
                 ) : (
-                  t('login.submit')
+                  <>
+                    {t('login.submit')}
+                    <i className="ti ti-lock-open" aria-hidden="true" />
+                  </>
                 )}
               </button>
             ) : (
@@ -221,6 +224,7 @@ export default function LoginContent() {
           <div className="mt-4">
             <Link href="/register" className="btn-primary w-full flex items-center justify-center gap-2" style={{ background: 'transparent', color: 'rgb(var(--brand-blue))', border: '2px solid rgb(var(--brand-blue) / 0.3)' }}>
               {t('login.register_now')}
+              <i className="ti ti-user-plus" aria-hidden="true" />
             </Link>
           </div>
         </div>

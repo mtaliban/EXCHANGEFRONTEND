@@ -113,6 +113,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="sw" suppressHydrationWarning>
+      <head>
+        {/* Tabler Icons webfont — inatumika kwenye vitufe vya ukurasa wa kuingia */}
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css"
+        />
+      </head>
       <body className="min-h-screen flex flex-col">
         {/* Theme init — inatumika kabla ya first paint */}
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: `(function(){try{var t=JSON.parse(localStorage.getItem('kv_theme'));var th=(t&&t.state&&t.state.theme)||'light';var r=document.documentElement;r.classList.toggle('dark',th==='dark');r.style.colorScheme=th;}catch(e){}})();` }} />
