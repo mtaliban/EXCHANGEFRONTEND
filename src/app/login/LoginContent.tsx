@@ -186,14 +186,7 @@ export default function LoginContent() {
                     {t('login.logging_in')}
                   </>
                 ) : (
-                  <>
-                    {t('login.submit')}
-                    {/* Kisanduku cha h-0: icon ya 24px inaonekana kikamilifu lakini
-                        haiongezi kimo cha kitufe. gap-2 (8px) + ml-0.5 (2px) = 10px */}
-                    <span className="inline-flex h-0 items-center shrink-0 ml-0.5" aria-hidden="true">
-                      <i className="ti ti-lock-open" style={{ fontSize: 24 }} />
-                    </span>
-                  </>
+                  t('login.submit')
                 )}
               </button>
             ) : (
@@ -223,14 +216,14 @@ export default function LoginContent() {
 
 
           <p className="text-center text-xs text-brand-grey-500 mt-3">
-            <Link href="/forgot-password" className="text-brand-blue hover:underline font-medium">Sahau namba yako?</Link>
+            <Link href="/forgot-password" className="text-brand-blue hover:underline font-medium">Umesahau namba? Bonyeza hapa</Link>
           </p>
           <div className="mt-4">
             <Link href="/register" className="btn-primary w-full flex items-center justify-center gap-2" style={{ background: 'transparent', color: 'rgb(var(--brand-blue))', border: '2px solid rgb(var(--brand-blue) / 0.3)' }}>
               {t('login.register_now')}
-              {/* Icon ya 24px kwa nafasi ya 10px — kimo cha kitufe hakibadiliki */}
+              {/* Icon ya 16px kwa nafasi ya 10px — kimo cha kitufe hakibadiliki */}
               <span className="inline-flex h-0 items-center shrink-0 ml-0.5" aria-hidden="true">
-                <i className="ti ti-user-plus" style={{ fontSize: 24 }} />
+                <i className="ti ti-user-plus" style={{ fontSize: 16 }} />
               </span>
             </Link>
           </div>
