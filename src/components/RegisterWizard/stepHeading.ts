@@ -52,18 +52,29 @@ export function stepPosition(kind: StepKind, category?: string): number {
 const ORDINALS = ['step.ord1', 'step.ord2', 'step.ord3', 'step.ord4', 'step.ord5', 'step.ord6'];
 
 /**
- * Kichwa cha hatua, mfano "Hatua ya Kwanza: Utambulisho Wako".
+ * Vichwa vya hatua vimeligawanywa sehemu mbili ili kila sehemu ipate rangi yake:
+ * ordinal ("Hatua ya Kwanza:") na jina la hatua ("Utambulisho Wako").
  * Idara isiyo na vituo hutumia jina "Mkoa na Wilaya Ulipo Sasa".
  */
-export function stepHeading(
+export function stepHeadingParts(
   t: (key: string, fallback?: string) => string,
   kind: StepKind,
   data: { category?: string }
-): string {
+): { ordinal: string; name: string } {
   const position = stepPosition(kind, data.category);
   const nameKey =
     kind === 'station' && !departmentHasFacilities(data.category)
       ? 'step.station_region_district'
       : NAMES[kind];
-  return `${t(ORDINALS[position - 1])}: ${t(nameKey)}`;
+  return { ordinal: t(ORDINALS[position - 1]), name: t(nameKey) };
+}
+
+/** Kichwa cha hatua kama mstari mmoja, mfano "Hatua ya Kwanza: Utambulisho Wako". */
+export function stepHeading(
+  t: (key: string, fallback?: string) => string,
+  kind: StepKind,
+  data: { category?: string }
+): string {
+  const { ordinal, name } = stepHeadingParts(t, kind, data);
+  return `${ordinal}: ${name}`;
 }

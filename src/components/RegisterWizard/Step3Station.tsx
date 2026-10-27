@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Region, type District, type Facility } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { departmentHasFacilities, stepHeading } from './stepHeading';
+import { departmentHasFacilities } from './stepHeading';
+import StepTitle from './StepTitle';
 import { AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -117,7 +118,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
   return (
     <form onSubmit={submit} className="space-y-3.5">
-      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'station', initial)}</h2>
+      <StepTitle t={t} kind="station" data={initial} />
 
       <div>
         <label className="label">{t('step3.region')} *</label>

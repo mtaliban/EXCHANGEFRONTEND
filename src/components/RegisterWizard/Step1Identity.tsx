@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useT } from '@/lib/i18n';
-import { stepHeading } from './stepHeading';
+import StepTitle from './StepTitle';
 import { checkPhone } from '@/lib/api';
 import { AlertCircle, Phone, MessageCircle, User, Loader2, CheckCircle2, type LucideIcon } from 'lucide-react';
 
@@ -104,7 +104,7 @@ export default function Step1Identity({ initial, onNext }: Props) {
 
   return (
     <form onSubmit={submit} className="space-y-3.5" noValidate>
-      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'identity', initial)}</h2>
+      <StepTitle t={t} kind="identity" data={initial} />
 
       <div>
         <FieldLabel icon={User}>{t('step1.full_name')} *</FieldLabel>

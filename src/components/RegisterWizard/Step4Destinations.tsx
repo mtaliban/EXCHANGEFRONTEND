@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Region, type District, type Facility, type Destination } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { departmentHasFacilities, stepHeading } from './stepHeading';
+import { departmentHasFacilities } from './stepHeading';
+import StepTitle from './StepTitle';
 import { AlertCircle, Plus, Trash2, ChevronDown, X } from 'lucide-react';
 
 interface Props {
@@ -243,7 +244,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'destination', initial)}</h2>
+        <StepTitle t={t} kind="destination" data={initial} />
         <p className="text-sm text-brand-grey-500 mb-1">{t('step4.subtitle')}</p>
       </div>
 

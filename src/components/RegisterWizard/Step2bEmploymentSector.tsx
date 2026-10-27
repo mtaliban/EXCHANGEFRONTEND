@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useT } from '@/lib/i18n';
-import { stepHeading } from './stepHeading';
+import StepTitle from './StepTitle';
 
 interface Props {
   initial: any;
@@ -25,7 +25,7 @@ export default function Step2bEmploymentSector({ initial, onBack, onNext }: Prop
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'ministry', initial)}</h2>
+        <StepTitle t={t} kind="ministry" data={initial} />
         <p className="text-sm text-brand-grey-500">
           Je, unafanya kazi chini ya taasisi gani?
         </p>

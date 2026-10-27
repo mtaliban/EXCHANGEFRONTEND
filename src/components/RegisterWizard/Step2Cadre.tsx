@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getCadres, getSubjects, type Cadre, type Subject } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
-import { stepHeading } from './stepHeading';
+import StepTitle from './StepTitle';
 import { AlertCircle, Loader2, BookOpen, Info } from 'lucide-react';
 
 interface Props {
@@ -92,7 +92,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
   return (
     <form onSubmit={submit} className="space-y-3.5">
-      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'cadre', initial)}</h2>
+      <StepTitle t={t} kind="cadre" data={initial} />
 
       {/* Idara isiyo na kada bado — maelezo tuonyeshwa, mtumiaji anaendelea bila kada */}
       {!loadingCadres && !cadres.length && (
