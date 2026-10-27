@@ -56,9 +56,33 @@ export default function RegisterWizard({ onComplete }: Props) {
   const isHealth = data.category === 'health';
   // Afya: hatua 6 (identity, idara, wizara, kada, kituo, lengo)
   // Elimu/kada nyingine: hatua 5 (identity, idara, kada, kituo, lengo)
+  const totalSteps = isHealth ? 6 : 5;
+  // Asilimia ya maendeleo: hatua ya sasa / jumla ya hatua (mf. 3/6 = 50%).
+  // Inabadilika yenyewe kila "Endelea" au "Rudi" kwa sababu inasoma `step`.
+  const progress = Math.round((step / totalSteps) * 100);
 
   return (
     <div>
+      {/* Bar ya asilimia — mahali palipokuwa vizungurushi vya hatua */}
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center justify-end mb-1.5">
+          <span className="text-xs font-bold text-brand-blue">{progress}%</span>
+        </div>
+        <div
+          className="h-2 w-full rounded-full bg-brand-grey-200 overflow-hidden"
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${progress}%`}
+        >
+          <div
+            className="h-full rounded-full bg-brand-blue transition-[width] duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
       {error && (
         <div className="flex items-start gap-2.5 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3.5 mb-4">
           <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
