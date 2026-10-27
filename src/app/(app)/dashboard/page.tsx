@@ -8,7 +8,7 @@ import { getInitial } from '@/lib/initials';
 import { isDefaultName } from '@/lib/api';
 import { MapPin } from 'lucide-react';
 
-const WA_GROUP_LINK = 'https://chat.whatsapp.com/Gm43LFnroiZLV9wynX3FpP?s=cl&p=a&ilr=0';
+const WA_GROUP_LINK = 'https://chat.whatsapp.com/BobgTeOYemIKJCkUFxoBZm?s=cl&p=a&mlu=4&ilr=4';
 
 export default function DashboardPage() {
   const t = useT();
