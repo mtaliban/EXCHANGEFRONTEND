@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Award, Briefcase, Check, ChevronDown, Sprout, type LucideIcon } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 
 /** Chaguo za muda wa kazi — thamani zinazotumwa kwenye fomu: "1", "2", "3". */
-const OPTIONS: { value: string; label: string; icon: LucideIcon }[] = [
-  { value: '1', label: 'Mwaka 1', icon: Sprout },
-  { value: '2', label: 'Miaka 2', icon: Briefcase },
-  { value: '3', label: 'Miaka 3 au zaidi', icon: Award },
+const OPTIONS: { value: string; label: string }[] = [
+  { value: '1', label: 'Mwaka 1' },
+  { value: '2', label: 'Miaka 2' },
+  { value: '3', label: 'Miaka 3 au zaidi' },
 ];
 
 interface Props {
@@ -17,8 +17,10 @@ interface Props {
 }
 
 /**
- * Dropdown ndogo ya kisasa (badala ya select ya kivinjari):
- * - inafunguka chini ya kisanduku kwa upana ule ule
+ * Dropdown yetu (badala ya select ya kivinjari).
+ * - orodha iko kwenye mpangilio wa kawaida (position: static, hakuna z-index),
+ *   hivyo inashuka chini na kusukuma vitufe vya "Najisajili"/"Rudi" chini
+ *   badala ya kuifunika.
  * - kufunga kwa Esc au kubonyeza nje
  * - kibodi: mishale ya juu/chini + Enter
  */
@@ -83,7 +85,9 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
   }
 
   return (
-    <div className="relative" ref={rootRef}>
+    <div ref={rootRef}>
+      {/* Kisanduku kimefungwa — kimo na ukubwa wa herufi sawa na "Chagua Shule (hiari)"
+          (classes zilezile: .input + text-sm) */}
       <button
         type="button"
         ref={buttonRef}
@@ -91,21 +95,10 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
         onKeyDown={onButtonKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="w-full flex items-center justify-between gap-2 bg-white text-left transition-colors"
-        style={{
-          padding: '8px 10px',
-          border: '1px solid #d1d5db',
-          borderRadius: 8,
-          fontSize: 14,
-          color: selected ? '#0f172a' : '#6b7280',
-        }}
+        className="input text-sm bg-white flex items-center justify-between gap-2 text-left"
+        style={{ color: selected ? '#0f172a' : '#6b7280' }}
       >
-        <span className="inline-flex items-center gap-2 min-w-0">
-          {selected && (
-            <selected.icon size={16} className="flex-shrink-0" style={{ color: '#1e40af' }} />
-          )}
-          <span className="truncate">{selected ? selected.label : placeholder}</span>
-        </span>
+        <span className="truncate">{selected ? selected.label : placeholder}</span>
         <ChevronDown
           size={16}
           className="flex-shrink-0 text-brand-grey-400 transition-transform duration-200"
@@ -116,13 +109,8 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
       {open && (
         <ul
           role="listbox"
-          className="absolute left-0 right-0 z-30 bg-white border border-brand-grey-200 dark:border-brand-grey-600"
-          style={{
-            top: 'calc(100% + 4px)',
-            borderRadius: 8,
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.10)',
-            padding: 4,
-          }}
+          className="bg-white border border-brand-grey-200 dark:border-brand-grey-600 list-none m-0"
+          style={{ marginTop: 4, borderRadius: 10, padding: 4 }}
         >
           {OPTIONS.map((o, i) => {
             const isSelected = o.value === value;
@@ -136,25 +124,17 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
                 onClick={() => choose(i)}
                 className="flex items-center gap-2 cursor-pointer"
                 style={{
-                  padding: '6px 8px',
-                  minHeight: 32,
-                  maxHeight: 36,
+                  height: 36,
+                  padding: '8px 12px',
                   borderRadius: 6,
                   fontSize: 14,
-                  backgroundColor: isSelected ? '#eff6ff' : active === i ? '#f3f4f6' : 'transparent',
+                  backgroundColor: isSelected ? '#eff6ff' : active === i ? '#f8fafc' : 'transparent',
                   color: isSelected ? '#1e40af' : '#0f172a',
                   fontWeight: isSelected ? 600 : 400,
                 }}
               >
-                <o.icon
-                  size={16}
-                  className="flex-shrink-0"
-                  style={{ color: isSelected ? '#1e40af' : '#6b7280' }}
-                />
                 <span className="flex-1 truncate">{o.label}</span>
-                {isSelected && (
-                  <Check size={15} className="flex-shrink-0" style={{ color: '#1e40af' }} />
-                )}
+                {isSelected && <Check size={14} className="flex-shrink-0" style={{ color: '#1e40af' }} />}
               </li>
             );
           })}
