@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 /** Chaguo za muda wa kazi — thamani zinazotumwa kwenye fomu: "1", "2", "3". */
 const OPTIONS: { value: string; label: string }[] = [
@@ -95,7 +95,7 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
         onKeyDown={onButtonKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="input text-sm bg-white flex items-center justify-between gap-2 text-left"
+        className="input text-sm bg-white focus:!ring-0 focus:!border-brand-grey-300 flex items-center justify-between gap-2 text-left"
         style={{ color: selected ? '#0f172a' : '#6b7280' }}
       >
         <span className="truncate">{selected ? selected.label : placeholder}</span>
@@ -122,19 +122,19 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
                 onMouseEnter={() => setActive(i)}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(i)}
-                className="flex items-center gap-2 cursor-pointer"
+                className="cursor-pointer"
                 style={{
                   height: 36,
                   padding: '8px 12px',
                   borderRadius: 6,
                   fontSize: 14,
-                  backgroundColor: isSelected ? '#eff6ff' : active === i ? '#f8fafc' : 'transparent',
-                  color: isSelected ? '#1e40af' : '#0f172a',
+                  /* Chaguo lililochaguliwa: bluu kamili, maandishi meupe — hakuna tiki. */
+                  backgroundColor: isSelected ? '#1e40af' : active === i ? '#f8fafc' : 'transparent',
+                  color: isSelected ? '#ffffff' : '#0f172a',
                   fontWeight: isSelected ? 600 : 400,
                 }}
               >
-                <span className="flex-1 truncate">{o.label}</span>
-                {isSelected && <Check size={14} className="flex-shrink-0" style={{ color: '#1e40af' }} />}
+                <span className="block truncate">{o.label}</span>
               </li>
             );
           })}
