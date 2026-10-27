@@ -164,6 +164,16 @@ textarea {
   outline-offset: 2px;
 }
 
+/* Sehemu za kujaza HAZIONGEZWI ukubwa wala kuwekewa mstari wa nje wa bluu
+ * wakati wa focus. Bila hii, input ya maandishi iliyobonyezwa ilipata outline
+ * ya :focus-visible (2px + offset 2px) nje ya border, na hivyo kisanduku
+ * kilionekana kikubwa. Ishara ya focus ni rangi ya border pekee (1px ileile). */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
 /* White card surfaces turn dark in dark mode (bg-white used for cards/bubbles) */
 .dark .bg-white { background-color: rgb(var(--brand-grey-100)); }
 .dark .bg-white\/90 { background-color: rgb(var(--brand-grey-100) / 0.9); }
@@ -240,8 +250,10 @@ html.theme-switching * {
   .btn-outline {
     @apply inline-flex items-center justify-center rounded-md border border-brand-grey-300 px-3 py-1 text-[11px] font-bold text-brand-grey-700 hover:bg-brand-grey-100 active:scale-[0.98] transition;
   }
+  /* Focus: rangi ya border pekee (1px ileile) — hakuna ring, outline wala
+   * box-shadow, ili kisanduku kisibadilishe ukubwa wakati wa kubonyezwa. */
   .input {
-    @apply w-full rounded-md border border-brand-grey-300 bg-white px-2.5 py-1.5 text-xs text-brand-grey-900 placeholder-brand-grey-500 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent;
+    @apply w-full rounded-md border border-brand-grey-300 bg-white px-2.5 py-1.5 text-xs text-brand-grey-900 placeholder-brand-grey-500 focus:outline-none focus:ring-0 focus:border-brand-blue;
   }
   select.input {
     @apply appearance-none cursor-pointer;
