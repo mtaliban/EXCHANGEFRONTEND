@@ -49,7 +49,10 @@ describe('Step2Cadre', () => {
     const onNext = vi.fn();
     render(<Step2Cadre initial={{ category: 'health' }} onBack={() => {}} onNext={onNext} />);
 
-    await waitFor(() => expect(getCadres).toHaveBeenCalled());
+    // Subiri orodha ya kada IONEKANE kwenye UI, si tu kwamba API imeitwa:
+    // vinginevyo "Endelea" inaweza kubonyezwa kabla hali ya kada kupakiwa
+    // na hivyo kuingia kwenye njia ya "idara haina kada" (test ina-flake).
+    await waitFor(() => expect(screen.getByRole('combobox')).toHaveTextContent('Clinical Officer'));
     const form = screen.getByText('Endelea →').closest('form')!;
     fireEvent.submit(form);
 
