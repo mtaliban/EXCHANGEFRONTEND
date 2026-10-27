@@ -193,7 +193,7 @@ export default function LoginContent() {
               <label className="label">{identifier.includes('@') ? 'Email ya Admin' : t('login.phone_label')}</label>
               <div className="relative">
                 <input ref={identifierRef} type="text"
-                  className={`input pl-9 ${fieldError ? '!border-brand-red focus:!ring-brand-red' : ''}`}
+                  className="input pl-9"
                   placeholder={identifier.includes('@') ? 'admin@kubadilishana.go.tz' : '0712345678'}
                   value={identifier}
                   onChange={(e) => { setIdentifier(e.target.value); if (fieldError) setFieldError(null); }}
