@@ -743,7 +743,7 @@ function BoardCard({ c, now, lang, mySubjects, me, myRegionName, isVerified, sho
                     ? 'bg-brand-blue text-white border-brand-blue shadow-sm'
                     : 'bg-white text-brand-grey-700 border-brand-grey-300 dark:bg-brand-grey-800 dark:text-brand-grey-300 dark:border-brand-grey-600'
                 }`}>
-                {s}{matched ? ' ✓' : ''}
+                {s}
               </span>
             );
           })}
