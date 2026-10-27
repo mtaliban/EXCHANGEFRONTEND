@@ -69,12 +69,15 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   }, [showSubjects, subjectLevel, forceRefresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSubject(code: string) {
-    setSelectedSubjects((prev) => {
-      if (prev.includes(code)) return prev.filter((c) => c !== code);
+    const next = selectedSubjects.includes(code)
+      ? selectedSubjects.filter((c) => c !== code)
       // Masomo 2 pekee
-      if (prev.length >= 2) return prev;
-      return [...prev, code];
-    });
+      : selectedSubjects.length >= 2
+        ? selectedSubjects
+        : [...selectedSubjects, code];
+    setSelectedSubjects(next);
+    // Kosa linaondolewa mara uhakiki unapopita (masomo 2)
+    if (next.length >= 2) setError(null);
   }
 
   function submit(ev: React.FormEvent) {
@@ -91,7 +94,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   // tuonyeshwa). Aweze kusajiliwa na kupatana na wenzake wa idara hiyo.
 
   return (
-    <form onSubmit={submit} className="space-y-3.5">
+    <form onSubmit={submit} className="space-y-3.5" noValidate>
       <StepTitle t={t} kind="cadre" data={initial} />
 
       {/* Idara isiyo na kada bado — maelezo tuonyeshwa, mtumiaji anaendelea bila kada */}
@@ -108,7 +111,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       {cadres.length > 0 && (
       <div>
         <label className="label">{t('step2.cadre')}</label>
-        <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
+        <select className="input" value={cadre_code} onChange={(e) => { setCadreCode(e.target.value); setError(null); }} required>
           <option value="">{t('step2.choose_cadre')}</option>
           {cadres.map((c) => (
             <option key={c.code} value={c.code}>{c.display_name}</option>

@@ -57,7 +57,7 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4" noValidate>
       <div>
         <StepTitle t={t} kind="department" data={initial} />
         <p className="text-sm text-brand-grey-500">

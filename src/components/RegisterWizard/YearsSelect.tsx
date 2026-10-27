@@ -95,7 +95,7 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
         onKeyDown={onButtonKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="input text-sm bg-white focus:!ring-0 focus:!border-brand-grey-300 flex items-center justify-between gap-2 text-left"
+        className="input text-sm bg-white flex items-center justify-between gap-2 text-left"
         style={{ color: selected ? '#0f172a' : '#6b7280' }}
       >
         <span className="truncate">{selected ? selected.label : placeholder}</span>

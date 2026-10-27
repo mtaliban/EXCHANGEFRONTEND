@@ -1,25 +1,27 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useT } from '@/lib/i18n';
 import StepTitle from './StepTitle';
 import { checkPhone } from '@/lib/api';
-import { AlertCircle, Phone, MessageCircle, User, Loader2, CheckCircle2, type LucideIcon } from 'lucide-react';
+import { useFieldStates, fieldClass, type FieldStatus } from '@/lib/formState';
+import FieldMessage from '@/components/FieldMessage';
+import { Phone, MessageCircle, User, Loader2, CheckCircle2, AlertCircle, type LucideIcon } from 'lucide-react';
 
 interface Props {
   initial: any;
   onNext: (data: any) => void;
 }
 
-function FieldError({ msg }: { msg?: string }) {
-  if (!msg) return null;
-  return (
-    <p className="flex items-start gap-1 text-brand-red text-xs mt-1">
-      <AlertCircle size={12} className="flex-shrink-0 mt-0.5" />
-      <span>{msg}</span>
-    </p>
-  );
-}
+/** Muundo wa namba ya simu: 07XXXXXXXX, 06XXXXXXXX au +2557XXXXXXXX. */
+const PHONE_RE = /^(\+?255|0)\d{9}$/;
+const normalizePhone = (v: string) => v.replace(/[\s-]/g, '');
+const TAKEN_MSG = 'Namba hii tayari inatumiwa na mtu mwingine';
+const FREE_MSG = 'Namba hii ipo huru';
+/** Debounce ya kikaguzi cha server (ms). */
+const CHECK_DEBOUNCE_MS = 400;
+
+type CheckState = 'idle' | 'checking' | 'available' | 'taken';
 
 function FieldLabel({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
   return (
@@ -30,71 +32,163 @@ function FieldLabel({ icon: Icon, children }: { icon: LucideIcon; children: Reac
   );
 }
 
+/** Aikoni ya hali NDANI ya kisanduku (inapakia / imefanikiwa / kosa). */
+function TrailingIcon({ status, check }: { status?: FieldStatus; check: CheckState }) {
+  if (status?.state === 'error') return <AlertCircle size={14} className="text-brand-red" />;
+  if (status?.state === 'success') return <CheckCircle2 size={14} className="text-green-500" />;
+  if (check === 'checking') return <Loader2 size={14} className="animate-spin text-brand-grey-400" />;
+  return null;
+}
+
 export default function Step1Identity({ initial, onNext }: Props) {
   const t = useT();
   const [full_name, setName] = useState(initial.full_name || '');
   const [phone_primary, setPhone] = useState(initial.phone_primary || '');
   const [phone_alt, setPhoneAlt] = useState(initial.phone_alt || '');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  // PHONE CHECK: real-time availability check (debounced)
-  const [phoneCheck, setPhoneCheck] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
-  const phoneTimer = useRef<any>(null);
-  // WHATSAPP CHECK: same real-time availability check
-  const [altCheck, setAltCheck] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
-  const altTimer = useRef<any>(null);
 
-  // Debounced phone check — 500ms baada ya user kuacha kuandika
+  /* MFUMO MMOJA WA HALI — neutral | error | success; ujumbe MMOJA kwa kisanduku. */
+  const { statuses, setFieldState } = useFieldStates();
+
+  /* Kosa linaonekana baada ya kutoka kwenye kisanduku (blur) au kubonyeza
+   * "Endelea" — si mtu anapoanza kuandika. Likishaonekana, linafutwa mara
+   * moja thamani ikiwa sahihi. */
+  const shown = useRef<Record<string, boolean>>({});
+
+  /* Kikaguzi cha server: debounce 400ms; jibu la ombi la ZAMANI linapuuzwa. */
+  const [phoneCheck, setPhoneCheck] = useState<CheckState>('idle');
+  const [altCheck, setAltCheck] = useState<CheckState>('idle');
+  const phoneReq = useRef(0);
+  const altReq = useRef(0);
+
+  /* Ujumbe wa uhakiki wa muundo — huhesabiwa kutoka THAMANI ya sasa,
+   * kamwe haubebi hali ya zamani ya makosa. */
+  const nameMsg = (v: string) => (v.trim().length < 3 ? t('step1.err_name') : null);
+  const primaryMsg = (v: string) => (!PHONE_RE.test(normalizePhone(v)) ? t('step1.err_phone') : null);
+  const altMsg = (v: string) =>
+    !v.trim()
+      ? t('step1.err_phone_alt_required')
+      : !PHONE_RE.test(normalizePhone(v))
+        ? t('step1.err_phone_alt')
+        : null;
+
+  /** Onyesha hali mara moja: kosa likiishaisha, futa kosa la zamani. */
+  function applyMsg(field: string, msg: string | null) {
+    if (msg) setFieldState(field, 'error', msg);
+    else if (statuses[field]?.state === 'error') setFieldState(field, 'neutral');
+  }
+
+  /** Kila mtu anapoandika: hesabu UPYA; kosa linaondolewa thamani ikiwa sahihi. */
+  function revalidate(field: string, msg: string | null) {
+    if (msg && shown.current[field]) applyMsg(field, msg);
+    else applyMsg(field, null);
+  }
+
+  /* ── Kikaguzi cha namba ya kwanza: ombi la mwisho pekee linaandika hali ── */
   useEffect(() => {
-    if (!phone_primary || phone_primary.length < 10) { setPhoneCheck('idle'); return; }
-    const cleaned = phone_primary.replace(/[\s-]/g, '');
-    if (!/^(\+?255|0)\d{9}$/.test(cleaned)) { setPhoneCheck('idle'); return; }
+    const cleaned = normalizePhone(phone_primary);
+    if (!PHONE_RE.test(cleaned)) {
+      phoneReq.current++;            // kikaguzi chochote kinachoendelea kimekataliwa
+      setPhoneCheck('idle');
+      return;
+    }
+    const id = ++phoneReq.current;
     setPhoneCheck('checking');
-    if (phoneTimer.current) clearTimeout(phoneTimer.current);
-    phoneTimer.current = setTimeout(() => {
-      checkPhone(cleaned).then((r) => {
-        setPhoneCheck(r.available ? 'available' : 'taken');
-      }).catch(() => setPhoneCheck('idle'));
-    }, 500);
-    return () => { if (phoneTimer.current) clearTimeout(phoneTimer.current); };
-  }, [phone_primary]);
+    const timer = setTimeout(() => {
+      checkPhone(cleaned)
+        .then((r) => {
+          if (id !== phoneReq.current) return;   // jibu la ombi la zamani — lipuuzwe
+          setPhoneCheck(r.available ? 'available' : 'taken');
+          setFieldState(
+            'phone_primary',
+            r.available ? 'success' : 'error',
+            r.available ? FREE_MSG : TAKEN_MSG
+          );
+        })
+        .catch(() => { if (id === phoneReq.current) setPhoneCheck('idle'); });
+    }, CHECK_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [phone_primary, setFieldState]);
 
-  // Debounced WhatsApp check
+  /* ── Kikaguzi cha WhatsApp — kanuni ileile ── */
   useEffect(() => {
-    if (!phone_alt || phone_alt.length < 10) { setAltCheck('idle'); return; }
-    const cleaned = phone_alt.replace(/[\s-]/g, '');
-    if (!/^(\+?255|0)\d{9}$/.test(cleaned)) { setAltCheck('idle'); return; }
+    const cleaned = normalizePhone(phone_alt);
+    if (!PHONE_RE.test(cleaned)) {
+      altReq.current++;
+      setAltCheck('idle');
+      return;
+    }
+    const id = ++altReq.current;
     setAltCheck('checking');
-    if (altTimer.current) clearTimeout(altTimer.current);
-    altTimer.current = setTimeout(() => {
-      checkPhone(cleaned).then((r) => {
-        setAltCheck(r.available ? 'available' : 'taken');
-      }).catch(() => setAltCheck('idle'));
-    }, 500);
-    return () => { if (altTimer.current) clearTimeout(altTimer.current); };
-  }, [phone_alt]);
+    const timer = setTimeout(() => {
+      checkPhone(cleaned)
+        .then((r) => {
+          if (id !== altReq.current) return;
+          setAltCheck(r.available ? 'available' : 'taken');
+          setFieldState(
+            'phone_alt',
+            r.available ? 'success' : 'error',
+            r.available ? FREE_MSG : TAKEN_MSG
+          );
+        })
+        .catch(() => { if (id === altReq.current) setAltCheck('idle'); });
+    }, CHECK_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [phone_alt, setFieldState]);
 
-  function validate() {
-    const e: Record<string, string> = {};
-    if (full_name.trim().length < 3) e.full_name = t('step1.err_name');
-    if (!/^(\+?255|0)\d{9}$/.test(phone_primary.replace(/[\s-]/g, ''))) {
-      e.phone_primary = t('step1.err_phone');
-    } else if (phoneCheck === 'taken') {
-      e.phone_primary = 'Namba hii tayari inatumiwa';
-    }
-    if (!phone_alt) {
-      e.phone_alt = t('step1.err_phone_alt_required');
-    } else if (!/^(\+?255|0)\d{9}$/.test(phone_alt.replace(/[\s-]/g, ''))) {
-      e.phone_alt = t('step1.err_phone_alt');
-    } else    if (altCheck === 'taken') {
-      e.phone_alt = 'Namba hii tayari inatumiwa na mtu mwingine';
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
+  function changeName(v: string) {
+    setName(v);
+    revalidate('full_name', nameMsg(v));
+  }
+
+  function changePhone(v: string) {
+    setPhone(v);
+    phoneReq.current++;              // hali ya kikaguzi cha thamani ya zamani imefutwa
+    setPhoneCheck('idle');
+    revalidate('phone_primary', primaryMsg(v));
+  }
+
+  function changeAlt(v: string) {
+    setPhoneAlt(v);
+    altReq.current++;
+    setAltCheck('idle');
+    revalidate('phone_alt', altMsg(v));
+  }
+
+  function blurName() {
+    if (!full_name.trim() && !shown.current.full_name) return;
+    shown.current.full_name = true;
+    applyMsg('full_name', nameMsg(full_name));
+  }
+
+  function blurPhone() {
+    if (!phone_primary.trim() && !shown.current.phone_primary) return;
+    shown.current.phone_primary = true;
+    applyMsg('phone_primary', primaryMsg(phone_primary));
+  }
+
+  function blurAlt() {
+    if (!phone_alt.trim() && !shown.current.phone_alt) return;
+    shown.current.phone_alt = true;
+    applyMsg('phone_alt', altMsg(phone_alt));
   }
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!validate()) return;
+    /* "Endelea" hupima kila kisanduku UPYA kutoka thamani iliyopo sasa —
+     * haitegemei hali yoyote ya zamani ya makosa. */
+    shown.current = { full_name: true, phone_primary: true, phone_alt: true };
+    const nameErr = nameMsg(full_name);
+    const primaryErr = primaryMsg(phone_primary);
+    const altErr = altMsg(phone_alt);
+    const primaryTaken = !primaryErr && phoneCheck === 'taken';
+    const altTaken = !altErr && altCheck === 'taken';
+
+    applyMsg('full_name', nameErr);
+    applyMsg('phone_primary', primaryErr || (primaryTaken ? TAKEN_MSG : null));
+    applyMsg('phone_alt', altErr || (altTaken ? TAKEN_MSG : null));
+
+    if (nameErr || primaryErr || altErr || primaryTaken || altTaken) return;
+
     onNext({
       full_name: full_name.trim(),
       phone_primary,
@@ -108,56 +202,54 @@ export default function Step1Identity({ initial, onNext }: Props) {
 
       <div>
         <FieldLabel icon={User}>{t('step1.full_name')}</FieldLabel>
-        <input className="input" value={full_name} onChange={(e) => setName(e.target.value)} placeholder={t('step1.name_ph')} required />
-        <FieldError msg={errors.full_name} />
+        <input
+          className={`input ${fieldClass(statuses.full_name)}`}
+          value={full_name}
+          onChange={(e) => changeName(e.target.value)}
+          onInput={(e) => changeName((e.target as HTMLInputElement).value)}
+          onBlur={blurName}
+          placeholder={t('step1.name_ph')}
+        />
+        <FieldMessage status={statuses.full_name} />
       </div>
 
       <div>
         <FieldLabel icon={Phone}>{t('step1.phone_normal')}</FieldLabel>
         <div className="relative">
-          <input className={`input pr-9 ${phoneCheck === 'taken' ? '!border-brand-red focus:!ring-brand-red' : phoneCheck === 'available' ? '!border-green-500 focus:!ring-green-500' : ''}`} value={phone_primary} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" />
+          <input
+            className={`input pr-9 ${fieldClass(statuses.phone_primary)}`}
+            value={phone_primary}
+            onChange={(e) => changePhone(e.target.value)}
+            onInput={(e) => changePhone((e.target as HTMLInputElement).value)}
+            onBlur={blurPhone}
+            placeholder="0712345678"
+            inputMode="tel"
+          />
           <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
-            {phoneCheck === 'checking' && <Loader2 size={14} className="animate-spin text-brand-grey-400" />}
-            {phoneCheck === 'available' && <CheckCircle2 size={14} className="text-green-500" />}
-            {phoneCheck === 'taken' && <AlertCircle size={14} className="text-brand-red" />}
+            <TrailingIcon status={statuses.phone_primary} check={phoneCheck} />
           </div>
         </div>
-        {phoneCheck === 'taken' && (
-          <p className="flex items-center gap-1 text-brand-red text-xs mt-1 font-medium">
-            <AlertCircle size={11} /> Namba hii tayari inatumiwa na mtu mwingine
-          </p>
-        )}
-        {phoneCheck === 'available' && (
-          <p className="flex items-center gap-1 text-green-600 text-xs mt-1 font-medium">
-            <CheckCircle2 size={11} /> Namba hii ipo huru
-          </p>
-        )}
-        <FieldError msg={errors.phone_primary} />
+        <FieldMessage status={statuses.phone_primary} />
       </div>
 
       <div>
         <FieldLabel icon={MessageCircle}>{t('step1.phone_whatsapp')}</FieldLabel>
         <div className="relative">
-          <input className={`input pr-9 ${altCheck === 'taken' ? '!border-brand-red focus:!ring-brand-red' : altCheck === 'available' ? '!border-green-500 focus:!ring-green-500' : ''}`} value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" required />
+          <input
+            className={`input pr-9 ${fieldClass(statuses.phone_alt)}`}
+            value={phone_alt}
+            onChange={(e) => changeAlt(e.target.value)}
+            onInput={(e) => changeAlt((e.target as HTMLInputElement).value)}
+            onBlur={blurAlt}
+            placeholder="0623456789"
+            inputMode="tel"
+          />
           <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
-            {altCheck === 'checking' && <Loader2 size={14} className="animate-spin text-brand-grey-400" />}
-            {altCheck === 'available' && <CheckCircle2 size={14} className="text-green-500" />}
-            {altCheck === 'taken' && <AlertCircle size={14} className="text-brand-red" />}
+            <TrailingIcon status={statuses.phone_alt} check={altCheck} />
           </div>
         </div>
-        {altCheck === 'taken' && (
-          <p className="flex items-center gap-1 text-brand-red text-xs mt-1 font-medium">
-            <AlertCircle size={11} /> Namba hii tayari inatumiwa na mtu mwingine
-          </p>
-        )}
-        {altCheck === 'available' && (
-          <p className="flex items-center gap-1 text-green-600 text-xs mt-1 font-medium">
-            <CheckCircle2 size={11} /> Namba hii ipo huru
-          </p>
-        )}
-        <FieldError msg={errors.phone_alt} />
+        <FieldMessage status={statuses.phone_alt} />
       </div>
-
 
       <div className="flex justify-end pt-2">
         <button type="submit" className="btn-primary">{t('wizard.next')}</button>

@@ -7,6 +7,8 @@ import { ArrowLeft, AlertCircle, WifiOff, X, Phone } from 'lucide-react';
 import { login, login2FA, extractErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
+import FieldMessage from '@/components/FieldMessage';
+import { useFieldStates, fieldClass } from '@/lib/formState';
 
 function ErrorAlert({ msg, type }: { msg: string; type?: 'network' | 'validation' }) {
   const Icon = type === 'network' ? WifiOff : AlertCircle;
@@ -15,17 +17,6 @@ function ErrorAlert({ msg, type }: { msg: string; type?: 'network' | 'validation
       <Icon size={16} className="flex-shrink-0 mt-0.5" />
       <span className="leading-relaxed">{msg}</span>
     </div>
-  );
-}
-
-/** Kosa la sehemu moja — mtindo ule ule wa ukurasa wa usajili (register) */
-function FieldError({ msg }: { msg?: string | null }) {
-  if (!msg) return null;
-  return (
-    <p className="flex items-start gap-1 text-brand-red mt-1" style={{ fontSize: 13 }}>
-      <AlertCircle size={13} className="flex-shrink-0 mt-0.5" />
-      <span>{msg}</span>
-    </p>
   );
 }
 
@@ -62,25 +53,49 @@ export default function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<'network' | 'validation' | undefined>(undefined);
-  // Uhakiki wetu wenyewe wa kisanduku cha namba ya simu (badala ya "required" ya kivinjari)
-  const [fieldError, setFieldError] = useState<string | null>(null);
+  /* MFUMO MMOJA WA HALI — neutral | error | success; ujumbe MMOJA kwa kisanduku. */
+  const { statuses, setFieldState } = useFieldStates();
+  /* Kosa linaonekana baada ya kutoka kwenye kisanduku (blur) au kubonyeza
+   * "Ingia" — si mtu anapoanza kuandika. */
+  const [showErr, setShowErr] = useState(false);
   const identifierRef = useRef<HTMLInputElement>(null);
+
+  /** Ujumbe wa kosa kwa THAMANI ya sasa — haubebi hali ya zamani. */
+  function identifierMsg(v: string): string | null {
+    const s = v.trim();
+    if (!s) return t('login.err_phone_required');
+    // Email ya admin hairuhusiwi kulazimishwa muundo wa namba ya simu
+    if (!s.includes('@') && !/^(\+?255|0)\d{9}$/.test(s.replace(/[\s-]/g, ''))) {
+      return t('login.err_phone_invalid');
+    }
+    return null;
+  }
+
+  /** Kila mtu anapoandika: hesabu UPYA; kosa linaondolewa thamani ikiwa sahihi. */
+  function changeIdentifier(v: string) {
+    setIdentifier(v);
+    const msg = identifierMsg(v);
+    setFieldState('identifier', msg && showErr ? 'error' : 'neutral', msg && showErr ? msg : undefined);
+  }
+
+  function blurIdentifier() {
+    if (!identifier.trim() && !showErr) return;   // kosa lisianze kabla mtu kuandika
+    setShowErr(true);
+    const msg = identifierMsg(identifier);
+    setFieldState('identifier', msg ? 'error' : 'neutral', msg || undefined);
+  }
 
   /** Hurudisha true kama kisanduku ni sahihi; la sivyo kinaonyesha kosa na kupata focus. */
   function validateIdentifier(): boolean {
-    const v = identifier.trim();
-    if (!v) {
-      setFieldError(t('login.err_phone_required'));
+    setShowErr(true);
+    const msg = identifierMsg(identifier);
+    if (msg) {
+      setFieldState('identifier', 'error', msg);
       identifierRef.current?.focus();
       return false;
     }
-    // Email ya admin hairuhusiwi kulazimishwa muundo wa namba ya simu
-    if (!v.includes('@') && !/^(\+?255|0)\d{9}$/.test(v.replace(/[\s-]/g, ''))) {
-      setFieldError(t('login.err_phone_invalid'));
-      identifierRef.current?.focus();
-      return false;
-    }
-    setFieldError(null);
+    // Uhaki umepita — makosa yote ya zamani yameondolewa
+    setFieldState('identifier', 'neutral');
     return true;
   }
 
@@ -193,15 +208,17 @@ export default function LoginContent() {
               <label className="label">{identifier.includes('@') ? 'Email ya Admin' : t('login.phone_label')}</label>
               <div className="relative">
                 <input ref={identifierRef} type="text"
-                  className="input pl-9"
+                  className={`input pl-9 ${fieldClass(statuses.identifier)}`}
                   placeholder={identifier.includes('@') ? 'admin@kubadilishana.go.tz' : '0712345678'}
                   value={identifier}
-                  onChange={(e) => { setIdentifier(e.target.value); if (fieldError) setFieldError(null); }}
-                  aria-invalid={!!fieldError}
+                  onChange={(e) => changeIdentifier(e.target.value)}
+                  onInput={(e) => changeIdentifier((e.target as HTMLInputElement).value)}
+                  onBlur={blurIdentifier}
+                  aria-invalid={statuses.identifier?.state === 'error'}
                   required autoComplete="username" disabled={!!twoFA} />
                 <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-400" />
               </div>
-              <FieldError msg={fieldError} />
+              <FieldMessage status={statuses.identifier} fontSize={13} iconSize={13} />
             </div>
 
             {error && <ErrorAlert msg={error} type={errorType} />}

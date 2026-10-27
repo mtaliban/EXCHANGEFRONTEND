@@ -117,12 +117,12 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3.5">
+    <form onSubmit={submit} className="space-y-3.5" noValidate>
       <StepTitle t={t} kind="station" data={initial} />
 
       <div>
         <label className="label">{t('step3.region_yours')}</label>
-        <select className="input" value={region_id} onChange={(e) => setRegionId(e.target.value ? Number(e.target.value) : '')} required>
+        <select className="input" value={region_id} onChange={(e) => { setRegionId(e.target.value ? Number(e.target.value) : ''); setError(null); }} required>
           <option value="">Chagua Mkoa</option>
           {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
@@ -135,7 +135,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
           {regionFacilitiesLoading ? (
             <div className="input text-sm text-brand-grey-400">Inapakia...</div>
           ) : (
-            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)} required>
+            <select className="input" value={facility_id} onChange={(e) => { setFacilityId(e.target.value); setError(null); }} required>
               <option value="">Chagua Hospitali</option>
               {facilities.map((f: any) => (
                 <option key={f.id || f.code} value={String(f.id || f.code)}>
@@ -151,7 +151,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       {!isWizara && region_id !== '' && (
         <div>
           <label className="label">{t('step3.district_yours')}</label>
-            <select className="input" value={district_id} onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : '')} required>
+            <select className="input" value={district_id} onChange={(e) => { setDistrictId(e.target.value ? Number(e.target.value) : ''); setError(null); }} required>
             <option value="">Chagua Wilaya</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
@@ -164,7 +164,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
             {category === 'health'
               ? <>{t('step3.facility')} ({t('step3.facility_health')})</>
               : t('step3.school_yours')}
-          </label>            <select className="input" value={facility_id} onChange={(e) => setFacilityId(e.target.value)}>
+          </label>            <select className="input" value={facility_id} onChange={(e) => { setFacilityId(e.target.value); setError(null); }}>
               <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo' : 'Chagua Shule (hiari)'}</option>
             {facilities.map((f: any) => (
               <option key={f.id || f.code} value={String(f.id || f.code)}>

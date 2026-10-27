@@ -122,6 +122,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   }
 
   function toggleDistrict(destIdx: number, districtId: number) {
+    setError(null);   // mtumiaji amebadilisha wilaya — kosa la zamani linaondolewa
     setDests((prev) => prev.map((d, idx) => {
       if (idx !== destIdx) return d;
       const current = d.selected_districts;
@@ -255,7 +256,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4" noValidate>
       <div>
         <StepTitle t={t} kind="destination" data={initial} />
         <p className="text-sm text-brand-grey-500 mb-1">{t('step4.subtitle')}</p>
@@ -278,8 +279,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
             </div>
 
             {/* Region select */}
-            <select className="input text-sm bg-white focus:!ring-0 focus:!border-brand-grey-300" value={d.region_id}
+            <select className="input text-sm bg-white" value={d.region_id}
               onChange={(e) => {
+                setError(null);
                 const rid = e.target.value ? Number(e.target.value) : '';
                 const rname = regions.find((r) => r.id === rid)?.name || '';
                 updateDest(i, { region_id: rid, region_name: rname, selected_districts: [], facility_id: null, facility_name: null });
@@ -295,8 +297,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
               regionFacLoading[d.region_id as number] ? (
                 <div className="input text-sm text-brand-grey-400">Inapakia hospitali...</div>
               ) : (
-                <select className="input text-sm bg-white focus:!ring-0 focus:!border-brand-grey-300" value={d.facility_id || ''}
+                <select className="input text-sm bg-white" value={d.facility_id || ''}
                   onChange={(e) => {
+                    setError(null);
                     const fid = e.target.value || null;
                     const facList = regionFacilities[d.region_id as number] || [];
                     const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
@@ -342,8 +345,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
 
                 {/* Kituo — kwa idara zenye orodha ya vituo pekee (afya/elimu) */}
                 {showFacility && (
-                  <select className="input text-sm bg-white focus:!ring-0 focus:!border-brand-grey-300" value={d.facility_id || ''}
+                  <select className="input text-sm bg-white" value={d.facility_id || ''}
                     onChange={(e) => {
+                      setError(null);
                       const fid = e.target.value || null;
                       // Find facility in any district
                       let facName: string | null = null;
@@ -383,7 +387,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
           "Chagua Mkoa" kinapoanzia na kuishia. Hatua hii pekee. */}
       <div className="relative p-3 rounded-xl bg-white border border-[#e2e8f0] space-y-2">
         <label className="label">Umefanya kazi kwa miaka mingapi?</label>
-        <YearsSelect value={yearsOfService} onChange={setYearsOfService} />
+        <YearsSelect value={yearsOfService} onChange={(v) => { setYearsOfService(v); setError(null); }} />
       </div>
 
       {error && (
