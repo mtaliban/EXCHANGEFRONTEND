@@ -137,6 +137,7 @@ const dict: Record<Lang, Record<string, string>> = {
     /* ── Register Wizard ── */
     'wizard.next': 'Endelea →', 'wizard.back': '← Rudi',
     'wizard.submit_error': 'Usajili umeshindwa. Jaribu tena.',
+    'wizard.step_word': 'Hatua', 'wizard.of': 'kati ya',
     /* Vichwa vya hatua — "Hatua ya Kwanza: ..." */
     'step.ord1': 'Hatua ya Kwanza', 'step.ord2': 'Hatua ya Pili',
     'step.ord3': 'Hatua ya Tatu', 'step.ord4': 'Hatua ya Nne',
@@ -667,6 +668,7 @@ const dict: Record<Lang, Record<string, string>> = {
     /* ── Register Wizard ── */
     'wizard.next': 'Continue →', 'wizard.back': '← Back',
     'wizard.submit_error': 'Registration failed. Try again.',
+    'wizard.step_word': 'Step', 'wizard.of': 'of',
     /* Step headings — "First Step: ..." */
     'step.ord1': 'First Step', 'step.ord2': 'Second Step',
     'step.ord3': 'Third Step', 'step.ord4': 'Fourth Step',

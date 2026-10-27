@@ -63,26 +63,6 @@ export default function RegisterWizard({ onComplete }: Props) {
 
   return (
     <div>
-      {/* Bar ya asilimia — mahali palipokuwa vizungurushi vya hatua */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex items-center justify-end mb-1.5">
-          <span className="text-xs font-bold text-brand-blue">{progress}%</span>
-        </div>
-        <div
-          className="h-2 w-full rounded-full bg-brand-grey-200 overflow-hidden"
-          role="progressbar"
-          aria-valuenow={progress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={`${progress}%`}
-        >
-          <div
-            className="h-full rounded-full bg-brand-blue transition-[width] duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
       {error && (
         <div className="flex items-start gap-2.5 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3.5 mb-4">
           <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
@@ -91,6 +71,30 @@ export default function RegisterWizard({ onComplete }: Props) {
       )}
 
       <div className="card p-4 sm:p-5">
+        {/* Bar nyembamba ya asilimia — juu kabisa ya kichwa cha hatua */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[12px] text-[#64748b]">
+              {t('wizard.step_word')} {step} {t('wizard.of')} {totalSteps}
+            </span>
+            <span className="text-[12px] font-semibold text-[#1e40af]">{progress}%</span>
+          </div>
+          <div
+            className="h-[4px] w-full rounded-full overflow-hidden"
+            style={{ backgroundColor: '#e2e8f0' }}
+            role="progressbar"
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${progress}%`}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{ width: `${progress}%`, backgroundColor: '#1e40af', transition: 'width 0.4s ease' }}
+            />
+          </div>
+        </div>
+
         {/* Step 1: Identity — Jina, Simu, WhatsApp */}
         {step === 1 && <Step1Identity initial={data} onNext={next} />}
         {/* Step 2: Idara — Afya / Elimu (wote) */}
