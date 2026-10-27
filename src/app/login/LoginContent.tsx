@@ -188,7 +188,11 @@ export default function LoginContent() {
                 ) : (
                   <>
                     {t('login.submit')}
-                    <i className="ti ti-lock-open" aria-hidden="true" />
+                    {/* Kisanduku cha h-0: icon ya 24px inaonekana kikamilifu lakini
+                        haiongezi kimo cha kitufe. gap-2 (8px) + ml-0.5 (2px) = 10px */}
+                    <span className="inline-flex h-0 items-center shrink-0 ml-0.5" aria-hidden="true">
+                      <i className="ti ti-lock-open" style={{ fontSize: 24 }} />
+                    </span>
                   </>
                 )}
               </button>
@@ -224,7 +228,10 @@ export default function LoginContent() {
           <div className="mt-4">
             <Link href="/register" className="btn-primary w-full flex items-center justify-center gap-2" style={{ background: 'transparent', color: 'rgb(var(--brand-blue))', border: '2px solid rgb(var(--brand-blue) / 0.3)' }}>
               {t('login.register_now')}
-              <i className="ti ti-user-plus" aria-hidden="true" />
+              {/* Icon ya 24px kwa nafasi ya 10px — kimo cha kitufe hakibadiliki */}
+              <span className="inline-flex h-0 items-center shrink-0 ml-0.5" aria-hidden="true">
+                <i className="ti ti-user-plus" style={{ fontSize: 24 }} />
+              </span>
             </Link>
           </div>
         </div>

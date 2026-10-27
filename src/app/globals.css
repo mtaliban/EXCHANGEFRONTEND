@@ -250,10 +250,10 @@ html.theme-switching * {
   .btn-outline {
     @apply inline-flex items-center justify-center rounded-md border border-brand-grey-300 px-3 py-1 text-[11px] font-bold text-brand-grey-700 hover:bg-brand-grey-100 active:scale-[0.98] transition;
   }
-  /* Focus: rangi ya border pekee (1px ileile) — hakuna ring, outline wala
-   * box-shadow, ili kisanduku kisibadilishe ukubwa wakati wa kubonyezwa. */
+  /* Focus: border (1px ileile) + mstari wa ndani wa 1px — hakuna ring, outline
+   * wala shadow ya nje, ili kisanduku kisibadilishe ukubwa wakati wa kubonyezwa. */
   .input {
-    @apply w-full rounded-md border border-brand-grey-300 bg-white px-2.5 py-1.5 text-xs text-brand-grey-900 placeholder-brand-grey-500 focus:outline-none focus:ring-0 focus:border-brand-blue;
+    @apply w-full rounded-md border border-brand-grey-300 bg-white px-2.5 py-1.5 text-xs text-brand-grey-900 placeholder-brand-grey-500 focus:outline-none focus:border-brand-blue;
   }
   select.input {
     @apply appearance-none cursor-pointer;
@@ -272,4 +272,21 @@ html.theme-switching * {
   .badge-gold {
     @apply inline-flex items-center rounded-full bg-brand-gold-100 px-3 py-1 text-xs font-semibold text-brand-gold-600;
   }
+}
+
+/* ── Focus ya sehemu za kujaza (input na select) ────────────────────────
+ * Mstari wa focus ni bluu iliyokolea (#1E40AF kwenye light mode) na unene
+ * uleule wa border (1px), pamoja na mstari wa NDANI (inset) wa 1px. Inset
+ * pekee — hakuna outline wala box-shadow ya nje, kwa hivyo ukubwa wa
+ * kisanduku (border-width, padding, font-size, height) haubadiliki hata
+ * kidogo wakati wa focus.
+ *
+ * Kanuni hii ni unlayered, hivyo inashinda utilities za kawaida; lakini
+ * sehemu zenye `focus:!ring-0` / `focus:!border-*` (k.m. visanduku vya
+ * "Mkoa Unaotaka Kuhamia") zinabaki kama zilivyo kwa sababu !important
+ * inashinda. */
+.input:focus,
+.input:focus-visible {
+  border-color: rgb(var(--brand-blue));
+  box-shadow: inset 0 0 0 1px rgb(var(--brand-blue));
 }
