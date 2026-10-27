@@ -107,13 +107,13 @@ export default function Step1Identity({ initial, onNext }: Props) {
       <StepTitle t={t} kind="identity" data={initial} />
 
       <div>
-        <FieldLabel icon={User}>{t('step1.full_name')} *</FieldLabel>
+        <FieldLabel icon={User}>{t('step1.full_name')}</FieldLabel>
         <input className="input" value={full_name} onChange={(e) => setName(e.target.value)} placeholder={t('step1.name_ph')} required />
         <FieldError msg={errors.full_name} />
       </div>
 
       <div>
-        <FieldLabel icon={Phone}>{t('step1.phone_normal')} *</FieldLabel>
+        <FieldLabel icon={Phone}>{t('step1.phone_normal')}</FieldLabel>
         <div className="relative">
           <input className={`input pr-9 ${phoneCheck === 'taken' ? '!border-brand-red focus:!ring-brand-red' : phoneCheck === 'available' ? '!border-green-500 focus:!ring-green-500' : ''}`} value={phone_primary} onChange={(e) => setPhone(e.target.value)} placeholder="0712345678" />
           <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -136,7 +136,7 @@ export default function Step1Identity({ initial, onNext }: Props) {
       </div>
 
       <div>
-        <FieldLabel icon={MessageCircle}>{t('step1.phone_whatsapp')} *</FieldLabel>
+        <FieldLabel icon={MessageCircle}>{t('step1.phone_whatsapp')}</FieldLabel>
         <div className="relative">
           <input className={`input pr-9 ${altCheck === 'taken' ? '!border-brand-red focus:!ring-brand-red' : altCheck === 'available' ? '!border-green-500 focus:!ring-green-500' : ''}`} value={phone_alt} onChange={(e) => setPhoneAlt(e.target.value)} placeholder="0623456789" required />
           <div className="absolute right-2.5 top-1/2 -translate-y-1/2">

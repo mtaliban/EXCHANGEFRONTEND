@@ -107,7 +107,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
 
       {cadres.length > 0 && (
       <div>
-        <label className="label">{t('step2.cadre')} *</label>
+        <label className="label">{t('step2.cadre')}</label>
         <select className="input" value={cadre_code} onChange={(e) => setCadreCode(e.target.value)} required>
           <option value="">{t('step2.choose_cadre')}</option>
           {cadres.map((c) => (
@@ -118,7 +118,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       )}          {showSubjects && (
         <div>
           <label className="label flex items-center gap-1.5">
-            {t('step2.subject')} <span className="text-brand-red text-xs">*</span>
+            {t('step2.subject')}
             <span className="text-[10px] font-semibold text-brand-grey-400 normal-case tracking-normal">(lazima somo 2)</span>
           </label>
 

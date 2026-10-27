@@ -6,7 +6,7 @@ import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { departmentHasFacilities } from './stepHeading';
 import StepTitle from './StepTitle';
-import { AlertCircle, Plus, Trash2, ChevronDown, X } from 'lucide-react';
+import { AlertCircle, Plus, Trash2, UserPlus, X } from 'lucide-react';
 
 interface Props {
   initial: any;
@@ -21,6 +21,15 @@ interface DestEntry {
   selected_districts: number[];  // empty = wilaya yote
   facility_id: string | null;
   facility_name: string | null;
+}
+
+/** Maneno ya mikoa ya lengo: wa kwanza, wa pili, wa tatu... (hakuna namba). */
+const DEST_ORDINALS = ['Pili', 'Tatu', 'Nne', 'Tano', 'Sita', 'Saba', 'Nane', 'Tisa', 'Kumi'];
+
+function destLabel(i: number): string {
+  return i === 0
+    ? 'Mkoa Unaotaka Kuhamia'
+    : `Mkoa wa ${DEST_ORDINALS[i - 1] || i + 1} Unaotaka Kuhamia`;
 }
 
 export default function Step4Destinations({ initial, onBack, onSubmit, submitting }: Props) {
@@ -250,11 +259,10 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
 
       <div className="space-y-4">
         {dests.map((d, i) => (
-          <div key={i} className="relative p-3 rounded-xl bg-brand-grey-50 dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 space-y-3">
+          <div key={i} className="relative p-3 rounded-xl bg-white border border-[#e2e8f0] space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-brand-blue flex items-center gap-1">
-                <ChevronDown size={12} />
-                Mkoa wa Lengo {i + 1}
+              <span className="text-[11px] font-bold text-brand-blue">
+                {destLabel(i)}
               </span>
               {dests.length > 1 && (
                 <button type="button" onClick={() => removeDest(i)}
@@ -266,13 +274,13 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
             </div>
 
             {/* Region select */}
-            <select className="input text-sm" value={d.region_id}
+            <select className="input text-sm bg-white focus:!ring-0 focus:!border-brand-grey-300" value={d.region_id}
               onChange={(e) => {
                 const rid = e.target.value ? Number(e.target.value) : '';
                 const rname = regions.find((r) => r.id === rid)?.name || '';
                 updateDest(i, { region_id: rid, region_name: rname, selected_districts: [], facility_id: null, facility_name: null });
               }} required>
-              <option value="">— Chagua Mkoa wa Lengo —</option>
+              <option value="">Chagua Mkoa</option>
               {regions.map((r) => (
                 <option key={r.id} value={r.id}>{r.name}</option>
               ))}
@@ -283,7 +291,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
               regionFacLoading[d.region_id as number] ? (
                 <div className="input text-sm text-brand-grey-400">Inapakia hospitali...</div>
               ) : (
-                <select className="input text-sm" value={d.facility_id || ''}
+                <select className="input text-sm bg-white focus:!ring-0 focus:!border-brand-grey-300" value={d.facility_id || ''}
                   onChange={(e) => {
                     const fid = e.target.value || null;
                     const facList = regionFacilities[d.region_id as number] || [];
@@ -330,7 +338,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
 
                 {/* Kituo — kwa idara zenye orodha ya vituo pekee (afya/elimu) */}
                 {showFacility && (
-                  <select className="input text-sm" value={d.facility_id || ''}
+                  <select className="input text-sm bg-white focus:!ring-0 focus:!border-brand-grey-300" value={d.facility_id || ''}
                     onChange={(e) => {
                       const fid = e.target.value || null;
                       // Find facility in any district
@@ -368,7 +376,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
 
       {/* Years of Service — lazima */}
       <div className="pt-2">
-        <label className="label">Umefanya kazi kwa miaka mingapi? *</label>
+        <label className="label">Umefanya kazi kwa miaka mingapi?</label>
         <select className="input" value={yearsOfService} onChange={(e) => setYearsOfService(e.target.value)} required>
           <option value="">Chagua miaka ya kazi</option>
           <option value="1">1</option>
@@ -392,7 +400,12 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
               <span className="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
               {t('step4.submitting')}
             </span>
-          ) : t('step4.submit')}
+          ) : (
+            <span className="inline-flex items-center gap-1.5">
+              {t('step4.submit')}
+              <UserPlus size={14} />
+            </span>
+          )}
         </button>
       </div>
     </form>

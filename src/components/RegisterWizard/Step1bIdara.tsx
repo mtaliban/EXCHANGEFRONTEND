@@ -72,7 +72,7 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
         </div>
       ) : (
         <div>
-          <label className="label">Chagua Idara *</label>
+          <label className="label">Chagua Idara</label>
           <select
             className="input"
             value={category}
