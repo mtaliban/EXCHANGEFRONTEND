@@ -45,7 +45,9 @@ export default function RegisterContent() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 sm:px-6 py-8">
+    /* Kifuniko: min-h-screen + flex column (HAKUNA height iliyofungwa, HAKUNA
+     * overflow hidden). Kiungo cha "Rudi" kinabaki juu kama nilivyo. */
+    <div className="min-h-screen flex flex-col px-4 sm:px-6 py-8">
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-grey-600 hover:text-brand-blue transition mb-4"
@@ -54,23 +56,29 @@ export default function RegisterContent() {
         {t('action.back')}
       </Link>
 
-      <div className="text-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">
-          <span className="text-[#101828]">{titleFirst}</span>{' '}
-          <span className="text-[#1e40af]">{titleRest}</span>
-        </h1>
-        <p className="text-[#101828] mt-1">{t('reg.subtitle')}</p>
+      {/* Kizuizi kimoja (kichwa + kadi ya fomu + kiungo cha chini) chenye
+       * my-auto: hatua FUPI inakaa katikati ya skrini kwa wima kama ukurasa wa
+       * login; hatua NDEFU inaanza juu na ukurasa unasogezwa kawaida bila
+       * kukata kitu. my-auto (si justify-center) huzuia juu kukatwa. */}
+      <div className="w-full max-w-xl mx-auto my-auto">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">
+            <span className="text-[#101828]">{titleFirst}</span>{' '}
+            <span className="text-[#1e40af]">{titleRest}</span>
+          </h1>
+          <p className="text-[#101828] mt-1">{t('reg.subtitle')}</p>
+        </div>
+
+        <DataVersionPoller />
+        <RegisterWizard onComplete={(d) => onComplete(d)} />
+
+        <p className="text-center text-sm text-brand-grey-500 dark:text-brand-grey-400 mt-6">
+          {t('reg.have_account')}{' '}
+          <Link href="/login" className="text-brand-blue font-semibold hover:underline">
+            {t('reg.login_link')}
+          </Link>
+        </p>
       </div>
-
-      <DataVersionPoller />
-      <RegisterWizard onComplete={(d) => onComplete(d)} />
-
-      <p className="text-center text-sm text-brand-grey-500 dark:text-brand-grey-400 mt-6">
-        {t('reg.have_account')}{' '}
-        <Link href="/login" className="text-brand-blue font-semibold hover:underline">
-          {t('reg.login_link')}
-        </Link>
-      </p>
     </div>
   );
 }
