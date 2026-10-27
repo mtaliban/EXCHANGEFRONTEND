@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Region, type District, type Facility } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
+import { departmentHasFacilities, stepHeading } from './stepHeading';
 import { AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -22,7 +23,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const employmentSector: string | undefined = initial.employment_sector;
   // Vituo vilivyopo ni vya AFYA na SHULE pekee. Idara nyingine (mfano
   // Watumishi wa Umma) hazina orodha ya vituo — kitufe hicho hakionyeshwi.
-  const showFacility = category === 'health' || category === 'education';
+  const showFacility = departmentHasFacilities(category);
 
   // ── Wizara ya Afya: Mkoa + Hospitali (skip wilaya) ──
   const isWizara = category === 'health' && employmentSector === 'wizara_afya';
@@ -116,7 +117,7 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
   return (
     <form onSubmit={submit} className="space-y-3.5">
-      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step3.title')}</h2>
+      <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'station', initial)}</h2>
 
       <div>
         <label className="label">{t('step3.region')} *</label>

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
+import { useT } from '@/lib/i18n';
+import { stepHeading } from './stepHeading';
 
 interface Props {
   initial: any;
@@ -10,6 +12,7 @@ interface Props {
 }
 
 export default function Step2bEmploymentSector({ initial, onBack, onNext }: Props) {
+  const t = useT();
   const [sector, setSector] = useState<string>(initial.employment_sector || '');
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +25,7 @@ export default function Step2bEmploymentSector({ initial, onBack, onNext }: Prop
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-brand-grey-900 mb-1">Wizara</h2>
+        <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'ministry', initial)}</h2>
         <p className="text-sm text-brand-grey-500">
           Je, unafanya kazi chini ya taasisi gani?
         </p>

@@ -37,7 +37,7 @@ describe('Step2Cadre', () => {
     vi.mocked(getCadres).mockResolvedValue(HEALTH_CADRES);
     render(<Step2Cadre initial={{ category: 'health' }} onBack={() => {}} onNext={() => {}} />);
 
-    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health', undefined));
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health', undefined, true));
 
     const select = screen.getByRole('combobox');
     expect(select).toHaveTextContent('Clinical Officer');
@@ -76,14 +76,14 @@ describe('Step2Cadre', () => {
     vi.mocked(getCadres).mockResolvedValue(HEALTH_CADRES);
     render(<Step2Cadre initial={{ category: 'health', employment_sector: 'wizara_afya' }} onBack={() => {}} onNext={() => {}} />);
 
-    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health', 'wizara_afya'));
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('health', 'wizara_afya', true));
   });
 
   it('loads education cadres when category is education', async () => {
     vi.mocked(getCadres).mockResolvedValue(EDU_CADRES);
     render(<Step2Cadre initial={{ category: 'education' }} onBack={() => {}} onNext={() => {}} />);
 
-    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education', undefined));
+    await waitFor(() => expect(getCadres).toHaveBeenCalledWith('education', undefined, true));
   });
 
   it('submits for teachers with subjects via checkboxes', async () => {

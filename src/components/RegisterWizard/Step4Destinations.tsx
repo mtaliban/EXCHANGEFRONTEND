@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getRegions, getDistricts, getFacilities, getFacilitiesByRegion, type Region, type District, type Facility, type Destination } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
+import { departmentHasFacilities, stepHeading } from './stepHeading';
 import { AlertCircle, Plus, Trash2, ChevronDown, X } from 'lucide-react';
 
 interface Props {
@@ -31,6 +32,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   const category: 'health' | 'education' = initial.category;
   const employmentSector: string | undefined = initial.employment_sector;
   const isWizara = category === 'health' && employmentSector === 'wizara_afya';
+  // Idara yenye orodha ya vituo (afya/elimu) pekee ina dropdown ya kituo.
+  const showFacility = departmentHasFacilities(category);
 
   // ── Destinations ──
   const initDests: DestEntry[] = (() => {
@@ -96,12 +99,12 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   // ── Facilities per district (TAMISEMI/Elimu) — lazima kila wilaya iwe na kituo ──
   const [districtFacilities, setDistrictFacilities] = useState<Record<number, Facility[]>>({});
   useEffect(() => {
-    if (isWizara) return;
+    if (isWizara || !showFacility) return;
     const districtIds = dests.flatMap((d) => d.selected_districts).filter((did) => !districtFacilities[did]);
     [...new Set(districtIds)].forEach((did) => {
       getFacilities(did, category).then((list) => setDistrictFacilities((m) => ({ ...m, [did]: list }))).catch(() => {});
     });
-  }, [dests, districtFacilities, category, isWizara]);
+  }, [dests, districtFacilities, category, isWizara, showFacility]);
 
   function updateDest(i: number, patch: Partial<DestEntry>) {
     setDests((prev) => prev.map((d, idx) => idx === i ? { ...d, ...patch } : d));
@@ -240,7 +243,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-brand-grey-900 mb-1">{t('step4.title')}</h2>
+        <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'destination', initial)}</h2>
         <p className="text-sm text-brand-grey-500 mb-1">{t('step4.subtitle')}</p>
       </div>
 
@@ -324,30 +327,32 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
                   ))}
                 </div>
 
-                {/* Kituo — lazima */}
-                <select className="input text-sm" value={d.facility_id || ''}
-                  onChange={(e) => {
-                    const fid = e.target.value || null;
-                    // Find facility in any district
-                    let facName: string | null = null;
-                    for (const did of (d.selected_districts.length > 0 ? d.selected_districts : (regionDistricts[d.region_id as number] || []).map((x) => x.id))) {
+                {/* Kituo — kwa idara zenye orodha ya vituo pekee (afya/elimu) */}
+                {showFacility && (
+                  <select className="input text-sm" value={d.facility_id || ''}
+                    onChange={(e) => {
+                      const fid = e.target.value || null;
+                      // Find facility in any district
+                      let facName: string | null = null;
+                      for (const did of (d.selected_districts.length > 0 ? d.selected_districts : (regionDistricts[d.region_id as number] || []).map((x) => x.id))) {
+                        const facList = districtFacilities[did] || [];
+                        const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
+                        if (fac) { facName = fac.name; break; }
+                      }
+                      updateDest(i, { facility_id: fid, facility_name: facName });
+                    }}>
+                    <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo (hiari)' : 'Chagua Shule (hiari)'}</option>
+                    {/* Onyesha vituo vya wilaya zilizochaguliwa, au zote kama "wilaya yeyote" */}
+                    {[...(d.selected_districts.length > 0 ? d.selected_districts : (regionDistricts[d.region_id as number] || []).map((x) => x.id))].flatMap((did) => {
                       const facList = districtFacilities[did] || [];
-                      const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
-                      if (fac) { facName = fac.name; break; }
-                    }
-                    updateDest(i, { facility_id: fid, facility_name: facName });
-                  }}>
-                  <option value="">{category === 'health' ? 'Chagua Hospitali/Kituo (hiari)' : 'Chagua Shule (hiari)'}</option>
-                  {/* Onyesha vituo vya wilaya zilizochaguliwa, au zote kama "wilaya yeyote" */}
-                  {[...(d.selected_districts.length > 0 ? d.selected_districts : (regionDistricts[d.region_id as number] || []).map((x) => x.id))].flatMap((did) => {
-                    const facList = districtFacilities[did] || [];
-                    return facList.map((f: any) => (
-                      <option key={`${did}-${f.id || f.code}`} value={String(f.id || f.code)}>
-                        {f.name}{f.type ? ` (${f.type})` : ''}
-                      </option>
-                    ));
-                  })}
-                </select>
+                      return facList.map((f: any) => (
+                        <option key={`${did}-${f.id || f.code}`} value={String(f.id || f.code)}>
+                          {f.name}{f.type ? ` (${f.type})` : ''}
+                        </option>
+                      ));
+                    })}
+                  </select>
+                )}
               </div>
             )}
           </div>

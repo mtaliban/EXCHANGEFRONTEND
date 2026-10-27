@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getDepartments, type Department } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
+import { stepHeading } from './stepHeading';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface Props {
@@ -58,7 +59,7 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-brand-grey-900 mb-1">Idara</h2>
+        <h2 className="text-base font-bold text-brand-grey-900 mb-1">{stepHeading(t, 'department', initial)}</h2>
         <p className="text-sm text-brand-grey-500">
           Unafanya kazi katika idara gani?
         </p>
