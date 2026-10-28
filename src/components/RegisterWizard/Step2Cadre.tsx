@@ -173,12 +173,15 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
                   </label>
                 );
               })}
-              {selectedSubjects.length > 0 && (
-                <div className="flex items-center gap-2 mt-2 text-xs text-green-600">
-                  <BookOpen size={12} />
-                  <span>Umepata: {selectedSubjects.length} somo{selectedSubjects.length > 1 ? 'i' : ''}</span>
-                </div>
-              )}
+              {/* Mwongozo wa masomo — bluu, si kijani. Maneno yanafuata idadi. */}
+              <div className="flex items-center gap-2 mt-2 text-xs text-[#1e40af]">
+                <BookOpen size={12} />
+                <span>
+                  {selectedSubjects.length === 0
+                    ? 'Chagua masomo 2'
+                    : `Umechagua ${selectedSubjects.length === 1 ? 'somo 1' : 'masomo 2'}`}
+                </span>
+              </div>
             </div>
           )}
         </div>

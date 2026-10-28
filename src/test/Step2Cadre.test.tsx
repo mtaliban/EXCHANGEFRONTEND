@@ -218,10 +218,10 @@ describe('Step2Cadre', () => {
 
     const checkboxes = screen.getAllByRole('checkbox');
     fireEvent.click(checkboxes[0]); // MATH
-    expect(await screen.findByText(/Umepata: 1 somo/)).toBeInTheDocument();
+    expect(await screen.findByText('Umechagua somo 1')).toBeInTheDocument();
 
     fireEvent.click(checkboxes[1]); // BIO
-    expect(await screen.findByText(/Umepata: 2 somo/)).toBeInTheDocument();
+    expect(await screen.findByText('Umechagua masomo 2')).toBeInTheDocument();
   });
 
   it('toggles subject selection on and off', async () => {
@@ -241,9 +241,10 @@ describe('Step2Cadre', () => {
     const checkboxes = screen.getAllByRole('checkbox');
     // Select then deselect
     fireEvent.click(checkboxes[0]); // select MATH
-    expect(await screen.findByText(/Umepata: 1 somo/)).toBeInTheDocument();
+    expect(await screen.findByText('Umechagua somo 1')).toBeInTheDocument();
 
-    fireEvent.click(checkboxes[0]); // deselect MATH
-    expect(screen.queryByText(/Umepata/)).not.toBeInTheDocument();
+    fireEvent.click(checkboxes[0]); // deselect MATH — mwongozo unarudi "Chagua masomo 2"
+    expect(await screen.findByText('Chagua masomo 2')).toBeInTheDocument();
+    expect(screen.queryByText(/Umechagua/)).not.toBeInTheDocument();
   });
 });
