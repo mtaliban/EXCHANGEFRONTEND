@@ -62,19 +62,26 @@ export default function Step1Identity({ initial, onNext }: Props) {
 
   /* Ujumbe wa uhakiki wa muundo — huhesabiwa kutoka THAMANI ya sasa,
    * kamwe haubebi hali ya zamani ya makosa. */
-  const nameMsg = (v: string) => (v.trim().length < 3 ? t('step1.err_name') : null);
-  const primaryMsg = (v: string) => (!PHONE_RE.test(normalizePhone(v)) ? t('step1.err_phone') : null);
-  const altMsg = (v: string) =>
-    !v.trim()
-      ? t('step1.err_phone_alt_required')
-      : !PHONE_RE.test(normalizePhone(v))
-        ? t('step1.err_phone_alt')
-        : null;
+  const nameMsg = (v: string) => {
+    const cleaned = v.trim();
+    if (!cleaned) return t('step1.err_name_required');            // "Tafadhali ingiza majina yako."
+    return cleaned.length < 3 ? t('step1.err_name') : null;       // herufi 3+ baada ya trim
+  };
+  const primaryMsg = (v: string) => {
+    const cleaned = normalizePhone(v);
+    if (!cleaned) return t('step1.err_phone_required');           // tupu → "Tafadhali ingiza namba yako ya simu."
+    return PHONE_RE.test(cleaned) ? null : t('step1.err_phone');
+  };
+  const altMsg = (v: string) => {
+    const cleaned = normalizePhone(v);
+    if (!cleaned) return t('step1.err_phone_alt_empty');          // tupu → "Tafadhali ingiza namba yako ya WhatsApp."
+    return PHONE_RE.test(cleaned) ? null : t('step1.err_phone_alt');
+  };
 
-  /** Onyesha hali mara moja: kosa likiishaisha, futa kosa la zamani. */
+  /** Onyesha hali mara moja: ujumbe mpya unafuta kosa AU mafanikio ya zamani kabisa. */
   function applyMsg(field: string, msg: string | null) {
     if (msg) setFieldState(field, 'error', msg);
-    else if (statuses[field]?.state === 'error') setFieldState(field, 'neutral');
+    else if (statuses[field]) setFieldState(field, 'neutral');
   }
 
   /** Kila mtu anapoandika: hesabu UPYA; kosa linaondolewa thamani ikiwa sahihi. */
