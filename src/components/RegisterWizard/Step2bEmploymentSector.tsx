@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertCircle } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import StepTitle from './StepTitle';
+import InlineError from './InlineError';
 
 interface Props {
   initial: any;
@@ -14,11 +14,11 @@ interface Props {
 export default function Step2bEmploymentSector({ initial, onBack, onNext }: Props) {
   const t = useT();
   const [sector, setSector] = useState<string>(initial.employment_sector || '');
-  const [error, setError] = useState<string | null>(null);
+  const [sectorError, setSectorError] = useState<string | null>(null);
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!sector) { setError('Chagua wizara'); return; }
+    if (!sector) { setSectorError('Tafadhali jaza wizara yako'); return; }
     onNext({ employment_sector: sector });
   }
 
@@ -34,22 +34,16 @@ export default function Step2bEmploymentSector({ initial, onBack, onNext }: Prop
       <div>
         <label className="label">Wizara</label>
         <select
-          className="input"
+          className={`input ${sectorError ? 'is-error' : ''}`}
           value={sector}
-          onChange={(e) => { setSector(e.target.value); setError(null); }}
+          onChange={(e) => { setSector(e.target.value); setSectorError(null); }}
         >
           <option value="">-- Chagua --</option>
           <option value="wizara_afya">Wizara ya Afya</option>
           <option value="tamisemi">TAMISEMI</option>
         </select>
+        <InlineError message={sectorError} />
       </div>
-
-      {error && (
-        <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3">
-          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
-          <span className="font-medium">{error}</span>
-        </div>
-      )}
 
       <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-3">
         <button type="button" onClick={onBack} className="btn-outline flex-1 sm:flex-none">Rudi</button>

@@ -5,6 +5,7 @@ import { getCadres, getSubjects, type Cadre, type Subject } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import StepTitle from './StepTitle';
+import InlineError from './InlineError';
 import { AlertCircle, Loader2, BookOpen, Info } from 'lucide-react';
 
 interface Props {
@@ -22,6 +23,9 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initial.subjects || []);
   const [error, setError] = useState<string | null>(null);
+  /* Makosa ya sehemu — ujumbe mmoja mwekundu chini ya kila sehemu. */
+  const [cadreError, setCadreError] = useState<string | null>(null);
+  const [subjectsError, setSubjectsError] = useState<string | null>(null);
   const [loadingCadres, setLoadingCadres] = useState(true);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
 
@@ -77,7 +81,7 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
         : [...selectedSubjects, code];
     setSelectedSubjects(next);
     // Kosa linaondolewa mara uhakiki unapopita (masomo 2)
-    if (next.length >= 2) setError(null);
+    if (next.length >= 2) { setSubjectsError(null); setError(null); }
   }
 
   function submit(ev: React.FormEvent) {
@@ -85,8 +89,11 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
     // Idara isiyo na kada bado (k.m. Mifugo/Kilimo mpaka admin aweke kada):
     // mtumiaji anaendelea BILA kada — matching itampatanisha na wenzake wote wa
     // idara hiyo. Akiwa na kada, lazima achague (na masomo 2 kama required).
-    if (cadres.length && !cadre_code) { setError(t('step2.err_choose')); return; }
-    if (showSubjects && selectedSubjects.length < 2) { setError('Chagua masomo 2 — ni lazima kabisa.'); return; }
+    const cadreErr = cadres.length && !cadre_code ? 'Tafadhali jaza kada yako' : null;
+    const subjectsErr = showSubjects && selectedSubjects.length < 2 ? 'Tafadhali chagua masomo 2' : null;
+    setCadreError(cadreErr);
+    setSubjectsError(subjectsErr);
+    if (cadreErr || subjectsErr) return;
     onNext({ category, cadre_code: cadres.length ? cadre_code : '', subjects: selectedSubjects });
   }
 
@@ -111,12 +118,18 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
       {cadres.length > 0 && (
       <div>
         <label className="label">{t('step2.cadre')}</label>
-        <select className="input" value={cadre_code} onChange={(e) => { setCadreCode(e.target.value); setError(null); }} required>
+        <select
+          className={`input ${cadreError ? 'is-error' : ''}`}
+          value={cadre_code}
+          onChange={(e) => { setCadreCode(e.target.value); setCadreError(null); setSubjectsError(null); setError(null); }}
+          required
+        >
           <option value="">{t('step2.choose_cadre')}</option>
           {cadres.map((c) => (
             <option key={c.code} value={c.code}>{c.display_name}</option>
           ))}
         </select>
+        <InlineError message={cadreError} />
       </div>
       )}          {showSubjects && (
         <div>
@@ -170,6 +183,8 @@ export default function Step2Cadre({ initial, onBack, onNext }: Props) {
           )}
         </div>
       )}
+
+      <InlineError message={subjectsError} />
 
       {error && (
         <div className="flex items-start gap-2 bg-brand-red-50 border border-brand-red-100 text-brand-red text-sm rounded-xl p-3">

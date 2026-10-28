@@ -56,7 +56,7 @@ describe('Step2Cadre', () => {
     const form = screen.getByText('Endelea →').closest('form')!;
     fireEvent.submit(form);
 
-    expect(await screen.findByText(/Tafadhali chagua kada/)).toBeInTheDocument();
+    expect(await screen.findByText('Tafadhali jaza kada yako')).toBeInTheDocument();
     expect(onNext).not.toHaveBeenCalled();
   });
 
@@ -142,8 +142,8 @@ describe('Step2Cadre', () => {
     fireEvent.click(checkboxes[0]); // MATH only
     fireEvent.click(screen.getByText('Endelea →'));
 
-    // Should show error, NOT call onNext
-    expect(await screen.findByText(/lazima somo 2/)).toBeInTheDocument();
+    // Ujumbe mmoja mwekundu chini ya sehemu ya masomo (hakuna kisanduku cha waridi)
+    expect(await screen.findByText('Tafadhali chagua masomo 2')).toBeInTheDocument();
     expect(onNext).not.toHaveBeenCalled();
   });
 

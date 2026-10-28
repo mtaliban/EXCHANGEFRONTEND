@@ -7,6 +7,7 @@ import { useT } from '@/lib/i18n';
 import { departmentHasFacilities } from './stepHeading';
 import StepTitle from './StepTitle';
 import YearsSelect from './YearsSelect';
+import InlineError from './InlineError';
 import { AlertCircle, Plus, Trash2, UserPlus, X } from 'lucide-react';
 
 interface Props {
@@ -39,6 +40,9 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   const [regions, setRegions] = useState<Region[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [yearsOfService, setYearsOfService] = useState<string>(initial.years_of_service ? String(initial.years_of_service) : '');
+  /* Makosa ya kila sehemu — ujumbe mmoja mwekundu chini ya kisanduku husika. */
+  const [destErrors, setDestErrors] = useState<Record<number, { region?: string; facility?: string }>>({});
+  const [yearsError, setYearsError] = useState<string | null>(null);
 
   const category: 'health' | 'education' = initial.category;
   const employmentSector: string | undefined = initial.employment_sector;
@@ -121,6 +125,22 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     setDests((prev) => prev.map((d, idx) => idx === i ? { ...d, ...patch } : d));
   }
 
+  /** Weka/ondoa kosa la sehemu ya mkoa (region) au kituo (facility) ya mkoa mmoja. */
+  function setDestError(i: number, patch: { region?: string | null; facility?: string | null }) {
+    setDestErrors((prev) => {
+      const cur: { region?: string; facility?: string } = { ...(prev[i] || {}) };
+      if (patch.region !== undefined) {
+        if (patch.region === null) delete cur.region; else cur.region = patch.region;
+      }
+      if (patch.facility !== undefined) {
+        if (patch.facility === null) delete cur.facility; else cur.facility = patch.facility;
+      }
+      const next = { ...prev };
+      if (Object.keys(cur).length) next[i] = cur; else delete next[i];
+      return next;
+    });
+  }
+
   function toggleDistrict(destIdx: number, districtId: number) {
     setError(null);   // mtumiaji amebadilisha wilaya — kosa la zamani linaondolewa
     setDests((prev) => prev.map((d, idx) => {
@@ -134,6 +154,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   }
 
   function addDest() {
+    setDestErrors({});
     setDests([...dests, {
       region_id: '', region_name: '',
       selected_districts: [],
@@ -142,6 +163,7 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
   }
 
   function removeDest(i: number) {
+    setDestErrors({});
     setDests(dests.filter((_, idx) => idx !== i));
   }
 
@@ -149,18 +171,33 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     ev.preventDefault();
     setError(null);
 
+    /* Uhakiki wa kila sehemu — kila kisanduku kilichobaki tupu kina ujumbe wake
+     * mwekundu chini yake (hakuna kisanduku cha waridi chini ya fomu). */
+    let missing = false;
+    if (!yearsOfService) { setYearsError('Tafadhali jaza miaka yako ya kazi'); missing = true; }
+    else setYearsError(null);
+    dests.forEach((d, i) => {
+      if (!d.region_id) {
+        setDestError(i, { region: 'Tafadhali jaza mkoa unaotaka kuhamia' });
+        missing = true;
+      }
+    });
+    if (missing) return;
+
     const validDests = dests.filter((d) => d.region_id);
     if (validDests.length === 0) { setError(t('step4.err_region')); return; }
 
     const destinations: Destination[] = [];
-    for (const d of validDests) {
+    for (let i = 0; i < dests.length; i++) {
+      const d = dests[i];
+      if (!d.region_id) continue;
       const region = regions.find((r) => r.id === Number(d.region_id))!;
 
       if (isWizara) {
         // Wizara ya Afya: Mkoa + Hospitali (hakuna wilaya)
         const facList = regionFacilities[d.region_id as number] || [];
         const facility = d.facility_id ? facList.find((f: any) => String(f.id || f.code) === d.facility_id) : null;
-        if (!d.facility_id) { setError(`Chagua hospitali kwa mkoa ${region.name}`); return; }
+        if (!d.facility_id) { setDestError(i, { facility: `Chagua hospitali kwa mkoa ${region.name}` }); return; }
         destinations.push({
           region_id: region.id,
           region_name: region.name,
@@ -245,8 +282,6 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
     }
 
     if (destinations.length === 0) { setError('Ongeza angalau mkoa mmoja'); return; }
-    // Uhakiki wetu wenyewe (dropdown yetu haitumii "required" ya kivinjari)
-    if (!yearsOfService) { setError('Tafadhali chagua miaka ya kazi.'); return; }
     setError(null);
 
     await onSubmit({
@@ -279,9 +314,10 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
             </div>
 
             {/* Region select */}
-            <select className="input text-sm bg-white" value={d.region_id}
+            <select className={`input text-sm bg-white ${destErrors[i]?.region ? 'is-error' : ''}`} value={d.region_id}
               onChange={(e) => {
                 setError(null);
+                setDestError(i, { region: null, facility: null });
                 const rid = e.target.value ? Number(e.target.value) : '';
                 const rname = regions.find((r) => r.id === rid)?.name || '';
                 updateDest(i, { region_id: rid, region_name: rname, selected_districts: [], facility_id: null, facility_name: null });
@@ -291,15 +327,18 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
                 <option key={r.id} value={r.id}>{r.name}</option>
               ))}
             </select>
+            <InlineError message={destErrors[i]?.region} />
 
             {/* ── Wizara ya Afya: Hospitali tu (hakuna wilaya) ── */}
             {isWizara && d.region_id && (
               regionFacLoading[d.region_id as number] ? (
                 <div className="input text-sm text-brand-grey-400">Inapakia hospitali...</div>
               ) : (
-                <select className="input text-sm bg-white" value={d.facility_id || ''}
+                <>
+                <select className={`input text-sm bg-white ${destErrors[i]?.facility ? 'is-error' : ''}`} value={d.facility_id || ''}
                   onChange={(e) => {
                     setError(null);
+                    setDestError(i, { facility: null });
                     const fid = e.target.value || null;
                     const facList = regionFacilities[d.region_id as number] || [];
                     const fac = fid ? facList.find((f: any) => String(f.id || f.code) === fid) : null;
@@ -312,6 +351,8 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
                     </option>
                   ))}
                 </select>
+                <InlineError message={destErrors[i]?.facility} />
+                </>
               )
             )}
 
@@ -388,7 +429,12 @@ export default function Step4Destinations({ initial, onBack, onSubmit, submittin
           "Chagua Mkoa" kinapoanzia na kuishia. Hatua hii pekee. */}
       <div className="p-3 border border-transparent space-y-2">
         <label className="label">Umefanya kazi kwa miaka mingapi?</label>
-        <YearsSelect value={yearsOfService} onChange={(v) => { setYearsOfService(v); setError(null); }} />
+        <YearsSelect
+          value={yearsOfService}
+          error={!!yearsError}
+          onChange={(v) => { setYearsOfService(v); setYearsError(null); setError(null); }}
+        />
+        <InlineError message={yearsError} />
       </div>
 
       {error && (

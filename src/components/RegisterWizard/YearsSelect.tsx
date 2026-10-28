@@ -14,6 +14,8 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  /** Onyesha mpaka mwekundu (sehemu iko kwenye hali ya kosa). */
+  error?: boolean;
 }
 
 /**
@@ -24,7 +26,7 @@ interface Props {
  * - kufunga kwa Esc au kubonyeza nje
  * - kibodi: mishale ya juu/chini + Enter
  */
-export default function YearsSelect({ value, onChange, placeholder = 'Chagua miaka ya kazi' }: Props) {
+export default function YearsSelect({ value, onChange, placeholder = 'Chagua miaka ya kazi', error }: Props) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -95,7 +97,7 @@ export default function YearsSelect({ value, onChange, placeholder = 'Chagua mia
         onKeyDown={onButtonKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="input text-sm bg-white flex items-center justify-between gap-2 text-left"
+        className={`input text-sm bg-white flex items-center justify-between gap-2 text-left ${error ? 'is-error' : ''}`}
         style={{ color: selected ? '#0f172a' : '#6b7280' }}
       >
         <span className="truncate">{selected ? selected.label : placeholder}</span>

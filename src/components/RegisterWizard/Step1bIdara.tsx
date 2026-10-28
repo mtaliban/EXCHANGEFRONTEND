@@ -5,6 +5,7 @@ import { getDepartments, type Department } from '@/lib/api';
 import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import StepTitle from './StepTitle';
+import InlineError from './InlineError';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface Props {
@@ -17,6 +18,8 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
   const t = useT();
   const [category, setCategory] = useState<string>(initial.category || '');
   const [error, setError] = useState<string | null>(null);
+  /* Kosa la sehemu ya kuchagua — ujumbe mmoja mwekundu chini ya kisanduku. */
+  const [categoryError, setCategoryError] = useState<string | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +55,7 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
 
   function submit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!category) { setError('Chagua idara'); return; }
+    if (!category) { setCategoryError('Tafadhali jaza idara yako'); return; }
     onNext({ category });
   }
 
@@ -74,9 +77,9 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
         <div>
           <label className="label">Chagua Idara</label>
           <select
-            className="input"
+            className={`input ${categoryError ? 'is-error' : ''}`}
             value={category}
-            onChange={(e) => { setCategory(e.target.value); setError(null); }}
+            onChange={(e) => { setCategory(e.target.value); setCategoryError(null); }}
             required
           >
             <option value="">-- Chagua Idara --</option>
@@ -84,6 +87,7 @@ export default function Step1bIdara({ initial, onBack, onNext }: Props) {
               <option key={d.code} value={d.code}>{d.name}</option>
             ))}
           </select>
+          <InlineError message={categoryError} />
         </div>
       )}
 

@@ -6,6 +6,7 @@ import { useDataVersion } from '@/lib/useDataVersion';
 import { useT } from '@/lib/i18n';
 import { departmentHasFacilities } from './stepHeading';
 import StepTitle from './StepTitle';
+import InlineError from './InlineError';
 import { AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -38,6 +39,10 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
   const [facility_id, setFacilityId] = useState<string>(cs.facility_id || '');
 
   const [error, setError] = useState<string | null>(null);
+  /* Makosa ya kila sehemu — ujumbe mmoja mwekundu chini ya kisanduku husika. */
+  const [regionError, setRegionError] = useState<string | null>(null);
+  const [districtError, setDistrictError] = useState<string | null>(null);
+  const [facilityError, setFacilityError] = useState<string | null>(null);
   const [regionFacilitiesLoading, setRegionFacilitiesLoading] = useState(false);
 
   const dv = useDataVersion();
@@ -84,8 +89,10 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
     if (isWizara) {
       // Wizara ya Afya: Mkoa + Hospitali
-      if (!region_id) { setError('Chagua Mkoa'); return; }
-      if (!facility_id) { setError('Chagua Hospitali — ni lazima'); return; }
+      setDistrictError(null);
+      setRegionError(!region_id ? 'Tafadhali jaza mkoa wako' : null);
+      setFacilityError(!facility_id ? 'Chagua Hospitali — ni lazima' : null);
+      if (!region_id || !facility_id) return;
       const region = regions.find((r) => r.id === Number(region_id))!;
       const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
       onNext({
@@ -100,7 +107,10 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       });
     } else {
       // TAMISEMI/Elimu: Mkoa + Wilaya + Kituo
-      if (!region_id || !district_id) { setError(t('step3.err_region_district')); return; }
+      setFacilityError(null);
+      setRegionError(!region_id ? 'Tafadhali jaza mkoa wako' : null);
+      setDistrictError(!district_id ? 'Tafadhali jaza wilaya yako' : null);
+      if (!region_id || !district_id) return;
       const region = regions.find((r) => r.id === Number(region_id))!;
       const district = districts.find((d) => d.id === Number(district_id))!;
       const facility = facilities.find((f: any) => String(f.id || f.code) === facility_id);
@@ -122,10 +132,16 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
 
       <div>
         <label className="label">{t('step3.region_yours')}</label>
-        <select className="input" value={region_id} onChange={(e) => { setRegionId(e.target.value ? Number(e.target.value) : ''); setError(null); }} required>
+        <select
+          className={`input ${regionError ? 'is-error' : ''}`}
+          value={region_id}
+          onChange={(e) => { setRegionId(e.target.value ? Number(e.target.value) : ''); setRegionError(null); setDistrictError(null); setFacilityError(null); setError(null); }}
+          required
+        >
           <option value="">Chagua Mkoa</option>
           {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
+        <InlineError message={regionError} />
       </div>
 
       {/* ── Wizara ya Afya: Hospitali selection (skip wilaya) ── */}
@@ -135,7 +151,13 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
           {regionFacilitiesLoading ? (
             <div className="input text-sm text-brand-grey-400">Inapakia...</div>
           ) : (
-            <select className="input" value={facility_id} onChange={(e) => { setFacilityId(e.target.value); setError(null); }} required>
+            <>
+            <select
+              className={`input ${facilityError ? 'is-error' : ''}`}
+              value={facility_id}
+              onChange={(e) => { setFacilityId(e.target.value); setFacilityError(null); setError(null); }}
+              required
+            >
               <option value="">Chagua Hospitali</option>
               {facilities.map((f: any) => (
                 <option key={f.id || f.code} value={String(f.id || f.code)}>
@@ -143,6 +165,8 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
                 </option>
               ))}
             </select>
+            <InlineError message={facilityError} />
+            </>
           )}
         </div>
       )}
@@ -151,10 +175,16 @@ export default function Step3Station({ initial, onBack, onNext }: Props) {
       {!isWizara && region_id !== '' && (
         <div>
           <label className="label">{t('step3.district_yours')}</label>
-            <select className="input" value={district_id} onChange={(e) => { setDistrictId(e.target.value ? Number(e.target.value) : ''); setError(null); }} required>
+            <select
+              className={`input ${districtError ? 'is-error' : ''}`}
+              value={district_id}
+              onChange={(e) => { setDistrictId(e.target.value ? Number(e.target.value) : ''); setDistrictError(null); setFacilityError(null); setError(null); }}
+              required
+            >
             <option value="">Chagua Wilaya</option>
             {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
+          <InlineError message={districtError} />
         </div>
       )}
 
