@@ -56,7 +56,7 @@ export default function DashboardPage() {
             (user as any)?.is_verified || isDefaultName(user?.full_name || '') || (user as any)?.contact_enabled ? (
               <div className="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">AMELIIPIA</div>
             ) : (
-              <div className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full">HAJALIPIA</div>
+              <div className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full">HAUJALIPA</div>
             )
           )}
           <div className="text-[12px] font-extrabold text-brand-grey-900 dark:text-white tracking-wide">0763795801</div>
