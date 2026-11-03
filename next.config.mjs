@@ -15,7 +15,7 @@ const nextConfig = {
   // Tumia env variable: NEXT_STANDALONE=1 ndio iwereshwe.
   ...(process.env.NEXT_STANDALONE === '1' ? { output: 'standalone' } : {}),
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.16-171-23-21.sslip.io',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.13-51-176-163.sslip.io',
   },
   async headers() {
     return [
