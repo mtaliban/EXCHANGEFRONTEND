@@ -305,20 +305,25 @@ export function TeacherCard({
         </button>
       </div>
 
-      {!canContact && (
-        <div className={s.toast} style={{ background: "#fef2f2", borderColor: "#fecaca", color: "#b91c1c" }}>
-          <AppIcon name="alert" size={14} sw={2} />
-          Changia TZS 2,500 upate namba za mawasiliano
-        </div>
-      )}
-      {toast && (
-        <a href="/changia" className={s.toast}>
-          <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {toast}
-          </span>
-          <span>Changia →</span>
-        </a>
-      )}
+      {/* Toast inatokea TU baada ya kubonyeza kitufe — hakuna maandishi ya malipo kabla */}
+      {toast &&
+        (canContact ? (
+          <div className={s.toast}>
+            <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {toast}
+            </span>
+          </div>
+        ) : (
+          <a
+            href="/changia"
+            className={s.toast}
+            style={{ background: "#fef2f2", borderColor: "#fecaca", color: "#b91c1c" }}
+          >
+            <AppIcon name="alert" size={14} sw={2} />
+            <span style={{ flex: 1, minWidth: 120 }}>{toast}</span>
+            <span style={{ whiteSpace: "nowrap" }}>Changia →</span>
+          </a>
+        ))}
     </div>
   );
 }
