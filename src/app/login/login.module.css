@@ -20,7 +20,7 @@
   min-height: 100svh;
   max-width: 440px;
   margin: 0 auto;
-  padding: 18px 20px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -38,20 +38,20 @@
 /* Rudi – juu kushoto (top 18, left 20) */
 .back {
   position: absolute;
-  top: 18px;
-  left: 20px;
+  top: 16px;
+  left: 18px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
+  gap: 7px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
 }
 
 .back svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Kundi la Logo + Fomu: katikati ya skrini kwa wima */
@@ -69,19 +69,19 @@
 }
 
 .logoTile {
-  width: 200px;
-  height: 200px;
-  border-radius: 36px;
+  width: 150px;
+  height: 150px;
+  border-radius: 28px;
   background: #fff;
   border: 1px solid #f1f2f4;
-  box-shadow: 0 8px 26px rgba(17, 24, 39, 0.12);
+  box-shadow: 0 7px 22px rgba(17, 24, 39, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .logo {
-  width: 170px;
+  width: 126px;
   height: auto;
   display: block;
 }
@@ -90,7 +90,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  margin-top: 26px;
+  margin-top: 18px;
   border: none;
   box-shadow: none;
   background: transparent;
@@ -98,23 +98,23 @@
 
 .title {
   margin: 0;
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
   text-align: center;
 }
 
 .subtitle {
-  margin: 6px 0 0;
-  font-size: 15px;
+  margin: 5px 0 0;
+  font-size: 13px;
   color: var(--muted);
   text-align: center;
 }
 
 .label {
   display: block;
-  margin: 26px 0 7px;
-  font-size: 14px;
+  margin: 18px 0 6px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--label);
 }
@@ -124,8 +124,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 38px;
-  padding: 0 12px;
+  height: 34px;
+  padding: 0 11px;
   border: 1px solid var(--line);
   border-radius: 7px;
   color: var(--label);
@@ -138,8 +138,8 @@
 
 .field svg {
   flex: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 .field input {
@@ -166,7 +166,7 @@
 /* Ujumbe mmoja chini ya kisanduku (kosa) */
 .fieldMsg {
   margin: 5px 0 0;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #dc2626;
 }
@@ -174,7 +174,7 @@
 /* Kitufe cha Ingia – 34px */
 .btnPrimary {
   height: 34px;
-  margin-top: 14px;
+  margin-top: 12px;
   width: 100%;
   border: 0;
   border-radius: 7px;
@@ -197,9 +197,9 @@
 
 .link {
   display: block;
-  margin-top: 14px;
+  margin-top: 10px;
   text-align: center;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--blue);
   text-decoration: none;
@@ -211,7 +211,7 @@
   align-items: center;
   justify-content: center;
   height: 34px;
-  margin-top: 14px;
+  margin-top: 10px;
   border: 1px solid var(--blue-soft);
   border-radius: 7px;
   color: var(--blue);
@@ -227,12 +227,12 @@
 /* ---------- 2FA: code ya tarakimu 6 (pale palepale pa kitufe) ---------- */
 .codeWrap {
   position: relative;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 
 .codeField {
-  height: 38px;
-  padding: 0 38px 0 12px;
+  height: 34px;
+  padding: 0 34px 0 11px;
 }
 
 .codeInput {
@@ -245,8 +245,8 @@
 
 .codeX {
   position: absolute;
-  right: 10px;
-  top: 19px;
+  right: 9px;
+  top: 17px;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
@@ -272,12 +272,12 @@
 /* Skrini fupi sana (simu ndogo) – kibox kinashuka hadi 160px */
 @media (max-height: 640px) {
   .logoTile {
-    width: 160px;
-    height: 160px;
-    border-radius: 30px;
+    width: 130px;
+    height: 130px;
+    border-radius: 24px;
   }
   .logo {
-    width: 136px;
+    width: 108px;
   }
   .content {
     padding: 0;
