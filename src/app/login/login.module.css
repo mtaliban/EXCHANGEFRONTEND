@@ -1,12 +1,11 @@
 /* =========================================================
-   ESSTRANSFER – Login page
+   ESSTRANSFER – Login page (mobile-first, hakuna scroll kwenye 360x640)
    Sheria kuu:
-   1. Logo iko NJE ya fomu, juu yake, katikati, ndani ya kibox (200x200).
-   2. Logo + fomu ni KUNDI MOJA lililokusanyika, limekaa katikati ya skrini
-      (linachukua takriban robo tatu ya urefu wa skrini).
+   1. Logo iko NJE ya fomu, bila kisanduku/kivuli – picha yenyewe tu.
+   2. "Rudi" iko ndani ya header ndogo ya 48px – haisukumi maudhui.
    3. Fomu haina boda, haina kivuli, haina background.
-   4. Input na vitufe ni VYEMBAMBA (input 38px, vitufe 34px).
-   5. Rangi ni nyeupe + bluu moja tu (#1e40af). Hakuna rangi nyingine.
+   4. Input na vitufe ni 48px; font 16px (iPhone isizoom).
+   5. Rangi ni nyeupe + bluu moja tu (#1e40af).
    ========================================================= */
 
 .page {
@@ -19,11 +18,12 @@
   --line: #d1d5db;
 
   position: relative;
+  box-sizing: border-box;
   min-height: 100vh;
-  min-height: 100dvh;
-  max-width: 440px;
+  min-height: 100svh;
+  max-width: 400px;
   margin: 0 auto;
-  padding: 18px 20px;
+  padding: 0 20px 20px;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -31,56 +31,71 @@
   font-family: Inter, Roboto, system-ui, -apple-system, sans-serif;
 }
 
-/* Rudi – juu kushoto */
+/* Project hii inatumia content-box – hapa tunahitaji 48px ziwe 48px kamili */
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+/* Header ndogo – "Rudi" haisukumi maudhui chini */
+.header {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
 .back {
-  position: absolute;
-  top: 18px;
-  left: 20px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  height: 44px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
 }
 
-/* Kundi la Logo + Fomu: limekaa katikati wima (margin auto) */
-.content {
-  margin: auto 0;
-  padding: 40px 0; /* nafasi isigongane na "Rudi" kwenye skrini fupi */
-  display: flex;
-  flex-direction: column;
+.back svg {
+  width: 20px;
+  height: 20px;
 }
 
-/* ---------- LOGO (nje ya fomu) ---------- */
+/* Kundi la Logo + Fomu: katikati ya skrini */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ---------- LOGO (nje ya fomu, bila kisanduku) ---------- */
 .logoWrap {
   display: flex;
   justify-content: center;
-}
-
-.logoTile {
-  width: 200px;
-  height: 200px;
-  border-radius: 36px;
-  background: #fff;
-  border: 1px solid #f1f2f4;
-  box-shadow: 0 8px 26px rgba(17, 24, 39, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .logo {
-  width: 170px;
+  width: 140px;
   height: auto;
+  display: block;
+  /* Picha ina background nyeupe ndani yake – kwenye ukurasa mweupe
+     multiply inaifanya ionekane kama uwazi, bila kubadili rangi ya logo. */
+  mix-blend-mode: multiply;
+}
+
+@media (min-width: 640px) {
+  .logo {
+    width: 160px;
+  }
 }
 
 /* ---------- FOMU (bila boda) ---------- */
 .form {
   display: flex;
   flex-direction: column;
-  margin-top: 26px; /* umbali kati ya logo na "Karibu Tena" */
   border: none;
   box-shadow: none;
   background: transparent;
@@ -88,14 +103,20 @@
 
 .title {
   margin: 0;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.3px;
   text-align: center;
 }
 
+@media (min-width: 640px) {
+  .title {
+    font-size: 28px;
+  }
+}
+
 .subtitle {
-  margin: 6px 0 0;
+  margin: 6px 0 20px;
   font-size: 15px;
   color: var(--muted);
   text-align: center;
@@ -103,21 +124,21 @@
 
 .label {
   display: block;
-  margin: 26px 0 7px;
+  margin: 0 0 6px;
   font-size: 14px;
   font-weight: 600;
   color: var(--label);
 }
 
-/* Input nyembamba – 38px */
+/* Input – 48px, font 16px */
 .field {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 38px;
-  padding: 0 12px;
+  height: 48px;
+  padding: 0 14px;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--label);
   transition: border-color 0.15s;
 }
@@ -128,6 +149,8 @@
 
 .field svg {
   flex: none;
+  width: 20px;
+  height: 20px;
 }
 
 .field input {
@@ -137,7 +160,7 @@
   outline: none;
   background: none;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text);
 }
 
@@ -145,7 +168,7 @@
   color: #9ca3af;
 }
 
-/* Hali ya kosa – mpaka mwekundu chini ya kisanduku */
+/* Hali ya kosa – mpaka mwekundu */
 .fieldError,
 .fieldError:focus-within {
   border-color: #dc2626;
@@ -159,17 +182,17 @@
   color: #dc2626;
 }
 
-/* Kitufe cha Ingia – chembamba 34px */
+/* Kitufe cha Ingia – 48px, font 16px */
 .btnPrimary {
-  height: 34px;
-  margin-top: 14px;
+  height: 48px;
+  margin-top: 12px;
   width: 100%;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--blue);
   color: #fff;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -185,7 +208,7 @@
 
 .link {
   display: block;
-  margin-top: 14px;
+  margin: 12px 0;
   text-align: center;
   font-size: 14px;
   font-weight: 500;
@@ -193,17 +216,16 @@
   text-decoration: none;
 }
 
-/* Kitufe cha Jisajili – chembamba 34px, boda nyembamba */
+/* Kitufe cha Jisajili – 48px, font 16px */
 .btnOutline {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 34px;
-  margin-top: 14px;
+  height: 48px;
   border: 1px solid var(--blue-soft);
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--blue);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   text-decoration: none;
 }
@@ -215,12 +237,12 @@
 /* ---------- 2FA: code ya tarakimu 6 (pale palepale pa kitufe) ---------- */
 .codeWrap {
   position: relative;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 
 .codeField {
-  height: 38px;
-  padding: 0 38px 0 12px;
+  height: 48px;
+  padding: 0 40px 0 14px;
 }
 
 .codeInput {
@@ -228,20 +250,20 @@
   text-align: center;
   letter-spacing: 0.4em;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .codeX {
   position: absolute;
   right: 10px;
-  top: 50%;
+  top: 24px;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 0;
   background: none;
-  padding: 2px;
+  padding: 4px;
   color: var(--muted);
   cursor: pointer;
 }
@@ -255,16 +277,4 @@
   font-size: 13px;
   color: var(--muted);
   text-align: center;
-}
-
-/* Skrini fupi sana (simu ndogo) – punguza logo kidogo */
-@media (max-height: 640px) {
-  .logoTile {
-    width: 160px;
-    height: 160px;
-    border-radius: 30px;
-  }
-  .logo {
-    width: 136px;
-  }
 }

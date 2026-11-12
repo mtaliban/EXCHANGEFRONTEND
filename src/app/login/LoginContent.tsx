@@ -173,7 +173,8 @@ export default function LoginContent() {
 
   return (
     <main className={styles.page}>
-      {/* 1. Kitufe cha Rudi – juu kushoto, hakihesabiwi kwenye kundi la katikati */}
+      {/* 1. Kitufe cha Rudi – ndani ya header ndogo ya 48px, haisukumi maudhui */}
+      <header className={styles.header}>
       <Link href="/" className={styles.back}>
         <svg
           width="20"
@@ -190,21 +191,20 @@ export default function LoginContent() {
         </svg>
         Rudi
       </Link>
+      </header>
 
       {/* 2. Kundi la katikati: LOGO + FOMU vimekusanyika pamoja */}
       <div className={styles.content}>
-        {/* 2a. Logo – iko NJE ya fomu, juu yake, ndani ya kibox chake */}
+        {/* 2a. Logo – iko NJE ya fomu, bila kisanduku/kivuli */}
         <div className={styles.logoWrap}>
-          <div className={styles.logoTile}>
-            <Image
-              src="/images/LOGOL.png"
-              alt="ESSTRANSFER"
-              width={170}
-              height={170}
-              priority
-              className={styles.logo}
-            />
-          </div>
+          <Image
+            src="/images/LOGOL.png"
+            alt="ESSTRANSFER"
+            width={170}
+            height={170}
+            priority
+            className={styles.logo}
+          />
         </div>
 
         {/* 2b. Fomu – HAINA boda, HAINA kivuli, HAINA background */}
@@ -217,8 +217,8 @@ export default function LoginContent() {
           </label>
           <div className={`${styles.field} ${fieldError ? styles.fieldError : ''}`}>
             <svg
-              width="18"
-              height="18"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
