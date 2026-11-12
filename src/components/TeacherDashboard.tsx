@@ -59,15 +59,24 @@ export default function TeacherDashboard() {
   const dv = useDataVersion();
 
   // Toast ya kadi (moja kwa wakati)
-  const [cardToast, setCardToast] = useState<{ msg: string; uid: string } | null>(null);
+  const [cardToast, setCardToast] = useState<{ msg: string | null; uid: string; tick: number } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showCardToast(msg: string, uid: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setCardToast(null);
     setTimeout(() => {
-      setCardToast({ msg, uid });
+      setCardToast({ msg, uid, tick: 0 });
       toastTimer.current = setTimeout(() => setCardToast(null), 3500);
     }, 40);
+  }
+  // Notisi ya "Changia ... upate namba" — inabaki hadi mtumiaji aendelee
+  function showPayNote(uid: string) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setCardToast((prev) => ({
+      msg: null,
+      uid,
+      tick: (prev && prev.uid === uid ? prev.tick : 0) + 1,
+    }));
   }
 
   useEffect(() => {
@@ -352,20 +361,20 @@ export default function TeacherDashboard() {
             });
 
             const call = async () => {
-              if (!canContact) { showCardToast("Changia TZS 2,500 upate namba", c.user_id); return; }
+              if (!canContact) { showPayNote(c.user_id); return; }
               showCardToast(`Piga ${c.full_name}`, c.user_id);
               try { await logContact(c.user_id, "call", "initiated"); } catch {}
               window.location.href = `tel:${c.phone_primary}`;
             };
             const sms = async () => {
-              if (!canContact) { showCardToast("Changia TZS 2,500 upate namba", c.user_id); return; }
+              if (!canContact) { showPayNote(c.user_id); return; }
               showCardToast(`SMS kwa ${c.full_name}`, c.user_id);
               try { await logContact(c.user_id, "sms", "initiated"); } catch {}
               const body = `Habari ${c.full_name}, mimi ni ${user?.full_name || ""}${myRegionName ? `, niko ${myRegionName}` : ""}. Naomba kujadili kubadilishana vituo.`;
               window.location.href = `sms:${c.phone_primary}?body=${encodeURIComponent(body)}`;
             };
             const wa = async () => {
-              if (!canContact) { showCardToast("Changia TZS 2,500 upate namba", c.user_id); return; }
+              if (!canContact) { showPayNote(c.user_id); return; }
               showCardToast(`WhatsApp kwa ${c.full_name}`, c.user_id);
               try { await logContact(c.user_id, "whatsapp", "initiated"); } catch {}
               const digits = String(c.phone_alt || "").replace(/\D/g, "").replace(/^0/, "255");
@@ -385,6 +394,7 @@ export default function TeacherDashboard() {
                 onSMS={sms}
                 onWhatsApp={wa}
                 toast={cardToast && cardToast.uid === c.user_id ? cardToast.msg : null}
+                payTick={cardToast && cardToast.uid === c.user_id ? cardToast.tick : 0}
               />
             );
           })}

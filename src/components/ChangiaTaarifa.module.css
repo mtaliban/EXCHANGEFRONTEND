@@ -1,0 +1,44 @@
+.note {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 0 8px 0 12px;
+  min-height: 44px;
+  border-radius: 10px;
+  background: #f5f7ff;
+  border: 1px solid #c7d2fe;
+  animation: shuka .8s cubic-bezier(.3, .7, .3, 1);
+}
+.ic { color: #1e40af; flex: none; display: inline-flex; }
+.text { flex: 1; min-width: 0; margin: 0; padding: 8px 0; font-size: 13px; line-height: 1.35; color: #374151; }
+.text b { color: #111827; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 13px;
+  border-radius: 7px;
+  background: #1e40af;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  flex: none;
+}
+.btn:hover { background: #1e3a8a; }
+
+/* Animation C: inaingia kutoka kushoto kisha inatikisika */
+@keyframes shuka {
+  0% { opacity: 0; transform: translateX(-48px); }
+  30% { opacity: 1; transform: translateX(0); }
+  42% { transform: translateX(-11px); }
+  54% { transform: translateX(10px); }
+  66% { transform: translateX(-8px); }
+  78% { transform: translateX(5px); }
+  90% { transform: translateX(-2px); }
+  100% { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) { .note { animation: none; } }

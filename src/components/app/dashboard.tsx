@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import AppIcon from "./AppIcon";
+import ChangiaTaarifa from "@/components/ChangiaTaarifa";
 import s from "./app.module.css";
 
 export const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(" ");
@@ -180,6 +181,7 @@ export function TeacherCard({
   onSMS,
   onWhatsApp,
   toast,
+  payTick,
 }: {
   c: any;
   myRegionName: string;
@@ -191,6 +193,7 @@ export function TeacherCard({
   onSMS: () => void;
   onWhatsApp: () => void;
   toast?: string | null;
+  payTick?: number;
 }) {
   const from = c.current_station || {};
   const to = c.matching_destination || c.desired_destinations?.[0] || null;
@@ -310,24 +313,16 @@ export function TeacherCard({
       </div>
 
       {/* Toast inatokea TU baada ya kubonyeza kitufe — hakuna maandishi ya malipo kabla */}
-      {toast &&
-        (canContact ? (
-          <div className={s.toast}>
-            <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {toast}
-            </span>
-          </div>
-        ) : (
-          <a
-            href="/changia"
-            className={s.toast}
-            style={{ background: "#fef2f2", borderColor: "#fecaca", color: "#b91c1c" }}
-          >
-            <AppIcon name="alert" size={14} sw={2} />
-            <span style={{ flex: 1, minWidth: 120 }}>{toast}</span>
-            <span style={{ whiteSpace: "nowrap" }}>Changia →</span>
-          </a>
-        ))}
+      {toast && canContact && (
+        <div className={s.toast}>
+          <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {toast}
+          </span>
+        </div>
+      )}
+
+      {/* Bila malipo: notisi ya kuchangia inatokea ndani ya kadi, mara tu baada ya kubofya */}
+      {!canContact && !!payTick && <ChangiaTaarifa key={payTick} kiasi={2500} />}
     </div>
   );
 }
