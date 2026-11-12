@@ -78,10 +78,13 @@ export function Segmented({
   options,
   value,
   onChange,
+  iconSize = 15,
 }: {
   options: Opt[];
   value: string | null;
   onChange: (v: string) => void;
+  /** Ukubwa wa ikoni ndani ya kitufe (kada inatumia 20). */
+  iconSize?: number;
 }) {
   return (
     <div className={s.seg} role="radiogroup">
@@ -94,7 +97,7 @@ export function Segmented({
           className={cx(s.segBtn, value === o.value && s.segOn)}
           onClick={() => onChange(o.value)}
         >
-          {o.icon && <Icon name={o.icon} size={15} />}
+          {o.icon && <Icon name={o.icon} size={iconSize} strokeWidth={1.9} />}
           {o.label}
         </button>
       ))}

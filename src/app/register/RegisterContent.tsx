@@ -537,6 +537,7 @@ export default function RegisterContent() {
                 <Label icon="building">Kada / Cheo Chako</Label>
                 {cadres.length <= 3 ? (
                   <Segmented
+                    iconSize={20}
                     options={cadres.map((c) => ({
                       value: c.code,
                       label: c.display_name,
