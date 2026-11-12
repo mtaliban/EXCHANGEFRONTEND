@@ -176,7 +176,7 @@ export default function TeacherDashboard() {
     [facilities]
   );
   const cadreOpts: Opt[] = useMemo(
-    () => cadres.map((c) => ({ value: c.code, label: c.display_name })),
+    () => cadres.map((c) => ({ value: c.code, label: c.display_name, code: c.code })),
     [cadres]
   );
 

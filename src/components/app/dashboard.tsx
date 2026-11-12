@@ -7,7 +7,7 @@ import s from "./app.module.css";
 
 export const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(" ");
 
-export type Opt = { value: string; label: string };
+export type Opt = { value: string; label: string; code?: string };
 
 /* ---------- Kadi ya Karibu ---------- */
 export function WelcomeCard(p: {
@@ -156,10 +156,17 @@ export function InlineDropdown({
                 type="button"
                 key={o.value}
                 title={o.label}
-                className={cx(s.opt, o.value === value && s.optOn)}
+                className={cx(s.opt, o.value === value && s.optOn, !!o.code && s.optCode)}
                 onClick={() => pick(o.value)}
               >
-                {o.label}
+                {o.code ? (
+                  <>
+                    <span className={s.optName}>{o.label}</span>
+                    <span className={s.kCode}>{o.code}</span>
+                  </>
+                ) : (
+                  o.label
+                )}
               </button>
             ))}
           </div>
@@ -214,7 +221,7 @@ export function TeacherCard({
             <span className={s.blue}>{dept}</span>
             <span className={s.dotSep} />
             <span style={{ minWidth: 0 }}>{c.cadre_display || c.cadre_code || "—"}</span>
-            {!isEdu && c.cadre_code && <span className={s.cadreBadge}>{c.cadre_code}</span>}
+            {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
             {c.online && <span style={{ color: "#16a34a", fontWeight: 700 }}>● mtandaoni</span>}
           </p>
         </div>

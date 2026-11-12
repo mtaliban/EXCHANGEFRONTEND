@@ -86,7 +86,11 @@
 .tName { font-size: 15.5px; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tSub { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; color: var(--m); margin-top: 3px; }
 .dotSep { width: 3px; height: 3px; border-radius: 50%; background: #9ca3af; }
-.cadreBadge { height: 20px; padding: 0 6px; border-radius: 5px; background: var(--blue-soft); border: 1px solid #dbe2fb; color: var(--blue); font-size: 10.5px; font-weight: 700; display: inline-flex; align-items: center; letter-spacing: .3px; flex: none; }
+/* Afya: kifupi cha kada (chaguo 3) – kibandiko cheupe chenye mpaka wa bluu */
+.kCode { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 5px; border: 1.5px solid var(--blue); background: #fff; color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .4px; white-space: nowrap; flex: none; }
+.optCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.optName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.optOn .kCode { background: #fff; }
 .trip { margin-top: 14px; border: 1px solid var(--l); border-radius: 12px; padding: 12px; background: #fcfcfd; }
 .stop { display: flex; gap: 12px; position: relative; }
 .stop + .stop { margin-top: 10px; }
