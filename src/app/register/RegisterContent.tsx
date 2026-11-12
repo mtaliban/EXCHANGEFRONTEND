@@ -93,6 +93,8 @@ export default function RegisterContent() {
   const [whatsapp, setWhatsapp] = useState('');
   /* Ukaguzi wa namba: muundo (papo hapo) + server (debounce 400ms). */
   const [touched, setTouched] = useState({ name: false, phone: false, alt: false });
+  // Makosa yanaonekana tu baada ya kubofya "Endelea" au kuondoka kwenye kisanduku
+  const [attempted, setAttempted] = useState(false);
   const [primaryCheck, setPrimaryCheck] = useState<CheckState>('idle');
   const [altCheck, setAltCheck] = useState<CheckState>('idle');
   const primaryReq = useRef(0);
@@ -329,7 +331,7 @@ export default function RegisterContent() {
     const taken = !invalid && check === 'taken';
     const available = !invalid && check === 'available';
     const checking = !invalid && check === 'checking';
-    const showError = invalid && (touchedField || check === 'idle');
+    const showError = invalid && (touchedField || attempted);
     const message = showError ? error : taken ? TAKEN_MSG : available ? FREE_MSG : null;
     return {
       message,
@@ -517,11 +519,17 @@ export default function RegisterContent() {
 
   const next = () => {
     setError(null);
+    if (!canNext) {
+      setAttempted(true);
+      return;
+    }
+    setAttempted(false);
     if (step < 5) setStep(step + 1);
     else submit();
   };
   const back = () => {
     setError(null);
+    setAttempted(false);
     setStep((n) => Math.max(1, n - 1));
   };
 
@@ -565,14 +573,14 @@ export default function RegisterContent() {
           <>
             <Label icon="user">Jina Kamili</Label>
             <input
-              className={`${s.input} ${touched.name && nameError ? s.inputError : ''}`}
+              className={`${s.input} ${(touched.name || attempted) && nameError ? s.inputError : ''}`}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, name: true }))}
               placeholder="Mfano: Kieffer Madyedye"
               autoComplete="name"
             />
-            {touched.name && nameError && <p className={s.err}>{nameError}</p>}
+            {(touched.name || attempted) && nameError && <p className={s.err}>{nameError}</p>}
 
             <Label icon="phone">Namba ya Simu (Normal)</Label>
             <div className={s.fieldWrap}>
@@ -880,7 +888,7 @@ export default function RegisterContent() {
             </button>
           )}
 
-          <button type="button" className={s.btn} disabled={!canNext || sending} onClick={next}>
+          <button type="button" className={s.btn} disabled={sending} onClick={next}>
             {step < 5 ? (
               <>
                 Endelea <Icon name="chevronRight" size={14} strokeWidth={2.6} />
