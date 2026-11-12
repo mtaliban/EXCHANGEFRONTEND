@@ -1,7 +1,8 @@
 /* =========================================================
    ESSTRANSFER – Login page
    Design, rangi na maandishi ni kama yalivyokuwa.
-   UKUBWA umepunguzwa zaidi ili iendane na simu (skrini moja, hakuna scroll).
+   Vipimo vyote vina uwiano mmoja (hakuna kinachopunguzwa kupita kiasi)
+   na ukurasa unatoshea skrini moja ya simu bila scroll.
    ========================================================= */
 
 .page {
@@ -41,16 +42,16 @@
   left: 18px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 7px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
 }
 
 .back svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Kundi la Logo + Fomu: katikati ya skrini */
@@ -68,19 +69,19 @@
 }
 
 .logoTile {
-  width: 140px;
-  height: 140px;
-  border-radius: 25px;
+  width: 150px;
+  height: 150px;
+  border-radius: 27px;
   background: #fff;
   border: 1px solid #f1f2f4;
-  box-shadow: 0 6px 20px rgba(17, 24, 39, 0.12);
+  box-shadow: 0 7px 22px rgba(17, 24, 39, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .logo {
-  width: 118px;
+  width: 126px;
   height: auto;
   display: block;
 }
@@ -89,7 +90,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  margin-top: 10px;
+  margin-top: 11px;
   border: none;
   box-shadow: none;
   background: transparent;
@@ -97,23 +98,23 @@
 
 .title {
   margin: 0;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   letter-spacing: -0.2px;
   text-align: center;
 }
 
 .subtitle {
-  margin: 4px 0 0;
-  font-size: 11px;
+  margin: 5px 0 0;
+  font-size: 12px;
   color: var(--muted);
   text-align: center;
 }
 
 .label {
   display: block;
-  margin: 12px 0 4px;
-  font-size: 11px;
+  margin: 13px 0 5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--label);
 }
@@ -122,11 +123,11 @@
 .field {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 10px;
+  gap: 9px;
+  height: 34px;
+  padding: 0 11px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 7px;
   color: var(--label);
   transition: border-color 0.15s;
 }
@@ -137,8 +138,8 @@
 
 .field svg {
   flex: none;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
 .field input {
@@ -148,7 +149,7 @@
   outline: none;
   background: none;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
@@ -165,22 +166,22 @@
 /* Ujumbe mmoja chini ya kisanduku (kosa) */
 .fieldMsg {
   margin: 5px 0 0;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: #dc2626;
 }
 
 /* Kitufe cha Ingia */
 .btnPrimary {
-  height: 32px;
-  margin-top: 9px;
+  height: 34px;
+  margin-top: 10px;
   width: 100%;
   border: 0;
-  border-radius: 6px;
+  border-radius: 7px;
   background: var(--blue);
   color: #fff;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -196,9 +197,9 @@
 
 .link {
   display: block;
-  margin-top: 9px;
+  margin-top: 10px;
   text-align: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--blue);
   text-decoration: none;
@@ -209,12 +210,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 32px;
-  margin-top: 9px;
+  height: 34px;
+  margin-top: 10px;
   border: 1px solid var(--blue-soft);
-  border-radius: 6px;
+  border-radius: 7px;
   color: var(--blue);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
 }
@@ -226,12 +227,12 @@
 /* ---------- 2FA: code ya tarakimu 6 (pale palepale pa kitufe) ---------- */
 .codeWrap {
   position: relative;
-  margin-top: 9px;
+  margin-top: 10px;
 }
 
 .codeField {
-  height: 32px;
-  padding: 0 32px 0 10px;
+  height: 34px;
+  padding: 0 34px 0 11px;
 }
 
 .codeInput {
@@ -239,13 +240,13 @@
   text-align: center;
   letter-spacing: 0.4em;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .codeX {
   position: absolute;
-  right: 8px;
-  top: 16px;
+  right: 9px;
+  top: 17px;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
@@ -263,7 +264,7 @@
 
 .codeNote {
   margin: 5px 0 0;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   text-align: center;
 }
@@ -271,20 +272,20 @@
 /* Skrini fupi sana (simu ndogo) */
 @media (max-height: 640px) {
   .logoTile {
-    width: 120px;
-    height: 120px;
-    border-radius: 22px;
+    width: 130px;
+    height: 130px;
+    border-radius: 23px;
   }
   .logo {
-    width: 100px;
+    width: 108px;
   }
   .content {
     padding: 0;
   }
   .form {
-    margin-top: 8px;
+    margin-top: 9px;
   }
   .label {
-    margin-top: 10px;
+    margin-top: 11px;
   }
 }
