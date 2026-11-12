@@ -7,7 +7,7 @@ import s from "./ChangiaTaarifa.module.css";
  * Notisi inayotokea ndani ya kadi baada ya kubofya Piga / SMS / WhatsApp bila malipo.
  * Inaonekana kwa muda mfupi kisha inasondoka yenyewe.
  */
-export default function ChangiaTaarifa({ kiasi = 2500, ms = 4000 }: { kiasi?: number; ms?: number }) {
+export default function ChangiaTaarifa({ kiasi = 2500, ms = 3000 }: { kiasi?: number; ms?: number }) {
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
 
