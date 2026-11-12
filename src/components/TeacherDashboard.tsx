@@ -45,14 +45,12 @@ export default function TeacherDashboard() {
   const [districtId, setDistrictId] = useState<string | null>(null);
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [subjectFilter, setSubjectFilter] = useState<"off" | "any" | "all" | "none">("off");
-  const [subjectQ, setSubjectQ] = useState("");
   const [cadreCode, setCadreCode] = useState<string | null>(null);
   const [cadres, setCadres] = useState<Cadre[]>([]);
   const [board, setBoard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [now, setNow] = useState(Date.now());
-  const [openFilter, setOpenFilter] = useState(true);
 
   const { messages, connected } = useLiveEvents([
     "match.found", "user.registered", "user.profile_updated", "user.changed", "user.removed", "contact.toggled",
@@ -120,7 +118,6 @@ export default function TeacherDashboard() {
         if (districtId) params.district_id = Number(districtId);
         if (facilityId) params.facility_id = facilityId;
         if (subjectFilter !== "off") params.subject_filter = subjectFilter;
-        if (subjectQ.trim()) params.subject_q = subjectQ.trim();
         if (cadreCode) params.cadre_code = cadreCode;
         bustGetCache();
         const b = await getBoard(params, forceFresh);
@@ -129,7 +126,7 @@ export default function TeacherDashboard() {
         setLoading(false);
       }
     },
-    [regionSel, districtId, facilityId, subjectFilter, subjectQ, cadreCode]
+    [regionSel, districtId, facilityId, subjectFilter, cadreCode]
   );
 
   useEffect(() => {
@@ -208,7 +205,6 @@ export default function TeacherDashboard() {
     setDistrictId(null);
     setFacilityId(null);
     setSubjectFilter("off");
-    setSubjectQ("");
     setCadreCode(null);
     setPage(1);
   };
@@ -239,23 +235,9 @@ export default function TeacherDashboard() {
 
       {/* ═══ Kuchuja ═══ */}
       <div className={s.card}>
-        <button
-          type="button"
-          onClick={() => setOpenFilter((o) => !o)}
-          style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: 0, padding: 0, font: "inherit", cursor: "pointer", width: "100%", textAlign: "left" }}
-        >
-          <span className={s.fHead} style={{ flex: 1 }}>
-            <AppIcon name="filter" size={15} sw={2.2} /> Tafuta {isEdu ? "walimu" : "watumishi"} wa kubadilishana nao
-          </span>
-          <AppIcon name="down" size={15} sw={2} />
-        </button>
-        <p className={s.fHint}>
-          Chagua mahali wanakotoka{!isEdu ? " na kada" : ""}. Usipochagua, utaona wote.
-        </p>
-
-        {openFilter && (
+        {
           <>
-            <p className={s.label}>Mkoa wanakotoka</p>
+            <p className={s.label} style={{ marginTop: 0 }}>Mkoa wanakotoka</p>
             <InlineDropdown
               icon="map"
               value={regionSel}
@@ -310,15 +292,6 @@ export default function TeacherDashboard() {
                     </button>
                   ))}
                 </div>
-                <p className={s.label}>Tafuta kwa somo</p>
-                <label className={s.input}>
-                  <AppIcon name="search" size={15} sw={2} />
-                  <input
-                    value={subjectQ}
-                    onChange={(e) => { setSubjectQ(e.target.value); setPage(1); }}
-                    placeholder="Andika somo, mf. KISW au MATH"
-                  />
-                </label>
               </>
             )}
 
@@ -346,14 +319,14 @@ export default function TeacherDashboard() {
                   <AppIcon name="users" size={11} sw={2} /> {total}
                 </span>
               </span>
-              {(regionSel || districtId || facilityId || subjectFilter !== "off" || subjectQ || cadreCode) && (
+              {(regionSel || districtId || facilityId || subjectFilter !== "off" || cadreCode) && (
                 <button type="button" className={s.clearBtn} onClick={resetFilters}>
                   Ondoa vichujio
                 </button>
               )}
             </div>
           </>
-        )}
+        }
       </div>
 
       {/* ═══ Kadi za walimu ═══ */}
