@@ -338,6 +338,7 @@ export default function RegisterContent() {
       tone: (available ? 'ok' : 'err') as 'ok' | 'err',
       ok: available,
       invalid,
+      show: showError,
       taken,
       checking,
       icon: invalid || taken ? 'alert' : available ? 'check' : null,
@@ -585,7 +586,7 @@ export default function RegisterContent() {
             <Label icon="phone">Namba ya Simu (Normal)</Label>
             <div className={s.fieldWrap}>
               <input
-                className={`${s.input} ${phoneStatus.invalid ? s.inputError : phoneStatus.ok ? s.inputOk : ''}`}
+                className={`${s.input} ${phoneStatus.show ? s.inputError : phoneStatus.ok ? s.inputOk : ''}`}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
@@ -593,7 +594,7 @@ export default function RegisterContent() {
                 type="tel"
                 inputMode="tel"
               />
-              <span className={`${s.trail} ${phoneStatus.ok ? s.trailOk : phoneStatus.invalid || phoneStatus.taken ? s.trailErr : ''}`}>
+              <span className={`${s.trail} ${phoneStatus.ok ? s.trailOk : phoneStatus.show || phoneStatus.taken ? s.trailErr : ''}`}>
                 {phoneStatus.checking ? (
                   <span className={s.spin} />
                 ) : phoneStatus.icon ? (
@@ -608,7 +609,7 @@ export default function RegisterContent() {
             <Label icon="whatsapp">Namba ya WhatsApp</Label>
             <div className={s.fieldWrap}>
               <input
-                className={`${s.input} ${altStatus.invalid ? s.inputError : altStatus.ok ? s.inputOk : ''}`}
+                className={`${s.input} ${altStatus.show ? s.inputError : altStatus.ok ? s.inputOk : ''}`}
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, alt: true }))}
@@ -616,7 +617,7 @@ export default function RegisterContent() {
                 type="tel"
                 inputMode="tel"
               />
-              <span className={`${s.trail} ${altStatus.ok ? s.trailOk : altStatus.invalid || altStatus.taken ? s.trailErr : ''}`}>
+              <span className={`${s.trail} ${altStatus.ok ? s.trailOk : altStatus.show || altStatus.taken ? s.trailErr : ''}`}>
                 {altStatus.checking ? (
                   <span className={s.spin} />
                 ) : altStatus.icon ? (
