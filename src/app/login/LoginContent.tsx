@@ -1,117 +1,92 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, AlertCircle, WifiOff, X, Phone } from 'lucide-react';
+import { X } from 'lucide-react';
 import { login, login2FA, extractErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
-import FieldMessage from '@/components/FieldMessage';
-import { useFieldStates, fieldClass } from '@/lib/formState';
-
-function ErrorAlert({ msg, type }: { msg: string; type?: 'network' | 'validation' }) {
-  const Icon = type === 'network' ? WifiOff : AlertCircle;
-  return (
-    <div className="flex items-start gap-2.5 bg-brand-red-50 border border-brand-red-100 text-brand-red text-xs font-medium rounded-xl p-3">
-      <Icon size={16} className="flex-shrink-0 mt-0.5" />
-      <span className="leading-relaxed">{msg}</span>
-    </div>
-  );
-}
+import styles from './login.module.css';
 
 export default function LoginContent() {
   const t = useT();
   const router = useRouter();
   const setAuth = useAuth((s) => s.setAuth);
-  const { token, user } = useAuth();
 
-  // NOTE: login page does NOT auto-redirect on existing token —
-  // that caused redirect loops. Redirect only happens AFTER successful login
-  // in onSubmit / submitTwoFA below.
-
-  // Auto-fill phone from URL param (after registration)
-  const [searchPhone, setSearchPhone] = useState('');
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const p = params.get('phone');
-      if (p) setSearchPhone(decodeURIComponent(p));
-    }
-  }, []);
   const [identifier, setIdentifier] = useState('');
-  // Set identifier from URL param once
-  useEffect(() => {
-    if (searchPhone && !identifier) setIdentifier(searchPhone);
-  }, [searchPhone]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showErr, setShowErr] = useState(false);
+  const identifierRef = useRef<HTMLInputElement>(null);
 
-  // 2FA — button ya "Ingia" inabadilika kuwa CODE INPUT pale pale
+  // 2FA — code input inachukua nafasi ya button pale pale
   const [twoFA, setTwoFA] = useState<{ email: string } | null>(null);
   const [twoFACode, setTwoFACode] = useState('');
   const [twoFALoading, setTwoFALoading] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [errorType, setErrorType] = useState<'network' | 'validation' | undefined>(undefined);
-  /* MFUMO MMOJA WA HALI — neutral | error | success; ujumbe MMOJA kwa kisanduku. */
-  const { statuses, setFieldState } = useFieldStates();
-  /* Kosa linaonekana baada ya kutoka kwenye kisanduku (blur) au kubonyeza
-   * "Ingia" — si mtu anapoanza kuandika. */
-  const [showErr, setShowErr] = useState(false);
-  const identifierRef = useRef<HTMLInputElement>(null);
+  const isEmail = identifier.includes('@');
 
-  /** Ujumbe wa kosa kwa THAMANI ya sasa — haubebi hali ya zamani. */
+  // Namba inaweza kuja moja kwa moja kutoka usajili: /login?phone=0712...
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search).get('phone');
+    if (p) setIdentifier(decodeURIComponent(p));
+  }, []);
+
+  /** Ujumbe wa kosa kwa thamani ya sasa (email ya admin hairuhusiwi kulazimishwa muundo wa namba). */
   function identifierMsg(v: string): string | null {
     const s = v.trim();
     if (!s) return t('login.err_phone_required');
-    // Email ya admin hairuhusiwi kulazimishwa muundo wa namba ya simu
     if (!s.includes('@') && !/^(\+?255|0)\d{9}$/.test(s.replace(/[\s-]/g, ''))) {
       return t('login.err_phone_invalid');
     }
     return null;
   }
 
-  /** Kila mtu anapoandika: hesabu UPYA; kosa linaondolewa thamani ikiwa sahihi. */
   function changeIdentifier(v: string) {
     setIdentifier(v);
-    const msg = identifierMsg(v);
-    setFieldState('identifier', msg && showErr ? 'error' : 'neutral', msg && showErr ? msg : undefined);
+    setError(null);
+    if (showErr) setError(identifierMsg(v));
   }
 
   function blurIdentifier() {
-    if (!identifier.trim() && !showErr) return;   // kosa lisianze kabla mtu kuandika
+    if (!identifier.trim() && !showErr) return; // kosa lisianze kabla mtu kuandika
     setShowErr(true);
-    const msg = identifierMsg(identifier);
-    setFieldState('identifier', msg ? 'error' : 'neutral', msg || undefined);
+    setError(identifierMsg(identifier));
   }
 
-  /** Hurudisha true kama kisanduku ni sahihi; la sivyo kinaonyesha kosa na kupata focus. */
   function validateIdentifier(): boolean {
     setShowErr(true);
     const msg = identifierMsg(identifier);
     if (msg) {
-      setFieldState('identifier', 'error', msg);
+      setError(msg);
       identifierRef.current?.focus();
       return false;
     }
-    // Uhaki umepita — makosa yote ya zamani yameondolewa
-    setFieldState('identifier', 'neutral');
+    setError(null);
     return true;
   }
 
   function isErrorNetwork(err: any): boolean {
-    return !err?.response && (err?.message === 'Network Error' || err?.code === 'ERR_NETWORK' || err?.code === 'ERR_CONNECTION_REFUSED');
+    return (
+      !err?.response &&
+      (err?.message === 'Network Error' ||
+        err?.code === 'ERR_NETWORK' ||
+        err?.code === 'ERR_CONNECTION_REFUSED')
+    );
   }
 
-  // Submit — kama ni namba ya simu, ingia moja kwa moja; kama ni email, 2FA
-  async function onSubmit(e: React.FormEvent) {
+  // Submit — namba ya simu inaingia moja kwa moja; email ya admin inaweza kuomba 2FA
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!validateIdentifier()) return;
-    setError(null); setErrorType(undefined); setLoading(true);
+    setLoading(true);
+    setError(null);
     try {
       const res: any = await login(identifier.trim());
       if (res.two_factor_required) {
-        // BUTTON INABADILIKA kuwa CODE INPUT pale pale
         setTwoFA({ email: res.email });
         setTwoFACode('');
         setLoading(false);
@@ -126,159 +101,190 @@ export default function LoginContent() {
         is_admin: res.is_admin,
         is_verified: res.is_verified,
       });
-      // Redirect to saved return URL if any, else dashboard/admin
       const returnTo = sessionStorage.getItem('kv_return_to');
-      if (returnTo) { sessionStorage.removeItem('kv_return_to'); router.push(returnTo); }
-      else router.push(res.is_admin ? '/admin' : '/dashboard');
+      if (returnTo) {
+        sessionStorage.removeItem('kv_return_to');
+        router.push(returnTo);
+      } else {
+        router.push(res.is_admin ? '/admin' : '/dashboard');
+      }
     } catch (err: any) {
       if (isErrorNetwork(err)) {
         setError(t('login.error_network'));
-        setErrorType('network');
       } else {
         const detail = err?.response?.data?.detail;
         setError(typeof detail === 'string' ? detail : t('login.error_user'));
-        setErrorType('validation');
       }
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
-  // Auto-submit — mtu akiweka code 6 tarakimu, ingia moja kwa moja
+  // Auto-submit — code 6 tarakimu inajiingiza yenyewe
   async function submitTwoFA(code: string) {
     if (code.length !== 6 || twoFALoading) return;
-    setError(null); setErrorType(undefined); setTwoFALoading(true);
+    setTwoFALoading(true);
+    setError(null);
     try {
       const res = await login2FA(twoFA!.email, code);
       setAuth(res.access_token, {
-        user_id: res.user_id, full_name: res.full_name,
+        user_id: res.user_id,
+        full_name: res.full_name,
         phone_primary: res.phone_primary || twoFA!.email,
         category: (res.category as 'health' | 'education') || undefined,
-        cadre_code: res.cadre_code, is_admin: res.is_admin,
+        cadre_code: res.cadre_code,
+        is_admin: res.is_admin,
         is_verified: res.is_verified,
       });
       const returnTo = sessionStorage.getItem('kv_return_to');
-      if (returnTo) { sessionStorage.removeItem('kv_return_to'); router.push(returnTo); }
-      else router.push('/admin');
+      if (returnTo) {
+        sessionStorage.removeItem('kv_return_to');
+        router.push(returnTo);
+      } else {
+        router.push('/admin');
+      }
     } catch (err: any) {
       if (isErrorNetwork(err)) {
         setError(t('login.error_network'));
-        setErrorType('network');
       } else {
         setError(extractErrorMessage(err, t('login.error_user')));
-        setErrorType('validation');
       }
-    } finally { setTwoFALoading(false); }
+    } finally {
+      setTwoFALoading(false);
+    }
   }
 
   function onTwoFAChange(v: string) {
     const code = v.replace(/\D/g, '');
     setTwoFACode(code);
-    setError(null); setErrorType(undefined);
-    // Auto-submit mara 6 tarakimu zinapoisha
-    if (code.length === 6) {
-      submitTwoFA(code);
-    }
+    setError(null);
+    if (code.length === 6) submitTwoFA(code);
   }
 
   function cancelTwoFA() {
     setTwoFA(null);
     setTwoFACode('');
-    setError(null); setErrorType(undefined);
+    setError(null);
   }
 
+  // Kosa la kisanduku linaonekana chini ya kisanduku; kosa la API chini ya button
+  const fieldError = showErr ? identifierMsg(identifier) : null;
+  const formError = error && error !== fieldError ? error : null;
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-10 relative">
-      <div className="absolute top-4 left-4 sm:top-5 sm:left-6">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-grey-600 hover:text-brand-blue transition px-2 py-1.5 rounded-lg hover:bg-brand-grey-100">
-          <ArrowLeft size={16} />
-          {t('action.back')}
-        </Link>
-      </div>
+    <main className={styles.page}>
+      {/* 1. Kitufe cha Rudi – juu kushoto, hakihesabiwi kwenye kundi la katikati */}
+      <Link href="/" className={styles.back}>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Rudi
+      </Link>
 
-      <div className="w-full max-w-md">
-        <div className="card p-4 sm:p-6">
-          <div className="text-center mb-6">
-            <img src="/images/LOGOL.jpeg" alt="Logo" className="mx-auto mb-4 h-20 sm:h-24 w-auto rounded-xl shadow-md" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-brand-grey-900">{t('login.welcome')}</h1>
-            <p className="text-brand-grey-500 mt-1 text-sm">{t('login.subtitle')}</p>
-          </div>
-
-          <form onSubmit={twoFA ? (e) => { e.preventDefault(); } : onSubmit} className="space-y-3.5" noValidate>
-            {/* Email/Password — toujours visible, disabled wakati wa 2FA */}
-            <div>
-              <label className="label">{identifier.includes('@') ? 'Email ya Admin' : t('login.phone_label')}</label>
-              <div className="relative">
-                <input ref={identifierRef} type="text"
-                  className={`input pl-9 ${fieldClass(statuses.identifier)}`}
-                  placeholder={identifier.includes('@') ? 'admin@kubadilishana.go.tz' : '0712345678'}
-                  value={identifier}
-                  onChange={(e) => changeIdentifier(e.target.value)}
-                  onInput={(e) => changeIdentifier((e.target as HTMLInputElement).value)}
-                  onBlur={blurIdentifier}
-                  aria-invalid={statuses.identifier?.state === 'error'}
-                  required autoComplete="username" disabled={!!twoFA} />
-                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-400" />
-              </div>
-              <FieldMessage status={statuses.identifier} fontSize={13} iconSize={13} />
-            </div>
-
-            {error && <ErrorAlert msg={error} type={errorType} />}
-
-            {twoFA && (
-              <div className="flex items-center gap-2 bg-green-50 text-green-700 text-xs font-semibold rounded-xl px-3 py-2 border border-green-200">
-                <AlertCircle size={14} className="text-green-500 flex-shrink-0" />
-                <span>Code ya tarakimu 6 imetumwa kwa <strong>{twoFA.email}</strong> — angalia email yako</span>
-              </div>
-            )}
-
-            {/* ═══ SEHEMU MOJA: button au code input — pale pale ═══ */}
-            {!twoFA ? (
-              /* BUTTON YA KAWAIDA — "Ingia" */
-              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
-                {loading ? (
-                  <>
-                    <span className="inline-block w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                    {t('login.logging_in')}
-                  </>
-                ) : (
-                  t('login.submit')
-                )}
-              </button>
-            ) : (
-              /* CODE INPUT — pale pale, nafasi ya button, inazunguka na KUINGIA */
-              <div className="relative">
-                <input type="text" inputMode="numeric"
-                  className="input text-center text-xl tracking-[0.5em] font-mono pr-10"
-                  placeholder="000000" maxLength={6}
-                  value={twoFACode}
-                  onChange={(e) => onTwoFAChange(e.target.value)}
-                  autoFocus disabled={twoFALoading} />
-                {/* X button — cancel, rudi kwenye "Ingia" */}
-                <button type="button" onClick={cancelTwoFA}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-grey-400 hover:text-brand-grey-600 transition p-0.5"
-                  title="Rudi">
-                  <X size={16} />
-                </button>
-                {/* Spinner ya kuingia — inaonekana mtu akiweka code na kusubiri */}
-                {twoFALoading && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <span className="inline-block w-5 h-5 rounded-full border-2 border-brand-blue-200 border-t-brand-blue animate-spin" />
-                  </div>
-                )}
-              </div>
-            )}
-          </form>
-
-
-          <p className="text-center text-xs text-brand-grey-500 mt-3">
-            <Link href="/forgot-password" className="text-brand-blue hover:underline font-medium">Umesahau namba? Bonyeza hapa</Link>
-          </p>
-          <div className="mt-4">
-            <Link href="/register" className="btn-primary w-full flex items-center justify-center gap-2" style={{ background: 'transparent', color: 'rgb(var(--brand-blue))', border: '2px solid rgb(var(--brand-blue) / 0.3)' }}>
-              {t('login.register_now')}
-            </Link>
+      {/* 2. Kundi la katikati: LOGO + FOMU vimekusanyika pamoja */}
+      <div className={styles.content}>
+        {/* 2a. Logo – iko NJE ya fomu, juu yake, ndani ya kibox chake */}
+        <div className={styles.logoWrap}>
+          <div className={styles.logoTile}>
+            <Image
+              src="/images/LOGOL.png"
+              alt="ESSTRANSFER"
+              width={170}
+              height={170}
+              priority
+              className={styles.logo}
+            />
           </div>
         </div>
+
+        {/* 2b. Fomu – HAINA boda, HAINA kivuli, HAINA background */}
+        <form className={styles.form} onSubmit={twoFA ? (e) => e.preventDefault() : onSubmit} noValidate>
+          <h1 className={styles.title}>{t('login.welcome')}</h1>
+          <p className={styles.subtitle}>{t('login.subtitle')}</p>
+
+          <label htmlFor="phone" className={styles.label}>
+            {isEmail ? 'Email ya Admin' : t('login.phone_label')}
+          </label>
+          <div className={`${styles.field} ${fieldError ? styles.fieldError : ''}`}>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" />
+            </svg>
+            <input
+              ref={identifierRef}
+              id="phone"
+              name="phone"
+              type={isEmail ? 'text' : 'tel'}
+              inputMode={isEmail ? 'email' : 'tel'}
+              autoComplete={isEmail ? 'email' : 'tel'}
+              placeholder={isEmail ? 'admin@kubadilishana.go.tz' : '0712345678'}
+              value={identifier}
+              onChange={(e) => changeIdentifier(e.target.value)}
+              onBlur={blurIdentifier}
+              required
+              disabled={!!twoFA}
+            />
+          </div>
+          {fieldError && <p className={styles.fieldMsg}>{fieldError}</p>}
+
+          {formError && <p className={styles.fieldMsg} role="alert">{formError}</p>}
+
+          {twoFA ? (
+            /* 3. Code ya 2FA – inachukua nafasi ya button pale pale */
+            <div className={styles.codeWrap}>
+              <div className={`${styles.field} ${styles.codeField}`}>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className={styles.codeInput}
+                  placeholder="000000"
+                  maxLength={6}
+                  value={twoFACode}
+                  onChange={(e) => onTwoFAChange(e.target.value)}
+                  autoFocus
+                  disabled={twoFALoading}
+                  aria-label="Code ya uthibitisho"
+                />
+              </div>
+              <button type="button" onClick={cancelTwoFA} className={styles.codeX} title="Rudi">
+                <X size={16} />
+              </button>
+              <p className={styles.codeNote}>
+                Code ya tarakimu 6 imetumwa kwa {twoFA.email}
+              </p>
+            </div>
+          ) : (
+            <button type="submit" className={styles.btnPrimary} disabled={loading}>
+              {loading ? t('login.logging_in') : t('login.submit')}
+            </button>
+          )}
+
+          <Link href="/forgot-password" className={styles.link}>
+            Umesahau namba? Bonyeza hapa
+          </Link>
+
+          <Link href="/register" className={styles.btnOutline}>
+            {t('login.register_now')}
+          </Link>
+        </form>
       </div>
-    </div>
+    </main>
   );
 }

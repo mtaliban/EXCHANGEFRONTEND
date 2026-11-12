@@ -1,0 +1,270 @@
+/* =========================================================
+   ESSTRANSFER – Login page
+   Sheria kuu:
+   1. Logo iko NJE ya fomu, juu yake, katikati, ndani ya kibox (200x200).
+   2. Logo + fomu ni KUNDI MOJA lililokusanyika, limekaa katikati ya skrini
+      (linachukua takriban robo tatu ya urefu wa skrini).
+   3. Fomu haina boda, haina kivuli, haina background.
+   4. Input na vitufe ni VYEMBAMBA (input 38px, vitufe 34px).
+   5. Rangi ni nyeupe + bluu moja tu (#1e40af). Hakuna rangi nyingine.
+   ========================================================= */
+
+.page {
+  --blue: #1e40af;
+  --blue-dark: #1e3a8a;
+  --blue-soft: #c7d2fe;
+  --text: #111827;
+  --muted: #6b7280;
+  --label: #374151;
+  --line: #d1d5db;
+
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  color: var(--text);
+  font-family: Inter, Roboto, system-ui, -apple-system, sans-serif;
+}
+
+/* Rudi – juu kushoto */
+.back {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* Kundi la Logo + Fomu: limekaa katikati wima (margin auto) */
+.content {
+  margin: auto 0;
+  padding: 40px 0; /* nafasi isigongane na "Rudi" kwenye skrini fupi */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- LOGO (nje ya fomu) ---------- */
+.logoWrap {
+  display: flex;
+  justify-content: center;
+}
+
+.logoTile {
+  width: 200px;
+  height: 200px;
+  border-radius: 36px;
+  background: #fff;
+  border: 1px solid #f1f2f4;
+  box-shadow: 0 8px 26px rgba(17, 24, 39, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  width: 170px;
+  height: auto;
+}
+
+/* ---------- FOMU (bila boda) ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 26px; /* umbali kati ya logo na "Karibu Tena" */
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  text-align: center;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.label {
+  display: block;
+  margin: 26px 0 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--label);
+}
+
+/* Input nyembamba – 38px */
+.field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--label);
+  transition: border-color 0.15s;
+}
+
+.field:focus-within {
+  border-color: var(--blue);
+}
+
+.field svg {
+  flex: none;
+}
+
+.field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.field input::placeholder {
+  color: #9ca3af;
+}
+
+/* Hali ya kosa – mpaka mwekundu chini ya kisanduku */
+.fieldError,
+.fieldError:focus-within {
+  border-color: #dc2626;
+}
+
+/* Ujumbe mmoja chini ya kisanduku (kosa) */
+.fieldMsg {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #dc2626;
+}
+
+/* Kitufe cha Ingia – chembamba 34px */
+.btnPrimary {
+  height: 34px;
+  margin-top: 14px;
+  width: 100%;
+  border: 0;
+  border-radius: 7px;
+  background: var(--blue);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnPrimary:hover {
+  background: var(--blue-dark);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.link {
+  display: block;
+  margin-top: 14px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue);
+  text-decoration: none;
+}
+
+/* Kitufe cha Jisajili – chembamba 34px, boda nyembamba */
+.btnOutline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  margin-top: 14px;
+  border: 1px solid var(--blue-soft);
+  border-radius: 7px;
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btnOutline:hover {
+  background: #f5f7ff;
+}
+
+/* ---------- 2FA: code ya tarakimu 6 (pale palepale pa kitufe) ---------- */
+.codeWrap {
+  position: relative;
+  margin-top: 14px;
+}
+
+.codeField {
+  height: 38px;
+  padding: 0 38px 0 12px;
+}
+
+.codeInput {
+  width: 100%;
+  text-align: center;
+  letter-spacing: 0.4em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+}
+
+.codeX {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  padding: 2px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.codeX:hover {
+  color: var(--text);
+}
+
+.codeNote {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Skrini fupi sana (simu ndogo) – punguza logo kidogo */
+@media (max-height: 640px) {
+  .logoTile {
+    width: 160px;
+    height: 160px;
+    border-radius: 30px;
+  }
+  .logo {
+    width: 136px;
+  }
+}
