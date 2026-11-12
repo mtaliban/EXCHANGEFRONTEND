@@ -198,3 +198,29 @@
 .pGo { display: flex; flex-direction: column; }
 .pGo i { font-style: normal; color: var(--f); font-size: 12px; margin-top: 2px; }
 .pNone { color: var(--f); font-style: normal; }
+
+/* ---------- Hariri Wasifu ---------- */
+.eBody { padding: 14px; }
+.eLabel { font-size: 12.5px; font-weight: 600; color: var(--t2); margin: 12px 0 6px; }
+.eBody > .eLabel:first-child { margin-top: 0; }
+.eLabel em { font-style: normal; font-weight: 400; color: var(--f); }
+.eGrid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.eGrid > div { min-width: 0; }
+.eGrid .input { min-width: 0; }
+@media (min-width: 380px) { .eGrid { grid-template-columns: 1fr 1fr; } }
+.eLocked { background: #f9fafb; color: var(--f); height: 38px; display: flex; align-items: center; padding: 0 12px; border: 1px solid var(--l); border-radius: 8px; font-size: 13.5px; }
+.eSeg { display: flex; border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; }
+.eSeg button { flex: 1; height: 38px; border: 0; border-right: 1px solid #d1d5db; background: #fff; font: inherit; font-size: 13px; font-weight: 600; color: var(--t2); cursor: pointer; }
+.eSeg button:last-child { border-right: 0; }
+.eSegOn { background: var(--blue) !important; color: #fff !important; }
+.eGoal { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+.eGoal + .eGoal { border-top: 1px solid var(--l2); }
+.eGoal .w b { display: block; font-size: 13.5px; }
+.eGoal .w span { font-size: 12px; color: var(--f); }
+.eNum { width: 24px; height: 24px; border-radius: 50%; background: var(--blue-soft); color: var(--blue); font-size: 12px; font-weight: 700; display: grid; place-items: center; flex: none; }
+.eRemove { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 9px; border: 1px solid #fecaca; border-radius: 7px; background: #fff; color: #b91c1c; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; flex: none; }
+.eAdd { margin-top: 12px; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 12px; }
+.eAddTitle { margin: 0 0 8px; font-size: 12.5px; font-weight: 600; color: var(--t2); }
+.eAddTitle em { font-style: normal; font-weight: 400; color: var(--f); }
+.eFoot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin: 16px 0 8px; }
+.eFoot .pEdit { height: 38px; border-radius: 8px; font-size: 12.5px; }

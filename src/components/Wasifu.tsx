@@ -40,7 +40,8 @@ export default function Wasifu() {
 
   return (
     <div className={s.wrap}>
-      <div className={s.pHead} style={{ justifyContent: "flex-end" }}>
+      <div className={s.pHead}>
+        <h1 className={s.pTitleH}>Wasifu Wangu</h1>
         <Link className={s.pEdit} href="/wasifu/hariri">
           <AppIcon name="edit" size={14} sw={2} /> Hariri Wasifu
         </Link>

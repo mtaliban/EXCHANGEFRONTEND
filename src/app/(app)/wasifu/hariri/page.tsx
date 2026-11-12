@@ -1,4 +1,12 @@
 'use client';
 
-// Hariri Wasifu — inatumia fomu ya kuhariri wasifu iliyopo (/profile).
-export { default } from '../../profile/page';
+// Hariri Wasifu — sehemu A (Utambulisho), B (Kituo cha Sasa), C (Ninataka Kwenda).
+import HaririWasifu from '@/components/HaririWasifu';
+
+export default function HaririWasifuPage() {
+  return (
+    <div className="p-4 md:p-6">
+      <HaririWasifu />
+    </div>
+  );
+}
