@@ -1,0 +1,112 @@
+/* =========================================================
+   KURASA ZA UMMA – Nyeupe + kijivu + bluu moja (#1e40af)
+   ========================================================= */
+.shell {
+  --blue: #1e40af; --blue-soft: #eef2ff; --blue-line: #c7d2fe;
+  --t: #111827; --t2: #374151; --m: #4b5563; --f: #6b7280; --l: #e5e7eb; --l2: #f1f2f4;
+  min-height: 100vh; background: #fff; color: var(--t);
+  font-family: Inter, Roboto, system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+/* ---------- Kichwa ---------- */
+.header { position: sticky; top: 0; z-index: 40; background: #fff; border-bottom: 1px solid var(--l); }
+.headerIn { position: relative; max-width: 1040px; margin: 0 auto; height: 60px; padding: 0 16px; display: flex; align-items: center; gap: 10px; }
+.logo { display: flex; align-items: center; }
+.logo img { height: 36px; width: auto; }
+.spacer { flex: 1; }
+.spacerR { flex: 1; margin-right: -36px; } /* SW/EN inakaa katikati kama mfumo wako */
+.lang { display: flex; border: 1px solid #d1d5db; border-radius: 7px; overflow: hidden; height: 30px; }
+.lang button { width: 36px; border: 0; background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: var(--blue); cursor: pointer; }
+.lang .langOn { background: var(--blue); color: #fff; }
+.menuBtn { width: 36px; height: 36px; border-radius: 9px; background: #fff; border: 1px solid var(--l); display: grid; place-items: center; cursor: pointer; }
+.menuBtnOn { background: #f3f4f6; }
+.burger { position: relative; width: 18px; height: 14px; display: block; }
+.burger i { position: absolute; left: 0; height: 2px; border-radius: 2px; background: var(--t2); transition: transform .28s ease, opacity .2s, width .28s, top .28s; }
+.burger i:nth-child(1) { top: 0; width: 18px; }
+.burger i:nth-child(2) { top: 6px; width: 12px; }
+.burger i:nth-child(3) { top: 12px; width: 18px; }
+.burgerX i:nth-child(1) { top: 6px; transform: rotate(45deg); }
+.burgerX i:nth-child(2) { opacity: 0; width: 0; }
+.burgerX i:nth-child(3) { top: 6px; transform: rotate(-45deg); }
+
+/* Menyu (inashuka kutoka kulia, inagusa ukingo) */
+.pop { position: fixed; top: 61px; left: 0; right: 0; z-index: 40; background: #fff; border-bottom: 1px solid var(--l); border-radius: 0 0 16px 16px; padding: 8px 16px 14px;
+  box-shadow: 0 16px 40px rgba(17, 24, 39, .16); opacity: 0; transform: translateY(-10px); pointer-events: none; visibility: hidden;
+  transition: opacity .22s ease, transform .26s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .26s; }
+.popOpen { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .22s ease, transform .26s cubic-bezier(.2, .8, .2, 1); }
+.popItem { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 10px; border-radius: 9px; font-size: 14px; font-weight: 500; color: var(--t2); text-decoration: none; }
+.popItem:hover { background: #f9fafb; }
+.popIc { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: #f3f4f6; color: #4b5563; flex: none; }
+.popItemOn { color: var(--blue); font-weight: 600; }
+.popItemOn .popIc { background: var(--blue); color: #fff; }
+.popBtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 0 0; margin-top: 4px; border-top: 1px solid var(--l2); }
+.overlay { position: fixed; inset: 61px 0 0 0; z-index: 35; background: rgba(17, 24, 39, .28); opacity: 0; pointer-events: none; transition: opacity .25s; }
+.overlayOn { opacity: 1; pointer-events: auto; }
+
+/* Vitufe */
+.btnPrimary, .btnOut { display: inline-flex; align-items: center; justify-content: center; height: 40px; border-radius: 8px; font-size: 13.5px; font-weight: 600; text-decoration: none; }
+.btnPrimary { background: var(--blue); color: #fff; }
+.btnOut { border: 1px solid #d1d5db; color: var(--t); background: #fff; }
+.btnBig, .btnBigOut { display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 9px; font-size: 14.5px; font-weight: 600; text-decoration: none; }
+.btnBig { background: var(--blue); color: #fff; }
+.btnBig:hover { background: #1e3a8a; }
+.btnBigOut { border: 1px solid #d1d5db; color: var(--t); background: #fff; }
+
+/* ---------- Hero ---------- */
+.hero { padding: 40px 0 36px; text-align: center; }
+.h1 { margin: 0 auto; max-width: 680px; font-size: 30px; line-height: 1.15; letter-spacing: -.8px; font-weight: 800; }
+.h1 em { font-style: normal; color: var(--blue); }
+.lead { margin: 14px auto 0; max-width: 620px; font-size: 15px; line-height: 1.6; color: var(--m); }
+.pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 22px; }
+.pills span { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px 0 6px; border: 1px solid var(--l); border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--t2); background: #f9fafb; }
+.pills b { width: 22px; height: 22px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 11px; display: grid; place-items: center; }
+.heroBtns { display: flex; flex-direction: column; gap: 10px; margin: 26px auto 0; max-width: 420px; }
+
+/* ---------- Sehemu ---------- */
+.section { padding: 36px 0; border-top: 1px solid var(--l2); }
+.h2 { margin: 0; text-align: center; font-size: 24px; letter-spacing: -.5px; font-weight: 800; }
+.h2Sub { margin: 8px auto 0; max-width: 560px; text-align: center; font-size: 14.5px; line-height: 1.55; color: var(--f); }
+
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stats div { text-align: center; padding: 18px 10px; border: 1px solid var(--l); border-radius: 14px; background: #f9fafb; }
+.stats b { display: block; font-size: 26px; font-weight: 800; color: var(--blue); letter-spacing: -.5px; }
+.stats span { display: block; margin-top: 4px; font-size: 13px; color: var(--f); }
+
+.steps { display: grid; gap: 12px; margin-top: 22px; }
+.stepCard { display: flex; gap: 14px; padding: 16px; border: 1px solid var(--l); border-radius: 14px; background: #fff; }
+.stepNum { width: 34px; height: 34px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 14px; font-weight: 700; display: grid; place-items: center; flex: none; }
+.stepCard b { display: block; font-size: 15px; }
+.stepCard p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--f); }
+
+.cta { text-align: center; }
+
+/* ---------- Footer ---------- */
+.footer { border-top: 1px solid var(--l); padding: 28px 0 24px; background: #fff; }
+.fContact { border: 1px solid var(--l); border-radius: 14px; overflow: hidden; }
+.fContact a { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--l2); text-decoration: none; color: inherit; }
+.fContact a:first-child { border-top: 0; }
+.fContact a:hover { background: #f9fafb; }
+.fContact a > div { flex: 1; min-width: 0; }
+.fContact small { display: block; font-size: 12px; color: var(--f); }
+.fContact b { display: block; font-size: 15px; font-weight: 600; color: var(--t); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fContact a > svg { color: #c0c4cc; flex: none; }
+.fIc { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; flex: none; }
+.fCols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+.fHead { margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--t); }
+.fCols a { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 14px; color: var(--t2); text-decoration: none; }
+.fCols a svg { color: var(--blue); }
+.copy { margin: 20px 0 0; padding-top: 16px; border-top: 1px solid var(--l); text-align: center; font-size: 12.5px; color: var(--f); }
+
+@media (min-width: 720px) {
+  .h1 { font-size: 44px; }
+  .heroBtns { flex-direction: row; justify-content: center; max-width: none; }
+  .stats { grid-template-columns: repeat(4, 1fr); }
+  .steps { grid-template-columns: repeat(4, 1fr); }
+  .stepCard { flex-direction: column; }
+  .fCols { grid-template-columns: repeat(2, 220px); }
+  .fContact { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .fContact a { border-top: 0; border-left: 1px solid var(--l2); }
+  .fContact a:first-child { border-left: 0; }
+}

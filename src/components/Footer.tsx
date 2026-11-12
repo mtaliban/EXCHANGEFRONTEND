@@ -12,7 +12,7 @@ export default function Footer() {
 
   // Baada ya login (app pages) footer ya public HAITOKE kabisa — AppShell ina
   // muundo wake (sidebar/bottom nav). Footer hii ni ya public pages pekee.
-  if (APP_ROUTES.some((r) => pathname?.startsWith(r))) return null;
+  if (pathname === '/' || APP_ROUTES.some((r) => pathname?.startsWith(r))) return null;
 
   const pagesLinks = [
     { href: '/', label: t('footer.home'), icon: Home },

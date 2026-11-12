@@ -30,7 +30,7 @@ export default function Navbar() {
   useEffect(() => { setMounted(true); }, []);
 
   // Hide navbar completely on authenticated app routes (they have their own AppShell)
-  if (APP_ROUTES.some(r => pathname?.startsWith(r))) {
+  if (pathname === '/' || APP_ROUTES.some(r => pathname?.startsWith(r))) {
     return null;
   }
 
