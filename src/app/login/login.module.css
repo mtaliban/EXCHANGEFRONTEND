@@ -1,8 +1,8 @@
 /* =========================================================
    ESSTRANSFER – Login page
-   Design, rangi na maandishi ni kama yalivyokuwa.
-   Vipimo vyote vina uwiano mmoja (hakuna kinachopunguzwa kupita kiasi)
-   na ukurasa unatoshea skrini moja ya simu bila scroll.
+   Design: nyeupe + bluu #1e40af tu.
+   Vipimo: kibox cha logo 200px, logo 170px, title 26px,
+   input 38px, vitufe 34px, nafasi 26/6/26/7/14/14/14.
    ========================================================= */
 
 .page {
@@ -20,7 +20,7 @@
   min-height: 100svh;
   max-width: 440px;
   margin: 0 auto;
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -35,29 +35,29 @@
   box-sizing: border-box;
 }
 
-/* Rudi – juu kushoto */
+/* Rudi – juu kushoto (top 18, left 20) */
 .back {
   position: absolute;
-  top: 16px;
-  left: 18px;
+  top: 18px;
+  left: 20px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 14px;
+  gap: 8px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
 }
 
 .back svg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 }
 
-/* Kundi la Logo + Fomu: katikati ya skrini */
+/* Kundi la Logo + Fomu: katikati ya skrini kwa wima */
 .content {
   margin: auto 0;
-  padding: 6px 0;
+  padding: 8px 0;
   display: flex;
   flex-direction: column;
 }
@@ -69,28 +69,28 @@
 }
 
 .logoTile {
-  width: 150px;
-  height: 150px;
-  border-radius: 27px;
+  width: 200px;
+  height: 200px;
+  border-radius: 36px;
   background: #fff;
   border: 1px solid #f1f2f4;
-  box-shadow: 0 7px 22px rgba(17, 24, 39, 0.12);
+  box-shadow: 0 8px 26px rgba(17, 24, 39, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .logo {
-  width: 126px;
+  width: 170px;
   height: auto;
   display: block;
 }
 
-/* ---------- FOMU (bila boda) ---------- */
+/* ---------- FOMU (bila boda/card) ---------- */
 .form {
   display: flex;
   flex-direction: column;
-  margin-top: 11px;
+  margin-top: 26px;
   border: none;
   box-shadow: none;
   background: transparent;
@@ -98,34 +98,34 @@
 
 .title {
   margin: 0;
-  font-size: 19px;
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
   text-align: center;
 }
 
 .subtitle {
-  margin: 5px 0 0;
-  font-size: 12px;
+  margin: 6px 0 0;
+  font-size: 15px;
   color: var(--muted);
   text-align: center;
 }
 
 .label {
   display: block;
-  margin: 13px 0 5px;
-  font-size: 12px;
+  margin: 26px 0 7px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--label);
 }
 
-/* Input */
+/* Input – 38px */
 .field {
   display: flex;
   align-items: center;
-  gap: 9px;
-  height: 34px;
-  padding: 0 11px;
+  gap: 10px;
+  height: 38px;
+  padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 7px;
   color: var(--label);
@@ -138,8 +138,8 @@
 
 .field svg {
   flex: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 .field input {
@@ -166,15 +166,15 @@
 /* Ujumbe mmoja chini ya kisanduku (kosa) */
 .fieldMsg {
   margin: 5px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: #dc2626;
 }
 
-/* Kitufe cha Ingia */
+/* Kitufe cha Ingia – 34px */
 .btnPrimary {
   height: 34px;
-  margin-top: 10px;
+  margin-top: 14px;
   width: 100%;
   border: 0;
   border-radius: 7px;
@@ -197,21 +197,21 @@
 
 .link {
   display: block;
-  margin-top: 10px;
+  margin-top: 14px;
   text-align: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--blue);
   text-decoration: none;
 }
 
-/* Kitufe cha Jisajili */
+/* Kitufe cha Jisajili – 34px, boda #c7d2fe */
 .btnOutline {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 34px;
-  margin-top: 10px;
+  margin-top: 14px;
   border: 1px solid var(--blue-soft);
   border-radius: 7px;
   color: var(--blue);
@@ -227,12 +227,12 @@
 /* ---------- 2FA: code ya tarakimu 6 (pale palepale pa kitufe) ---------- */
 .codeWrap {
   position: relative;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .codeField {
-  height: 34px;
-  padding: 0 34px 0 11px;
+  height: 38px;
+  padding: 0 38px 0 12px;
 }
 
 .codeInput {
@@ -245,8 +245,8 @@
 
 .codeX {
   position: absolute;
-  right: 9px;
-  top: 17px;
+  right: 10px;
+  top: 19px;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
@@ -269,23 +269,17 @@
   text-align: center;
 }
 
-/* Skrini fupi sana (simu ndogo) */
+/* Skrini fupi sana (simu ndogo) – kibox kinashuka hadi 160px */
 @media (max-height: 640px) {
   .logoTile {
-    width: 130px;
-    height: 130px;
-    border-radius: 23px;
+    width: 160px;
+    height: 160px;
+    border-radius: 30px;
   }
   .logo {
-    width: 108px;
+    width: 136px;
   }
   .content {
     padding: 0;
-  }
-  .form {
-    margin-top: 9px;
-  }
-  .label {
-    margin-top: 11px;
   }
 }

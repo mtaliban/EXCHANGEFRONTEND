@@ -349,6 +349,7 @@ export interface RegisterPayload {
   subjects: string[];
   current_station: Station;
   desired_destinations: Destination[];
+  years_of_service?: number | null;
 }
 export interface AuthResponse {
   user_id: string;
