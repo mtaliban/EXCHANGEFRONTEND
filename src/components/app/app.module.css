@@ -226,7 +226,7 @@
 .eFoot .pEdit { height: 38px; border-radius: 8px; font-size: 12.5px; }
 
 /* ---------- Maoni ---------- */
-.mHint { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--f); }
+.mHint { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--f); min-width: 0; }
 .mHint i { display: inline-flex; }
 .mTitle { margin: 16px 0 0; font-size: 21px; font-weight: 700; letter-spacing: -.4px; line-height: 1.25; color: var(--t); }
 .mSub { margin: 6px 0 0; font-size: 14px; color: #374151; line-height: 1.55; max-width: 340px; }
@@ -235,11 +235,14 @@
 .mBox::placeholder { color: #6b7280; }
 .mBox:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(30, 64, 175, .1); }
 .mBox:disabled { background: #f9fafb; }
-.mFoot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
-.mFoot .mHint { font-size: 12.5px; font-weight: 500; color: #374151; gap: 7px; }
+.mFoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.mFoot .mHint { font-size: 12.5px; font-weight: 500; color: #374151; gap: 7px; flex: 1 1 auto; }
 .mCard { background: #fff; border: 1px solid var(--l); border-radius: 12px; padding: 14px; margin-top: 10px; }
 .mTop { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .mText { margin: 10px 0 0; font-size: 14px; color: var(--t); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
 .mAdmin { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: #f5f7ff; }
 .mAdmin b { display: block; font-size: 10.5px; font-weight: 700; color: var(--blue); letter-spacing: .5px; text-transform: uppercase; }
 .mAdmin p { margin: 4px 0 0; font-size: 13.5px; color: var(--t2); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+
+/* Upana mdogo kwa ukurasa wa Maoni */
+.mPage { max-width: 400px; overflow-x: clip; }

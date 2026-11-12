@@ -81,7 +81,7 @@ export default function Maoni() {
   }
 
   return (
-    <div className={s.wrap}>
+    <div className={cx(s.wrap, s.mPage)}>
       <h1 className={s.mTitle}>Maoni na Malalamiko</h1>
       <p className={s.mSub}>Una swali, ushauri au tatizo? Tuandikie hapa na tutakujibu.</p>
 
