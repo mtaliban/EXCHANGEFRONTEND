@@ -281,9 +281,9 @@ function MobileBottomNav({ pathname, isAdmin }: {
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-        { href: '/donate', label: t('nav.donate'), icon: HandCoins },
-        { href: '/feedback', label: t('nav.feedback_short', 'Maoni'), icon: ClipboardList },
-        { href: '/profile', label: t('nav.profile'), icon: User },
+        { href: '/changia', label: t('nav.donate'), icon: HandCoins },
+        { href: '/maoni', label: t('nav.feedback_short', 'Maoni'), icon: ClipboardList },
+        { href: '/wasifu', label: t('nav.profile'), icon: User },
       ];
 
   return (
@@ -315,7 +315,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
                 )}
               </div>
               <span className={clsx('text-[9px] font-semibold leading-tight text-center truncate w-full max-w-full px-0.5 mt-0.5 transition-colors duration-200', active && 'font-bold')}>{l.label}</span>
-              {active && <span className="w-3 h-0.5 rounded-full bg-brand-blue mt-0.5" />}
+              {active && <span className="w-1 h-1 rounded-full bg-brand-blue mt-0.5" />}
             </Link>
           );
         })}

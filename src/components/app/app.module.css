@@ -1,0 +1,134 @@
+/* =========================================================
+   ESSTRANSFER – Dashibodi ya walimu
+   Nyeupe + kijivu + bluu moja (#1e40af). Kijani/nyekundu/machungu
+   ni kwa HALI tu (Imekamilika / Imekataliwa / Inasubiri) na WhatsApp.
+   ========================================================= */
+.wrap {
+  --blue: #1e40af; --blue-soft: #eef2ff; --blue-line: #c7d2fe;
+  --t: #111827; --t2: #374151; --m: #4b5563; --f: #6b7280; --l: #e5e7eb; --l2: #f1f2f4;
+  max-width: 480px; margin: 0 auto; color: var(--t);
+  font-family: Inter, Roboto, system-ui, -apple-system, sans-serif;
+}
+.wrap *, .wrap *::before, .wrap *::after { box-sizing: border-box; }
+.card { background: #fff; border: 1px solid var(--l); border-radius: 12px; padding: 14px; margin-top: 12px; }
+
+/* ---------- Karibu ---------- */
+.welcome { display: grid; grid-template-columns: 1fr 104px; padding: 0; overflow: hidden; }
+.wLeft { display: flex; gap: 10px; align-items: center; padding: 14px; min-width: 0; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue-soft); border: 1px solid #e0e7ff; color: var(--blue); font-weight: 700; font-size: 15px; display: grid; place-items: center; flex: none; }
+.muted { font-size: 12.5px; color: var(--f); }
+.wName { font-size: 15px; font-weight: 700; margin: 0; line-height: 1.25; }
+.wLine { font-size: 12.5px; color: var(--m); margin: 2px 0 0; }
+.blue { color: var(--blue); font-weight: 600; }
+.wRight { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-left: 1px solid var(--l2); padding: 10px; text-align: center; }
+.payIcon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; }
+.payNo { background: #fef2f2; color: #dc2626; }
+.payOk { background: #f0fdf4; color: #16a34a; }
+.payLabel { font-size: 12.5px; font-weight: 700; }
+.payNum { font-size: 11.5px; font-weight: 600; color: var(--m); }
+
+/* ---------- Muhtasari ---------- */
+.summary { display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 12px; }
+.countBox { width: 58px; height: 58px; border-radius: 12px; background: #f3f4f6; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: none; }
+.countBox b { font-size: 20px; line-height: 1; }
+.countBox span { font-size: 10.5px; color: var(--f); margin-top: 3px; }
+.route { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "l1 . l2" "v1 aw v2"; column-gap: 10px; row-gap: 3px; align-items: center; }
+.route small { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--f); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; }
+.rl1 { grid-area: l1; } .rl2 { grid-area: l2; justify-content: flex-end; }
+.route b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rv1 { grid-area: v1; } .rv2 { grid-area: v2; text-align: right; }
+.arrow { grid-area: aw; display: flex; align-items: center; color: #9ca3af; min-width: 18px; }
+.arrow i { flex: 1; border-top: 1.5px dashed #cbd5e1; margin-right: -3px; }
+
+/* ---------- Kuchuja ---------- */
+.fHead { display: flex; align-items: center; gap: 7px; font-size: 14.5px; font-weight: 700; }
+.fHint { font-size: 12.5px; color: var(--m); margin: 4px 0 0; }
+.label { font-size: 12.5px; font-weight: 600; color: var(--t2); margin: 12px 0 6px; }
+.label em { font-style: normal; font-weight: 400; color: var(--f); }
+.divider { height: 1px; background: var(--l2); margin: 14px 0 2px; }
+.dd { position: relative; }
+.ddBtn { width: 100%; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 10px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; font: inherit; font-size: 13.5px; color: var(--t); cursor: pointer; text-align: left; }
+.ddBtn > span:nth-child(2) { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ddIcon { color: var(--blue); display: flex; }
+.ddFilled .ddBtn { border-color: var(--blue); }
+.ddDisabled .ddBtn { background: #f9fafb; color: #c4c9d2; cursor: not-allowed; }
+.ddOpen .ddBtn { border-color: var(--blue); border-bottom-color: var(--l); border-radius: 8px 8px 0 0; }
+.ddOpen .ddBtn svg:last-child { transform: rotate(180deg); color: var(--blue); }
+/* orodha inafunguka NDANI ya kadi (haielei juu ya vitu vingine) */
+.ddPanel { margin-top: -1px; border: 1px solid var(--blue); border-top: 0; border-radius: 0 0 8px 8px; padding: 8px; background: #fcfcfd; }
+.search { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border: 1px solid var(--l); border-radius: 7px; background: #f9fafb; color: var(--f); }
+.search input { flex: 1; min-width: 0; border: 0; outline: none; background: none; font: inherit; font-size: 13px; color: var(--t); }
+.ddCount { font-size: 11.5px; color: var(--f); padding: 6px 2px 4px; }
+.ddCount b { color: var(--blue); }
+.grid3, .grid2 { display: grid; gap: 4px; }
+.grid3 { grid-template-columns: repeat(3, 1fr); }
+.grid2 { grid-template-columns: repeat(2, 1fr); }
+.scrollList { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.opt { padding: 8px; border: 1px solid var(--l2); border-radius: 6px; background: #fff; font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--t2); }
+.scrollList .opt { flex-shrink: 0; border: 0; border-bottom: 1px solid var(--l2); border-radius: 0; padding: 9px 8px; }
+.optAll { grid-column: 1 / -1; font-weight: 600; }
+.optOn { background: var(--blue-soft) !important; border-color: var(--blue) !important; color: var(--blue); font-weight: 600; border-radius: 6px !important; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { height: 30px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 7px; background: #fff; font: inherit; font-size: 12.5px; color: var(--t2); cursor: pointer; }
+.chipOn { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
+.input { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: var(--f); }
+.input input { flex: 1; min-width: 0; border: 0; outline: none; font: inherit; font-size: 13.5px; color: var(--t); background: none; }
+.clearRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.clearBtn { border: 0; background: none; padding: 0; font: inherit; font-size: 12px; font-weight: 600; color: #dc2626; cursor: pointer; }
+.liveRow { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--f); margin-top: 8px; flex-wrap: wrap; }
+.liveDot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+.liveDotOff { background: #cbd5e1; }
+.pill { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 99px; background: var(--blue-soft); color: var(--blue); font-size: 11px; font-weight: 700; }
+
+/* ---------- Kadi ya mwalimu ---------- */
+.tTop { display: flex; align-items: center; gap: 12px; }
+.tAvatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(180deg, #eef2ff, #e0e7ff); color: var(--blue); font-weight: 700; font-size: 16px; display: grid; place-items: center; flex: none; box-shadow: inset 0 0 0 1px #dbe2fb; }
+.tName { font-size: 15.5px; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tSub { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; color: var(--m); margin-top: 3px; }
+.dotSep { width: 3px; height: 3px; border-radius: 50%; background: #9ca3af; }
+.trip { margin-top: 14px; border: 1px solid var(--l); border-radius: 12px; padding: 12px; background: #fcfcfd; }
+.stop { display: flex; gap: 12px; position: relative; }
+.stop + .stop { margin-top: 10px; }
+.stop:not(:last-child)::after { content: ""; position: absolute; left: 4px; top: 16px; height: calc(100% - 6px); border-left: 2px dotted #cbd5e1; }
+.stop i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #9ca3af; background: #fff; margin-top: 4px; flex: none; }
+.stopTo i { border-color: var(--blue); background: var(--blue); }
+.stopCome i { border-style: dashed; border-color: var(--blue); }
+.stop small { display: block; font-size: 10.5px; font-weight: 700; color: var(--f); letter-spacing: .5px; text-transform: uppercase; }
+.stopTo small { color: var(--blue); }
+.stop p { margin: 0; font-size: 14px; }
+.stop p span { color: var(--m); }
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.fact { border: 1px solid var(--l); border-radius: 10px; padding: 10px; }
+.fact small { display: block; font-size: 10.5px; font-weight: 700; color: var(--f); letter-spacing: .5px; text-transform: uppercase; }
+.fact b { display: block; font-size: 13.5px; margin-top: 4px; }
+.fact em { display: flex; align-items: center; gap: 4px; font-style: normal; font-size: 12px; color: var(--m); margin-top: 3px; }
+.years { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 8px; }
+.years span { height: 24px; border-radius: 6px; background: #f1f5f9; display: grid; place-items: center; font-size: 11.5px; font-weight: 700; color: var(--f); }
+.years .yOn { background: var(--blue); color: #fff; }
+.subjects { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--l2); }
+.subHead { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--t2); }
+.subIcon { width: 28px; height: 28px; border-radius: 8px; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; }
+.subRow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.subj { height: 26px; padding: 0 10px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; font-weight: 700; color: var(--t2); display: inline-flex; align-items: center; letter-spacing: .3px; }
+.subjOn { background: var(--blue); border-color: var(--blue); color: #fff; }
+.match { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 7px; background: var(--blue-soft); color: var(--blue); font-size: 12px; font-weight: 600; }
+.actions { display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--l2); }
+.act { height: 36px; border: 1px solid #d1d5db; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--t2); background: #fff; text-decoration: none; cursor: pointer; font-family: inherit; }
+.act:disabled { opacity: .45; cursor: default; }
+.actWa { background: #16a34a; border-color: #16a34a; color: #fff; }
+.toast { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 9px 11px; border-radius: 8px; background: var(--blue-soft); border: 1px solid var(--blue-line); color: var(--blue); font-size: 12px; font-weight: 600; text-decoration: none; }
+
+/* ---------- Pagination ---------- */
+.pager { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+.pageBtn { height: 32px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 7px; background: #fff; font: inherit; font-size: 13px; font-weight: 600; color: var(--t2); display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.pageBtn:disabled { color: #c4c9d2; border-color: var(--l); cursor: default; }
+.pageInfo { font-size: 13px; color: var(--f); }
+
+/* ---------- Hali zingine ---------- */
+.empty { padding: 26px 16px; text-align: center; }
+.empty h3 { margin: 8px 0 0; font-size: 14.5px; font-weight: 700; }
+.empty p { margin: 4px 0 0; font-size: 12.5px; color: var(--f); }
+.loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 26px 0; color: var(--f); font-size: 13px; }
+.spin { width: 16px; height: 16px; border: 2px solid #cbd5e1; border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.banner { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; border-radius: 8px; font-size: 13px; color: #b91c1c; }
