@@ -305,7 +305,7 @@ export function TeacherCard({
           onClick={onWhatsApp}
           disabled={!c.phone_alt}
         >
-          <AppIcon name="wa" size={14} /> WhatsApp
+          <AppIcon name="waLogo" size={14} /> WhatsApp
         </button>
       </div>
 
