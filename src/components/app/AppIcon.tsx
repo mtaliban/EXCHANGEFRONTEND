@@ -10,6 +10,7 @@ const P: Record<string, React.ReactNode> = {
   clock: (<><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></>),
   cal: (<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" /></>),
   cap: (<><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></>),
+  kit: (<><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M12 11v6M9 14h6" /></>),
   filter: <path d="M3 6h18M7 12h10M10 18h4" />,
   search: (<><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></>),
   down: <path d="M6 9l6 6 6-6" />,

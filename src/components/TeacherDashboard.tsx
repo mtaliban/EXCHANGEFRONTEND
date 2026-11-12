@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import {
-  getBoard, getRegions, getDistricts, getFacilities, getMe, logContact, bustGetCache,
-  isDefaultName, type Region, type District, type Facility,
+  getBoard, getRegions, getDistricts, getFacilities, getMe, getCadres, logContact, bustGetCache,
+  isDefaultName, type Region, type District, type Facility, type Cadre,
 } from "@/lib/api";
 import { useLiveEvents } from "@/lib/useLiveEvents";
 import { useLive } from "@/lib/liveSocket";
@@ -46,6 +46,8 @@ export default function TeacherDashboard() {
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [subjectFilter, setSubjectFilter] = useState<"off" | "any" | "all" | "none">("off");
   const [subjectQ, setSubjectQ] = useState("");
+  const [cadreCode, setCadreCode] = useState<string | null>(null);
+  const [cadres, setCadres] = useState<Cadre[]>([]);
   const [board, setBoard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -79,6 +81,11 @@ export default function TeacherDashboard() {
   useEffect(() => {
     getRegions(true).then(setRegions).catch(() => {});
   }, [dv]);
+
+  // Kada (kwa Afya na idara zisizo na masomo) — kutoka DB
+  useEffect(() => {
+    getCadres(isAdmin ? undefined : (user?.category as any)).then(setCadres).catch(() => {});
+  }, [isAdmin, user?.category]);
 
   // Wilaya za mkoa uliochaguliwa
   useEffect(() => {
@@ -114,6 +121,7 @@ export default function TeacherDashboard() {
         if (facilityId) params.facility_id = facilityId;
         if (subjectFilter !== "off") params.subject_filter = subjectFilter;
         if (subjectQ.trim()) params.subject_q = subjectQ.trim();
+        if (cadreCode) params.cadre_code = cadreCode;
         bustGetCache();
         const b = await getBoard(params, forceFresh);
         setBoard(b);
@@ -121,7 +129,7 @@ export default function TeacherDashboard() {
         setLoading(false);
       }
     },
-    [regionSel, districtId, facilityId, subjectFilter, subjectQ]
+    [regionSel, districtId, facilityId, subjectFilter, subjectQ, cadreCode]
   );
 
   useEffect(() => {
@@ -161,6 +169,10 @@ export default function TeacherDashboard() {
     () => facilities.map((f: any) => ({ value: String(f.id ?? f.code), label: f.name })),
     [facilities]
   );
+  const cadreOpts: Opt[] = useMemo(
+    () => cadres.map((c) => ({ value: c.code, label: c.display_name })),
+    [cadres]
+  );
 
   const regionName = useMemo(() => {
     if (!regionSel) return "Mikoa yote";
@@ -197,6 +209,7 @@ export default function TeacherDashboard() {
     setFacilityId(null);
     setSubjectFilter("off");
     setSubjectQ("");
+    setCadreCode(null);
     setPage(1);
   };
 
@@ -219,6 +232,7 @@ export default function TeacherDashboard() {
 
       <SummaryCard
         count={total}
+        noun={isEdu ? "walimu" : "watumishi"}
         from={[regionName, districtOpts.find((d) => d.value === districtId)?.label].filter(Boolean).join(" · ")}
         to={myRegionName || "Mkoa wako"}
       />
@@ -231,11 +245,13 @@ export default function TeacherDashboard() {
           style={{ display: "flex", alignItems: "center", gap: 7, background: "none", border: 0, padding: 0, font: "inherit", cursor: "pointer", width: "100%", textAlign: "left" }}
         >
           <span className={s.fHead} style={{ flex: 1 }}>
-            <AppIcon name="filter" size={15} sw={2.2} /> Tafuta walimu wa kubadilishana nao
+            <AppIcon name="filter" size={15} sw={2.2} /> Tafuta {isEdu ? "walimu" : "watumishi"} wa kubadilishana nao
           </span>
           <AppIcon name="down" size={15} sw={2} />
         </button>
-        <p className={s.fHint}>Chagua mahali wanakotoka. Usipochagua, utaona wote.</p>
+        <p className={s.fHint}>
+          Chagua mahali wanakotoka{!isEdu ? " na kada" : ""}. Usipochagua, utaona wote.
+        </p>
 
         {openFilter && (
           <>
@@ -263,7 +279,7 @@ export default function TeacherDashboard() {
               onChange={(v) => { setDistrictId(v); setFacilityId(null); setPage(1); }}
             />
 
-            <p className={s.label}>Kituo / Shule <em>(hiari)</em></p>
+            <p className={s.label}>{isEdu ? "Kituo / Shule" : "Kituo"} <em>(hiari)</em></p>
             <InlineDropdown
               icon="school"
               value={facilityId}
@@ -306,6 +322,22 @@ export default function TeacherDashboard() {
               </>
             )}
 
+            {(!isEdu || isAdmin) && (
+              <>
+                {isEdu && <div className={s.divider} />}
+                <p className={s.label}>Kada</p>
+                <InlineDropdown
+                  icon="kit"
+                  value={cadreCode}
+                  allLabel="Kada zote"
+                  options={cadreOpts}
+                  layout="scroll"
+                  countLabel="Kada"
+                  onChange={(v) => { setCadreCode(v); setPage(1); }}
+                />
+              </>
+            )}
+
             <div className={s.clearRow}>
               <span className={s.liveRow} style={{ margin: 0 }}>
                 <span className={cx(s.liveDot, !connected && s.liveDotOff)} />
@@ -314,7 +346,7 @@ export default function TeacherDashboard() {
                   <AppIcon name="users" size={11} sw={2} /> {total}
                 </span>
               </span>
-              {(regionSel || districtId || facilityId || subjectFilter !== "off" || subjectQ) && (
+              {(regionSel || districtId || facilityId || subjectFilter !== "off" || subjectQ || cadreCode) && (
                 <button type="button" className={s.clearBtn} onClick={resetFilters}>
                   Ondoa vichujio
                 </button>

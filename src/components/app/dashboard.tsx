@@ -46,12 +46,14 @@ export function WelcomeCard(p: {
 }
 
 /* ---------- Muhtasari: 73 walimu · Wanatoka → Wanakuja ---------- */
-export function SummaryCard({ count, from, to }: { count: number; from: string; to: string }) {
+export function SummaryCard({
+  count, from, to, noun = "walimu",
+}: { count: number; from: string; to: string; noun?: string }) {
   return (
     <div className={cx(s.card, s.summary)}>
       <div className={s.countBox}>
         <b>{count}</b>
-        <span>walimu</span>
+        <span>{noun}</span>
       </div>
       <div className={s.route}>
         <small className={s.rl1}>
@@ -195,6 +197,7 @@ export function TeacherCard({
   const subjects: string[] = c.subjects || [];
   const matched = subjects.filter((m) => mySubjects.includes(m));
   const years = c.years_of_service === 3 ? "3+" : String(c.years_of_service || "");
+  const isEdu = c.category === "education";
   const dept =
     c.category === "education" ? "Elimu" : c.category === "health" ? "Afya" : c.category || "—";
 
@@ -207,7 +210,8 @@ export function TeacherCard({
           <p className={s.tSub}>
             <span className={s.blue}>{dept}</span>
             <span className={s.dotSep} />
-            {c.cadre_display || c.cadre_code || "—"}
+            <span style={{ minWidth: 0 }}>{c.cadre_display || c.cadre_code || "—"}</span>
+            {!isEdu && c.cadre_code && <span className={s.cadreBadge}>{c.cadre_code}</span>}
             {c.online && <span style={{ color: "#16a34a", fontWeight: 700 }}>● mtandaoni</span>}
           </p>
         </div>
@@ -265,7 +269,7 @@ export function TeacherCard({
         </div>
       </div>
 
-      {subjects.length > 0 && (
+      {isEdu && subjects.length > 0 && (
         <div className={s.subjects}>
           <div className={s.subHead}>
             <span className={s.subIcon}>
