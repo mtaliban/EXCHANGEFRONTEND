@@ -206,26 +206,31 @@ export default function RegisterContent() {
     });
   }, [dests, destDistricts]);
 
+  /** Ufunguo wa cache ya vituo vya mkoa wa lengo: wilaya moja → vituo vya wilaya; zaidi/wilaya yoyote → vituo vya mkoa wote. */
+  function destFacilityKey(d: DestEntry): string {
+    if (!isWizara && !d.anyDistrict && d.districtIds.length === 1) return `d:${d.districtIds[0]}`;
+    return `r:${d.regionId}`;
+  }
+
   /* ── Vituo vya mikoa/wilaya za lengo ── */
   useEffect(() => {
     if (!showFacility) return;
     dests.forEach((d) => {
       const rid = Number(d.regionId);
       if (!rid) return;
-      if (isWizara) {
-        const key = `r:${rid}`;
-        if (destFacilities[key]) return;
-        getFacilitiesByRegion(rid, 'health', undefined, 'wizara_afya')
-          .then((list) => setDestFacilities((m) => ({ ...m, [key]: list })))
-          .catch(() => {});
-      } else if (!d.anyDistrict && d.districtIds.length === 1) {
-        const did = d.districtIds[0];
-        const key = `d:${did}`;
-        if (destFacilities[key]) return;
-        getFacilities(did, category as 'health' | 'education', subjectLevel)
-          .then((list) => setDestFacilities((m) => ({ ...m, [key]: list })))
-          .catch(() => {});
-      }
+      const key =
+        isWizara || d.anyDistrict || d.districtIds.length !== 1
+          ? `r:${rid}`
+          : `d:${d.districtIds[0]}`;
+      if (destFacilities[key]) return;
+      const load = isWizara
+        ? getFacilitiesByRegion(rid, 'health', undefined, 'wizara_afya')
+        : key.startsWith('r:')
+          ? getFacilitiesByRegion(rid, category as 'health' | 'education')
+          : getFacilities(Number(key.slice(2)), category as 'health' | 'education', subjectLevel);
+      load
+        .then((list) => setDestFacilities((m) => ({ ...m, [key]: list })))
+        .catch(() => {});
     });
   }, [dests, destFacilities, isWizara, showFacility, category, subjectLevel]);
 
@@ -348,13 +353,15 @@ export default function RegisterContent() {
             notes: null,
           });
         } else if (d.anyDistrict) {
+          // "Wilaya yoyote" — shule ikiwa imechaguliwa, twaenda na wilaya yake halisi
+          const f = (destFacilities[`r:${rid}`] || []).find((x) => facId(x) === d.facilityId);
           desired_destinations.push({
             region_id: rid,
             region_name: regionName(rid),
-            district_id: null,
-            district_name: null,
-            facility_id: null,
-            facility_name: null,
+            district_id: f?.district_id ?? null,
+            district_name: f?.district || null,
+            facility_id: f ? facId(f) : null,
+            facility_name: f?.name || null,
             notes: null,
           });
         } else {
@@ -697,7 +704,7 @@ export default function RegisterContent() {
                           })}
                         </div>
 
-                        {showFacility && !d.anyDistrict && d.districtIds.length === 1 && (
+                        {showFacility && (
                           <>
                             <p className={s.small}>
                               {category === 'education' ? 'Shule' : 'Kituo'} <em>(hiari)</em>
@@ -705,7 +712,7 @@ export default function RegisterContent() {
                             <Dropdown
                               value={d.facilityId || null}
                               onChange={(v) => updateDest(i, { facilityId: v })}
-                              options={(destFacilities[`d:${d.districtIds[0]}`] || []).map((f) => ({
+                              options={(destFacilities[destFacilityKey(d)] || []).map((f) => ({
                                 value: facId(f),
                                 label: f.name,
                               }))}
