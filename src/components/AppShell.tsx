@@ -12,7 +12,7 @@ import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
   BarChart3, Bell, Crown, Database, GitMerge, HandCoins, Heart, LayoutDashboard,
-  LogOut, Megaphone as MegaphoneIcon, ClipboardList, Menu, Phone, User, Users, Wallet, Zap,
+  LogOut, Megaphone as MegaphoneIcon, ClipboardList, Phone, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -68,9 +68,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-white dark:bg-brand-grey-50">
       {/* ═══ MOBILE TOP BAR (md:hidden) — FIXED, haipandi yote ═══ */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700 shadow-sm"
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-brand-grey-950 border-t-[3px] border-t-brand-blue border-b border-brand-grey-100 dark:border-brand-grey-700"
         style={{ WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}>
-        <div className="flex items-center justify-between gap-1 px-3 h-14">
+        <div className="flex items-center gap-2.5 px-4 h-[53px]">
           <MobileTopBar links={links} user={user} onLogout={doLogout} />
         </div>
       </div>
@@ -138,7 +138,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
-        <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0 page-enter">
+        <main className="flex-1 min-w-0 pt-[59px] md:pt-0 pb-20 md:pb-0 page-enter">
           {children}
         </main>
       </div>
@@ -151,111 +151,170 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** MOBILE TOP BAR — Hamburger (kushoto) + avatar (kulia) + dropdown menus */
+/** Jina la ukurasa linaloonekana pembeni ya ☰ */
+const TITLES: Record<string, string> = {
+  '/dashboard': 'Dashibodi',
+  '/changia': 'Changia',
+  '/maoni': 'Maoni na Malalamiko',
+  '/wasifu': 'Wasifu',
+  '/wasifu/hariri': 'Hariri Wasifu',
+};
+
+/** MOBILE TOP BAR — ☰ (kushoto) + jina la ukurasa + avatar na SW/EN (kulia) */
 function MobileTopBar({ links, user, onLogout }: {
   links: { href: string; label: string; icon: any }[];
   user: any;
   onLogout: () => void;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [open, setOpen] = useState<null | 'menu' | 'account'>(null);
   const pathname = usePathname();
   const t = useT();
   const initial = getInitial(user?.full_name);
   const routeCounts = useUnreadStore((s) => s.counts);
 
-  // Funga dropdown zote
-  const closeAll = () => { setMenuOpen(false); setProfileOpen(false); };
+  const close = () => setOpen(null);
+  const toggle = (o: 'menu' | 'account') => setOpen((x) => (x === o ? null : o));
+
+  // Funga kwa Esc
+  useEffect(() => {
+    if (!open) return;
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(null); };
+    window.addEventListener('keydown', k);
+    return () => window.removeEventListener('keydown', k);
+  }, [open]);
+
+  const title =
+    TITLES[pathname ?? ''] ??
+    links.find((l) => l.href === pathname)?.label ??
+    '';
 
   return (
     <>
-      {/* ═══ LEFT: Hamburger icon — bofya = dropdown menu ═══ */}
-      <div className="relative flex-shrink-0">
-        <button
-          onClick={() => { setProfileOpen(false); setMenuOpen((v) => !v); }}
-          className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-700 dark:text-brand-grey-200 hover:bg-brand-grey-200 dark:hover:bg-brand-grey-700 transition"
-          aria-label={t('nav.menu')}
-        >
-          <Menu size={22} strokeWidth={2.2} />
-        </button>
-
-        {/* Dropdown menu — links ZOTE kama za chini */}
-        {menuOpen && (
-          <>
-            <div className="fixed inset-0 z-[99]" onClick={closeAll} />
-            <div className="absolute left-0 top-full mt-1 z-[100] w-56 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in transition-all duration-200">
-              {links.map((l) => {
-                const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
-                const badge = routeCounts[l.href] || 0;
-                return (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    onClick={closeAll}
-                    className={clsx(
-                      'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-150 ease-out active:scale-[0.97]',
-                      active
-                        ? 'text-brand-blue'
-                        : 'text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800'
-                    )}
-                  >
-                    <l.icon size={18} strokeWidth={2.2} className="flex-shrink-0" />
-                    <span className="truncate">{l.label}</span>
-                    {badge > 0 && (
-                      <span className="ml-auto w-5 h-5 rounded-full bg-brand-red text-white text-[10px] font-bold flex items-center justify-center">
-                        {badge > 9 ? '9+' : badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </>
+      {/* ☰ / ✕ */}
+      <button
+        onClick={() => toggle('menu')}
+        aria-label="Menyu"
+        aria-expanded={open === 'menu'}
+        className={clsx(
+          'flex items-center justify-center w-9 h-9 rounded-[9px] border flex-shrink-0 transition-colors',
+          open === 'menu'
+            ? 'bg-brand-grey-100 border-brand-grey-200'
+            : 'bg-white border-brand-grey-200'
         )}
-      </div>
+      >
+        <span className="relative block w-[18px] h-[14px]">
+          <i className={clsx('absolute left-0 h-[2px] rounded-[2px] bg-brand-grey-700 transition-all duration-300 ease-out',
+            open === 'menu' ? 'top-[6px] w-[18px] rotate-45' : 'top-0 w-[18px]')} />
+          <i className={clsx('absolute left-0 h-[2px] rounded-[2px] bg-brand-grey-700 transition-all duration-200',
+            open === 'menu' ? 'top-[6px] w-0 opacity-0' : 'top-[6px] w-[12px]')} />
+          <i className={clsx('absolute left-0 h-[2px] rounded-[2px] bg-brand-grey-700 transition-all duration-300 ease-out',
+            open === 'menu' ? 'top-[6px] w-[18px] -rotate-45' : 'top-[12px] w-[18px]')} />
+        </span>
+      </button>
 
-      {/* ═══ CENTER: tupu — jina limeondolewa ═══ */}
+      <span className="text-[15px] font-bold text-brand-grey-900 truncate min-w-0">{title}</span>
       <div className="flex-1" />
 
-      {/* ═══ RIGHT: Avatar + Language toggle — profile dropdown ndani ya relative div ═══ */}
-      <div className="relative flex items-center gap-1.5 flex-shrink-0">
-        <button
-          onClick={() => { setMenuOpen(false); setProfileOpen((v) => !v); }}
-          className="w-8 h-8 rounded-full bg-brand-blue-50 dark:bg-brand-blue-900/40 border border-brand-blue-200 dark:border-brand-blue-800 flex items-center justify-center text-xs font-bold text-brand-blue-700 dark:text-brand-blue-300 flex-shrink-0"
-          aria-label="Profile"
-        >
-          {initial}
-        </button>
-        <LangToggle />
-
-        {/* Profile dropdown — iko ndani ya relative div, inashikamana kulia */}
-        {profileOpen && (
-          <>
-            <div className="fixed inset-0 z-[99]" onClick={closeAll} />
-            <div className="absolute right-0 top-full mt-2 z-[100] w-44 bg-white dark:bg-brand-grey-900 rounded-xl shadow-xl border border-brand-grey-100 dark:border-brand-grey-700 py-1 animate-slide-in">
-              <Link
-                href="/profile"
-                onClick={closeAll}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-grey-700 dark:text-brand-grey-300 hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800 transition"
-              >
-                <User size={16} strokeWidth={2.2} />
-                <span>{t('nav.profile')}</span>
-              </Link>
-              <button
-                onClick={() => { closeAll(); onLogout(); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-              >
-                <LogOut size={16} strokeWidth={2.2} />
-                <span>{t('nav.logout')}</span>
-              </button>
-            </div>
-          </>
+      {/* Avatar */}
+      <button
+        onClick={() => toggle('account')}
+        aria-label="Akaunti"
+        aria-expanded={open === 'account'}
+        className={clsx(
+          'w-8 h-8 rounded-full bg-brand-blue-50 border border-brand-blue-200 flex items-center justify-center text-[13px] font-bold text-brand-blue-700 flex-shrink-0 transition-shadow',
+          open === 'account' && 'ring-[3px] ring-brand-blue-200'
         )}
+      >
+        {initial}
+      </button>
+
+      <LangToggle />
+
+      {/* Menyu ya ☰ — inagusa ukingo wa kushoto */}
+      <nav
+        aria-hidden={open !== 'menu'}
+        className={clsx(
+          'fixed left-0 top-[59px] z-[100] w-[270px] max-w-[86vw] bg-white border border-brand-grey-200 border-l-0 rounded-br-[14px] p-1.5 shadow-[0_16px_40px_rgba(17,24,39,0.16)] transition-all duration-[260ms] ease-out',
+          open === 'menu'
+            ? 'opacity-100 translate-y-0 visible'
+            : 'opacity-0 -translate-y-2.5 invisible pointer-events-none'
+        )}
+      >
+        {links.map((l) => {
+          const active = pathname === l.href || (l.href !== '/admin' && pathname?.startsWith(l.href));
+          const badge = routeCounts[l.href] || 0;
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={close}
+              tabIndex={open === 'menu' ? 0 : -1}
+              className={clsx(
+                'flex items-center gap-3 h-[46px] px-2.5 rounded-[9px] text-sm font-medium transition-colors',
+                active ? 'text-brand-blue font-semibold' : 'text-brand-grey-700 active:bg-brand-grey-50'
+              )}
+            >
+              <span className={clsx(
+                'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
+                active ? 'bg-brand-blue text-white' : 'bg-brand-grey-100 text-brand-grey-700'
+              )}>
+                <l.icon size={18} strokeWidth={2} />
+              </span>
+              <span className="truncate">{l.label}</span>
+              {badge > 0 && (
+                <span className="ml-auto w-5 h-5 rounded-full bg-brand-red text-white text-[10px] font-bold flex items-center justify-center">
+                  {badge > 9 ? '9+' : badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Menyu ya akaunti — inagusa ukingo wa kulia */}
+      <div
+        aria-hidden={open !== 'account'}
+        className={clsx(
+          'fixed right-0 top-[59px] z-[100] w-40 bg-white border border-brand-grey-200 border-r-0 rounded-bl-[14px] p-1 shadow-[0_16px_40px_rgba(17,24,39,0.16)] transition-all duration-[260ms] ease-out',
+          open === 'account'
+            ? 'opacity-100 translate-y-0 visible'
+            : 'opacity-0 -translate-y-2.5 invisible pointer-events-none'
+        )}
+      >
+        <Link
+          href="/wasifu"
+          onClick={close}
+          tabIndex={open === 'account' ? 0 : -1}
+          className="flex items-center gap-2.5 h-[42px] px-2 rounded-[9px] text-sm font-medium text-brand-grey-700 active:bg-brand-grey-50"
+        >
+          <span className="w-[30px] h-[30px] rounded-lg bg-brand-grey-100 text-brand-grey-700 flex items-center justify-center flex-shrink-0">
+            <User size={18} strokeWidth={2} />
+          </span>
+          {t('nav.profile')}
+        </Link>
+        <button
+          onClick={() => { close(); onLogout(); }}
+          tabIndex={open === 'account' ? 0 : -1}
+          className="w-full flex items-center gap-2.5 h-[42px] px-2 rounded-[9px] text-sm font-medium text-brand-red"
+        >
+          <span className="w-[30px] h-[30px] rounded-lg bg-red-50 text-brand-red flex items-center justify-center flex-shrink-0">
+            <LogOut size={18} strokeWidth={2} />
+          </span>
+          {t('nav.logout')}
+        </button>
       </div>
+
+      {/* Giza hafifu nyuma ya menyu */}
+      <div
+        onClick={close}
+        className={clsx(
+          'fixed inset-x-0 top-[59px] bottom-0 z-[99] bg-[rgba(17,24,39,0.28)] transition-opacity duration-200',
+          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        )}
+      />
     </>
   );
 }
-
 
 /** Bottom navigation — mobile app style: icons + labels, safe-area aware. */
 function MobileBottomNav({ pathname, isAdmin }: {
