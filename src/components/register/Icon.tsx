@@ -25,6 +25,7 @@ const PATHS: Record<string, React.ReactNode> = {
   x: (<path d="M6 6l12 12M18 6 6 18" />),
   plus: (<path d="M12 5v14M5 12h14" />),
   alert: (<><circle cx="12" cy="12" r="9" /><path d="M12 8v4M12 16h.01" /></>),
+  check: (<path d="M20 6 9 17l-5-5" />),
 };
 
 export default function Icon({

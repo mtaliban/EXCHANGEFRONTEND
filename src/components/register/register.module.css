@@ -97,6 +97,15 @@
 .input::placeholder { color: var(--faint); }
 .input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.08); }
 .inputError { border-color: #dc2626; }
+.inputOk { border-color: #16a34a; }
+
+/* Ikoni ya hali ndani ya kisanduku + ujumbe mmoja chini yake */
+.fieldWrap { position: relative; }
+.fieldWrap .input { padding-right: 34px; }
+.trail { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; }
+.trailOk { color: #16a34a; }
+.trailErr { color: #dc2626; }
+.msgOk { color: #16a34a; font-size: 12px; font-weight: 500; margin: 6px 0 0; }
 
 /* ---------------- MAELEZO / MAKOSA ---------------- */
 .note { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }

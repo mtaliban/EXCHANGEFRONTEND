@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Icon from '@/components/register/Icon';
@@ -65,6 +65,13 @@ const clean = (v: string) => v.replace(/[\s-]/g, '');
 const phoneOk = (v: string) => PHONE_RE.test(clean(v));
 const facId = (f: Facility) => String(f.id ?? f.code ?? '');
 
+/** Hali ya ukaguzi wa namba kwa server. */
+type CheckState = 'idle' | 'checking' | 'available' | 'taken';
+const TAKEN_MSG = 'Namba hii tayari inatumiwa na mtu mwingine';
+const FREE_MSG = 'Namba hii ipo huru';
+/** Debounce ya kikaguzi cha server (ms). */
+const CHECK_DEBOUNCE_MS = 400;
+
 type DestEntry = {
   regionId: number | '';
   anyDistrict: boolean;
@@ -84,7 +91,12 @@ export default function RegisterContent() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
-  const [phoneTaken, setPhoneTaken] = useState(false);
+  /* Ukaguzi wa namba: muundo (papo hapo) + server (debounce 400ms). */
+  const [touched, setTouched] = useState({ name: false, phone: false, alt: false });
+  const [primaryCheck, setPrimaryCheck] = useState<CheckState>('idle');
+  const [altCheck, setAltCheck] = useState<CheckState>('idle');
+  const primaryReq = useRef(0);
+  const altReq = useRef(0);
 
   // Hatua 2
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -115,6 +127,7 @@ export default function RegisterContent() {
   const [years, setYears] = useState<string | null>(null);
 
   const [error, setError] = useState<string | null>(null);
+  const [deptError, setDeptError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
   const cadre = cadres.find((c) => c.code === cadreCode);
@@ -131,7 +144,7 @@ export default function RegisterContent() {
   useEffect(() => {
     getDepartments(true)
       .then((list) => setDepartments(list.filter((d) => d.status !== 'disabled')))
-      .catch(() => setError('Imeshindikana kupata orodha ya idara. Jaribu tena.'))
+      .catch(() => setDeptError('Imeshindikana kupata orodha ya idara. Jaribu tena.'))
       .finally(() => setLoadingDepts(false));
     getRegions(true).then(setRegions).catch(() => {});
   }, []);
@@ -234,16 +247,68 @@ export default function RegisterContent() {
     });
   }, [dests, destFacilities, isWizara, showFacility, category, subjectLevel]);
 
-  /* ── Ukaguzi wa namba: tayari inatumika? ── */
-  async function checkPhoneTaken() {
-    if (!phoneOk(phone)) { setPhoneTaken(false); return; }
-    try {
-      const r = await checkPhone(clean(phone));
-      setPhoneTaken(!r.available);
-    } catch {
-      setPhoneTaken(false);
+  /* ── Ukaguzi wa namba ya kwanza: ombi la mwisho pekee linaandika hali ── */
+  useEffect(() => {
+    const c = clean(phone);
+    if (!PHONE_RE.test(c)) {
+      primaryReq.current++;
+      setPrimaryCheck('idle');
+      return;
     }
-  }
+    const id = ++primaryReq.current;
+    setPrimaryCheck('checking');
+    const timer = setTimeout(() => {
+      checkPhone(c)
+        .then((r) => {
+          if (id !== primaryReq.current) return;
+          setPrimaryCheck(r.available ? 'available' : 'taken');
+        })
+        .catch(() => {
+          if (id === primaryReq.current) setPrimaryCheck('idle');
+        });
+    }, CHECK_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [phone]);
+
+  /* ── Ukaguzi wa WhatsApp — kanuni ileile ── */
+  useEffect(() => {
+    const c = clean(whatsapp);
+    if (!PHONE_RE.test(c)) {
+      altReq.current++;
+      setAltCheck('idle');
+      return;
+    }
+    const id = ++altReq.current;
+    setAltCheck('checking');
+    const timer = setTimeout(() => {
+      checkPhone(c)
+        .then((r) => {
+          if (id !== altReq.current) return;
+          setAltCheck(r.available ? 'available' : 'taken');
+        })
+        .catch(() => {
+          if (id === altReq.current) setAltCheck('idle');
+        });
+    }, CHECK_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [whatsapp]);
+
+  /* ── Ujumbe wa muundo — huhesabiwa kutoka thamani ya sasa ── */
+  const nameMsg = (v: string) => {
+    const c = v.trim();
+    if (!c) return 'Tafadhali ingiza majina yako.';
+    return c.length < 3 ? 'Jina lazima liwe na angalau herufi 3' : null;
+  };
+  const primaryMsg = (v: string) => {
+    const c = clean(v);
+    if (!c) return 'Tafadhali ingiza namba yako ya simu.';
+    return PHONE_RE.test(c) ? null : 'Namba hii ya simu si sahihi';
+  };
+  const altMsg = (v: string) => {
+    const c = clean(v);
+    if (!c) return 'Tafadhali ingiza namba yako ya WhatsApp.';
+    return PHONE_RE.test(c) ? null : 'Namba ya WhatsApp si sahihi';
+  };
 
   const deptOptions: Opt[] = useMemo(
     () => departments.map((d) => ({ value: d.code, label: d.name, icon: DEPT_ICONS[d.code] || 'building' })),
@@ -254,10 +319,42 @@ export default function RegisterContent() {
     [regions],
   );
 
+  const nameError = nameMsg(fullName);
+  const primaryError = primaryMsg(phone);
+  const altError = altMsg(whatsapp);
+
+  /** Muonekano wa kisanduku: mpaka, ikoni na ujumbe mmoja chini yake. */
+  function statusOf(touchedField: boolean, error: string | null, check: CheckState) {
+    const invalid = !!error;
+    const taken = !invalid && check === 'taken';
+    const available = !invalid && check === 'available';
+    const checking = !invalid && check === 'checking';
+    const showError = invalid && (touchedField || check === 'idle');
+    const message = showError ? error : taken ? TAKEN_MSG : available ? FREE_MSG : null;
+    return {
+      message,
+      tone: (available ? 'ok' : 'err') as 'ok' | 'err',
+      ok: available,
+      invalid,
+      taken,
+      checking,
+      icon: invalid || taken ? 'alert' : available ? 'check' : null,
+    };
+  }
+
+  const phoneStatus = statusOf(touched.phone, primaryError, primaryCheck);
+  const altStatus = statusOf(touched.alt, altError, altCheck);
+
   const canNext = useMemo(() => {
     switch (step) {
       case 1:
-        return fullName.trim().length > 2 && phoneOk(phone) && phoneOk(whatsapp) && !phoneTaken;
+        return (
+          !nameError &&
+          !primaryError &&
+          !altError &&
+          primaryCheck !== 'taken' &&
+          altCheck !== 'taken'
+        );
       case 2:
         return !!category && (!isHealth || !!sector);
       case 3:
@@ -276,9 +373,9 @@ export default function RegisterContent() {
         return false;
     }
   }, [
-    step, fullName, phone, whatsapp, phoneTaken, category, isHealth, sector, cadres.length,
-    cadreCode, needsSubjects, selectedSubjects.length, curRegion, isWizara, curFacility,
-    curDistrict, years, dests,
+    step, nameError, primaryError, altError, primaryCheck, altCheck, category, isHealth, sector,
+    cadres.length, cadreCode, needsSubjects, selectedSubjects.length, curRegion, isWizara,
+    curFacility, curDistrict, years, dests,
   ]);
 
   function changeCategory(v: string) {
@@ -468,34 +565,60 @@ export default function RegisterContent() {
           <>
             <Label icon="user">Jina Kamili</Label>
             <input
-              className={s.input}
+              className={`${s.input} ${touched.name && nameError ? s.inputError : ''}`}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              onBlur={() => setTouched((t) => ({ ...t, name: true }))}
               placeholder="Mfano: Kieffer Madyedye"
               autoComplete="name"
             />
+            {touched.name && nameError && <p className={s.err}>{nameError}</p>}
 
             <Label icon="phone">Namba ya Simu (Normal)</Label>
-            <input
-              className={s.input}
-              value={phone}
-              onChange={(e) => { setPhone(e.target.value); setPhoneTaken(false); }}
-              onBlur={checkPhoneTaken}
-              placeholder="0712345678"
-              type="tel"
-              inputMode="tel"
-            />
-            {phoneTaken && <p className={s.err}>Namba hii tayari inatumiwa na mtu mwingine.</p>}
+            <div className={s.fieldWrap}>
+              <input
+                className={`${s.input} ${phoneStatus.invalid ? s.inputError : phoneStatus.ok ? s.inputOk : ''}`}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+                placeholder="0712345678"
+                type="tel"
+                inputMode="tel"
+              />
+              <span className={`${s.trail} ${phoneStatus.ok ? s.trailOk : phoneStatus.invalid || phoneStatus.taken ? s.trailErr : ''}`}>
+                {phoneStatus.checking ? (
+                  <span className={s.spin} />
+                ) : phoneStatus.icon ? (
+                  <Icon name={phoneStatus.icon} size={15} strokeWidth={2.2} />
+                ) : null}
+              </span>
+            </div>
+            {phoneStatus.message && (
+              <p className={phoneStatus.tone === 'ok' ? s.msgOk : s.err}>{phoneStatus.message}</p>
+            )}
 
             <Label icon="whatsapp">Namba ya WhatsApp</Label>
-            <input
-              className={s.input}
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              placeholder="0623456789"
-              type="tel"
-              inputMode="tel"
-            />
+            <div className={s.fieldWrap}>
+              <input
+                className={`${s.input} ${altStatus.invalid ? s.inputError : altStatus.ok ? s.inputOk : ''}`}
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, alt: true }))}
+                placeholder="0623456789"
+                type="tel"
+                inputMode="tel"
+              />
+              <span className={`${s.trail} ${altStatus.ok ? s.trailOk : altStatus.invalid || altStatus.taken ? s.trailErr : ''}`}>
+                {altStatus.checking ? (
+                  <span className={s.spin} />
+                ) : altStatus.icon ? (
+                  <Icon name={altStatus.icon} size={15} strokeWidth={2.2} />
+                ) : null}
+              </span>
+            </div>
+            {altStatus.message && (
+              <p className={altStatus.tone === 'ok' ? s.msgOk : s.err}>{altStatus.message}</p>
+            )}
           </>
         )}
 
@@ -503,6 +626,12 @@ export default function RegisterContent() {
         {step === 2 && (
           <>
             <p className={s.hint}>Unafanya kazi katika idara gani?</p>
+            {deptError && !loadingDepts && (
+              <div className={s.banner} role="alert">
+                <Icon name="alert" size={16} strokeWidth={2} />
+                <span>{deptError}</span>
+              </div>
+            )}
             <Label icon="building">Chagua Idara</Label>
             {loadingDepts ? (
               <div className={s.loadRow}><span className={s.spin} /> Inapakia idara...</div>
