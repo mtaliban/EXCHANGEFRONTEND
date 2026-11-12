@@ -42,15 +42,15 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
 }
 
 .back svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Kundi la Logo + Fomu: katikati ya skrini */
@@ -61,16 +61,16 @@
   flex-direction: column;
 }
 
-/* ---------- LOGO (nje ya fomu) – kisanduku kama ilivyokuwa, ukubwa umepunguzwa ---------- */
+/* ---------- LOGO (nje ya fomu) – UKUBWA WAKE HAUBADILIKI ---------- */
 .logoWrap {
   display: flex;
   justify-content: center;
 }
 
 .logoTile {
-  width: 160px;
-  height: 160px;
-  border-radius: 29px;
+  width: 180px;
+  height: 180px;
+  border-radius: 32px;
   background: #fff;
   border: 1px solid #f1f2f4;
   box-shadow: 0 8px 26px rgba(17, 24, 39, 0.12);
@@ -80,7 +80,7 @@
 }
 
 .logo {
-  width: 136px;
+  width: 152px;
   height: auto;
   display: block;
 }
@@ -89,7 +89,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  margin-top: 14px;
+  margin-top: 12px;
   border: none;
   box-shadow: none;
   background: transparent;
@@ -97,23 +97,23 @@
 
 .title {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.3px;
   text-align: center;
 }
 
 .subtitle {
-  margin: 6px 0 0;
-  font-size: 13px;
+  margin: 5px 0 0;
+  font-size: 12px;
   color: var(--muted);
   text-align: center;
 }
 
 .label {
   display: block;
-  margin: 16px 0 6px;
-  font-size: 13px;
+  margin: 14px 0 5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--label);
 }
@@ -123,8 +123,8 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  height: 36px;
-  padding: 0 12px;
+  height: 34px;
+  padding: 0 11px;
   border: 1px solid var(--line);
   border-radius: 7px;
   color: var(--label);
@@ -172,8 +172,8 @@
 
 /* Kitufe cha Ingia */
 .btnPrimary {
-  height: 36px;
-  margin-top: 12px;
+  height: 34px;
+  margin-top: 11px;
   width: 100%;
   border: 0;
   border-radius: 7px;
@@ -196,9 +196,9 @@
 
 .link {
   display: block;
-  margin-top: 12px;
+  margin-top: 11px;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--blue);
   text-decoration: none;
@@ -209,8 +209,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
-  margin-top: 12px;
+  height: 34px;
+  margin-top: 11px;
   border: 1px solid var(--blue-soft);
   border-radius: 7px;
   color: var(--blue);
@@ -226,12 +226,12 @@
 /* ---------- 2FA: code ya tarakimu 6 (pale palepale pa kitufe) ---------- */
 .codeWrap {
   position: relative;
-  margin-top: 12px;
+  margin-top: 11px;
 }
 
 .codeField {
-  height: 36px;
-  padding: 0 36px 0 12px;
+  height: 34px;
+  padding: 0 34px 0 11px;
 }
 
 .codeInput {
@@ -244,8 +244,8 @@
 
 .codeX {
   position: absolute;
-  right: 10px;
-  top: 18px;
+  right: 9px;
+  top: 17px;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
@@ -268,23 +268,23 @@
   text-align: center;
 }
 
-/* Skrini fupi sana (simu ndogo) – logo ndogo kidogo */
+/* Skrini fupi sana (simu ndogo) – kama ilivyokuwa awali */
 @media (max-height: 640px) {
   .logoTile {
-    width: 132px;
-    height: 132px;
-    border-radius: 24px;
+    width: 144px;
+    height: 144px;
+    border-radius: 26px;
   }
   .logo {
-    width: 112px;
+    width: 122px;
   }
   .content {
     padding: 0;
   }
   .form {
-    margin-top: 12px;
+    margin-top: 10px;
   }
   .label {
-    margin-top: 12px;
+    margin-top: 11px;
   }
 }
