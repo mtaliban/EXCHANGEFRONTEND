@@ -184,3 +184,17 @@
 .helpIcWa { background: #f0fdf4; color: #16a34a; }
 .helpLine b { font-size: 14px; font-weight: 600; }
 .w { flex: 1; min-width: 0; }
+
+/* ---------- Wasifu ---------- */
+.pHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; }
+.pTitleH { font-size: 21px; font-weight: 700; letter-spacing: -.4px; margin: 0; }
+.pEdit { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 8px; background: var(--blue); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; flex: none; }
+.tb { background: #fff; border: 1px solid var(--l); border-radius: 12px; overflow: hidden; margin-top: 12px; }
+.th { background: #f8f9fb; border-bottom: 1px solid var(--l); padding: 9px 14px; font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--t2); }
+.tr { display: grid; grid-template-columns: 118px 1fr; gap: 10px; padding: 11px 14px; font-size: 13.5px; }
+.tr + .tr { border-top: 1px solid var(--l2); }
+.tr > span { color: var(--f); }
+.tr > b { font-weight: 600; color: var(--t); min-width: 0; word-break: break-word; }
+.pGo { display: flex; flex-direction: column; }
+.pGo i { font-style: normal; color: var(--f); font-size: 12px; margin-top: 2px; }
+.pNone { color: var(--f); font-style: normal; }
