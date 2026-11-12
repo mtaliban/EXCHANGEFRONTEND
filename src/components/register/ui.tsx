@@ -128,6 +128,7 @@ export function Dropdown({
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -140,6 +141,22 @@ export function Dropdown({
   useEffect(() => {
     if (disabled) setOpen(false);
   }, [disabled]);
+
+  /* Orodha ikifunguka, hakikisha inaonekana yote: kama sehemu yake ya chini
+   * inapita skrini, page inajisogeza juu (au chini) hadi ionekane. */
+  useEffect(() => {
+    if (!open) return;
+    const raf = requestAnimationFrame(() => {
+      const el = panelRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const margin = 12;
+      if (r.bottom > window.innerHeight - margin || r.top < margin) {
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
 
   const list = useMemo(
     () => options.filter((o) => o.label.toLowerCase().includes(q.trim().toLowerCase())),
@@ -168,7 +185,7 @@ export function Dropdown({
       </button>
 
       {open && (
-        <div className={s.ddPanel}>
+        <div className={s.ddPanel} ref={panelRef}>
           <label className={s.search}>
             <Icon name="search" size={15} strokeWidth={2.2} />
             <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tafuta..." />
