@@ -41,4 +41,14 @@
   100% { opacity: 1; transform: none; }
 }
 
-@media (prefers-reduced-motion: reduce) { .note { animation: none; } }
+.noteOut { animation: toka .32s ease forwards; }
+
+@keyframes toka {
+  0% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateX(-48px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note { animation: none; }
+  .noteOut { animation: none; opacity: 0; }
+}
