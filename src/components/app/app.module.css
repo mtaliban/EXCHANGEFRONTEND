@@ -141,7 +141,7 @@
 .fact b { display: block; font-size: 13.5px; font-weight: 800; margin-top: 4px; }
 .fact em { display: flex; align-items: center; gap: 4px; font-style: normal; font-size: 12px; font-weight: 700; color: var(--blue); margin-top: 3px; }
 .years { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 8px; }
-.years span { height: 24px; border-radius: 6px; background: #f1f5f9; display: grid; place-items: center; font-size: 11.5px; font-weight: 700; color: var(--f); }
+.years span { height: 24px; border-radius: 6px; background: #f1f5f9; display: grid; place-items: center; font-size: 11.5px; font-weight: 700; color: var(--t); }
 .years .yOn { background: var(--blue); color: #fff; }
 .subjects { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--l2); }
 .subHead { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--t2); }
