@@ -11,6 +11,7 @@ const P: Record<string, React.ReactNode> = {
   cal: (<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" /></>),
   cap: (<><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></>),
   kit: (<><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M12 11v6M9 14h6" /></>),
+  idcard: (<><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="8" cy="12" r="2" /><path d="M14 10h4M14 14h4M5 17c.5-1.5 1.7-2 3-2s2.5.5 3 2" /></>),
   filter: <path d="M3 6h18M7 12h10M10 18h4" />,
   search: (<><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></>),
   down: <path d="M6 9l6 6 6-6" />,

@@ -224,6 +224,7 @@ export default function TeacherDashboard() {
   }, [board, liveOnline, user?.category, user?.cadre_display, user?.cadre_code, user?.desired_destinations, mySubjects, myRegionName, myStation.district_name]);
 
   const total = board?.total ?? rows.length;
+  const noun = isEdu ? "walimu" : `watu wa ${deptShort(user?.category)}`;
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const pageItems = useMemo(
@@ -267,7 +268,7 @@ export default function TeacherDashboard() {
         count={total}
         accent
         labelsBlue={user?.category === "health"}
-        noun={isEdu ? "walimu" : `watu wa ${deptShort(user?.category)}`}
+        noun={noun}
         from={[regionName, districtOpts.find((d) => d.value === districtId)?.label].filter(Boolean).join(" · ")}
         to={myRegionName || "Mkoa wako"}
       />
@@ -350,20 +351,22 @@ export default function TeacherDashboard() {
               </>
             )}
 
-            <div className={s.clearRow}>
-              <span className={s.liveRow} style={{ margin: 0 }}>
-                <span className={cx(s.liveDot, !connected && s.liveDotOff)} />
+            <div className={s.liveBar}>
+              <span className={cx(s.liveChip, !connected && s.liveChipOff)}>
+                <i />
                 {connected ? t("board.live", "Live") : "Inaunganisha..."}
-                <span className={s.pill}>
-                  <AppIcon name="users" size={11} sw={2} /> {total}
-                </span>
               </span>
-              {(regionSel || districtId || facilityId || subjectFilter !== "off" || cadreCode) && (
+              <span className={s.countPill}>
+                <AppIcon name="idcard" size={13} sw={2} /> {total} {noun}
+              </span>
+            </div>
+            {(regionSel || districtId || facilityId || subjectFilter !== "off" || cadreCode) && (
+              <div className={s.clearRow}>
                 <button type="button" className={s.clearBtn} onClick={resetFilters}>
                   Ondoa vichujio
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </>
         }
       </div>
