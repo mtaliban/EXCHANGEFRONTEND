@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { getMyProfile } from "@/lib/api";
-import AppIcon from "@/components/app/AppIcon";
 import s from "@/components/app/app.module.css";
 
 const fmt = (n: string) => (n || "").replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
