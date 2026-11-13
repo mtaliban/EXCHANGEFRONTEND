@@ -240,6 +240,8 @@ export function TeacherCard({
   const isEdu = c.category === "education";
   const dept = deptFull(c.category);
   const kada = c.cadre_display || c.cadre_code || "";
+  // Jina la idara mbele ya kada: Elimu na Afya tu (Kilimo/Umma zinaonekana kwa kada + kifupi)
+  const showDept = isEdu || c.category === "health";
 
   return (
     <div className={s.card} style={{ padding: 16 }}>
@@ -250,8 +252,12 @@ export function TeacherCard({
           <p className={s.tSub}>
             {kada ? (
               <>
-                <span className={s.blue}>{dept}</span>
-                <span className={s.dotSep} />
+                {showDept && (
+                  <>
+                    <span className={s.blue}>{dept}</span>
+                    <span className={s.dotSep} />
+                  </>
+                )}
                 <span className={s.tKada}>{kada}</span>
                 {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
               </>
