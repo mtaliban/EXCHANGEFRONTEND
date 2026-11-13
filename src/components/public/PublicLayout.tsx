@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AppIcon from "@/components/app/AppIcon";
 import s from "./public.module.css";
+import { CONTACT } from "@/lib/contact";
 
 export const PUBLIC_NAV = [
   { href: "/", label: "Nyumbani", icon: "home" },
@@ -14,14 +15,6 @@ export const PUBLIC_NAV = [
   { href: "/contact", label: "Wasiliana Nasi", icon: "phoneCall" },
 ];
 
-// TODO: thibitisha namba
-export const CONTACT = {
-  simu: "0763795801",
-  simuLabel: "0763 795 801",
-  whatsapp: "255625607088",
-  whatsappLabel: "+255 625 607 088",
-  email: "Hamisiselemani039@gmail.com",
-};
 
 export default function PublicLayout({ active, children }: { active: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);

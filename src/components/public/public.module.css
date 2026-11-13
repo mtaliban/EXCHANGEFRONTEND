@@ -195,3 +195,17 @@
   .projStats div:last-child:nth-child(odd) { grid-column: auto; }
   .project .btnBig { display: inline-flex; }
 }
+
+/* ---------- Wasiliana Nasi ---------- */
+.contactGrid { display: grid; gap: 12px; }
+.contactCard { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 22px 18px; border: 1px solid var(--l); border-radius: 14px; background: #fff; }
+.icBoxLg { width: 56px; height: 56px; border-radius: 14px; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; }
+.contactCard b { margin-top: 12px; font-size: 16px; }
+.contactVal { margin-top: 4px; font-size: 16px; font-weight: 600; color: var(--blue); word-break: break-word; }
+.contactPlain { color: var(--t2); }
+.contactCard .btnOut { margin-top: 14px; padding: 0 16px; height: 34px; font-size: 13px; }
+
+@media (min-width: 720px) {
+  .contactGrid { grid-template-columns: repeat(4, 1fr); }
+  .contactVal { font-size: 14px; }
+}
