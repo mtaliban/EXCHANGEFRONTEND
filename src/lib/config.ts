@@ -54,6 +54,9 @@ export const WS_URL: string = (() => {
  * zinapaswa KUTOWA kabisa kwenye hizi. Hili ndilo tatizo la "header/footer ya
  * home inaonekana baada ya login" — sasa zote zinasoma list moja hii.
  */
+// Kurasa za umma zinazotumia PublicLayout yake (kichwa + footer yake)
+export const PUBLIC_SHELL_ROUTES = ['/', '/about', '/services', '/projects', '/contact'];
+
 export const APP_ROUTES = [
   '/dashboard', '/profile', '/donate', '/admin',
   '/changia', '/maoni', '/wasifu',

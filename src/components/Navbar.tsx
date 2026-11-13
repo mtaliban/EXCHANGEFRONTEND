@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth, isTokenExpired } from '@/lib/auth';
 import { useI18n, useT } from '@/lib/i18n';
-import { APP_ROUTES } from '@/lib/config';
+import { APP_ROUTES, PUBLIC_SHELL_ROUTES } from '@/lib/config';
 import { Home, Info, Stethoscope, FolderKanban, PhoneCall, Languages } from 'lucide-react';
 
 const publicLinks = [
@@ -30,7 +30,7 @@ export default function Navbar() {
   useEffect(() => { setMounted(true); }, []);
 
   // Hide navbar completely on authenticated app routes (they have their own AppShell)
-  if (pathname === '/' || APP_ROUTES.some(r => pathname?.startsWith(r))) {
+  if (PUBLIC_SHELL_ROUTES.includes(pathname ?? '') || APP_ROUTES.some(r => pathname?.startsWith(r))) {
     return null;
   }
 

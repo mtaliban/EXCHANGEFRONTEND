@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useT } from '@/lib/i18n';
-import { APP_ROUTES } from '@/lib/config';
+import { APP_ROUTES, PUBLIC_SHELL_ROUTES } from '@/lib/config';
 import { Home, Info, Stethoscope, FolderKanban, UserPlus, LogIn, PhoneCall, Phone, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
@@ -12,7 +12,7 @@ export default function Footer() {
 
   // Baada ya login (app pages) footer ya public HAITOKE kabisa — AppShell ina
   // muundo wake (sidebar/bottom nav). Footer hii ni ya public pages pekee.
-  if (pathname === '/' || APP_ROUTES.some((r) => pathname?.startsWith(r))) return null;
+  if (PUBLIC_SHELL_ROUTES.includes(pathname ?? '') || APP_ROUTES.some((r) => pathname?.startsWith(r))) return null;
 
   const pagesLinks = [
     { href: '/', label: t('footer.home'), icon: Home },
