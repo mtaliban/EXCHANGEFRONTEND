@@ -119,7 +119,7 @@ export default function LiveProvider({ children }: { children: React.ReactNode }
         showToast({
           emoji: '✏️',
           title: 'Taarifa zimesasishwa',
-          onClick: () => router.push('/profile'),
+          onClick: () => router.push('/wasifu'),
         });
       }
     });

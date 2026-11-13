@@ -77,7 +77,7 @@ export const useUnreadStore = create<RouteUnreadState>((set, get) => ({
       const badgeRoutes = new Set([
         '/admin/users', '/admin/payments', '/admin/feedback',
         '/admin/events', '/admin/real-matches',
-        '/dashboard', '/donate', '/feedback',
+        '/dashboard', '/changia', '/maoni',
       ]);
       const counts: Record<string, number> = {};
       const routeNotifIds: Record<string, string[]> = {};

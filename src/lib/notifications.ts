@@ -78,11 +78,11 @@ export function notificationRoute(type: string, data: any, isAdmin?: boolean): s
     case 'payment.approved':
     case 'payment.rejected':
     case 'payment.message':
-    case 'payment.reply': return '/donate';
-    case 'user.profile_updated': return '/profile';
+    case 'payment.reply': return '/changia';
+    case 'user.profile_updated': return '/wasifu';
     case 'announcement': return '/announcements';
     case 'feedback.new':
-    case 'feedback.replied': return '/feedback';
+    case 'feedback.replied': return '/maoni';
     default: return '/dashboard';
   }
 }
