@@ -75,7 +75,9 @@
 .grid3 { grid-template-columns: repeat(3, 1fr); }
 .grid2 { grid-template-columns: repeat(2, 1fr); }
 .scrollList { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-.opt { padding: 8px; border: 1px solid var(--l2); border-radius: 6px; background: #fff; font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--t2); }
+.opt { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--l2); border-radius: 6px; background: #fff; font: inherit; font-size: 12.5px; font-weight: 700; text-align: left; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--t); }
+/* Ikoni ya kituo kwenye orodha (shule / hospitali / jengo) */
+.optIc { width: 22px; height: 22px; border-radius: 6px; background: var(--blue-soft); color: var(--blue); display: inline-flex; align-items: center; justify-content: center; flex: none; }
 .scrollList .opt { flex-shrink: 0; border: 0; border-bottom: 1px solid var(--l2); border-radius: 0; padding: 9px 8px; }
 .optAll { grid-column: 1 / -1; font-weight: 600; }
 .optOn { background: var(--blue-soft) !important; border-color: var(--blue) !important; color: var(--blue); font-weight: 600; border-radius: 6px !important; }
@@ -123,7 +125,7 @@
 .deptBtnSm { height: 21px; padding: 0 9px; border-radius: 5px; font-size: 10.5px; }
 .wLoc { color: var(--t); font-weight: 700; white-space: nowrap; }
 .optCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.optName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.optName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .optOn .kCode { background: #fff; }
 .trip { margin-top: 14px; border: 1px solid var(--l); border-radius: 12px; padding: 12px; background: #fcfcfd; }
 .stop { display: flex; gap: 12px; position: relative; }

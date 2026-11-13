@@ -31,6 +31,20 @@ export function deptFull(category?: string): string {
   return FULL[k] ?? title(k);
 }
 
+/** Idara ina dropdown ya Kituo (Kilimo haina) */
+export function deptHasFacility(category?: string): boolean {
+  const k = key(category);
+  return k === "education" || k === "health" || k === "watumishi_wa_umma" || k === "umma" || k === "public";
+}
+
+/** Ikoni ya kituo kwa idara: shule / hospitali / jengo la ofisi */
+export function deptFacilityIcon(category?: string): string {
+  const k = key(category);
+  if (k === "health") return "hospital";
+  if (k === "watumishi_wa_umma" || k === "umma" || k === "public") return "building";
+  return "school";
+}
+
 /** Idara inaonekana kama kitufe cha bluu kwenye kadi (Watumishi wa Umma tu) */
 export function deptAsButton(category?: string): boolean {
   const k = key(category);

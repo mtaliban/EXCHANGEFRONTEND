@@ -12,7 +12,7 @@ import { useDataVersion } from "@/lib/useDataVersion";
 import { useI18n, useT } from "@/lib/i18n";
 import { boardEmptyMessage } from "@/lib/i18n_board";
 import { mechi, mechiAfya, ngaziYa, type Mimi } from "@/lib/match";
-import { deptFull, deptShort } from "@/lib/depts";
+import { deptFacilityIcon, deptFull, deptHasFacility, deptShort } from "@/lib/depts";
 import { timeAgo } from "@/lib/timeAgo";
 import { parseServerDate } from "@/lib/dates";
 import AppIcon from "@/components/app/AppIcon";
@@ -225,6 +225,9 @@ export default function TeacherDashboard() {
 
   const total = board?.total ?? rows.length;
   const noun = isEdu ? "walimu" : `watu wa ${deptShort(user?.category)}`;
+  // Kilimo haina kituo — Mkoa na Wilaya tu
+  const hasFacility = isAdmin || deptHasFacility(user?.category);
+  const facilityIcon = deptFacilityIcon(user?.category);
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const pageItems = useMemo(
@@ -301,18 +304,23 @@ export default function TeacherDashboard() {
               onChange={(v) => { setDistrictId(v); setFacilityId(null); setPage(1); }}
             />
 
-            <p className={s.label}>{isEdu ? "Kituo / Shule" : "Kituo"} <em>(hiari)</em></p>
-            <InlineDropdown
-              icon="school"
-              value={facilityId}
-              allLabel="Vituo vyote"
-              options={facilityOpts}
-              layout="scroll"
-              countLabel="Vituo"
-              disabled={!districtId}
-              disabledText="Chagua wilaya kwanza"
-              onChange={(v) => { setFacilityId(v); setPage(1); }}
-            />
+            {hasFacility && (
+              <>
+                <p className={s.label}>{isEdu ? "Kituo / Shule" : "Kituo"} <em>(hiari)</em></p>
+                <InlineDropdown
+                  icon={facilityIcon}
+                  rowIcon={facilityIcon}
+                  value={facilityId}
+                  allLabel="Vituo vyote"
+                  options={facilityOpts}
+                  layout="scroll"
+                  countLabel="Vituo"
+                  disabled={!districtId}
+                  disabledText="Chagua wilaya kwanza"
+                  onChange={(v) => { setFacilityId(v); setPage(1); }}
+                />
+              </>
+            )}
 
             <div className={s.divider} />
 

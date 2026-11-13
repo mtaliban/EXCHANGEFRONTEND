@@ -112,6 +112,7 @@ export function InlineDropdown({
   disabledText,
   layout,
   countLabel,
+  rowIcon,
 }: {
   icon: string;
   value: string | null;
@@ -122,6 +123,8 @@ export function InlineDropdown({
   disabledText?: string;
   layout: "grid3" | "grid2" | "scroll";
   countLabel: string;
+  /** Ikoni ya kituo kwenye kila chaguo (orodha ya vituo) */
+  rowIcon?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -176,6 +179,11 @@ export function InlineDropdown({
                 className={cx(s.opt, s.optAll, !value && s.optOn)}
                 onClick={() => pick(null)}
               >
+                {rowIcon && (
+                  <span className={s.optIc}>
+                    <AppIcon name={rowIcon} size={13} sw={2} />
+                  </span>
+                )}
                 {allLabel}
               </button>
             )}
@@ -187,13 +195,18 @@ export function InlineDropdown({
                 className={cx(s.opt, o.value === value && s.optOn, !!o.code && s.optCode)}
                 onClick={() => pick(o.value)}
               >
+                {rowIcon && (
+                  <span className={s.optIc}>
+                    <AppIcon name={rowIcon} size={13} sw={2} />
+                  </span>
+                )}
                 {o.code ? (
                   <>
                     <span className={s.optName}>{o.label}</span>
                     <span className={s.kCode}>{o.code}</span>
                   </>
                 ) : (
-                  o.label
+                  <span className={s.optName}>{o.label}</span>
                 )}
               </button>
             ))}
