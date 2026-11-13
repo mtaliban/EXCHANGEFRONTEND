@@ -10,7 +10,6 @@ import { useLiveEvents } from "@/lib/useLiveEvents";
 import { useLive } from "@/lib/liveSocket";
 import { useDataVersion } from "@/lib/useDataVersion";
 import { useI18n, useT } from "@/lib/i18n";
-import { boardEmptyMessage } from "@/lib/i18n_board";
 import { mechi, mechiAfya, ngaziYa, type Mimi } from "@/lib/match";
 import { deptFacilityIcon, deptFull, deptHasFacility, deptShort } from "@/lib/depts";
 import { timeAgo } from "@/lib/timeAgo";
@@ -20,6 +19,7 @@ import {
   InlineDropdown, Pager, SummaryCard, TeacherCard, WelcomeCard, cx, type Opt,
 } from "@/components/app/dashboard";
 import s from "@/components/app/app.module.css";
+import { EmptyMatch } from "@/components/app/EmptyMatch";
 
 const PAGE_SIZE = 5;
 const PAY_NUMBER = "0763 795 801";
@@ -252,7 +252,18 @@ export default function TeacherDashboard() {
 
   const deptName = deptFull(user?.category);
 
-  const empty = boardEmptyMessage(myRegionName, lang);
+  // "Hakuna matokeo": nani, mkoa, wilaya/kituo na kada aliyochuja
+  const nani = isEdu
+    ? ngaziYa(user?.cadre_display || user?.cadre_code, mySubjects) === "sekondari"
+      ? "Walimu wa sekondari"
+      : "Walimu wa msingi"
+    : `Watu wa ${deptShort(user?.category)}`;
+  const mkoaChuja = regionSel ? regionOpts.find((r) => r.value === regionSel)?.label ?? null : null;
+  const chiniChuja = facilityId
+    ? facilityOpts.find((f) => f.value === facilityId)?.label ?? null
+    : districtId
+      ? districtOpts.find((d) => d.value === districtId)?.label ?? null
+      : null;
 
   return (
     <div className={s.wrap}>
@@ -385,13 +396,13 @@ export default function TeacherDashboard() {
           <span className={s.spin} /> Inapakia...
         </div>
       ) : pageItems.length === 0 ? (
-        <div className={cx(s.card, s.empty)}>
-          <span className={s.subIcon} style={{ margin: "0 auto", width: 44, height: 44, borderRadius: 12 }}>
-            <AppIcon name="users" size={20} />
-          </span>
-          <h3>{empty.title}</h3>
-          <p>{empty.hint}</p>
-        </div>
+        <EmptyMatch
+          nani={nani}
+          kada={cadreCode || null}
+          mkoa={mkoaChuja}
+          chini={chiniChuja}
+          to={myRegionName || "Mkoa wako"}
+        />
       ) : (
         <>
           {pageItems.map(({ c, m }) => {
