@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ThemeInit from '@/components/ThemeInit';
+import { PublicLangProvider } from '@/components/public/PublicLang';
 import Script from 'next/script';
 
 export const viewport: Viewport = {
@@ -143,7 +144,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <ThemeInit />
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <PublicLangProvider>{children}</PublicLangProvider>
+        </main>
         <Footer />
       </body>
     </html>
