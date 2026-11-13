@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import AppIcon from "./AppIcon";
 import ChangiaTaarifa from "@/components/ChangiaTaarifa";
 import type { Matokeo } from "@/lib/match";
-import { deptFull } from "@/lib/depts";
+import { deptAsButton, deptFull } from "@/lib/depts";
 import s from "./app.module.css";
 
 export const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(" ");
@@ -240,6 +240,7 @@ export function TeacherCard({
   const isEdu = c.category === "education";
   const dept = deptFull(c.category);
   const kada = c.cadre_display || c.cadre_code || "";
+  const deptBtn = deptAsButton(c.category);
 
   return (
     <div className={s.card} style={{ padding: 16 }}>
@@ -256,17 +257,28 @@ export function TeacherCard({
           </div>
           <p className={s.tSub}>
             {kada ? (
-              <>
-                <span className={s.blue}>{dept}</span>
-                <span className={s.dotSep} />
-                <span className={s.tKada}>{kada}</span>
-                {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
-              </>
+              deptBtn ? (
+                /* Watumishi wa Umma: idara ni kitufe cha bluu, kada kwenye mstari wake */
+                <span className={s.deptBtn}>{dept}</span>
+              ) : (
+                <>
+                  <span className={s.blue}>{dept}</span>
+                  <span className={s.dotSep} />
+                  <span className={s.tKada}>{kada}</span>
+                  {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
+                </>
+              )
             ) : (
               /* Kada ikiwa tupu: idara yenyewe inakuwa kibandiko cha bluu, bila kitone wala kistari */
               <span className={s.kCode}>{dept}</span>
             )}
           </p>
+          {deptBtn && kada && (
+            <p className={s.tSub}>
+              <span className={s.tKada}>{kada}</span>
+              {c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
+            </p>
+          )}
         </div>
       </div>
 
