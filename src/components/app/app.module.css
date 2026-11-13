@@ -18,7 +18,7 @@
 .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue-soft); border: 1px solid #e0e7ff; color: var(--blue); font-weight: 700; font-size: 15px; display: grid; place-items: center; flex: none; }
 .muted { font-size: 12.5px; color: var(--f); }
 .wName { font-size: 15px; font-weight: 700; margin: 0; line-height: 1.25; }
-.wLine { font-size: 12.5px; color: var(--m); margin: 2px 0 0; }
+.wLine { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12.5px; color: var(--m); margin: 2px 0 0; }
 .blue { color: var(--blue); font-weight: 600; }
 .wRight { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-left: 1px solid var(--l2); padding: 10px; text-align: center; }
 .payIcon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; }
@@ -31,7 +31,7 @@
 .summary { display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 12px; }
 .countBox { width: 58px; height: 58px; border-radius: 12px; background: #f3f4f6; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: none; }
 .countBox b { font-size: 20px; line-height: 1; }
-.countBox span { font-size: 10.5px; color: var(--f); margin-top: 3px; }
+.countBox span { font-size: 10.5px; color: var(--f); margin-top: 3px; text-align: center; line-height: 1.12; padding: 0 2px; }
 .route { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "l1 . l2" "v1 aw v2"; column-gap: 10px; row-gap: 3px; align-items: center; }
 .route small { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--f); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; }
 .rl1 { grid-area: l1; } .rl2 { grid-area: l2; justify-content: flex-end; }
@@ -39,6 +39,16 @@
 .rv1 { grid-area: v1; } .rv2 { grid-area: v2; text-align: right; }
 .arrow { grid-area: aw; display: flex; align-items: center; color: #9ca3af; min-width: 18px; }
 .arrow i { flex: 1; border-top: 1.5px dashed #cbd5e1; margin-right: -3px; }
+
+/* Muhtasari wa Afya – bluu (idadi, mikoa na mshale) */
+.sumAccent .countBox { background: var(--blue-soft); border: 1px solid var(--blue-line); }
+.sumAccent .countBox b { color: var(--blue); }
+.sumAccent .route small { color: var(--blue); font-weight: 700; }
+.sumAccent .route > b { color: var(--blue); }
+.rIc { width: 20px; height: 20px; border-radius: 6px; background: var(--blue-soft); color: var(--blue); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.arrowDot { grid-area: aw; display: flex; align-items: center; gap: 3px; color: var(--blue); min-width: 26px; }
+.arrowDot i { flex: 1; border-top: 1.5px dashed var(--blue-line); }
+.arrowDot b { width: 21px; height: 21px; border-radius: 50%; background: var(--blue); color: #fff; display: inline-flex; align-items: center; justify-content: center; flex: none; }
 
 /* ---------- Kuchuja ---------- */
 .fHead { display: flex; align-items: center; gap: 7px; font-size: 14.5px; font-weight: 700; }

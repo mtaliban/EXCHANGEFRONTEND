@@ -14,12 +14,15 @@ export type Opt = { value: string; label: string; code?: string };
 export function WelcomeCard(p: {
   jina: string;
   kada: string;
+  kadaCode?: string;
   idara: string;
   wilaya: string;
   mkoa: string;
   amelipa: boolean;
   namba: string;
 }) {
+  // Kifupi cha kada (mf. "ANO") kinaonyeshwa kama kibandiko cha bluu – kiondolewe kwenye maandishi
+  const kada = p.kadaCode ? p.kada.replace(new RegExp(`\\s*\\(${p.kadaCode}\\)\\s*$`), "") : p.kada;
   return (
     <div className={cx(s.card, s.welcome)}>
       <div className={s.wLeft}>
@@ -27,7 +30,10 @@ export function WelcomeCard(p: {
         <div style={{ minWidth: 0 }}>
           <span className={s.muted}>Karibu,</span>
           <p className={s.wName}>{p.jina}</p>
-          {p.kada && <p className={s.wLine}>{p.kada}</p>}
+          <p className={s.wLine}>
+            {kada}
+            {p.kadaCode && <span className={s.kCode}>{p.kadaCode}</span>}
+          </p>
           <p className={s.wLine}>
             <span className={s.blue}>{p.idara}</span>
             {(p.wilaya || p.mkoa) && ` · ${[p.wilaya, p.mkoa].filter(Boolean).join(", ")}`}
@@ -48,27 +54,34 @@ export function WelcomeCard(p: {
 }
 
 /* ---------- Muhtasari: 73 walimu · Wanatoka → Wanakuja ---------- */
+// accent = rangi ya bluu (inatumika kwenye Dashibodi ya Afya; walimu hawabadiliki)
 export function SummaryCard({
-  count, from, to, noun = "walimu",
-}: { count: number; from: string; to: string; noun?: string }) {
+  count, from, to, noun = "walimu", accent = false,
+}: { count: number; from: string; to: string; noun?: string; accent?: boolean }) {
   return (
-    <div className={cx(s.card, s.summary)}>
+    <div className={cx(s.card, s.summary, accent && s.sumAccent)}>
       <div className={s.countBox}>
         <b>{count}</b>
         <span>{noun}</span>
       </div>
       <div className={s.route}>
         <small className={s.rl1}>
-          <AppIcon name="map" size={13} /> Wanatoka
+          {accent ? <span className={s.rIc}><AppIcon name="route" size={12} sw={2.2} /></span> : <AppIcon name="map" size={13} />} Wanatoka
         </small>
         <small className={s.rl2}>
-          <AppIcon name="pin" size={13} /> Wanakuja
+          {accent ? <span className={s.rIc}><AppIcon name="home" size={12} sw={2.2} /></span> : <AppIcon name="pin" size={13} />} Wanakuja
         </small>
         <b className={s.rv1} title={from}>{from}</b>
-        <span className={s.arrow}>
-          <i />
-          <AppIcon name="chevR" size={13} sw={2.4} />
-        </span>
+        {accent ? (
+          <span className={s.arrowDot}>
+            <i /><b><AppIcon name="arrowR" size={13} sw={2.4} /></b><i />
+          </span>
+        ) : (
+          <span className={s.arrow}>
+            <i />
+            <AppIcon name="chevR" size={13} sw={2.4} />
+          </span>
+        )}
         <b className={s.rv2} title={to}>{to}</b>
       </div>
     </div>

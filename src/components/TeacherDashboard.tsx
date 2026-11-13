@@ -255,6 +255,7 @@ export default function TeacherDashboard() {
       <WelcomeCard
         jina={user?.full_name || ""}
         kada={user?.cadre_display || user?.cadre_code || ""}
+        kadaCode={!isEdu ? user?.cadre_code || "" : undefined}
         idara={deptName}
         wilaya={myStation.district_name || ""}
         mkoa={myRegionName}
@@ -264,7 +265,8 @@ export default function TeacherDashboard() {
 
       <SummaryCard
         count={total}
-        noun={isEdu ? "walimu" : "watumishi"}
+        accent={!isEdu}
+        noun={isEdu ? "walimu" : "watu wa Afya"}
         from={[regionName, districtOpts.find((d) => d.value === districtId)?.label].filter(Boolean).join(" · ")}
         to={myRegionName || "Mkoa wako"}
       />
