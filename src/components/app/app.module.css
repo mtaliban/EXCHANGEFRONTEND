@@ -253,6 +253,15 @@
 /* Upana mdogo kwa ukurasa wa Maoni */
 .mPage { max-width: 400px; overflow-x: clip; }
 
+/* Changia: "Huduma" ya bluu */
+.chBlue { color: var(--blue); }
+
+/* Changia: vitufe vya Msaada (Piga / Ujumbe) – upana sawa, muundo sawa */
+.helpBtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 104px; height: 34px; border-radius: 8px; border: 1px solid; font-size: 13px; font-weight: 600; text-decoration: none; flex: none; }
+.helpBtnCall { border-color: var(--blue-line); background: var(--blue-soft); color: var(--blue); }
+.helpBtnWa { border-color: #bbf7d0; background: #f0fdf4; color: #15803d; }
+.helpIcCall { background: var(--blue-soft); color: var(--blue); }
+
 /* ---------- MECHI ("Inalingana") ---------- */
 .tripMatched { position: relative; padding-right: 66px; border-color: #c7d2fe; }
 .tripWobble { animation: wobble 4s cubic-bezier(.36, .07, .19, .97) infinite; will-change: transform; }

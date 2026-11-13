@@ -143,7 +143,7 @@ export default function Changia() {
 
   return (
     <div className={s.wrap}>
-      <h1 className={s.pageTitle}>Changia Huduma</h1>
+      <h1 className={s.pageTitle}>Changia <span className={s.chBlue}>Huduma</span></h1>
       <p className={s.pageSub}>
         Lipa kwa namba hapa chini (M-Pesa, Tigo Pesa, Airtel Money, Halopesa), kisha nakili SMS ya kuthibitisha.
       </p>
@@ -308,15 +308,15 @@ export default function Changia() {
         </p>
 
         <div className={s.helpLine}>
-          <span className={s.helpIc}>
+          <span className={cx(s.helpIc, s.helpIcCall)}>
             <AppIcon name="phone" size={16} />
           </span>
           <div className={s.w}>
             <span className={s.small}>Piga simu</span>
             <b>{fmtNum(SUPPORT_CALL)}</b>
           </div>
-          <a className={s.btnOut} href={`tel:${SUPPORT_CALL}`}>
-            Piga
+          <a className={cx(s.helpBtn, s.helpBtnCall)} href={`tel:${SUPPORT_CALL}`}>
+            <AppIcon name="phone" size={14} /> Piga
           </a>
         </div>
 
@@ -329,12 +329,12 @@ export default function Changia() {
             <b>{fmtWa(SUPPORT_WA)}</b>
           </div>
           <a
-            className={cx(s.btnOut, s.btnWa)}
+            className={cx(s.helpBtn, s.helpBtnWa)}
             href={`https://wa.me/${SUPPORT_WA}`}
             target="_blank"
             rel="noreferrer"
           >
-            Ujumbe
+            <AppIcon name="waLogo" size={14} /> Ujumbe
           </a>
         </div>
       </div>
