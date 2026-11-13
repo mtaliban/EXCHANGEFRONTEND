@@ -241,6 +241,14 @@ export function TeacherCard({
   const dept = deptFull(c.category);
   const kada = c.cadre_display || c.cadre_code || "";
   const deptBtn = deptAsButton(c.category);
+  // Walimu: kitufe kifupi "Mwalimu wa Msingi" / "Mwalimu wa Sekondari"
+  const kadaBtnLabel = /sekondari/i.test(kada)
+    ? "Mwalimu wa Sekondari"
+    : /msingi/i.test(kada)
+      ? "Mwalimu wa Msingi"
+      : /pekee/i.test(kada)
+        ? "Mwalimu wa Pekee"
+        : kada;
 
   return (
     <div className={s.card} style={{ padding: 16 }}>
@@ -257,7 +265,13 @@ export function TeacherCard({
           </div>
           <p className={s.tSub}>
             {kada ? (
-              deptBtn ? (
+              isEdu ? (
+                <>
+                  <span className={s.blue}>{dept}</span>
+                  <span className={s.dotSep} />
+                  <span className={cx(s.deptBtn, s.deptBtnSm)}>{kadaBtnLabel}</span>
+                </>
+              ) : deptBtn ? (
                 /* Watumishi wa Umma: idara ni kitufe cha bluu, kada kwenye mstari wake */
                 <span className={s.deptBtn}>{dept}</span>
               ) : (

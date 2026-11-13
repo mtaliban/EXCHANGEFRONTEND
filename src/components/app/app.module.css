@@ -119,6 +119,8 @@
 .kCodeLead { margin-left: 0; margin-right: 0; height: 21px; padding: 0 9px; font-size: 11.5px; }
 /* Watumishi wa Umma: jina la idara kama kitufe cha bluu kamili */
 .deptBtn { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 6px; background: var(--blue); color: #fff; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+/* Kitufe kidogo cha kada ya mwalimu (Msingi/Sekondari) */
+.deptBtnSm { height: 21px; padding: 0 9px; border-radius: 5px; font-size: 10.5px; }
 .wLoc { white-space: nowrap; }
 .optCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .optName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
