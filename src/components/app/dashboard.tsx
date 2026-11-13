@@ -205,6 +205,13 @@ export function InlineDropdown({
 }
 
 /* ---------- Kadi ya mwalimu ---------- */
+const ROMAN = ["", "I", "II", "III", "IV", "V"];
+/** Kifupi safi: LAB_TECH_2 => "LAB TECH II" */
+function cleanCode(code?: string): string {
+  const t = String(code || "").replace(/_/g, " ").replace(/\s+/g, " ").trim().toUpperCase();
+  return t.replace(/ (\d)$/, (_, d) => ` ${ROMAN[Number(d)] || d}`);
+}
+
 export function TeacherCard({
   c,
   myRegionName,
@@ -239,7 +246,11 @@ export function TeacherCard({
   const years = c.years_of_service === 3 ? "3+" : String(c.years_of_service || "");
   const isEdu = c.category === "education";
   const dept = deptFull(c.category);
-  const kada = c.cadre_display || c.cadre_code || "";
+  const isHealth = c.category === "health";
+  const rawKada = c.cadre_display || c.cadre_code || "";
+  // Afya: "(ANO)" haziandikwi tena kwenye jina la kada — kifupi kipo kwenye kibandiko
+  const kada = isHealth ? rawKada.replace(/\s*\([^)]*\)\s*$/, "").trim() : rawKada;
+  const codeLabel = isHealth ? cleanCode(c.cadre_code) : c.cadre_code;
   const deptBtn = deptAsButton(c.category);
   // Walimu: kitufe kifupi "Mwalimu wa Msingi" / "Mwalimu wa Sekondari"
   const kadaBtnLabel = /sekondari/i.test(kada)
@@ -279,7 +290,7 @@ export function TeacherCard({
                   <span className={s.blue}>{dept}</span>
                   <span className={s.dotSep} />
                   <span className={s.tKada}>{kada}</span>
-                  {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
+                  {!isEdu && codeLabel && <span className={s.kCode}>{codeLabel}</span>}
                 </>
               )
             ) : (
@@ -290,7 +301,7 @@ export function TeacherCard({
           {deptBtn && kada && (
             <p className={s.tSub}>
               <span className={s.tKada}>{kada}</span>
-              {c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
+              {codeLabel && <span className={s.kCode}>{codeLabel}</span>}
             </p>
           )}
         </div>
