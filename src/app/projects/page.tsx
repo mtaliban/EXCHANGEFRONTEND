@@ -19,7 +19,7 @@ const SHUGHULI = [
   "Kutoa mapendekezo ya kuboresha elimu na matumizi ya teknolojia",
 ];
 
-const TLM_URL = "https://tlmtanzania.com";
+const TLM_URL = "https://home-haji-downloads-fieldmanagementdockerysy-production.up.railway.app/curriculum/";
 
 export default function MiradiPage() {
   return (
