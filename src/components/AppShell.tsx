@@ -68,7 +68,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-white dark:bg-brand-grey-50">
       {/* ═══ MOBILE TOP BAR (md:hidden) — FIXED, haipandi yote ═══ */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-brand-grey-950 border-t-[3px] border-t-brand-blue border-b border-brand-grey-100 dark:border-brand-grey-700"
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-brand-grey-950 border-b border-brand-grey-100 dark:border-brand-grey-700"
         style={{ WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}>
         <div className="flex items-center gap-2.5 px-4 h-[53px]">
           <MobileTopBar links={links} user={user} onLogout={doLogout} />
