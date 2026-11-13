@@ -13,3 +13,6 @@ tsconfig.tsbuildinfo
 
 # vercel
 .vercel/
+
+# picha za majaribio za agent
+artifacts/

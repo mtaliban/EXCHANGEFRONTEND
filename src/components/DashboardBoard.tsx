@@ -828,6 +828,14 @@ function TrueMatchCard({ m, now, lang, mySubjects, me, myRegionName, isVerified,
     window.location.href = `tel:${m.phone_primary}`;
   }
 
+  async function onSMS() {
+    if (!m.phone_primary) return;
+    if (!canContact) { showCardToast('Changia TZS 2,500 upate namba', m.user_id); return; }
+    showCardToast(`SMS kwa ${m.full_name}`, m.user_id);
+    try { await logContact(m.user_id, 'sms', 'initiated'); } catch {}
+    window.location.href = `sms:${m.phone_primary}?body=${encodeURIComponent(introMsg)}`;
+  }
+
   const scorePercent = Math.round((m.score || 0) * 100);
 
   return (
@@ -888,15 +896,23 @@ function TrueMatchCard({ m, now, lang, mySubjects, me, myRegionName, isVerified,
       <div className="flex items-center gap-1.5 mt-auto pt-1">
         {m.phone_primary && (
           <button type="button" onClick={onCall}
-            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex-1 justify-center transition ${
+            className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex-1 justify-center min-w-0 transition ${
               canContact ? 'bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white hover:border-emerald-400' : 'bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-400 border border-brand-grey-200 dark:border-brand-grey-600'
             }`}>
             <Phone size={11} /> Piga
           </button>
         )}
+        {m.phone_primary && (
+          <button type="button" onClick={onSMS}
+            className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex-1 justify-center min-w-0 transition ${
+              canContact ? 'bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-brand-grey-900 dark:text-white hover:border-emerald-400' : 'bg-brand-grey-100 dark:bg-brand-grey-800 text-brand-grey-400 border border-brand-grey-200 dark:border-brand-grey-600'
+            }`}>
+            <MessageSquare size={11} /> SMS
+          </button>
+        )}
         {m.phone_alt && canContact && (
           <a href={`https://wa.me/${(m.phone_alt || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-[11px] font-semibold text-brand-grey-900 dark:text-white hover:border-emerald-400 transition flex-1 justify-center">
+            className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-600 text-[11px] font-semibold text-brand-grey-900 dark:text-white hover:border-emerald-400 transition flex-1 justify-center min-w-0">
             WhatsApp
           </a>
         )}
