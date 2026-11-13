@@ -11,7 +11,7 @@ import { useLive } from "@/lib/liveSocket";
 import { useDataVersion } from "@/lib/useDataVersion";
 import { useI18n, useT } from "@/lib/i18n";
 import { boardEmptyMessage } from "@/lib/i18n_board";
-import { mechi, ngaziYa, type Mimi } from "@/lib/match";
+import { mechi, mechiAfya, ngaziYa, type Mimi } from "@/lib/match";
 import { timeAgo } from "@/lib/timeAgo";
 import { parseServerDate } from "@/lib/dates";
 import AppIcon from "@/components/app/AppIcon";
@@ -204,18 +204,23 @@ export default function TeacherDashboard() {
       masomo: mySubjects,
     };
 
+    const niAfya = user?.category === "health";
+
     return list
       .map((c) => {
         const destinations = (c.desired_destinations?.length
           ? c.desired_destinations
           : c.matching_destination ? [c.matching_destination] : []) as any[];
+        const mtu = { current_station: c.current_station, destinations, masomo: c.subjects || [], kada_code: c.cadre_code };
         const m = mimi.mkoa && mimi.malengo.length
-          ? mechi(mimi, { current_station: c.current_station, destinations, masomo: c.subjects || [] })
+          ? niAfya
+            ? mechiAfya({ kadaCode: user?.cadre_code || "", mkoa: mimi.mkoa, wilaya: mimi.wilaya, malengo: mimi.malengo }, mtu)
+            : mechi(mimi, mtu)
           : null;
         return { c, m };
       })
       .sort((a, b) => (b.m?.pct ?? -1) - (a.m?.pct ?? -1));
-  }, [board, liveOnline, user?.cadre_display, user?.cadre_code, user?.desired_destinations, mySubjects, myRegionName, myStation.district_name]);
+  }, [board, liveOnline, user?.category, user?.cadre_display, user?.cadre_code, user?.desired_destinations, mySubjects, myRegionName, myStation.district_name]);
 
   const total = board?.total ?? rows.length;
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));

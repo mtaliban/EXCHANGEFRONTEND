@@ -99,6 +99,36 @@ export function mechi(me: Mimi, t: Mtu): Matokeo | null {
     : mechiMsingi(me, t, goal, dest);
 }
 
+// =========================================================
+// AFYA — sharti: kada ile ile (kadaCode sawa) + mkoa pande zote mbili
+// =========================================================
+export type MimiAfya = { kadaCode: string; mkoa: string; wilaya?: string; malengo: Mahali[] };
+
+export function mechiAfya(me: MimiAfya, t: Mtu & { kada_code?: string }): Matokeo | null {
+  const from = t.current_station || {};
+  const myRegion = norm(me.mkoa);
+  if (!myRegion || !norm(from.region_name)) return null;
+
+  // (0) kada lazima iwe ile ile — ANO ↔ ANO
+  if (!norm(me.kadaCode) || norm(me.kadaCode) !== norm(t.kada_code)) return null;
+
+  // (1) anatoka mkoa mmoja wa malengo yangu
+  const goal = (me.malengo || []).find((m) => norm(m.region_name) === norm(from.region_name));
+  if (!goal) return null;
+
+  // (2) anataka kuja mkoa ulipo
+  const dest = (t.destinations || []).find((d) => norm(d.region_name) === myRegion);
+  if (!dest) return null;
+
+  const a = !wilayaZilizotajwa(goal.district_name, from.district_name) || wilayaSawa(goal.district_name, from.district_name);
+  const b = !wilayaZilizotajwa(me.wilaya, dest.district_name) || wilayaSawa(me.wilaya, dest.district_name);
+  const sawa = Number(a) + Number(b);
+
+  if (sawa === 2) return { pct: 100, sababu: "Kada na mkoa, wilaya zinalingana pande zote mbili", masomoSawa: [] };
+  if (sawa === 1) return { pct: 90, sababu: "Kada na mkoa vinalingana, wilaya upande mmoja", masomoSawa: [] };
+  return { pct: 80, sababu: "Kada na mkoa vinalingana, wilaya tofauti", masomoSawa: [] };
+}
+
 /** Ngazi kutoka kada: "Mwalimu wa Elimu ya Sekondari" => sekondari */
 export function ngaziYa(kada?: string, masomo?: string[]): "msingi" | "sekondari" {
   const k = norm(kada);

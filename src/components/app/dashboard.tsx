@@ -130,6 +130,7 @@ export function InlineDropdown({
           <AppIcon name={icon} size={14} />
         </span>
         <span>{disabled ? disabledText : current?.label ?? allLabel}</span>
+        {current?.code && !disabled && <span className={s.kCode}>{current.code}</span>}
         <AppIcon name="down" size={15} sw={2} />
       </button>
       {open && (
