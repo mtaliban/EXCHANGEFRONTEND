@@ -154,10 +154,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 /** Jina la ukurasa linaloonekana pembeni ya ☰ */
 const TITLES: Record<string, string> = {
   '/dashboard': 'Dashibodi',
-  '/changia': 'Changia',
-  '/maoni': 'Maoni na Malalamiko',
-  '/wasifu': 'Wasifu',
-  '/wasifu/hariri': 'Hariri Wasifu',
+  '/donate': 'Changia',
+  '/feedback': 'Maoni na Malalamiko',
+  '/profile': 'Wasifu',
 };
 
 /** MOBILE TOP BAR — ☰ (kushoto) + jina la ukurasa + avatar na SW/EN (kulia) */
@@ -282,7 +281,7 @@ function MobileTopBar({ links, user, onLogout }: {
         )}
       >
         <Link
-          href="/wasifu"
+          href="/profile"
           onClick={close}
           tabIndex={open === 'account' ? 0 : -1}
           className="flex items-center gap-2.5 h-[42px] px-2 rounded-[9px] text-sm font-medium text-brand-grey-700 active:bg-brand-grey-50"
@@ -340,9 +339,9 @@ function MobileBottomNav({ pathname, isAdmin }: {
       ]
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-        { href: '/changia', label: t('nav.donate'), icon: HandCoins },
-        { href: '/maoni', label: t('nav.feedback_short', 'Maoni'), icon: MessageSquareText },
-        { href: '/wasifu', label: t('nav.profile'), icon: User },
+        { href: '/donate', label: t('nav.donate'), icon: HandCoins },
+        { href: '/feedback', label: t('nav.feedback_short', 'Maoni'), icon: MessageSquareText },
+        { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 
   return (

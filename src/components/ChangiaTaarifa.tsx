@@ -30,7 +30,7 @@ export default function ChangiaTaarifa({ kiasi = 2500, ms = 2000 }: { kiasi?: nu
       <p className={s.text}>
         Changia <b>TZS {kiasi.toLocaleString("en")}</b> upate namba
       </p>
-      <Link href="/changia" className={s.btn}>
+      <Link href="/donate" className={s.btn}>
         Changia
       </Link>
     </div>
