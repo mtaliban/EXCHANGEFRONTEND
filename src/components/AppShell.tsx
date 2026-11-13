@@ -12,7 +12,7 @@ import { getInitial } from '@/lib/initials';
 import { ConfirmHost } from '@/components/confirm';
 import {
   BarChart3, Bell, Crown, Database, GitMerge, HandCoins, Heart, LayoutDashboard,
-  LogOut, Megaphone as MegaphoneIcon, ClipboardList, Phone, User, Users, Wallet, Zap,
+  LogOut, Megaphone as MegaphoneIcon, ClipboardList, MessageSquareText, Phone, User, Users, Wallet, Zap,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -46,7 +46,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
         { href: '/donate', label: t('nav.donate'), icon: HandCoins },
-        { href: '/feedback', label: t('nav.feedback'), icon: ClipboardList },
+        { href: '/feedback', label: t('nav.feedback'), icon: MessageSquareText },
         { href: '/profile', label: t('nav.profile'), icon: User },
       ];
 
@@ -341,7 +341,7 @@ function MobileBottomNav({ pathname, isAdmin }: {
     : [
         { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
         { href: '/changia', label: t('nav.donate'), icon: HandCoins },
-        { href: '/maoni', label: t('nav.feedback_short', 'Maoni'), icon: ClipboardList },
+        { href: '/maoni', label: t('nav.feedback_short', 'Maoni'), icon: MessageSquareText },
         { href: '/wasifu', label: t('nav.profile'), icon: User },
       ];
 
