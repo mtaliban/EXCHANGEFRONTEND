@@ -40,7 +40,7 @@ export function WelcomeCard(p: {
               </p>
               <p className={s.wLine}>
                 <span className={s.blue}>{p.idara}</span>
-                {nafasi && <span> · {nafasi}</span>}
+                {nafasi && <span className={s.wLoc}> · {nafasi}</span>}
               </p>
             </>
           ) : (
