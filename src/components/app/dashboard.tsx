@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import AppIcon from "./AppIcon";
 import ChangiaTaarifa from "@/components/ChangiaTaarifa";
 import type { Matokeo } from "@/lib/match";
+import { deptFull } from "@/lib/depts";
 import s from "./app.module.css";
 
 export const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(" ");
@@ -23,6 +24,7 @@ export function WelcomeCard(p: {
 }) {
   // Kifupi cha kada (mf. "ANO") kinaonyeshwa kama kibandiko cha bluu – kiondolewe kwenye maandishi
   const kada = p.kadaCode ? p.kada.replace(new RegExp(`\\s*\\(${p.kadaCode}\\)\\s*$`), "") : p.kada;
+  const nafasi = [p.wilaya, p.mkoa].filter(Boolean).join(", ");
   return (
     <div className={cx(s.card, s.welcome)}>
       <div className={s.wLeft}>
@@ -30,14 +32,24 @@ export function WelcomeCard(p: {
         <div style={{ minWidth: 0 }}>
           <span className={s.muted}>Karibu,</span>
           <p className={s.wName}>{p.jina}</p>
-          <p className={s.wLine}>
-            {kada}
-            {p.kadaCode && <span className={s.kCode}>{p.kadaCode}</span>}
-          </p>
-          <p className={s.wLine}>
-            <span className={s.blue}>{p.idara}</span>
-            {(p.wilaya || p.mkoa) && <span> · {[p.wilaya, p.mkoa].filter(Boolean).join(", ")}</span>}
-          </p>
+          {kada ? (
+            <>
+              <p className={s.wLine}>
+                {kada}
+                {p.kadaCode && <span className={s.kCode}>{p.kadaCode}</span>}
+              </p>
+              <p className={s.wLine}>
+                <span className={s.blue}>{p.idara}</span>
+                {nafasi && <span> · {nafasi}</span>}
+              </p>
+            </>
+          ) : (
+            /* Kada haipo: idara yenyewe ni kibandiko cha bluu */
+            <p className={s.wLine}>
+              <span className={cx(s.kCode, s.kCodeLead)}>{p.idara}</span>
+              {nafasi && <span className={s.wLoc}>&middot;&nbsp;{nafasi}</span>}
+            </p>
+          )}
         </div>
       </div>
       <div className={s.wRight}>
@@ -226,8 +238,8 @@ export function TeacherCard({
   const matched = subjects.filter((m) => mySubjects.includes(m));
   const years = c.years_of_service === 3 ? "3+" : String(c.years_of_service || "");
   const isEdu = c.category === "education";
-  const dept =
-    c.category === "education" ? "Elimu" : c.category === "health" ? "Afya" : c.category || "—";
+  const dept = deptFull(c.category);
+  const kada = c.cadre_display || c.cadre_code || "";
 
   return (
     <div className={s.card} style={{ padding: 16 }}>
@@ -236,10 +248,17 @@ export function TeacherCard({
         <div style={{ minWidth: 0, flex: 1 }}>
           <p className={s.tName}>{c.full_name}</p>
           <p className={s.tSub}>
-            <span className={s.blue}>{dept}</span>
-            <span className={s.dotSep} />
-            <span className={s.tKada}>{c.cadre_display || c.cadre_code || "—"}</span>
-            {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
+            {kada ? (
+              <>
+                <span className={s.blue}>{dept}</span>
+                <span className={s.dotSep} />
+                <span className={s.tKada}>{kada}</span>
+                {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
+              </>
+            ) : (
+              /* Kada ikiwa tupu: idara yenyewe inakuwa kibandiko cha bluu, bila kitone wala kistari */
+              <span className={s.kCode}>{dept}</span>
+            )}
             {c.online && <span style={{ color: "#16a34a", fontWeight: 700 }}>● mtandaoni</span>}
           </p>
         </div>

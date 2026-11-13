@@ -12,6 +12,7 @@ import { useDataVersion } from "@/lib/useDataVersion";
 import { useI18n, useT } from "@/lib/i18n";
 import { boardEmptyMessage } from "@/lib/i18n_board";
 import { mechi, mechiAfya, ngaziYa, type Mimi } from "@/lib/match";
+import { deptFull, deptShort } from "@/lib/depts";
 import { timeAgo } from "@/lib/timeAgo";
 import { parseServerDate } from "@/lib/dates";
 import AppIcon from "@/components/app/AppIcon";
@@ -245,8 +246,7 @@ export default function TeacherDashboard() {
     setPage(1);
   };
 
-  const deptName =
-    user?.category === "education" ? "Elimu" : user?.category === "health" ? "Afya" : (user?.category || "Mwanachama");
+  const deptName = deptFull(user?.category);
 
   const empty = boardEmptyMessage(myRegionName, lang);
 
@@ -266,8 +266,8 @@ export default function TeacherDashboard() {
       <SummaryCard
         count={total}
         accent
-        labelsBlue={!isEdu}
-        noun={isEdu ? "walimu" : "watu wa Afya"}
+        labelsBlue={user?.category === "health"}
+        noun={isEdu ? "walimu" : `watu wa ${deptShort(user?.category)}`}
         from={[regionName, districtOpts.find((d) => d.value === districtId)?.label].filter(Boolean).join(" · ")}
         to={myRegionName || "Mkoa wako"}
       />
