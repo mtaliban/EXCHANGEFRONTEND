@@ -82,7 +82,7 @@ export default function Maoni() {
 
   return (
     <div className={cx(s.wrap, s.mPage)}>
-      <h1 className={s.mTitle}>Maoni na Malalamiko</h1>
+      <h1 className={s.mTitle}>Maoni na <span className={s.chBlue}>Malalamiko</span></h1>
       <p className={s.mSub}>Una swali, ushauri au tatizo? Tuandikie hapa na tutakujibu.</p>
 
       <form onSubmit={submit} className={s.mForm}>
