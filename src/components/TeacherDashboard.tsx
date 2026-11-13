@@ -11,6 +11,7 @@ import { useLive } from "@/lib/liveSocket";
 import { useDataVersion } from "@/lib/useDataVersion";
 import { useI18n, useT } from "@/lib/i18n";
 import { boardEmptyMessage } from "@/lib/i18n_board";
+import { mechi, ngaziYa, type Mimi } from "@/lib/match";
 import { timeAgo } from "@/lib/timeAgo";
 import { parseServerDate } from "@/lib/dates";
 import AppIcon from "@/components/app/AppIcon";
@@ -185,23 +186,44 @@ export default function TeacherDashboard() {
     return regions.find((r) => String(r.id) === regionSel)?.name || "Mikoa yote";
   }, [regionSel, regions]);
 
-  // Kadi: wapya juu (ndani ya nusu saa), kisha wengine — online inatoka live
-  const candidates = useMemo(() => {
-    const list = [...((board?.candidates as any[]) || [])];
-    list.forEach((c) => { c.online = liveOnline.has(c.user_id) || !!c.online; });
-    return list;
-  }, [board, liveOnline]);
-
-  const total = board?.total ?? candidates.length;
-  const totalPages = Math.max(1, Math.ceil(candidates.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const pageItems = useMemo(
-    () => candidates.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
-    [candidates, safePage]
-  );
-
   const mySubjects = useMemo(() => (user?.subjects || []) as string[], [user?.subjects]);
   const myRegionName = myStation.region_name || "";
+
+  // Kadi: wanaolingana nawe wanakaa JUU (asilimia kubwa kwanza), wengine chini
+  const rows = useMemo(() => {
+    const list = [...((board?.candidates as any[]) || [])];
+    list.forEach((c) => { c.online = liveOnline.has(c.user_id) || !!c.online; });
+
+    const mimi: Mimi = {
+      ngazi: ngaziYa(user?.cadre_display || user?.cadre_code, mySubjects),
+      mkoa: myRegionName,
+      wilaya: myStation.district_name || "",
+      malengo: ((user?.desired_destinations || []) as any[]).map((d) => ({
+        region_name: d?.region_name, district_name: d?.district_name,
+      })),
+      masomo: mySubjects,
+    };
+
+    return list
+      .map((c) => {
+        const destinations = (c.desired_destinations?.length
+          ? c.desired_destinations
+          : c.matching_destination ? [c.matching_destination] : []) as any[];
+        const m = mimi.mkoa && mimi.malengo.length
+          ? mechi(mimi, { current_station: c.current_station, destinations, masomo: c.subjects || [] })
+          : null;
+        return { c, m };
+      })
+      .sort((a, b) => (b.m?.pct ?? -1) - (a.m?.pct ?? -1));
+  }, [board, liveOnline, user?.cadre_display, user?.cadre_code, user?.desired_destinations, mySubjects, myRegionName, myStation.district_name]);
+
+  const total = board?.total ?? rows.length;
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = useMemo(
+    () => rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [rows, safePage]
+  );
 
   // Malipo / ruhusa ya kuwasiliana — sheria ile ile ya sasa ya mfumo
   const requirePayment = !!(user as any)?.require_payment_for_contact;
@@ -339,7 +361,7 @@ export default function TeacherDashboard() {
       </div>
 
       {/* ═══ Kadi za walimu ═══ */}
-      {loading && candidates.length === 0 ? (
+      {loading && rows.length === 0 ? (
         <div className={s.loading}>
           <span className={s.spin} /> Inapakia...
         </div>
@@ -353,7 +375,7 @@ export default function TeacherDashboard() {
         </div>
       ) : (
         <>
-          {pageItems.map((c: any) => {
+          {pageItems.map(({ c, m }) => {
             const createdTs = c.created_at ? (parseServerDate(c.created_at)?.getTime() ?? now) : now;
             const ago = timeAgo(createdTs, lang);
             const dateLabel = new Date(createdTs).toLocaleDateString("sw-TZ", {
@@ -395,6 +417,7 @@ export default function TeacherDashboard() {
                 onWhatsApp={wa}
                 toast={cardToast && cardToast.uid === c.user_id ? cardToast.msg : null}
                 payTick={cardToast && cardToast.uid === c.user_id ? cardToast.tick : 0}
+                match={m}
               />
             );
           })}

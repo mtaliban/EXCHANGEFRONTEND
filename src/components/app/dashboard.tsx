@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppIcon from "./AppIcon";
 import ChangiaTaarifa from "@/components/ChangiaTaarifa";
+import type { Matokeo } from "@/lib/match";
 import s from "./app.module.css";
 
 export const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(" ");
@@ -189,6 +190,7 @@ export function TeacherCard({
   onWhatsApp,
   toast,
   payTick,
+  match,
 }: {
   c: any;
   myRegionName: string;
@@ -201,6 +203,7 @@ export function TeacherCard({
   onWhatsApp: () => void;
   toast?: string | null;
   payTick?: number;
+  match?: Matokeo | null;
 }) {
   const from = c.current_station || {};
   const to = c.matching_destination || c.desired_destinations?.[0] || null;
@@ -220,14 +223,15 @@ export function TeacherCard({
           <p className={s.tSub}>
             <span className={s.blue}>{dept}</span>
             <span className={s.dotSep} />
-            <span style={{ minWidth: 0 }}>{c.cadre_display || c.cadre_code || "—"}</span>
+            <span className={s.tKada}>{c.cadre_display || c.cadre_code || "—"}</span>
             {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
             {c.online && <span style={{ color: "#16a34a", fontWeight: 700 }}>● mtandaoni</span>}
           </p>
         </div>
       </div>
 
-      <div className={s.trip}>
+      <div className={cx(s.trip, !!match && s.tripWobble, !!match && s.tripMatched)}>
+        {match && <MatchSide pct={match.pct} sababu={match.sababu} />}
         <div className={s.stop}>
           <i />
           <div>
@@ -330,6 +334,48 @@ export function TeacherCard({
 
       {/* Bila malipo: notisi ya kuchangia inatokea ndani ya kadi, mara tu baada ya kubofya */}
       {!canContact && !!payTick && <ChangiaTaarifa key={payTick} kiasi={2500} />}
+    </div>
+  );
+}
+
+/* ---------- MECHI: duara la asilimia linalohesabu 0→pct kila sek 4 ---------- */
+function useCount(pct: number) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { setN(pct); return; }
+    let raf = 0, start = 0;
+    const loop = (ts: number) => {
+      if (!start) start = ts;
+      const e = (ts - start) % 4000;
+      const k = Math.min(1, e / 2400);
+      const ease = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      setN(Math.round(ease * pct));
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [pct]);
+  return n;
+}
+
+function MatchSide({ pct, sababu }: { pct: number; sababu?: string }) {
+  const n = useCount(pct);
+  const size = 50, stroke = 4, r = (size - stroke) / 2 - 1, C = 2 * Math.PI * r, c = size / 2;
+  return (
+    <div className={s.mSide} title={sababu}>
+      <span className={s.mRingBox} style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={c} cy={c} r={r} fill="none" stroke="#dbe3fb" strokeWidth={stroke} />
+          <circle
+            cx={c} cy={c} r={r} fill="none" stroke="#1e40af" strokeWidth={stroke} strokeLinecap="round"
+            strokeDasharray={`${(n / 100) * C} ${C}`} transform={`rotate(-90 ${c} ${c})`}
+          />
+        </svg>
+        <b>{n}%</b>
+      </span>
+      <small>Inalingana</small>
     </div>
   );
 }

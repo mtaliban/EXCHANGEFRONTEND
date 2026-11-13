@@ -85,7 +85,8 @@
 .tAvatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(180deg, #eef2ff, #e0e7ff); color: var(--blue); font-weight: 700; font-size: 16px; display: grid; place-items: center; flex: none; box-shadow: inset 0 0 0 1px #dbe2fb; }
 .tName { font-size: 15.5px; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tSub { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; color: var(--m); margin-top: 3px; }
-.dotSep { width: 3px; height: 3px; border-radius: 50%; background: #9ca3af; }
+.dotSep { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); flex: none; }
+.tKada { min-width: 0; color: var(--t); font-weight: 700; }
 /* Afya: kifupi cha kada (chaguo 3) – kibandiko cheupe chenye mpaka wa bluu */
 .kCode { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 5px; border: 1.5px solid var(--blue); background: #fff; color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .4px; white-space: nowrap; flex: none; }
 .optCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -250,3 +251,23 @@
 
 /* Upana mdogo kwa ukurasa wa Maoni */
 .mPage { max-width: 400px; overflow-x: clip; }
+
+/* ---------- MECHI ("Inalingana") ---------- */
+.tripMatched { position: relative; padding-right: 66px; border-color: #c7d2fe; }
+.tripWobble { animation: wobble 4s ease-in-out infinite; }
+.mSide { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.mRingBox { position: relative; display: grid; place-items: center; }
+.mRingBox svg { position: absolute; inset: 0; }
+.mRingBox b { font-size: 12px; font-weight: 700; color: var(--blue); line-height: 1; }
+.mSide small { font-size: 8.5px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: var(--blue); white-space: nowrap; }
+@keyframes wobble {
+  0%, 68%, 100% { transform: none; }
+  72% { transform: rotate(-.7deg) translateX(-1.5px); }
+  76% { transform: rotate(.7deg) translateX(1.5px); }
+  80% { transform: rotate(-.5deg) translateX(-1px); }
+  84% { transform: rotate(.4deg) translateX(1px); }
+  88% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tripWobble { animation: none; }
+}
