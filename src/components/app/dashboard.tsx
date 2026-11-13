@@ -240,24 +240,25 @@ export function TeacherCard({
   const isEdu = c.category === "education";
   const dept = deptFull(c.category);
   const kada = c.cadre_display || c.cadre_code || "";
-  // Jina la idara mbele ya kada: Elimu na Afya tu (Kilimo/Umma zinaonekana kwa kada + kifupi)
-  const showDept = isEdu || c.category === "health";
 
   return (
     <div className={s.card} style={{ padding: 16 }}>
       <div className={s.tTop}>
         <span className={s.tAvatar}>{(c.full_name || "?").trim()[0]}</span>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <p className={s.tName}>{c.full_name}</p>
+          <div className={s.nameRow}>
+            <p className={s.tName}>{c.full_name}</p>
+            {c.online && (
+              <span className={s.online}>
+                <i />Online
+              </span>
+            )}
+          </div>
           <p className={s.tSub}>
             {kada ? (
               <>
-                {showDept && (
-                  <>
-                    <span className={s.blue}>{dept}</span>
-                    <span className={s.dotSep} />
-                  </>
-                )}
+                <span className={s.blue}>{dept}</span>
+                <span className={s.dotSep} />
                 <span className={s.tKada}>{kada}</span>
                 {!isEdu && c.cadre_code && <span className={s.kCode}>{c.cadre_code}</span>}
               </>
@@ -265,7 +266,6 @@ export function TeacherCard({
               /* Kada ikiwa tupu: idara yenyewe inakuwa kibandiko cha bluu, bila kitone wala kistari */
               <span className={s.kCode}>{dept}</span>
             )}
-            {c.online && <span style={{ color: "#16a34a", fontWeight: 700 }}>● mtandaoni</span>}
           </p>
         </div>
       </div>
