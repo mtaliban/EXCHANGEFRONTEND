@@ -265,7 +265,8 @@ export default function TeacherDashboard() {
 
       <SummaryCard
         count={total}
-        accent={!isEdu}
+        accent
+        labelsBlue={!isEdu}
         noun={isEdu ? "walimu" : "watu wa Afya"}
         from={[regionName, districtOpts.find((d) => d.value === districtId)?.label].filter(Boolean).join(" · ")}
         to={myRegionName || "Mkoa wako"}

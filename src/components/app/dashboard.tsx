@@ -36,7 +36,7 @@ export function WelcomeCard(p: {
           </p>
           <p className={s.wLine}>
             <span className={s.blue}>{p.idara}</span>
-            {(p.wilaya || p.mkoa) && ` · ${[p.wilaya, p.mkoa].filter(Boolean).join(", ")}`}
+            {(p.wilaya || p.mkoa) && <span> · {[p.wilaya, p.mkoa].filter(Boolean).join(", ")}</span>}
           </p>
         </div>
       </div>
@@ -54,12 +54,13 @@ export function WelcomeCard(p: {
 }
 
 /* ---------- Muhtasari: 73 walimu · Wanatoka → Wanakuja ---------- */
-// accent = rangi ya bluu (inatumika kwenye Dashibodi ya Afya; walimu hawabadiliki)
+// accent = mtindo wa bluu (idadi, ikoni, mshale na mikoa)
+// labelsBlue = maneno WANATOKA / WANAKUJA ya bluu (Afya); walimu yanaachwa meusi
 export function SummaryCard({
-  count, from, to, noun = "walimu", accent = false,
-}: { count: number; from: string; to: string; noun?: string; accent?: boolean }) {
+  count, from, to, noun = "walimu", accent = false, labelsBlue = false,
+}: { count: number; from: string; to: string; noun?: string; accent?: boolean; labelsBlue?: boolean }) {
   return (
-    <div className={cx(s.card, s.summary, accent && s.sumAccent)}>
+    <div className={cx(s.card, s.summary, accent && s.sumAccent, accent && labelsBlue && s.sumLabelsBlue)}>
       <div className={s.countBox}>
         <b>{count}</b>
         <span>{noun}</span>

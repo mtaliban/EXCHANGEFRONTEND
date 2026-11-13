@@ -18,7 +18,7 @@
 .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue-soft); border: 1px solid #e0e7ff; color: var(--blue); font-weight: 700; font-size: 15px; display: grid; place-items: center; flex: none; }
 .muted { font-size: 12.5px; color: var(--f); }
 .wName { font-size: 15px; font-weight: 700; margin: 0; line-height: 1.25; }
-.wLine { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12.5px; color: var(--m); margin: 2px 0 0; }
+.wLine { font-size: 12.5px; color: var(--m); margin: 2px 0 0; }
 .blue { color: var(--blue); font-weight: 600; }
 .wRight { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-left: 1px solid var(--l2); padding: 10px; text-align: center; }
 .payIcon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; }
@@ -43,7 +43,8 @@
 /* Muhtasari wa Afya – bluu (idadi, mikoa na mshale) */
 .sumAccent .countBox { background: var(--blue-soft); border: 1px solid var(--blue-line); }
 .sumAccent .countBox b { color: var(--blue); }
-.sumAccent .route small { color: var(--blue); font-weight: 700; }
+.sumAccent .route small { color: var(--t); font-weight: 700; }
+.sumLabelsBlue .route small { color: var(--blue); }
 .sumAccent .route > b { color: var(--blue); }
 .rIc { width: 20px; height: 20px; border-radius: 6px; background: var(--blue-soft); color: var(--blue); display: inline-flex; align-items: center; justify-content: center; flex: none; }
 .arrowDot { grid-area: aw; display: flex; align-items: center; gap: 3px; color: var(--blue); min-width: 26px; }
@@ -99,7 +100,7 @@
 .tKada { min-width: 0; max-width: 100%; color: var(--t); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Afya: kifupi cha kada (chaguo 3) – kibandiko cheupe chenye mpaka wa bluu */
 /* Kifupi cha kada: bluu kamili + herufi nyeupe (kadi, dropdown, kada iliyochaguliwa) */
-.kCode { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 5px; border: 1.5px solid var(--blue); background: var(--blue); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: .4px; white-space: nowrap; flex: none; }
+.kCode { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 6px; border-radius: 5px; border: 1.5px solid var(--blue); background: var(--blue); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: .4px; white-space: nowrap; vertical-align: middle; flex: none; }
 .optCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .optName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .optOn .kCode { background: #fff; }
