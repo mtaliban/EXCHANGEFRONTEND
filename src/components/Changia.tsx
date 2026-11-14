@@ -13,7 +13,7 @@ import AppIcon from "@/components/app/AppIcon";
 import { cx } from "@/components/app/dashboard";
 import s from "@/components/app/app.module.css";
 
-const SUPPORT_WA = "255556256070";
+const SUPPORT_WA = "255625607088";
 const SUPPORT_CALL = "0763795801";
 
 type Status = "verifying" | "approved" | "rejected";
