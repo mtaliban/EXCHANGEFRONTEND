@@ -42,12 +42,23 @@
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
+  gap: 3px;
+  height: 36px;
+  padding: 0 14px 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
   width: max-content;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.back:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
 }
 
 /* kundi lote limekaa katikati likiwa fupi; likiwa refu linaanza juu */

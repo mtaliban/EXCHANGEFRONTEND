@@ -42,11 +42,22 @@
   left: 18px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 3px;
+  height: 36px;
+  padding: 0 14px 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.back:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
 }
 
 .back svg {

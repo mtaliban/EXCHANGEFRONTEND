@@ -546,7 +546,7 @@ export default function RegisterContent() {
           }
         }}
       >
-        <Icon name="arrowLeft" size={20} strokeWidth={2.2} /> Rudi
+        <Icon name="chevronLeft" size={16} strokeWidth={2.6} /> Rudi
       </Link>
 
       <div className={s.content}>
