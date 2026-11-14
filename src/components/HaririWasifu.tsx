@@ -361,7 +361,7 @@ export default function HaririWasifu() {
           <button type="button" className={s.btnOut} onClick={() => router.push("/wasifu")}>
             Ghairi
           </button>
-          <button type="submit" className={s.pEdit} style={{ border: 0, cursor: "pointer" }} disabled={saving}>
+          <button type="submit" className={cx(s.pEdit, s.pSaveSolid)} disabled={saving}>
             {saving ? "Inahifadhi..." : "Hifadhi Mabadiliko"}
           </button>
         </div>
