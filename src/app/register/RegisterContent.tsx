@@ -175,12 +175,12 @@ export default function RegisterContent() {
   const third = useMemo(() => {
     if (!showFacility) return null;
     if (isWizara) {
-      return { chip: 'Hospitali ya Rufaa', icon: 'hospital', chagua: 'Chagua Hospitali ya Rufaa', tafuta: 'Tafuta hospitali...', lazima: true, neno: 'hospitali' };
+      return { chip: 'Hospitali ya Rufaa', icon: 'hospital', chagua: 'Chagua Hospitali ya Rufaa', yako: 'Hospitali Yako', tafuta: 'Tafuta hospitali...', lazima: true, neno: 'hospitali' };
     }
     if (isHealth) {
-      return { chip: 'Kituo', icon: 'hospital', chagua: 'Chagua Kituo cha Afya', tafuta: 'Tafuta kituo...', lazima: false, neno: 'kituo' };
+      return { chip: 'Kituo', icon: 'hospital', chagua: 'Chagua Kituo cha Afya', yako: 'Kituo Chako', tafuta: 'Tafuta kituo...', lazima: false, neno: 'kituo' };
     }
-    return { chip: 'Shule', icon: 'school', chagua: 'Chagua Shule Yako', tafuta: 'Tafuta shule...', lazima: false, neno: 'shule' };
+    return { chip: 'Shule', icon: 'school', chagua: 'Chagua Shule Yako', yako: 'Shule Yako', tafuta: 'Tafuta shule...', lazima: false, neno: 'shule' };
   }, [showFacility, isWizara, isHealth]);
 
   /* ── Idara + mikoa (mara moja) ── */
@@ -790,22 +790,25 @@ export default function RegisterContent() {
 
             {third && curRegion !== '' && (isWizara || curDistrict !== '') && (
               <>
-                <Label icon={third.icon}>{third.chagua}</Label>
-                <ThirdList
-                  head={`${third.chip === 'Shule' ? 'SHULE' : third.chip === 'Kituo' ? 'VITUO' : 'HOSPITALI'} · ${
-                    isWizara ? regionName(curRegion) : curDistricts.find((d) => d.id === Number(curDistrict))?.name || ''
-                  }`}
-                  options={thirdOptions(curFacilities)}
-                  value={curFacility ? [curFacility] : []}
-                  onToggle={(v) => setCurFacility(v)}
-                  placeholder={third.tafuta}
-                  skipLabel={third.lazima ? undefined : `Ruka – sitaki kuchagua ${third.neno}`}
-                  loading={loadingFacilities}
-                />
-                {curFacFacility && (
-                  <p className={s.noteBlue}>
-                    Umechagua: <b>{curFacFacility.name}</b>
-                  </p>
+                <Label icon={third.icon}>{curFacility ? third.yako : third.chagua}</Label>
+                {curFacility ? (
+                  <Chosen
+                    icon={third.icon}
+                    text={curFacFacility?.name || 'Imechaguliwa'}
+                    onChange={() => setCurFacility('')}
+                  />
+                ) : (
+                  <ThirdList
+                    head={`${third.chip === 'Shule' ? 'SHULE' : third.chip === 'Kituo' ? 'VITUO' : 'HOSPITALI'} · ${
+                      isWizara ? regionName(curRegion) : curDistricts.find((d) => d.id === Number(curDistrict))?.name || ''
+                    }`}
+                    options={thirdOptions(curFacilities)}
+                    value={[]}
+                    onToggle={(v) => setCurFacility(v)}
+                    placeholder={third.tafuta}
+                    skipLabel={third.lazima ? undefined : `Ruka – sitaki kuchagua ${third.neno}`}
+                    loading={loadingFacilities}
+                  />
                 )}
               </>
             )}
