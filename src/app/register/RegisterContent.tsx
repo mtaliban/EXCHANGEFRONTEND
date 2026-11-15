@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Icon from '@/components/register/Icon';
 import s from '@/components/register/register.module.css';
-import { Dropdown, Label, OptionList, Segmented, Stepper, SubjectPicker, type Opt } from '@/components/register/ui';
+import {
+  Chosen, IdaraList, KadaPicker, Label, MasomoPicker, PhoneField, Progress, RegionGrid, SquareChips,
+  Stepper, Summary, ThirdList, YearsBand, cx, type HaliNamba, type Opt,
+} from '@/components/register/ui';
 import {
   checkPhone,
   extractErrorMessage,
@@ -24,19 +27,11 @@ import {
   type Facility,
   type Region,
   type Station,
-  type Subject,
 } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
-const STEPS = ['Utambulisho', 'Idara', 'Kada', 'Kituo', 'Lengo'];
 const STEP_NAMES = ['Kwanza', 'Pili', 'Tatu', 'Nne', 'Tano'];
-const STEP_TITLES = [
-  'Utambulisho Wako',
-  'Idara Yako',
-  'Kada Yako',
-  'Kituo Chako cha Sasa',
-  'Mkoa Unakotaka Kwenda',
-];
+const ORD = ['kwanza', 'pili', 'tatu', 'nne', 'tano'];
 
 const YEARS: Opt[] = [
   { value: '1', label: 'Mwaka 1' },
@@ -45,41 +40,43 @@ const YEARS: Opt[] = [
 ];
 
 const SECTORS: Opt[] = [
-  { value: 'wizara_afya', label: 'Wizara ya Afya' },
-  { value: 'tamisemi', label: 'TAMISEMI' },
+  { value: 'wizara_afya', label: 'Wizara ya Afya', icon: 'medCross' },
+  { value: 'tamisemi', label: 'TAMISEMI', icon: 'mapPin' },
+];
+
+const EDU_LEVELS: Opt[] = [
+  { value: 'Primary', label: 'Mwalimu wa Msingi', icon: 'abc' },
+  { value: 'Secondary', label: 'Mwalimu wa Sekondari', icon: 'notes' },
 ];
 
 /** Ikoni ya idara kulingana na code yake. */
 const DEPT_ICONS: Record<string, string> = {
-  health: 'stethoscope',
+  health: 'afya',
   education: 'graduation',
-  agriculture: 'sprout',
-  livestock: 'sprout',
-  public_service: 'idcard',
-  utumishi: 'idcard',
+  agriculture: 'leaf',
+  livestock: 'leaf',
+  public_service: 'idBadge',
+  utumishi: 'idBadge',
+  umma: 'idBadge',
+  kilimo: 'leaf',
 };
 
 /** Namba ya simu: tarakimu 10 kuanzia 0, au +255/255 na tarakimu 9. */
 const PHONE_RE = /^(\+?255|0)\d{9}$/;
 const clean = (v: string) => v.replace(/[\s-]/g, '');
-const phoneOk = (v: string) => PHONE_RE.test(clean(v));
 const facId = (f: Facility) => String(f.id ?? f.code ?? '');
 
-/** Hali ya ukaguzi wa namba kwa server. */
 type CheckState = 'idle' | 'checking' | 'available' | 'taken';
-const TAKEN_MSG = 'Namba hii tayari inatumiwa na mtu mwingine';
-const FREE_MSG = 'Namba hii ipo huru';
-/** Debounce ya kikaguzi cha server (ms). */
 const CHECK_DEBOUNCE_MS = 400;
 
 type DestEntry = {
   regionId: number | '';
   anyDistrict: boolean;
   districtIds: number[];
-  facilityId: string;
+  facilityIds: string[];
 };
 
-const emptyDest = (): DestEntry => ({ regionId: '', anyDistrict: true, districtIds: [], facilityId: '' });
+const emptyDest = (): DestEntry => ({ regionId: '', anyDistrict: true, districtIds: [], facilityIds: [] });
 
 export default function RegisterContent() {
   const router = useRouter();
@@ -91,9 +88,7 @@ export default function RegisterContent() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
-  /* Ukaguzi wa namba: muundo (papo hapo) + server (debounce 400ms). */
   const [touched, setTouched] = useState({ name: false, phone: false, alt: false });
-  // Makosa yanaonekana tu baada ya kubofya "Endelea" au kuondoka kwenye kisanduku
   const [attempted, setAttempted] = useState(false);
   const [primaryCheck, setPrimaryCheck] = useState<CheckState>('idle');
   const [altCheck, setAltCheck] = useState<CheckState>('idle');
@@ -105,12 +100,13 @@ export default function RegisterContent() {
   const [loadingDepts, setLoadingDepts] = useState(true);
   const [category, setCategory] = useState('');
   const [sector, setSector] = useState('');
+  const [educationLevel, setEducationLevel] = useState<'Primary' | 'Secondary' | ''>('');
 
   // Hatua 3
   const [cadres, setCadres] = useState<Cadre[]>([]);
   const [loadingCadres, setLoadingCadres] = useState(false);
   const [cadreCode, setCadreCode] = useState('');
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [subjects, setSubjects] = useState<{ code: string; name: string }[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
 
   // Hatua 4
@@ -124,6 +120,7 @@ export default function RegisterContent() {
 
   // Hatua 5
   const [dests, setDests] = useState<DestEntry[]>([emptyDest()]);
+  const [editIdx, setEditIdx] = useState<number | null>(null);
   const [destDistricts, setDestDistricts] = useState<Record<number, District[]>>({});
   const [destFacilities, setDestFacilities] = useState<Record<string, Facility[]>>({});
   const [years, setYears] = useState<string | null>(null);
@@ -132,15 +129,59 @@ export default function RegisterContent() {
   const [deptError, setDeptError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
-  const cadre = cadres.find((c) => c.code === cadreCode);
-  const needsSubjects = !!cadre && (cadre.requires_subjects || cadre.level === 'Primary' || cadre.level === 'Secondary');
-  const subjectLevel: 'Primary' | 'Secondary' | undefined =
-    cadre?.level === 'Primary' ? 'Primary' : cadre?.level === 'Secondary' ? 'Secondary' : undefined;
-
   const isHealth = category === 'health';
   const isWizara = isHealth && sector === 'wizara_afya';
-  // Vituo vilivyopo ni vya AFYA na ELIMU pekee.
-  const showFacility = isHealth || category === 'education';
+  const isEducation = category === 'education';
+  // Kilimo na Ufugaji haina hatua ya Kada.
+  const skipKada = category === 'agriculture' || category === 'livestock';
+
+  /** Hatua zinazotumika kwa idara iliyochaguliwa. */
+  const flow = useMemo(() => {
+    const keys = skipKada
+      ? ['utambulisho', 'idara', 'kituo', 'lengo']
+      : ['utambulisho', 'idara', 'kada', 'kituo', 'lengo'];
+    return keys;
+  }, [skipKada]);
+  const cur = flow[step - 1] ?? 'utambulisho';
+  const last = step === flow.length;
+
+  const STEP_TITLES: Record<string, string> = {
+    utambulisho: 'Utambulisho Wako',
+    idara: 'Idara Yako',
+    kada: isEducation ? 'Masomo Yako' : 'Kada Yako',
+    kituo: 'Kituo Chako cha Sasa',
+    lengo: 'Unakotaka Kwenda',
+  };
+
+  const STEP_LABELS = skipKada
+    ? ['Utambulisho', 'Idara', 'Kituo', 'Lengo']
+    : ['Utambulisho', 'Idara', 'Kada', 'Kituo', 'Lengo'];
+
+  const cadre = cadres.find((c) => c.code === cadreCode);
+  const needsSubjects = isEducation
+    ? !!educationLevel
+    : !!cadre && (cadre.requires_subjects || cadre.level === 'Primary' || cadre.level === 'Secondary');
+  const subjectLevel: 'Primary' | 'Secondary' | undefined = isEducation
+    ? educationLevel || undefined
+    : cadre?.level === 'Primary'
+      ? 'Primary'
+      : cadre?.level === 'Secondary'
+        ? 'Secondary'
+        : undefined;
+
+  // Vitendea kazi vya mahali
+  const needDistrict = !isWizara;
+  const showFacility = isHealth || isEducation;
+  const third = useMemo(() => {
+    if (!showFacility) return null;
+    if (isWizara) {
+      return { chip: 'Hospitali ya Rufaa', icon: 'hospital', chagua: 'Chagua Hospitali ya Rufaa', tafuta: 'Tafuta hospitali...', lazima: true, neno: 'hospitali' };
+    }
+    if (isHealth) {
+      return { chip: 'Kituo', icon: 'hospital', chagua: 'Chagua Kituo cha Afya', tafuta: 'Tafuta kituo...', lazima: false, neno: 'kituo' };
+    }
+    return { chip: 'Shule', icon: 'school', chagua: 'Chagua Shule Yako', tafuta: 'Tafuta shule...', lazima: false, neno: 'shule' };
+  }, [showFacility, isWizara, isHealth]);
 
   /* ── Idara + mikoa (mara moja) ── */
   useEffect(() => {
@@ -164,6 +205,13 @@ export default function RegisterContent() {
       .finally(() => { if (alive) setLoadingCadres(false); });
     return () => { alive = false; };
   }, [category, sector]);
+
+  /* ── Elimu: ngazi (Msingi/Sekondari) → kada inayolingana ── */
+  useEffect(() => {
+    if (!isEducation || !educationLevel || cadres.length === 0) return;
+    const match = cadres.find((c) => c.level === educationLevel);
+    if (match && match.code !== cadreCode) setCadreCode(match.code);
+  }, [isEducation, educationLevel, cadres, cadreCode]);
 
   /* ── Masomo ya kada iliyochaguliwa ── */
   useEffect(() => {
@@ -221,22 +269,15 @@ export default function RegisterContent() {
     });
   }, [dests, destDistricts]);
 
-  /** Ufunguo wa cache ya vituo vya mkoa wa lengo: wilaya moja → vituo vya wilaya; zaidi/wilaya yoyote → vituo vya mkoa wote. */
-  function destFacilityKey(d: DestEntry): string {
-    if (!isWizara && !d.anyDistrict && d.districtIds.length === 1) return `d:${d.districtIds[0]}`;
-    return `r:${d.regionId}`;
-  }
-
   /* ── Vituo vya mikoa/wilaya za lengo ── */
   useEffect(() => {
     if (!showFacility) return;
     dests.forEach((d) => {
       const rid = Number(d.regionId);
       if (!rid) return;
-      const key =
-        isWizara || d.anyDistrict || d.districtIds.length !== 1
-          ? `r:${rid}`
-          : `d:${d.districtIds[0]}`;
+      const key = isWizara || d.anyDistrict || d.districtIds.length !== 1
+        ? `r:${rid}`
+        : `d:${d.districtIds[0]}`;
       if (destFacilities[key]) return;
       const load = isWizara
         ? getFacilitiesByRegion(rid, 'health', undefined, 'wizara_afya')
@@ -249,68 +290,51 @@ export default function RegisterContent() {
     });
   }, [dests, destFacilities, isWizara, showFacility, category, subjectLevel]);
 
-  /* ── Ukaguzi wa namba ya kwanza: ombi la mwisho pekee linaandika hali ── */
+  /* ── Ukaguzi wa namba ya kwanza ── */
   useEffect(() => {
     const c = clean(phone);
-    if (!PHONE_RE.test(c)) {
-      primaryReq.current++;
-      setPrimaryCheck('idle');
-      return;
-    }
+    if (!PHONE_RE.test(c)) { primaryReq.current++; setPrimaryCheck('idle'); return; }
     const id = ++primaryReq.current;
     setPrimaryCheck('checking');
     const timer = setTimeout(() => {
       checkPhone(c)
-        .then((r) => {
-          if (id !== primaryReq.current) return;
-          setPrimaryCheck(r.available ? 'available' : 'taken');
-        })
-        .catch(() => {
-          if (id === primaryReq.current) setPrimaryCheck('idle');
-        });
+        .then((r) => { if (id === primaryReq.current) setPrimaryCheck(r.available ? 'available' : 'taken'); })
+        .catch(() => { if (id === primaryReq.current) setPrimaryCheck('idle'); });
     }, CHECK_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [phone]);
 
-  /* ── Ukaguzi wa WhatsApp — kanuni ileile ── */
+  /* ── Ukaguzi wa WhatsApp ── */
   useEffect(() => {
     const c = clean(whatsapp);
-    if (!PHONE_RE.test(c)) {
-      altReq.current++;
-      setAltCheck('idle');
-      return;
-    }
+    if (!PHONE_RE.test(c)) { altReq.current++; setAltCheck('idle'); return; }
     const id = ++altReq.current;
     setAltCheck('checking');
     const timer = setTimeout(() => {
       checkPhone(c)
-        .then((r) => {
-          if (id !== altReq.current) return;
-          setAltCheck(r.available ? 'available' : 'taken');
-        })
-        .catch(() => {
-          if (id === altReq.current) setAltCheck('idle');
-        });
+        .then((r) => { if (id === altReq.current) setAltCheck(r.available ? 'available' : 'taken'); })
+        .catch(() => { if (id === altReq.current) setAltCheck('idle'); });
     }, CHECK_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [whatsapp]);
 
-  /* ── Ujumbe wa muundo — huhesabiwa kutoka thamani ya sasa ── */
   const nameMsg = (v: string) => {
     const c = v.trim();
     if (!c) return 'Tafadhali ingiza majina yako.';
     return c.length < 3 ? 'Jina lazima liwe na angalau herufi 3' : null;
   };
-  const primaryMsg = (v: string) => {
+  const phoneMsg = (v: string) => {
     const c = clean(v);
-    if (!c) return 'Tafadhali ingiza namba yako ya simu.';
-    return PHONE_RE.test(c) ? null : 'Namba hii ya simu si sahihi';
+    if (!c) return 'Tafadhali ingiza namba yako.';
+    return PHONE_RE.test(c) ? null : 'Namba si sahihi';
   };
-  const altMsg = (v: string) => {
-    const c = clean(v);
-    if (!c) return 'Tafadhali ingiza namba yako ya WhatsApp.';
-    return PHONE_RE.test(c) ? null : 'Namba ya WhatsApp si sahihi';
-  };
+
+  const nameError = nameMsg(fullName);
+  const phoneError = phoneMsg(phone);
+  const altError = phoneMsg(whatsapp);
+
+  const haliOf = (err: string | null, check: CheckState): HaliNamba =>
+    err ? 'si_sahihi' : check === 'taken' ? 'imetumika' : check === 'available' ? 'huru' : null;
 
   const deptOptions: Opt[] = useMemo(
     () => departments.map((d) => ({ value: d.code, label: d.name, icon: DEPT_ICONS[d.code] || 'building' })),
@@ -320,73 +344,78 @@ export default function RegisterContent() {
     () => regions.map((r) => ({ value: String(r.id), label: r.name })),
     [regions],
   );
+  const districtOptions: Opt[] = useMemo(
+    () => curDistricts.map((d) => ({ value: String(d.id), label: d.name })),
+    [curDistricts],
+  );
+  const cadreOptions: Opt[] = useMemo(
+    () => cadres.map((c) => ({ value: c.code, label: c.display_name, code: c.code })),
+    [cadres],
+  );
 
-  const nameError = nameMsg(fullName);
-  const primaryError = primaryMsg(phone);
-  const altError = altMsg(whatsapp);
+  const regionName = (id: number | '') => regions.find((r) => r.id === Number(id))?.name || '';
+  const deptName = deptOptions.find((d) => d.value === category)?.label || '';
+  const groupLabel = isHealth ? 'Afya' : category === 'public_service' ? 'Umma' : deptName;
 
-  /** Muonekano wa kisanduku: mpaka, ikoni na ujumbe mmoja chini yake. */
-  function statusOf(touchedField: boolean, error: string | null, check: CheckState) {
-    const invalid = !!error;
-    const taken = !invalid && check === 'taken';
-    const available = !invalid && check === 'available';
-    const checking = !invalid && check === 'checking';
-    const showError = invalid && (touchedField || attempted);
-    const message = showError ? error : taken ? TAKEN_MSG : available ? FREE_MSG : null;
-    return {
-      message,
-      tone: (available ? 'ok' : 'err') as 'ok' | 'err',
-      ok: available,
-      invalid,
-      show: showError,
-      taken,
-      checking,
-      icon: invalid || taken ? 'alert' : available ? 'check' : null,
-    };
-  }
+  const branchOf: Record<string, Opt[]> = {};
+  if (isHealth) branchOf[category] = SECTORS;
+  if (isEducation) branchOf[category] = EDU_LEVELS;
+  const branchValue = isHealth ? sector || null : isEducation ? educationLevel || null : null;
 
-  const phoneStatus = statusOf(touched.phone, primaryError, primaryCheck);
-  const altStatus = statusOf(touched.alt, altError, altCheck);
+  const thirdOptions = (list: Facility[]): Opt[] =>
+    list.map((f) => ({
+      value: facId(f),
+      label: f.name,
+      aina: isEducation ? undefined : f.type || f.type_category || f.level,
+    }));
+
+  const destComplete = (d: DestEntry) => {
+    if (!d.regionId) return false;
+    if (isWizara) return d.facilityIds.length > 0;
+    return d.anyDistrict || d.districtIds.length > 0;
+  };
 
   const canNext = useMemo(() => {
-    switch (step) {
-      case 1:
-        return (
-          !nameError &&
-          !primaryError &&
-          !altError &&
-          primaryCheck !== 'taken' &&
-          altCheck !== 'taken'
-        );
-      case 2:
-        return !!category && (!isHealth || !!sector);
-      case 3:
-        return cadres.length === 0 ? true : !!cadreCode && (!needsSubjects || selectedSubjects.length === 2);
-      case 4:
+    switch (cur) {
+      case 'utambulisho':
+        return !nameError && !phoneError && !altError && primaryCheck !== 'taken' && altCheck !== 'taken';
+      case 'idara':
+        return !!category && (!isHealth || !!sector) && (!isEducation || !!educationLevel);
+      case 'kada':
+        if (isEducation) return selectedSubjects.length === 2;
+        return cadres.length === 0 ? true : !!cadreCode;
+      case 'kituo':
         if (!curRegion) return false;
         return isWizara ? !!curFacility : !!curDistrict;
-      case 5:
+      case 'lengo':
         if (!years) return false;
-        return dests.every((d) => {
-          if (!d.regionId) return false;
-          if (isWizara) return !!d.facilityId;
-          return d.anyDistrict || d.districtIds.length > 0;
-        });
+        return dests.length > 0 && dests.every(destComplete);
       default:
         return false;
     }
   }, [
-    step, nameError, primaryError, altError, primaryCheck, altCheck, category, isHealth, sector,
-    cadres.length, cadreCode, needsSubjects, selectedSubjects.length, curRegion, isWizara,
-    curFacility, curDistrict, years, dests,
+    cur, nameError, phoneError, altError, primaryCheck, altCheck, category, isHealth, sector,
+    isEducation, educationLevel, selectedSubjects.length, cadres.length, cadreCode, curRegion,
+    isWizara, curFacility, curDistrict, years, dests,
   ]);
 
   function changeCategory(v: string) {
-    if (v !== category) {
-      setCategory(v);
-      setSector('');
-      setSelectedSubjects([]);
-    }
+    if (v === category) return;
+    setCategory(v);
+    setSector('');
+    setEducationLevel('');
+    setSelectedSubjects([]);
+    setCurRegion('');
+    setCurDistrict('');
+    setCurFacility('');
+    setDests([emptyDest()]);
+    setEditIdx(0);
+    setYears(null);
+  }
+
+  function onBranch(v: string) {
+    if (isHealth) setSector(v);
+    else setEducationLevel(v as 'Primary' | 'Secondary');
   }
 
   function changeCadre(v: string) {
@@ -398,42 +427,42 @@ export default function RegisterContent() {
     setDests((arr) => arr.map((d, idx) => (idx === i ? { ...d, ...patch } : d)));
   }
 
-  function removeDest(i: number) {
-    setDests((arr) => arr.filter((_, idx) => idx !== i));
+  function toggleDestDistrict(i: number, id: number) {
+    const d = dests[i];
+    const on = !d.anyDistrict && d.districtIds.includes(id);
+    const ids = d.anyDistrict ? [id] : on ? d.districtIds.filter((x) => x !== id) : [...d.districtIds, id];
+    updateDest(i, { anyDistrict: false, districtIds: ids, facilityIds: [] });
+  }
+
+  function toggleDestFacility(i: number, v: string) {
+    const d = dests[i];
+    const single = !isWizara;
+    const ids = single
+      ? d.facilityIds[0] === v ? [] : [v]
+      : d.facilityIds.includes(v)
+        ? d.facilityIds.filter((x) => x !== v)
+        : [...d.facilityIds, v];
+    updateDest(i, { facilityIds: ids });
   }
 
   async function submit() {
     setSending(true);
     setError(null);
     try {
-      const regionName = (id: number) => regions.find((r) => r.id === id)?.name || '';
+      const nameOfRegion = (id: number) => regions.find((r) => r.id === id)?.name || '';
 
       // ── Kituo cha sasa ──
-      let current_station: Station;
-      if (isWizara) {
-        const f = curFacilities.find((x) => facId(x) === curFacility);
-        current_station = {
-          region_id: Number(curRegion),
-          region_name: regionName(Number(curRegion)),
-          district_id: f?.district_id ?? null,
-          district_name: f?.district || null,
-          facility_id: curFacility || null,
-          facility_name: f?.name || null,
-          facility_type: f?.type || f?.type_category || null,
-        } as unknown as Station;
-      } else {
-        const d = curDistricts.find((x) => x.id === Number(curDistrict));
-        const f = curFacilities.find((x) => facId(x) === curFacility);
-        current_station = {
-          region_id: Number(curRegion),
-          region_name: regionName(Number(curRegion)),
-          district_id: d?.id ?? null,
-          district_name: d?.name ?? null,
-          facility_id: curFacility || null,
-          facility_name: f?.name || null,
-          facility_type: f?.type || f?.level || null,
-        } as unknown as Station;
-      }
+      const curFac = curFacilities.find((x) => facId(x) === curFacility);
+      const curDist = curDistricts.find((x) => x.id === Number(curDistrict));
+      const current_station: Station = {
+        region_id: Number(curRegion),
+        region_name: nameOfRegion(Number(curRegion)),
+        district_id: isWizara ? curFac?.district_id ?? null : curDist?.id ?? null,
+        district_name: isWizara ? curFac?.district ?? null : curDist?.name ?? null,
+        facility_id: curFacility || null,
+        facility_name: curFac?.name || null,
+        facility_type: curFac?.type || curFac?.type_category || curFac?.level || null,
+      } as unknown as Station;
 
       // ── Mikoa ya lengo ──
       const desired_destinations: Destination[] = [];
@@ -442,24 +471,26 @@ export default function RegisterContent() {
         if (!rid) continue;
         if (isWizara) {
           const list = destFacilities[`r:${rid}`] || [];
-          const f = list.find((x) => facId(x) === d.facilityId);
-          desired_destinations.push({
-            region_id: rid,
-            region_name: regionName(rid),
-            district_id: f?.district_id ?? null,
-            district_name: f?.district || null,
-            facility_id: f ? facId(f) : null,
-            facility_name: f?.name || null,
-            notes: null,
-          });
+          for (const id of d.facilityIds) {
+            const f = list.find((x) => facId(x) === id);
+            if (!f) continue;
+            desired_destinations.push({
+              region_id: rid,
+              region_name: nameOfRegion(rid),
+              district_id: f.district_id ?? null,
+              district_name: f.district ?? null,
+              facility_id: facId(f),
+              facility_name: f.name,
+              notes: null,
+            });
+          }
         } else if (d.anyDistrict) {
-          // "Wilaya yoyote" — shule ikiwa imechaguliwa, twaenda na wilaya yake halisi
-          const f = (destFacilities[`r:${rid}`] || []).find((x) => facId(x) === d.facilityId);
+          const f = (destFacilities[`r:${rid}`] || []).find((x) => facId(x) === d.facilityIds[0]);
           desired_destinations.push({
             region_id: rid,
-            region_name: regionName(rid),
+            region_name: nameOfRegion(rid),
             district_id: f?.district_id ?? null,
-            district_name: f?.district || null,
+            district_name: f?.district ?? null,
             facility_id: f ? facId(f) : null,
             facility_name: f?.name || null,
             notes: null,
@@ -469,10 +500,10 @@ export default function RegisterContent() {
           for (const did of d.districtIds) {
             const dist = list.find((x) => x.id === did);
             if (!dist) continue;
-            const f = (destFacilities[`d:${did}`] || []).find((x) => facId(x) === d.facilityId);
+            const f = (destFacilities[`d:${did}`] || []).find((x) => facId(x) === d.facilityIds[0]);
             desired_destinations.push({
               region_id: rid,
-              region_name: regionName(rid),
+              region_name: nameOfRegion(rid),
               district_id: dist.id,
               district_name: dist.name,
               facility_id: f ? facId(f) : null,
@@ -511,7 +542,7 @@ export default function RegisterContent() {
         router.push(`/login?phone=${encodeURIComponent(clean(phone))}`);
       }
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, 'Usajili umeshindwa. Jaribu tena.'));
+      setError(extractErrorMessage(err, 'Usajili umeshinduka. Jaribu tena.'));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSending(false);
@@ -522,10 +553,11 @@ export default function RegisterContent() {
     setError(null);
     if (!canNext) {
       setAttempted(true);
+      if (cur === 'lengo' && editIdx !== null) closeEditor();
       return;
     }
     setAttempted(false);
-    if (step < 5) setStep(step + 1);
+    if (!last) setStep(step + 1);
     else submit();
   };
   const back = () => {
@@ -534,20 +566,32 @@ export default function RegisterContent() {
     setStep((n) => Math.max(1, n - 1));
   };
 
+  /** Mkoa usio na wilaya/hospitali unaondolewa unapofunga mhariri. */
+  function closeEditor() {
+    setDests((arr) => {
+      const kept = arr.filter(destComplete);
+      return kept.length ? kept : [emptyDest()];
+    });
+    setEditIdx(null);
+  }
+
+  /* ── Kuingia Lengo: fungua mhariri wa mkoa usiokamilika ── */
+  useEffect(() => {
+    if (cur !== 'lengo' || editIdx !== null) return;
+    const i = dests.findIndex((d) => !destComplete(d));
+    if (i >= 0) setEditIdx(i);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cur]);
+
+  const curFacFacility = curFacilities.find((f) => facId(f) === curFacility);
+
   return (
     <div className={s.page}>
-      <Link
-        href={step === 1 ? '/login' : '#'}
-        className={s.back}
-        onClick={(e) => {
-          if (step > 1) {
-            e.preventDefault();
-            back();
-          }
-        }}
-      >
-        <Icon name="chevronLeft" size={16} strokeWidth={2.6} /> Rudi
-      </Link>
+      {step === 1 && (
+        <Link href="/login" className={s.back}>
+          <Icon name="chevronLeft" size={16} strokeWidth={2.6} /> Rudi
+        </Link>
+      )}
 
       <div className={s.content}>
         <h1 className={s.title}>
@@ -555,11 +599,11 @@ export default function RegisterContent() {
         </h1>
         <p className={s.subtitle}>Jaza taarifa chache tu ili ujisajili.</p>
 
-        <Stepper steps={STEPS} current={step} />
+        <Stepper steps={STEP_LABELS} current={step} />
 
         <div className={s.stepHead}>
           <b>Hatua ya {STEP_NAMES[step - 1]}:</b>
-          <h2>{STEP_TITLES[step - 1]}</h2>
+          <h2>{STEP_TITLES[cur]}</h2>
         </div>
 
         {error && (
@@ -569,12 +613,12 @@ export default function RegisterContent() {
           </div>
         )}
 
-        {/* ─────────── HATUA 1: UTAMBULISHO ─────────── */}
-        {step === 1 && (
+        {/* ─────────── HATUA: UTAMBULISHO ─────────── */}
+        {cur === 'utambulisho' && (
           <>
-            <Label icon="user">Jina Kamili</Label>
+            <Label icon="userCircle">Jina Kamili</Label>
             <input
-              className={`${s.input} ${(touched.name || attempted) && nameError ? s.inputError : ''}`}
+              className={cx(s.input, (touched.name || attempted) && nameError && s.inputError)}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, name: true }))}
@@ -583,56 +627,30 @@ export default function RegisterContent() {
             />
             {(touched.name || attempted) && nameError && <p className={s.err}>{nameError}</p>}
 
-            <Label icon="phone">Namba ya Simu (Normal)</Label>
-            <div className={s.fieldWrap}>
-              <input
-                className={`${s.input} ${phoneStatus.show ? s.inputError : phoneStatus.ok ? s.inputOk : ''}`}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
-                placeholder="0712345678"
-                type="tel"
-                inputMode="tel"
-              />
-              <span className={`${s.trail} ${phoneStatus.ok ? s.trailOk : phoneStatus.show || phoneStatus.taken ? s.trailErr : ''}`}>
-                {phoneStatus.checking ? (
-                  <span className={s.spin} />
-                ) : phoneStatus.icon ? (
-                  <Icon name={phoneStatus.icon} size={15} strokeWidth={2.2} />
-                ) : null}
-              </span>
-            </div>
-            {phoneStatus.message && (
-              <p className={phoneStatus.tone === 'ok' ? s.msgOk : s.err}>{phoneStatus.message}</p>
-            )}
+            <Label icon="phone">Namba ya Simu</Label>
+            <PhoneField
+              value={phone}
+              onChange={setPhone}
+              onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+              placeholder="0712345678"
+              hali={haliOf(phoneError, primaryCheck)}
+              checking={!phoneError && primaryCheck === 'checking'}
+            />
 
-            <Label icon="whatsapp">Namba ya WhatsApp</Label>
-            <div className={s.fieldWrap}>
-              <input
-                className={`${s.input} ${altStatus.show ? s.inputError : altStatus.ok ? s.inputOk : ''}`}
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, alt: true }))}
-                placeholder="0623456789"
-                type="tel"
-                inputMode="tel"
-              />
-              <span className={`${s.trail} ${altStatus.ok ? s.trailOk : altStatus.show || altStatus.taken ? s.trailErr : ''}`}>
-                {altStatus.checking ? (
-                  <span className={s.spin} />
-                ) : altStatus.icon ? (
-                  <Icon name={altStatus.icon} size={15} strokeWidth={2.2} />
-                ) : null}
-              </span>
-            </div>
-            {altStatus.message && (
-              <p className={altStatus.tone === 'ok' ? s.msgOk : s.err}>{altStatus.message}</p>
-            )}
+            <Label icon="waLogo">Namba ya WhatsApp</Label>
+            <PhoneField
+              value={whatsapp}
+              onChange={setWhatsapp}
+              onBlur={() => setTouched((t) => ({ ...t, alt: true }))}
+              placeholder="0623456789"
+              hali={haliOf(altError, altCheck)}
+              checking={!altError && altCheck === 'checking'}
+            />
           </>
         )}
 
-        {/* ─────────── HATUA 2: IDARA ─────────── */}
-        {step === 2 && (
+        {/* ─────────── HATUA: IDARA ─────────── */}
+        {cur === 'idara' && (
           <>
             <p className={s.hint}>Unafanya kazi katika idara gani?</p>
             {deptError && !loadingDepts && (
@@ -641,29 +659,64 @@ export default function RegisterContent() {
                 <span>{deptError}</span>
               </div>
             )}
-            <Label icon="building">Chagua Idara</Label>
+            <Label icon="layers">Chagua Idara</Label>
             {loadingDepts ? (
               <div className={s.loadRow}><span className={s.spin} /> Inapakia idara...</div>
             ) : (
-              <OptionList options={deptOptions} value={category || null} onChange={changeCategory} />
-            )}
-
-            {isHealth && (
-              <>
-                <Label icon="building">Wizara</Label>
-                <Segmented options={SECTORS} value={sector || null} onChange={setSector} />
-              </>
+              <IdaraList
+                title="Idara"
+                options={deptOptions}
+                value={category || null}
+                onChange={changeCategory}
+                branchOf={branchOf}
+                branchValue={branchValue}
+                onBranch={onBranch}
+              />
             )}
           </>
         )}
 
-        {/* ─────────── HATUA 3: KADA ─────────── */}
-        {step === 3 && (
+        {/* ─────────── HATUA: MASOMO (Elimu) ─────────── */}
+        {cur === 'kada' && isEducation && (
           <>
-            <p className={s.hint}>
-              Idara: <b>{deptOptions.find((d) => d.value === category)?.label || '-'}</b> · Chagua kada yako.
-            </p>
+            <Summary
+              rows={[
+                { k: 'Idara', icon: 'graduation', v: 'Elimu' },
+                {
+                  k: 'Ngazi',
+                  icon: educationLevel === 'Primary' ? 'abc' : 'notes',
+                  v: educationLevel === 'Primary' ? 'Mwalimu wa Msingi' : 'Mwalimu wa Sekondari',
+                },
+              ]}
+            />
+            <Label icon="tag" note="chagua 2">Masomo unayofundisha</Label>
+            <MasomoPicker
+              options={subjects.map((x) => ({ value: x.code, label: x.name }))}
+              value={selectedSubjects}
+              onChange={setSelectedSubjects}
+              max={2}
+            />
+          </>
+        )}
 
+        {/* ─────────── HATUA: KADA (Afya / Umma) ─────────── */}
+        {cur === 'kada' && !isEducation && (
+          <>
+            <Summary
+              rows={
+                isHealth
+                  ? [
+                      { k: 'Idara', icon: 'afya', v: 'Afya' },
+                      {
+                        k: 'Wizara',
+                        icon: sector === 'wizara_afya' ? 'medCross' : 'mapPin',
+                        v: sector === 'wizara_afya' ? 'Wizara ya Afya' : 'TAMISEMI',
+                      },
+                    ]
+                  : [{ k: 'Idara', icon: 'idBadge', v: deptName }]
+              }
+            />
+            <Label icon="briefcase" note="chagua moja">Kada yako</Label>
             {loadingCadres ? (
               <div className={s.loadRow}><span className={s.spin} /> Inapakia kada...</div>
             ) : cadres.length === 0 ? (
@@ -671,216 +724,244 @@ export default function RegisterContent() {
                 Idara hii haijawekwa kada bado — unaweza kuendelea; utapatanishwa na wenzako wote wa idara hii.
               </p>
             ) : (
-              <>
-                <Label icon="building">Kada / Cheo Chako</Label>
-                {cadres.length <= 3 ? (
-                  <Segmented
-                    iconSize={20}
-                    options={cadres.map((c) => ({
-                      value: c.code,
-                      label: c.display_name,
-                      icon: c.level === 'Primary' ? 'backpack' : c.level === 'Secondary' ? 'graduation' : 'wrench',
-                    }))}
-                    value={cadreCode || null}
-                    onChange={changeCadre}
-                  />
-                ) : (
-                  <Dropdown
-                    value={cadreCode || null}
-                    onChange={changeCadre}
-                    options={cadres.map((c) => ({ value: c.code, label: c.display_name }))}
-                    placeholder="-- Chagua kada --"
-                    countLabel="Kada"
-                  />
-                )}
-              </>
-            )}
-
-            {needsSubjects && (
-              <>
-                <Label icon="book" note="lazima masomo 2">Somo Unalofundisha</Label>
-                <SubjectPicker
-                  options={subjects.map((x) => ({ value: x.code, label: x.name }))}
-                  value={selectedSubjects}
-                  onChange={setSelectedSubjects}
-                  max={2}
-                />
-              </>
+              <KadaPicker
+                group={groupLabel}
+                options={cadreOptions}
+                value={cadreCode || null}
+                onChange={changeCadre}
+                mfano={isHealth ? 'ANO' : 'VEO'}
+              />
             )}
           </>
         )}
 
-        {/* ─────────── HATUA 4: KITUO CHA SASA ─────────── */}
-        {step === 4 && (
+        {/* ─────────── HATUA: KITUO CHA SASA ─────────── */}
+        {cur === 'kituo' && (
           <>
             <p className={s.hint}>Unafanya kazi wapi kwa sasa?</p>
 
-            <Label icon="map">Mkoa Wako</Label>
-            <Dropdown
-              value={curRegion ? String(curRegion) : null}
-              onChange={(v) => { setCurRegion(Number(v)); setCurFacility(''); }}
-              options={regionOptions}
-              placeholder="-- Chagua Mkoa --"
-              layout="grid3"
-              countLabel="Mikoa"
+            <Progress
+              items={[
+                { l: 'Mkoa', i: 'mapFold' },
+                ...(needDistrict ? [{ l: 'Wilaya', i: 'mapPin' }] : []),
+                ...(third ? [{ l: third.chip, i: third.icon }] : []),
+              ]}
+              at={!curRegion ? 0 : needDistrict && !curDistrict ? 1 : third ? 2 : 1}
             />
 
-            {!isWizara && (
+            <Label icon="mapFold">Mkoa Wako</Label>
+            {!curRegion ? (
+              <RegionGrid
+                options={regionOptions}
+                value={null}
+                onPick={(v) => { setCurRegion(Number(v)); }}
+              />
+            ) : (
+              <Chosen
+                icon="mapFold"
+                text={regionName(curRegion)}
+                onChange={() => { setCurRegion(''); setCurDistrict(''); setCurFacility(''); }}
+              />
+            )}
+
+            {needDistrict && curRegion !== '' && (
               <>
-                <Label icon="pin">Wilaya</Label>
-                <Dropdown
-                  value={curDistrict ? String(curDistrict) : null}
-                  onChange={(v) => setCurDistrict(Number(v))}
-                  options={curDistricts.map((d) => ({ value: String(d.id), label: d.name }))}
-                  placeholder="-- Chagua Wilaya --"
-                  disabled={!curRegion}
-                  disabledText="Chagua mkoa kwanza"
-                  layout="grid2"
-                  countLabel="Wilaya"
-                />
+                <Label icon="mapPin">Wilaya</Label>
+                {curDistrict === '' ? (
+                  <SquareChips
+                    options={districtOptions}
+                    value={[]}
+                    onToggle={(v) => setCurDistrict(Number(v))}
+                  />
+                ) : (
+                  <Chosen
+                    icon="mapPin"
+                    text={curDistricts.find((d) => d.id === Number(curDistrict))?.name || ''}
+                    onChange={() => { setCurDistrict(''); setCurFacility(''); }}
+                  />
+                )}
               </>
             )}
 
-            {showFacility && (isWizara || curDistrict !== '') && (
+            {third && curRegion !== '' && (isWizara || curDistrict !== '') && (
               <>
-                <Label icon="school" note={isWizara ? undefined : 'hiari'}>
-                  {isWizara ? 'Hospitali ya Rufaa' : category === 'education' ? 'Shule Yako' : 'Kituo Chako'}
-                </Label>
-                {loadingFacilities ? (
-                  <div className={s.loadRow}><span className={s.spin} /> Inapakia vituo...</div>
-                ) : (
-                  <Dropdown
-                    value={curFacility || null}
-                    onChange={setCurFacility}
-                    options={curFacilities.map((f) => ({ value: facId(f), label: f.name }))}
-                    placeholder={isWizara ? '-- Chagua Hospitali --' : '-- Chagua Kituo --'}
-                    countLabel={isWizara ? 'Hospitali' : 'Vituo'}
-                  />
+                <Label icon={third.icon}>{third.chagua}</Label>
+                <ThirdList
+                  head={`${third.chip === 'Shule' ? 'SHULE' : third.chip === 'Kituo' ? 'VITUO' : 'HOSPITALI'} · ${
+                    isWizara ? regionName(curRegion) : curDistricts.find((d) => d.id === Number(curDistrict))?.name || ''
+                  }`}
+                  options={thirdOptions(curFacilities)}
+                  value={curFacility ? [curFacility] : []}
+                  onToggle={(v) => setCurFacility(v)}
+                  placeholder={third.tafuta}
+                  skipLabel={third.lazima ? undefined : `Ruka – sitaki kuchagua ${third.neno}`}
+                  loading={loadingFacilities}
+                />
+                {curFacFacility && (
+                  <p className={s.noteBlue}>
+                    Umechagua: <b>{curFacFacility.name}</b>
+                  </p>
                 )}
               </>
             )}
           </>
         )}
 
-        {/* ─────────── HATUA 5: MKOA UNAKOTAKA KWENDA ─────────── */}
-        {step === 5 && (
+        {/* ─────────── HATUA: LENGO ─────────── */}
+        {cur === 'lengo' && (
           <>
-            <p className={s.hint}>Chagua mkoa au mikoa unayotaka kuhamia.</p>
+            <p className={s.hint}>Chagua mkoa (au mikoa) unayotaka kuhamia.</p>
 
-            {dests.map((d, i) => (
-              <div className={s.target} key={i}>
+            {editIdx !== null && dests[editIdx] ? (
+              <div className={s.target}>
                 <div className={s.targetHead}>
-                  <span className={s.num}>{i + 1}</span>
-                  <b>Mkoa wa {['kwanza', 'pili', 'tatu', 'nne', 'tano'][i] ?? i + 1}</b>
-                  {i > 0 && (
-                    <button type="button" className={s.del} aria-label="Futa mkoa" onClick={() => removeDest(i)}>
-                      <Icon name="trash" size={15} strokeWidth={1.9} />
-                    </button>
-                  )}
+                  <span className={s.num}>{editIdx + 1}</span>
+                  <b>Mkoa wa {ORD[editIdx] ?? editIdx + 1}</b>
                 </div>
 
-                <p className={s.small}>Mkoa</p>
-                <Dropdown
-                  value={d.regionId ? String(d.regionId) : null}
-                  onChange={(v) =>
-                    updateDest(i, { regionId: Number(v), districtIds: [], facilityId: '', anyDistrict: true })
-                  }
-                  options={regionOptions}
-                  placeholder="-- Chagua Mkoa --"
-                  layout="grid3"
-                  countLabel="Mikoa"
+                <Progress
+                  items={[
+                    { l: 'Mkoa', i: 'mapFold' },
+                    ...(needDistrict ? [{ l: 'Wilaya', i: 'mapPin' }] : []),
+                    ...(third ? [{ l: third.chip === 'Hospitali ya Rufaa' ? 'Hospitali' : third.chip, i: third.icon }] : []),
+                  ]}
+                  at={!dests[editIdx].regionId ? 0 : needDistrict && dests[editIdx].anyDistrict === false && dests[editIdx].districtIds.length === 0 ? 1 : third ? 2 : 1}
                 />
 
-                {d.regionId !== '' && (
-                  <>
-                    {isWizara ? (
-                      <>
-                        <p className={s.small}>Hospitali ya Rufaa</p>
-                        <Dropdown
-                          value={d.facilityId || null}
-                          onChange={(v) => updateDest(i, { facilityId: v })}
-                          options={(destFacilities[`r:${d.regionId}`] || []).map((f) => ({ value: facId(f), label: f.name }))}
-                          placeholder="-- Chagua Hospitali --"
-                          countLabel="Hospitali"
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <p className={s.small}>Wilaya za lengo <em>(chagua moja au zaidi)</em></p>
-                        <div className={s.chips}>
-                          <button
-                            type="button"
-                            className={`${s.chip} ${d.anyDistrict ? s.chipOn : ''}`}
-                            onClick={() =>
-                              updateDest(i, { anyDistrict: true, districtIds: [], facilityId: '' })
-                            }
-                          >
-                            Wilaya yoyote
-                          </button>
-                          {(destDistricts[d.regionId as number] || []).map((x) => {
-                            const on = !d.anyDistrict && d.districtIds.includes(x.id);
-                            return (
-                              <button
-                                type="button"
-                                key={x.id}
-                                className={`${s.chip} ${on ? s.chipOn : ''}`}
-                                onClick={() => {
-                                  const next = d.anyDistrict
-                                    ? [x.id]
-                                    : on
-                                      ? d.districtIds.filter((id) => id !== x.id)
-                                      : [...d.districtIds, x.id];
-                                  updateDest(i, {
-                                    anyDistrict: false,
-                                    districtIds: next,
-                                    facilityId: '',
-                                  });
-                                }}
-                              >
-                                {x.name}
-                              </button>
-                            );
-                          })}
-                        </div>
+                <Label icon="mapFold">Mkoa</Label>
+                {!dests[editIdx].regionId ? (
+                  <RegionGrid
+                    options={regionOptions}
+                    value={null}
+                    hidden={dests.filter((_, i) => i !== editIdx).map((d) => String(d.regionId))}
+                    onPick={(v) => updateDest(editIdx, { regionId: Number(v), districtIds: [], anyDistrict: true, facilityIds: [] })}
+                  />
+                ) : (
+                  <Chosen
+                    icon="mapFold"
+                    text={regionName(dests[editIdx].regionId)}
+                    onChange={() => updateDest(editIdx, { regionId: '', districtIds: [], anyDistrict: true, facilityIds: [] })}
+                  />
+                )}
 
-                        {showFacility && (
-                          <>
-                            <p className={s.small}>
-                              {category === 'education' ? 'Shule' : 'Kituo'} <em>(hiari)</em>
-                            </p>
-                            <Dropdown
-                              value={d.facilityId || null}
-                              onChange={(v) => updateDest(i, { facilityId: v })}
-                              options={(destFacilities[destFacilityKey(d)] || []).map((f) => ({
-                                value: facId(f),
-                                label: f.name,
-                              }))}
-                              placeholder={category === 'education' ? '-- Chagua Shule --' : '-- Chagua Kituo --'}
-                              countLabel={category === 'education' ? 'Shule' : 'Vituo'}
-                            />
-                          </>
-                        )}
-                      </>
-                    )}
+                {needDistrict && dests[editIdx].regionId !== '' && (
+                  <>
+                    <Label icon="mapPin" note="moja au zaidi">Wilaya za lengo</Label>
+                    <SquareChips
+                      options={(destDistricts[Number(dests[editIdx].regionId)] || []).map((d) => ({ value: String(d.id), label: d.name }))}
+                      value={dests[editIdx].anyDistrict ? [] : dests[editIdx].districtIds.map(String)}
+                      onToggle={(v) => toggleDestDistrict(editIdx, Number(v))}
+                      anyLabel="Wilaya yoyote"
+                      anyOn={dests[editIdx].anyDistrict}
+                      onAny={() => updateDest(editIdx, { anyDistrict: true, districtIds: [], facilityIds: [] })}
+                    />
+                  </>
+                )}
+
+                {third && dests[editIdx].regionId !== '' && (isWizara || !dests[editIdx].anyDistrict) && (
+                  <>
+                    <Label icon={third.icon} note="moja au zaidi">
+                      {isWizara ? 'Hospitali za lengo' : `${third.chip} za lengo`}
+                    </Label>
+                    <ThirdList
+                      head={`${isWizara ? 'HOSPITALI' : third.chip === 'Shule' ? 'SHULE' : 'VITUO'} · ${
+                        isWizara
+                          ? regionName(dests[editIdx].regionId)
+                          : dests[editIdx].districtIds
+                              .map((id) => (destDistricts[Number(dests[editIdx].regionId)] || []).find((x) => x.id === id)?.name)
+                              .filter(Boolean)
+                              .join(', ')
+                      }`}
+                      options={thirdOptions(
+                        destFacilities[
+                          isWizara || dests[editIdx].anyDistrict || dests[editIdx].districtIds.length !== 1
+                            ? `r:${dests[editIdx].regionId}`
+                            : `d:${dests[editIdx].districtIds[0]}`
+                        ] || [],
+                      )}
+                      value={dests[editIdx].facilityIds}
+                      onToggle={(v) => toggleDestFacility(editIdx, v)}
+                      placeholder={third.tafuta}
+                      multi={isWizara}
+                    />
                   </>
                 )}
               </div>
-            ))}
+            ) : null}
 
-            <button type="button" className={s.add} onClick={() => setDests((arr) => [...arr, emptyDest()])}>
-              + Ongeza Mkoa Mwingine
-            </button>
+            {editIdx === null && (
+              <div className={s.tg}>
+                {dests.map((d, i) => {
+                  const facs = destFacilities[
+                    isWizara || d.anyDistrict || d.districtIds.length !== 1 ? `r:${d.regionId}` : `d:${d.districtIds[0]}`
+                  ] || [];
+                  const chosenFacs = facs.filter((f) => d.facilityIds.includes(facId(f))).map((f) => f.name);
+                  const dists = (destDistricts[Number(d.regionId)] || [])
+                    .filter((x) => d.districtIds.includes(x.id))
+                    .map((x) => x.name);
+                  const sub = isWizara
+                    ? chosenFacs.length > 2
+                      ? `${chosenFacs.slice(0, 1).join(', ')} +${chosenFacs.length - 1}`
+                      : chosenFacs.join(', ')
+                    : d.anyDistrict
+                      ? 'Wilaya yoyote'
+                      : dists.length > 2
+                        ? `${dists.slice(0, 2).join(', ')} +${dists.length - 2}`
+                        : dists.join(', ');
+                  return (
+                    <div key={i} className={s.tgCard}>
+                      <span className={s.tgNum}>{i + 1}</span>
+                      <span className={s.tgIc}><Icon name="mapFold" size={16} strokeWidth={1.9} /></span>
+                      <div className={s.tgBody}>
+                        <p className={s.tgName}>{regionName(d.regionId)}</p>
+                        <p className={s.tgSub}>{sub || '—'}</p>
+                      </div>
+                      <button type="button" className={s.tgEdit} onClick={() => setEditIdx(i)}>Badilisha</button>
+                      {i > 0 && (
+                        <button
+                          type="button"
+                          className={s.tgDel}
+                          aria-label="Futa mkoa"
+                          onClick={() => setDests((arr) => arr.filter((_, idx) => idx !== i))}
+                        >
+                          <Icon name="xSquare" size={16} strokeWidth={2} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
-            <div style={{ marginTop: 22 }}>
-              <Label icon="clock">Umefanya kazi kwa miaka mingapi?</Label>
-            </div>
-            <Segmented options={YEARS} value={years} onChange={setYears} />
+            {dests.length < 5 && (
+              <button
+                type="button"
+                className={s.add}
+                onClick={() => {
+                  const idx = dests.length;
+                  setDests((arr) => [...arr, emptyDest()]);
+                  setEditIdx(idx);
+                }}
+              >
+                + Ongeza Mkoa Mwingine
+              </button>
+            )}
+
+            <Label icon="calendar">Umefanya kazi kwa miaka mingapi?</Label>
+            <YearsBand
+              options={YEARS}
+              value={years}
+              onChange={(v) => {
+                setYears(v);
+                if (editIdx !== null) closeEditor();
+              }}
+            />
           </>
         )}
 
         <div className={s.actions}>
           {step === 1 ? (
-            <p>
+            <p className={s.haveAcc}>
               Una akaunti tayari? <Link href="/login">Ingia hapa</Link>
             </p>
           ) : (
@@ -890,14 +971,12 @@ export default function RegisterContent() {
           )}
 
           <button type="button" className={s.btn} disabled={sending} onClick={next}>
-            {step < 5 ? (
+            {!last ? (
               <>
                 Endelea <Icon name="chevronRight" size={14} strokeWidth={2.6} />
               </>
             ) : (
-              <>
-                {sending ? 'Inatuma...' : 'Najisajili'} <Icon name="userPlus" size={15} strokeWidth={2.2} />
-              </>
+              <>{sending ? 'Inatuma...' : 'Najisajili'}</>
             )}
           </button>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Icon from './Icon';
 import s from './register.module.css';
 
@@ -11,19 +11,24 @@ export interface Opt {
   value: string;
   label: string;
   icon?: string;
+  /** Kifupi kinachoonekana kwenye beji (mf. ANO, VEO). */
+  code?: string;
+  /** Aina inayoonekana kwenye beji (mf. Zahanati, Kata, Kijiji). */
+  aina?: string;
 }
 
 /* ---------------- Stepper ---------------- */
 export function Stepper({ steps, current }: { steps: string[]; current: number }) {
-  const fill = ((current - 1) / (steps.length - 1)) * 80;
+  const n = steps.length;
+  const fill = n > 1 ? ((current - 1) / (n - 1)) * (100 - 100 / n) : 0;
   return (
-    <div className={s.stepper}>
+    <div className={s.stepper} style={{ ['--n' as string]: n } as React.CSSProperties}>
       <i className={s.stepFill} style={{ width: `${fill}%` }} />
       {steps.map((name, i) => {
-        const n = i + 1;
+        const k = i + 1;
         return (
-          <div key={name} className={cx(s.step, n < current && s.stepDone, n === current && s.stepOn)}>
-            <span className={s.dot}>{n}</span>
+          <div key={name} className={cx(s.step, k < current && s.stepDone, k === current && s.stepOn)}>
+            <span className={s.dot}>{k}</span>
             <span className={s.stepLabel}>{name}</span>
           </div>
         );
@@ -32,196 +37,211 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
   );
 }
 
-/* ---------------- Label ---------------- */
+/* ---------------- Label (ikoni ndani ya mraba wa bluu hafifu) ---------------- */
 export function Label({ icon, children, note }: { icon?: string; children: React.ReactNode; note?: string }) {
   return (
     <div className={s.label}>
-      {icon && <Icon name={icon} size={17} strokeWidth={2} />}
+      {icon && <span className={s.lblIc}><Icon name={icon} size={16} strokeWidth={2.1} /></span>}
       {children}
       {note && <em>({note})</em>}
     </div>
   );
 }
 
-/* ---------------- OptionList (Idara) ---------------- */
-export function OptionList({
-  options,
-  value,
-  onChange,
-}: {
-  options: Opt[];
-  value: string | null;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className={s.options} role="radiogroup">
-      {options.map((o) => (
-        <button
-          type="button"
-          role="radio"
-          aria-checked={value === o.value}
-          key={o.value}
-          className={cx(s.option, value === o.value && s.optionOn)}
-          onClick={() => onChange(o.value)}
-        >
-          <span className={s.optIcon}><Icon name={o.icon || 'building'} size={16} /></span>
-          <span className={s.optText}>{o.label}</span>
-          <span className={s.radio} />
-        </button>
-      ))}
-    </div>
-  );
-}
+/* ---------------- Namba ya simu: kisanduku + hali (ngao / !) ---------------- */
+export type HaliNamba = null | 'si_sahihi' | 'huru' | 'imetumika';
 
-/* ---------------- Segmented ---------------- */
-export function Segmented({
-  options,
+export function PhoneField({
   value,
   onChange,
-  iconSize = 15,
-}: {
-  options: Opt[];
-  value: string | null;
-  onChange: (v: string) => void;
-  /** Ukubwa wa ikoni ndani ya kitufe (kada inatumia 20). */
-  iconSize?: number;
-}) {
-  return (
-    <div className={s.seg} role="radiogroup">
-      {options.map((o) => (
-        <button
-          type="button"
-          role="radio"
-          aria-checked={value === o.value}
-          key={o.value}
-          className={cx(s.segBtn, value === o.value && s.segOn)}
-          onClick={() => onChange(o.value)}
-        >
-          {o.icon && <Icon name={o.icon} size={iconSize} strokeWidth={1.9} />}
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/* ---------------- Dropdown ---------------- */
-export function Dropdown({
-  value,
-  onChange,
-  options,
+  onBlur,
   placeholder,
-  disabled,
-  disabledText,
-  layout = 'list',
-  countLabel,
+  hali,
+  checking,
 }: {
+  value: string;
+  onChange: (v: string) => void;
+  onBlur?: () => void;
+  placeholder: string;
+  hali: HaliNamba;
+  checking?: boolean;
+}) {
+  return (
+    <>
+      <div className={cx(s.phBox, hali === 'huru' && s.phOk, (hali === 'si_sahihi' || hali === 'imetumika') && s.phNo)}>
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          type="tel"
+          inputMode="tel"
+        />
+        <span className={cx(s.phIc, hali === 'huru' ? s.phIcOk : (hali === 'si_sahihi' || hali === 'imetumika') ? s.phIcNo : '')}>
+          {checking ? (
+            <span className={s.spin} />
+          ) : hali === 'huru' ? (
+            <Icon name="shieldOk" size={15} strokeWidth={2.4} />
+          ) : hali === 'si_sahihi' || hali === 'imetumika' ? (
+            <Icon name="alertCircle" size={15} strokeWidth={2.4} />
+          ) : null}
+        </span>
+      </div>
+      {hali === 'si_sahihi' && <p className={cx(s.phMsg, s.phMsgNo)}>Namba si sahihi</p>}
+      {hali === 'huru' && <p className={cx(s.phMsg, s.phMsgOk)}>Namba hii ipo huru</p>}
+      {hali === 'imetumika' && (
+        <p className={cx(s.phMsg, s.phMsgNo)}>
+          Namba hii imeshasajiliwa. <a href="/login">Ingia hapa</a>
+        </p>
+      )}
+    </>
+  );
+}
+
+/* ---------------- Orodha ya idara (kichwa, duara kushoto, ikoni kulia) ---------------- */
+export function IdaraList({
+  title,
+  options,
+  value,
+  onChange,
+  branchOf,
+  branchValue,
+  onBranch,
+}: {
+  title: string;
+  options: Opt[];
   value: string | null;
   onChange: (v: string) => void;
-  options: Opt[];
-  placeholder: string;
-  disabled?: boolean;
-  disabledText?: string;
-  layout?: 'grid3' | 'grid2' | 'list';
-  countLabel: string;
+  /** idara ipi ina tawi (mf. afya → wizara, elimu → ngazi) */
+  branchOf: Record<string, Opt[]>;
+  branchValue: string | null;
+  onBranch: (v: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState('');
-  const ref = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, []);
-
-  useEffect(() => {
-    if (disabled) setOpen(false);
-  }, [disabled]);
-
-  /* Orodha ikifunguka, hakikisha inaonekana yote: kama sehemu yake ya chini
-   * inapita skrini, page inajisogeza juu (au chini) hadi ionekane. */
-  useEffect(() => {
-    if (!open) return;
-    const raf = requestAnimationFrame(() => {
-      const el = panelRef.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const margin = 12;
-      if (r.bottom > window.innerHeight - margin || r.top < margin) {
-        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [open]);
-
-  const list = useMemo(
-    () => options.filter((o) => o.label.toLowerCase().includes(q.trim().toLowerCase())),
-    [options, q],
-  );
-  const current = options.find((o) => o.value === value) || null;
-
   return (
-    <div ref={ref} className={cx(s.dd, open && s.ddOpen, !!current && s.ddFilled, disabled && s.ddDisabled)}>
-      <button
-        type="button"
-        className={s.ddTrigger}
-        aria-expanded={open}
-        disabled={disabled}
-        onClick={() => {
-          setQ('');
-          setOpen((o) => !o);
-        }}
-      >
-        {current ? (
-          <span>{current.label}</span>
-        ) : (
-          <span className={s.ddPlaceholder}>{disabled ? disabledText : placeholder}</span>
-        )}
-        <Icon name="chevronDown" size={16} strokeWidth={2} />
-      </button>
-
-      {open && (
-        <div className={s.ddPanel} ref={panelRef}>
-          <label className={s.search}>
-            <Icon name="search" size={15} strokeWidth={2.2} />
-            <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tafuta..." />
-          </label>
-          <div className={s.count}>
-            {countLabel} <b>{list.length}</b>
-            {layout === 'list' && list.length > 6 && ' · shusha chini kuona zaidi'}
+    <div className={s.idList} role="radiogroup">
+      <div className={s.idHead}>
+        <span>{title}</span>
+        <span>{options.length}</span>
+      </div>
+      {options.map((o) => {
+        const on = value === o.value;
+        const sub = on ? branchOf[o.value] : undefined;
+        return (
+          <div key={o.value} className={s.idItem}>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={on}
+              className={cx(s.idRow, on && s.idOn)}
+              onClick={() => onChange(o.value)}
+            >
+              <i className={s.idRadio} />
+              <span className={s.idName}>{o.label}</span>
+              <span className={s.idIc}><Icon name={o.icon || 'building'} size={16} strokeWidth={2} /></span>
+            </button>
+            {sub && sub.length > 0 && (
+              <div className={s.idBranch} role="radiogroup">
+                {sub.map((b) => (
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={branchValue === b.value}
+                    key={b.value}
+                    className={cx(s.idSub, branchValue === b.value && s.idOn)}
+                    onClick={() => onBranch(b.value)}
+                  >
+                    <i className={s.idRadio} />
+                    <span className={s.idName}>{b.label}</span>
+                    <span className={s.idIc}><Icon name={b.icon || 'building'} size={16} strokeWidth={2} /></span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {list.length === 0 ? (
-            <div className={s.ddEmpty}>Hakuna kinacholingana</div>
-          ) : (
-            <div className={layout === 'grid3' ? s.grid3 : layout === 'grid2' ? s.grid2 : s.scroll}>
-              {list.map((o) => (
-                <button
-                  type="button"
-                  key={o.value}
-                  title={o.label}
-                  className={cx(s.ddItem, o.value === value && s.ddItemOn)}
-                  onClick={() => {
-                    onChange(o.value);
-                    setOpen(false);
-                  }}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+        );
+      })}
     </div>
   );
 }
 
-/* ---------------- SubjectPicker ---------------- */
-export function SubjectPicker({
+/* ---------------- Jedwali la muhtasari ---------------- */
+export function Summary({ rows }: { rows: { k: string; icon: string; v: string }[] }) {
+  return (
+    <div className={s.sum}>
+      {rows.map((r) => (
+        <div key={r.k} className={s.sumRow}>
+          <span className={s.sumK}>{r.k}</span>
+          <span className={s.sumV}>
+            <span className={s.sumIc}><Icon name={r.icon} size={13} strokeWidth={2} /></span>
+            {r.v}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------------- Kada (tafuta jina au kifupi) ---------------- */
+export function KadaPicker({
+  group,
+  options,
+  value,
+  onChange,
+  mfano,
+}: {
+  group: string;
+  options: Opt[];
+  value: string | null;
+  onChange: (v: string) => void;
+  mfano: string;
+}) {
+  const [q, setQ] = useState('');
+  const qq = q.trim().toLowerCase();
+  const list = options.filter(
+    (o) => o.label.toLowerCase().includes(qq) || (o.code ?? '').toLowerCase().includes(qq),
+  );
+  return (
+    <>
+      <label className={cx(s.msSearch, q && s.msSearchOn)}>
+        <Icon name="search" size={15} strokeWidth={2.2} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Tafuta kada au kifupi (mf. ${mfano})…`} />
+      </label>
+      <div className={cx(s.msWrap, list.length > 5 && s.msFade)}>
+        <div className={s.msList}>
+          <div className={s.msHead}>
+            <span>KADA · {group.toUpperCase()}</span>
+            <span>{list.length}</span>
+          </div>
+          <div className={s.msScroll} role="radiogroup">
+            {list.length === 0 && <div className={s.msEmpty}>Hakuna kada inayolingana na &quot;{q}&quot;</div>}
+            {list.map((o) => (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={value === o.value}
+                key={o.value}
+                className={cx(s.kdRow, value === o.value && s.kdOn)}
+                onClick={() => onChange(o.value)}
+              >
+                <i className={s.idRadio} />
+                <span className={s.kdName}>{o.label}</span>
+                {o.code && <b className={s.kdCode}>{o.code}</b>}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      {list.length > 5 && (
+        <p className={s.msMore}>
+          <Icon name="chevronDown" size={13} strokeWidth={2.4} /> Shusha ndani ya orodha kuona kada zote {options.length}
+        </p>
+      )}
+    </>
+  );
+}
+
+/* ---------------- Masomo (nafasi N + tafuta + orodha) ---------------- */
+export function MasomoPicker({
   options,
   value,
   onChange,
@@ -235,96 +255,288 @@ export function SubjectPicker({
   const [q, setQ] = useState('');
   const full = value.length >= max;
   const list = options.filter((o) => o.label.toLowerCase().includes(q.trim().toLowerCase()));
-  const labelOf = (code: string) => options.find((o) => o.value === code)?.label || code;
+  const labelOf = (v: string) => options.find((o) => o.value === v)?.label || v;
 
-  const toggle = (code: string) => {
-    if (value.includes(code)) onChange(value.filter((x) => x !== code));
-    else if (!full) onChange([...value, code]);
+  const toggle = (v: string) => {
+    if (value.includes(v)) onChange(value.filter((x) => x !== v));
+    else if (!full) onChange([...value, v]);
   };
 
-  const highlight = (text: string) => {
-    if (!q.trim()) return text;
-    const i = text.toLowerCase().indexOf(q.trim().toLowerCase());
-    if (i < 0) return text;
-    const L = q.trim().length;
-    return (
-      <>
-        {text.slice(0, i)}
-        <mark>{text.slice(i, i + L)}</mark>
-        {text.slice(i + L)}
-      </>
-    );
-  };
+  const MAJINA = ['Somo la kwanza', 'Somo la pili', 'Somo la tatu'];
 
   return (
     <>
-      <div className={s.slots}>
+      <div className={s.msSlots}>
         {Array.from({ length: max }).map((_, i) =>
           value[i] ? (
-            <button type="button" key={i} className={cx(s.slot, s.slotFull)} onClick={() => toggle(value[i])} title="Ondoa">
-              <span>{i + 1}. {labelOf(value[i])}</span>
-              <Icon name="x" size={12} strokeWidth={2.6} />
-            </button>
+            <div key={i} className={cx(s.msSlot, s.msSlotOn)}>
+              <b>{i + 1}</b>
+              <span>{labelOf(value[i])}</span>
+              <button type="button" aria-label="Ondoa somo" onClick={() => toggle(value[i])}>
+                <Icon name="x" size={12} strokeWidth={2.8} />
+              </button>
+            </div>
           ) : (
-            <div key={i} className={s.slot}><span>Somo la {i + 1}</span></div>
+            <div key={i} className={s.msSlot}>
+              {i + 1}. {MAJINA[i] ?? `Somo la ${i + 1}`}
+            </div>
           ),
         )}
       </div>
-      <p className={s.slotHint}>
-        {full ? `Umechagua masomo ${max}. Bonyeza ✕ kuondoa somo.` : 'Bonyeza somo kwenye orodha kulichagua.'}
-      </p>
-      <label className={s.search} style={{ background: '#fff', borderColor: '#d1d5db' }}>
+      <label className={cx(s.msSearch, q && s.msSearchOn)}>
         <Icon name="search" size={15} strokeWidth={2.2} />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tafuta somo..." />
       </label>
-      <div className={s.subList}>
-        {list.length === 0 && <div className={s.ddEmpty}>Hakuna somo linalolingana na &quot;{q}&quot;</div>}
-        {list.map((o) => {
-          const on = value.includes(o.value);
-          return (
-            <button
-              type="button"
-              key={o.value}
-              className={cx(s.subItem, on && s.subOn, !on && full && s.subDis)}
-              onClick={() => toggle(o.value)}
-              disabled={!on && full}
-            >
-              <span>{highlight(o.label)}</span>
-              {on && <i>{value.indexOf(o.value) + 1}</i>}
-            </button>
-          );
-        })}
+      <div className={cx(s.msWrap, list.length > 5 && s.msFade)}>
+        <div className={s.msList}>
+          <div className={s.msHead}>
+            <span>MASOMO · {list.length}</span>
+            <span>
+              UMECHAGUA <b>{value.length}</b>/{max}
+            </span>
+          </div>
+          <div className={s.msScroll}>
+            {list.length === 0 && <div className={s.msEmpty}>Hakuna somo linaloitwa &quot;{q}&quot;</div>}
+            {list.map((o) => {
+              const p = value.indexOf(o.value);
+              const on = p >= 0;
+              return (
+                <button
+                  type="button"
+                  key={o.value}
+                  className={cx(s.msRow, on && s.msOn, !on && full && s.msDis)}
+                  onClick={() => toggle(o.value)}
+                  disabled={!on && full}
+                >
+                  <i className={s.msBox}>{on ? p + 1 : ''}</i>
+                  <span>{o.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
+      {list.length > 5 && (
+        <p className={s.msMore}>
+          <Icon name="chevronDown" size={13} strokeWidth={2.4} /> Shusha ndani ya orodha kuona masomo {options.length}
+        </p>
+      )}
     </>
   );
 }
 
-/* ---------------- ChipSelect (Wilaya) ---------------- */
-export function ChipSelect({
+/* ---------------- Miaka ya kazi ---------------- */
+export function YearsBand({
   options,
   value,
   onChange,
 }: {
   options: Opt[];
-  value: string[];
-  onChange: (v: string[]) => void;
+  value: string | null;
+  onChange: (v: string) => void;
 }) {
-  const toggle = (v: string) => {
-    onChange(value.includes(v) ? value.filter((x) => x !== v) : [...value, v]);
-  };
-
   return (
-    <div className={s.chips}>
+    <div className={s.yr} role="radiogroup">
       {options.map((o) => (
         <button
           type="button"
+          role="radio"
+          aria-checked={value === o.value}
           key={o.value}
-          className={cx(s.chip, value.includes(o.value) && s.chipOn)}
-          onClick={() => toggle(o.value)}
+          className={cx(s.yrBtn, value === o.value && s.yrOn)}
+          onClick={() => onChange(o.value)}
         >
           {o.label}
         </button>
       ))}
     </div>
+  );
+}
+
+/* =========================================================
+   Mahali: Mkoa → Wilaya → ngazi ya tatu
+   ========================================================= */
+
+/** Vitufe vya hatua ndogo: Mkoa → Wilaya → Kituo/Shule/Ofisi/Hospitali */
+export function Progress({ items, at }: { items: { l: string; i: string }[]; at: number }) {
+  return (
+    <div className={s.pg}>
+      {items.map((x, n) => (
+        <span key={x.l} className={cx(s.pgItem, n < at && s.pgDone, n === at && s.pgOn)}>
+          <Icon name={x.i} size={15} strokeWidth={2.1} />
+          {x.l}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function ListHead({ k, n }: { k: string; n: number }) {
+  return (
+    <div className={s.plHead}>
+      <span>{k}</span>
+      <b>{n}</b>
+    </div>
+  );
+}
+
+export function Chosen({ icon, text, onChange }: { icon: string; text: string; onChange: () => void }) {
+  return (
+    <div className={s.plCard}>
+      <span className={s.plCardIc}><Icon name={icon} size={15} strokeWidth={2} /></span>
+      <b>{text}</b>
+      <button type="button" onClick={onChange}>Badilisha</button>
+    </div>
+  );
+}
+
+/** Gridi ya mikoa (safu 3) */
+export function RegionGrid({
+  options,
+  value,
+  onPick,
+  hidden,
+}: {
+  options: Opt[];
+  value: string | null;
+  onPick: (v: string) => void;
+  hidden?: string[];
+}) {
+  const list = options.filter((o) => !hidden?.includes(o.value));
+  return (
+    <>
+      <ListHead k="MIKOA" n={list.length} />
+      <div className={s.mkGrid}>
+        {list.map((o) => (
+          <button
+            type="button"
+            key={o.value}
+            className={cx(s.mkBtn, value === o.value && s.mkOn)}
+            onClick={() => onPick(o.value)}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/** Vitufe vya mraba (wilaya / wilaya za lengo) */
+export function SquareChips({
+  options,
+  value,
+  onToggle,
+  anyLabel,
+  anyOn,
+  onAny,
+}: {
+  options: Opt[];
+  value: string[];
+  onToggle: (v: string) => void;
+  anyLabel?: string;
+  anyOn?: boolean;
+  onAny?: () => void;
+}) {
+  return (
+    <div className={s.sqWrap}>
+      {anyLabel && (
+        <button type="button" className={cx(s.sq, s.sqAny, anyOn && s.sqOn)} onClick={onAny}>
+          {anyLabel}
+        </button>
+      )}
+      {options.map((o) => (
+        <button
+          type="button"
+          key={o.value}
+          className={cx(s.sq, value.includes(o.value) && s.sqOn)}
+          onClick={() => onToggle(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Orodha ya ngazi ya tatu: tafuta + scroll ndani + beji ya aina (+ Ruka kama ni hiari) */
+export function ThirdList({
+  head,
+  options,
+  value,
+  onToggle,
+  placeholder,
+  skipLabel,
+  multi,
+  loading,
+}: {
+  head: string;
+  options: Opt[];
+  value: string[];
+  onToggle: (v: string) => void;
+  placeholder: string;
+  skipLabel?: string;
+  multi?: boolean;
+  loading?: boolean;
+}) {
+  const [q, setQ] = useState('');
+  const list = options.filter((o) => o.label.toLowerCase().includes(q.trim().toLowerCase()));
+  const many = list.length > 4;
+  return (
+    <>
+      <label className={cx(s.msSearch, q && s.msSearchOn)}>
+        <Icon name="search" size={15} strokeWidth={2.2} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} />
+      </label>
+      {loading ? (
+        <div className={s.loadRow}><span className={s.spin} /> Inapakia...</div>
+      ) : (
+        <div className={cx(s.msWrap, many && s.msFade)}>
+          <div className={s.msList}>
+            <div className={s.msHead}>
+              <span>{head}</span>
+              <b>{list.length}</b>
+            </div>
+            <div className={s.msScroll}>
+              {skipLabel && !q && (
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={value.length === 0}
+                  className={cx(s.kdRow, value.length === 0 && s.kdOnSkip)}
+                  onClick={() => onToggle('')}
+                >
+                  <i className={s.idRadio} />
+                  <span className={s.kdName}>{skipLabel}</span>
+                </button>
+              )}
+              {list.length === 0 && <div className={s.msEmpty}>Hakuna kinacholingana na &quot;{q}&quot;</div>}
+              {list.map((o) => {
+                const on = value.includes(o.value);
+                return (
+                  <button
+                    type="button"
+                    key={o.value}
+                    role={multi ? 'checkbox' : 'radio'}
+                    aria-checked={on}
+                    className={cx(s.kdRow, on && s.kdOn)}
+                    onClick={() => onToggle(o.value)}
+                  >
+                    <i className={s.idRadio} />
+                    <span className={s.kdName}>{o.label}</span>
+                    {o.aina && <b className={s.kdCode}>{o.aina}</b>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+      {many && (
+        <p className={s.msMore}>
+          <Icon name="chevronDown" size={13} strokeWidth={2.4} /> Shusha ndani ya orodha kuona zote
+        </p>
+      )}
+    </>
   );
 }

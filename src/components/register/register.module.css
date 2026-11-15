@@ -1,7 +1,6 @@
 /* =========================================================
-   ESSTRANSFER – Registration (Jaza Taarifa Zako)
-   Rangi: nyeupe + bluu moja (#1e40af). Hakuna rangi nyingine
-   isipokuwa nyekundu hafifu kwa kitufe cha kufuta tu.
+   ESSTRANSFER – Usajili (Jaza Taarifa Zako)
+   Nyeupe + bluu moja (#1e40af). Nyekundu hafifu kwa kosa/kufuta tu.
    ========================================================= */
 
 .page {
@@ -18,250 +17,401 @@
   --line-2: #e5e7eb;
   --line-3: #f1f2f4;
 
-  box-sizing: border-box;
   min-height: 100vh;
   min-height: 100dvh;
   max-width: 440px;
   margin: 0 auto;
-  padding: 18px 20px 28px;
-  display: flex;
-  flex-direction: column;
+  padding: 16px 12.5% 28px;
   background: #fff;
   color: var(--text);
   font-family: Inter, Roboto, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Project hii inatumia content-box – hapa vipimo viwe kamili */
 .page *,
 .page *::before,
-.page *::after {
-  box-sizing: border-box;
+.page *::after { box-sizing: border-box; }
+
+@media (min-width: 600px) {
+  .page { padding-left: 20px; padding-right: 20px; }
 }
 
+/* ---------------- Rudi (kidonge) ---------------- */
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  height: 36px;
-  padding: 0 14px 0 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  gap: 6px;
+  height: 34px;
+  padding: 0 13px 0 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
   background: #fff;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
   width: max-content;
-  transition: border-color 0.15s, background 0.15s;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+  transition: border-color .15s, background .15s;
 }
+.back:hover { border-color: var(--blue-line); background: var(--blue-tint); }
+.back:active { background: var(--blue-soft); }
 
-.back:hover {
-  border-color: #9ca3af;
-  background: #f9fafb;
-}
-
-/* kundi lote limekaa katikati likiwa fupi; likiwa refu linaanza juu */
-.content { margin: auto 0; padding: 24px 0 8px; }
-
-.title { margin: 0; font-size: 26px; font-weight: 700; text-align: center; letter-spacing: -0.3px; }
+/* ---------------- Kichwa ---------------- */
+.content { padding-top: 18px; }
+.title { margin: 0; font-size: 23px; font-weight: 800; text-align: center; letter-spacing: -.3px; }
 .title span { color: var(--blue); }
-.subtitle { margin: 6px 0 0; font-size: 15px; color: var(--muted); text-align: center; }
+.subtitle { margin: 6px 0 0; font-size: 13.5px; color: var(--muted); text-align: center; }
 
-/* ---------------- STEPPER (namba 1–5) ---------------- */
-.stepper { margin-top: 28px; display: grid; grid-template-columns: repeat(5, 1fr); position: relative; }
-.stepper::before { content: ""; position: absolute; top: 13px; left: 10%; right: 10%; height: 2px; background: #eef0f4; }
-.stepFill { position: absolute; top: 13px; left: 10%; height: 2px; background: var(--blue); transition: width 0.25s; }
-.step { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 1; }
-.dot {
-  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
-  font-size: 12px; font-weight: 600; border: 1px solid var(--line); color: var(--muted); background: #fff;
+/* ---------------- STEPPER ---------------- */
+.stepper {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(var(--n, 5), 1fr);
+  position: relative;
 }
-.stepLabel { font-size: 11px; color: var(--faint); }
-/* imekamilika: duara jeupe, boda ya bluu, namba ya bluu (HAKUNA tiki) */
+.stepper::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #eef0f4;
+}
+.stepFill {
+  position: absolute;
+  top: 14px;
+  left: 10%;
+  height: 2px;
+  background: var(--blue);
+  transition: width .25s;
+}
+.step { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 1; min-width: 0; }
+.dot {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; border: 1px solid var(--line); color: var(--muted); background: #fff;
+}
+.stepLabel { font-size: 10px; color: var(--faint); white-space: nowrap; }
+/* imekamilika: duara jeupe, mpaka wa bluu, namba ya bluu */
 .stepDone .dot { border: 1.5px solid var(--blue); color: var(--blue); }
 .stepDone .stepLabel { color: var(--blue); }
 /* ya sasa: bluu iliyojaa + mwanga */
-.stepOn .dot { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); }
+.stepOn .dot { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 0 0 4px rgba(30, 64, 175, .1); }
 .stepOn .stepLabel { color: var(--blue); font-weight: 600; }
 
 /* ---------------- KICHWA CHA HATUA ---------------- */
 .stepHead {
-  margin-top: 26px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;
-  padding-bottom: 12px; border-bottom: 1px solid var(--line-3);
+  margin-top: 16px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  gap: 5px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-3);
 }
-.stepHead b { font-size: 17px; font-weight: 700; color: var(--blue); }
-.stepHead h2 { margin: 0; font-size: 17px; font-weight: 700; }
-.hint { font-size: 14px; color: var(--muted); margin: 12px 0 0; }
-.hint b { color: var(--blue); font-weight: 600; }
+.stepHead b { font-size: 14.5px; font-weight: 800; color: var(--blue); letter-spacing: -.2px; }
+.stepHead h2 { margin: 0; font-size: 14.5px; font-weight: 800; letter-spacing: -.2px; }
+.hint { font-size: 13.5px; font-weight: 500; color: var(--text); margin: 12px 0 0; }
+.hint b { color: var(--blue); font-weight: 700; }
 
 /* ---------------- LABEL ---------------- */
-.label { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-2); margin: 18px 0 8px; }
-.label svg { color: var(--blue); flex: none; }
-.label em { font-style: normal; font-weight: 500; font-size: 12px; color: var(--muted); }
+.label {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 14px; font-weight: 700; color: var(--text); margin: 16px 0 8px;
+}
+.lblIc {
+  width: 30px; height: 30px; border-radius: 9px; background: var(--blue-soft); color: var(--blue);
+  display: grid; place-items: center; flex: none;
+}
+.label em { font-style: normal; font-weight: 500; font-size: 12.5px; color: var(--muted); }
 
-/* ---------------- INPUT NYEMBAMBA (38px) ---------------- */
+/* ---------------- INPUT ---------------- */
 .input {
-  display: block; width: 100%; height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 7px;
-  font: inherit; font-size: 14px; outline: none; background: #fff; color: var(--text); box-sizing: border-box;
+  display: block; width: 100%; height: 46px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 10px;
+  font: inherit; font-size: 15px; outline: none; background: #fff; color: var(--text);
 }
 .input::placeholder { color: var(--faint); }
-.input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.08); }
-.inputError { border-color: #dc2626; }
-.inputOk { border-color: #16a34a; }
+.input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(30, 64, 175, .08); }
+.inputError { border-color: #fecaca; background: #fffafa; }
 
-/* Ikoni ya hali ndani ya kisanduku + ujumbe mmoja chini yake */
-.fieldWrap { position: relative; }
-.fieldWrap .input { padding-right: 34px; }
-.trail { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; }
-.trailOk { color: #16a34a; }
-.trailErr { color: #dc2626; }
-.msgOk { color: #16a34a; font-size: 12px; font-weight: 500; margin: 6px 0 0; }
-
-/* ---------------- MAELEZO / MAKOSA ---------------- */
-.note { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
-.noteBlue { font-size: 12.5px; color: var(--blue); margin: 8px 0 0; }
-.err { font-size: 13px; color: #dc2626; margin: 6px 0 0; }
-.banner {
-  display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; padding: 10px 12px;
-  border: 1px solid #fecaca; background: #fef2f2; border-radius: 8px; font-size: 13px; color: #b91c1c;
+/* ---------------- NAMBA (kisanduku + hali) ---------------- */
+.phBox {
+  height: 46px; display: flex; align-items: center; gap: 8px;
+  padding: 0 9px 0 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff;
 }
-.loadRow { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 10px 0; }
+.phBox:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(30, 64, 175, .08); }
+.phBox input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 15px; color: var(--text); }
+.phBox input::placeholder { color: var(--faint); }
+.phOk { border-color: #86efac; }
+.phNo { border-color: #fecaca; background: #fffafa; }
+.phIc { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.phIcOk { background: #f0fdf4; color: #15803d; }
+.phIcNo { background: #fef2f2; color: #b91c1c; }
+.phMsg { margin: 7px 0 0; font-size: 12.5px; font-weight: 600; }
+.phMsgOk { color: #15803d; }
+.phMsgNo { color: #b91c1c; }
+.phMsgNo a { color: var(--blue); font-weight: 700; }
+
+/* ---------------- Spinner / mizigo / makosa ---------------- */
 .spin {
-  width: 16px; height: 16px; border: 2px solid #cbd5e1; border-top-color: var(--blue);
-  border-radius: 50%; animation: spin 0.8s linear infinite; flex: none;
+  width: 15px; height: 15px; border: 2px solid #cbd5e1; border-top-color: var(--blue);
+  border-radius: 50%; animation: spin .8s linear infinite; flex: none;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+.loadRow { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 12px 0; }
+.err { font-size: 13px; color: #dc2626; margin: 6px 0 0; }
+.banner {
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; padding: 10px 12px;
+  border: 1px solid #fecaca; background: #fef2f2; border-radius: 10px; font-size: 13px; color: #b91c1c;
+}
+.noteBlue { font-size: 12.5px; color: var(--blue); margin: 8px 0 0; }
 
-/* ---------------- ORODHA YA KUCHAGUA (Idara) ---------------- */
-.options { display: flex; flex-direction: column; gap: 6px; }
-.option {
-  display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px 0 7px; width: 100%;
-  border: 1px solid var(--line-2); border-radius: 8px; background: #fff; cursor: pointer; font: inherit; text-align: left;
+/* ---------------- ORODHA YA IDARA ---------------- */
+.idList { border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; }
+.idHead {
+  display: flex; justify-content: space-between; padding: 9px 14px;
+  background: #f9fafb; border-bottom: 1px solid var(--line-2);
+  font-size: 11.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--muted);
 }
-.option:hover { border-color: var(--blue-line); }
-.optIcon { width: 32px; height: 32px; border-radius: 7px; background: #f1f5f9; color: #334155; display: grid; place-items: center; flex: none; }
-.optText { flex: 1; font-size: 14px; color: #1f2937; }
-.radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #cbd5e1; flex: none; box-sizing: border-box; }
-/* iliyochaguliwa */
-.optionOn { border-left: 4px solid var(--blue); padding-left: 4px; background: var(--blue-tint); }
-.optionOn .optIcon { background: #fff; color: var(--blue); }
-.optionOn .optText { color: var(--blue); font-weight: 600; }
-.optionOn .radio { border: 4.5px solid var(--blue); }
+.idItem + .idItem { border-top: 1px solid var(--line-2); }
+.idRow, .idSub {
+  width: 100%; display: flex; align-items: center; gap: 12px; border: 0; background: #fff;
+  font: inherit; color: var(--text); text-align: left; cursor: pointer;
+}
+.idRow { padding: 12px 12px 12px 14px; font-size: 14.5px; font-weight: 600; }
+.idName { flex: 1; }
+.idRadio { width: 18px; height: 18px; border-radius: 50%; border: 1.6px solid #cbd5e1; flex: none; }
+.idIc {
+  width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line-2); color: #374151;
+  display: grid; place-items: center; flex: none;
+}
+.idOn { color: var(--blue); }
+.idOn .idRadio { border: 5px solid var(--blue); }
+.idOn .idIc { border-color: var(--blue-line); background: var(--blue-soft); color: var(--blue); }
+.idBranch { margin: 0 12px 8px 22px; padding: 4px 0 6px 14px; border-left: 2px solid var(--blue-line); }
+.idSub { padding: 10px 0; gap: 10px; font-size: 13.5px; font-weight: 600; background: transparent; }
+.idSub + .idSub { border-top: 1px solid var(--line-2); }
+.idSub .idRadio { width: 16px; height: 16px; }
 
-/* ---------------- KITUFE CHA PANDE 2/3 (Segmented) ---------------- */
-.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.segBtn {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; border: 0;
-  background: #fff; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text-2); cursor: pointer;
-  padding: 0 6px;
+/* ---------------- MUHTASARI ---------------- */
+.sum { margin-top: 12px; border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; font-size: 13px; }
+.sumRow { display: flex; align-items: center; padding: 8px 12px; }
+.sumRow + .sumRow { border-top: 1px solid var(--line-2); }
+.sumK { width: 62px; color: var(--muted); font-weight: 600; }
+.sumV { flex: 1; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--blue); }
+.sumIc {
+  width: 26px; height: 26px; border-radius: 50%; background: var(--blue-soft); border: 1px solid var(--blue-line);
+  display: grid; place-items: center; flex: none;
 }
-.segBtn + .segBtn { border-left: 1px solid var(--line); }
-.segOn { background: var(--blue); color: #fff; }
 
-/* ---------------- DROPDOWN (kipande kimoja) ---------------- */
-.dd { position: relative; }
-.ddTrigger {
-  display: flex; align-items: center; justify-content: space-between; width: 100%; height: 38px; padding: 0 12px;
-  border: 1px solid var(--line); border-radius: 8px; background: #fff; font: inherit; font-size: 14px; color: var(--text);
-  cursor: pointer; text-align: left;
+/* ---------------- TAFUTA ---------------- */
+.msSearch {
+  height: 40px; border: 1px solid var(--line); border-radius: 10px; display: flex; align-items: center;
+  gap: 8px; padding: 0 12px; color: var(--faint); margin: 10px 0 8px; background: #fff;
 }
-.ddTrigger svg { color: var(--muted); flex: none; }
-.ddPlaceholder { color: var(--faint); }
-.ddFilled .ddTrigger { border-color: var(--blue); }
-.ddDisabled .ddTrigger { background: #f9fafb; cursor: not-allowed; }
-.ddDisabled .ddPlaceholder { color: #c4c9d2; }
-/* ikiwa wazi: kisanduku na orodha vinaungana (boda moja) */
-.ddOpen .ddTrigger { border-color: var(--blue); border-bottom-color: var(--line-2); border-radius: 8px 8px 0 0; }
-.ddOpen .ddTrigger svg { color: var(--blue); transform: rotate(180deg); }
-.ddPanel {
-  position: absolute; left: 0; right: 0; top: 37px; z-index: 30; background: #fff; border: 1px solid var(--blue);
-  border-top: 0; border-radius: 0 0 8px 8px; box-shadow: 0 14px 28px rgba(17, 24, 39, 0.12); padding: 8px;
-}
-.search {
-  display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; border: 1px solid var(--line-2);
-  border-radius: 7px; background: #f9fafb;
-}
-.search svg { color: var(--muted); flex: none; }
-.search input { flex: 1; min-width: 0; border: 0; outline: none; background: none; font: inherit; font-size: 13px; }
-.count { font-size: 11.5px; color: var(--muted); padding: 6px 4px 4px; }
-.count b { color: var(--blue); font-weight: 600; }
-.ddItem {
-  display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 9px 10px; border: 0; border-radius: 6px;
-  background: none; font: inherit; font-size: 13.5px; color: var(--text-2); text-align: left; cursor: pointer;
-}
-.ddItem:hover { background: #f9fafb; }
-.ddItemOn { color: var(--blue); font-weight: 600; background: var(--blue-soft); }
-.ddEmpty { padding: 14px; text-align: center; font-size: 13px; color: var(--faint); }
-/* mpangilio wa orodha: safu 3 (mikoa), safu 2 (wilaya), orodha yenye scroll (shule) */
-.grid3, .grid2 { display: grid; gap: 4px; }
-.grid3 { grid-template-columns: repeat(3, 1fr); }
-.grid2 { grid-template-columns: repeat(2, 1fr); }
-.grid3 .ddItem, .grid2 .ddItem { border: 1px solid var(--line-3); padding: 8px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-.grid3 .ddItemOn, .grid2 .ddItemOn { border-color: var(--blue); }
-.scroll { position: relative; max-height: 170px; overflow-y: auto; padding-right: 4px; }
-.scroll::-webkit-scrollbar { width: 6px; }
-.scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9px; }
-.scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 9px; }
+.msSearch input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 13.5px; color: var(--text); }
+.msSearchOn, .msSearch:focus-within { border-color: var(--blue); }
+.msSearchOn { color: var(--blue); }
 
-/* ---------------- MASOMO (nafasi 2 + tafuta + orodha) ---------------- */
-.slots { display: flex; gap: 8px; }
-.slot {
-  flex: 1; min-width: 0; height: 36px; border-radius: 7px; display: flex; align-items: center; justify-content: space-between;
-  gap: 6px; padding: 0 10px; font: inherit; font-size: 13px; border: 1px dashed #cbd5e1; color: var(--faint); background: #fff;
+/* ---------------- MASOMO ---------------- */
+.msSlots { display: flex; gap: 8px; margin-bottom: 10px; }
+.msSlot {
+  flex: 1; min-width: 0; height: 40px; border-radius: 9px; border: 1.5px dashed var(--line);
+  display: flex; align-items: center; padding: 0 10px; font-size: 12.5px; font-weight: 600;
+  color: var(--faint); white-space: nowrap; overflow: hidden;
 }
-.slot span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.slotFull { background: var(--blue); border: 1px solid var(--blue); color: #fff; font-weight: 600; cursor: pointer; }
-.slotHint { font-size: 12px; color: var(--muted); margin: 6px 0 8px; }
-.subList { border: 1px solid var(--line-2); border-radius: 8px; margin-top: 6px; height: 220px; overflow-y: auto; }
-.subList::-webkit-scrollbar { width: 6px; }
-.subList::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9px; }
-.subItem {
-  display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 10px 12px; border: 0;
-  border-bottom: 1px solid #f3f4f6; background: #fff; font: inherit; font-size: 13.5px; color: var(--text-2); text-align: left; cursor: pointer;
+.msSlotOn {
+  border: 1.5px solid var(--blue); background: #fff; color: var(--text); font-size: 13px; font-weight: 700;
+  gap: 8px; padding: 0 8px;
 }
-.subItem:hover { background: #f9fafb; }
-.subItem mark { background: none; color: var(--blue); font-weight: 700; }
-.subOn { color: var(--blue); font-weight: 600; background: var(--blue-tint); box-shadow: inset 3px 0 0 var(--blue); }
-.subOn i { font-style: normal; width: 18px; height: 18px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 10px; display: grid; place-items: center; }
-.subDis { color: #c4c9d2; cursor: default; }
-.subDis:hover { background: #fff; }
+.msSlotOn b {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--blue-soft); color: var(--blue);
+  display: grid; place-items: center; font-size: 11px; flex: none;
+}
+.msSlotOn span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.msSlotOn button {
+  margin-left: auto; width: 20px; height: 20px; border-radius: 50%; border: 0; background: #f3f4f6;
+  color: var(--muted); display: grid; place-items: center; flex: none; cursor: pointer; padding: 0;
+}
 
-/* ---------------- VIDONGE (Wilaya za lengo) ---------------- */
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip {
-  display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border: 1px solid var(--line); border-radius: 99px;
-  background: #fff; font: inherit; font-size: 12.5px; color: var(--text-2); cursor: pointer;
+/* ---------------- ORODHA (kada / masomo / vituo) ---------------- */
+.msWrap { position: relative; }
+.msFade::after {
+  content: ""; position: absolute; left: 1px; right: 1px; bottom: 1px; height: 34px;
+  background: linear-gradient(rgba(255, 255, 255, 0), #fff); pointer-events: none; border-radius: 0 0 12px 12px;
 }
-.chipOn { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
+.msList { border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; background: #fff; }
+.msHead {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 14px;
+  background: #f9fafb; border-bottom: 1px solid var(--line-2);
+  font-size: 11.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--muted);
+}
+.msHead b { color: var(--blue); }
+.msScroll { max-height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--blue-line) transparent; }
+.msScroll::-webkit-scrollbar { width: 5px; }
+.msScroll::-webkit-scrollbar-thumb { background: var(--blue-line); border-radius: 3px; }
+.msRow {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; border: 0;
+  background: #fff; font: inherit; font-size: 14.5px; font-weight: 600; color: var(--text); text-align: left; cursor: pointer;
+}
+.msRow + .msRow { border-top: 1px solid var(--line-2); }
+.msBox {
+  width: 20px; height: 20px; border-radius: 6px; border: 1.6px solid #cbd5e1; flex: none;
+  display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 800; color: #fff;
+}
+.msOn { color: var(--blue); background: var(--blue-tint); }
+.msOn .msBox { background: var(--blue); border-color: var(--blue); }
+.msDis { opacity: .4; cursor: default; }
+.msEmpty { padding: 16px; text-align: center; font-size: 13px; color: var(--faint); }
+.msMore {
+  display: flex; align-items: center; gap: 6px; margin: 8px 0 0;
+  font-size: 12px; color: var(--muted); font-weight: 500;
+}
 
-/* ---------------- KIBOX CHA MKOA WA LENGO ---------------- */
-.target { border: 1px solid var(--line-2); border-radius: 10px; padding: 14px; margin-top: 14px; }
+/* Kada: duara + jina + beji ya kifupi */
+.kdRow {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; border: 0;
+  background: #fff; font: inherit; font-size: 14.5px; font-weight: 600; color: var(--text); text-align: left; cursor: pointer;
+}
+.kdRow + .kdRow { border-top: 1px solid var(--line-2); }
+.kdName { flex: 1; min-width: 0; }
+.kdCode {
+  flex: none; padding: 4px 8px; border-radius: 6px; background: #f3f4f6; color: var(--text-2);
+  font-size: 11px; font-weight: 800; letter-spacing: .3px;
+}
+.kdOn { color: var(--blue); background: var(--blue-tint); }
+.kdOn .idRadio { border: 5px solid var(--blue); }
+.kdOn .kdCode { background: var(--blue); color: #fff; }
+.kdOnSkip { color: var(--muted); background: #fff; }
+.kdOnSkip .idRadio { border: 5px solid var(--muted); }
+
+/* ---------------- MAHALI: hatua ndogo ---------------- */
+.pg { display: flex; gap: 8px; margin: 10px 0 12px; }
+.pgItem {
+  flex: 1; min-width: 0; height: 36px; border-radius: 8px; border: 1px solid var(--line-2);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 12.5px; font-weight: 700; color: var(--muted); background: #fff;
+  white-space: nowrap; overflow: hidden;
+}
+.pgDone { background: var(--blue-soft); border-color: var(--blue-line); color: var(--blue); }
+.pgOn { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+.plHead {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--muted);
+  margin: 10px 0 6px;
+}
+.plHead b { color: var(--blue); }
+
+.plCard {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border: 1px solid var(--line-2); border-radius: 10px; background: #fff;
+}
+.plCardIc {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--blue-soft); border: 1px solid var(--blue-line);
+  color: var(--blue); display: grid; place-items: center; flex: none;
+}
+.plCard b { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; }
+.plCard button {
+  border: 1px solid var(--line); background: #fff; border-radius: 7px; padding: 5px 10px;
+  font: inherit; font-size: 12.5px; font-weight: 700; color: var(--blue); cursor: pointer;
+}
+
+/* Gridi ya mikoa */
+.mkGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.mkBtn {
+  height: 34px; border: 1px solid var(--line-2); border-radius: 8px; background: #fff;
+  font: inherit; font-size: 12.5px; font-weight: 600; color: var(--text-2); cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 6px;
+}
+.mkBtn:hover { border-color: var(--blue-line); }
+.mkOn { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); font-weight: 700; }
+
+/* Vitufe vya mraba (wilaya) */
+.sqWrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.sq {
+  height: 34px; padding: 0 11px; border: 1px solid var(--line-2); border-radius: 8px; background: #fff;
+  font: inherit; font-size: 12.5px; font-weight: 600; color: var(--text-2); cursor: pointer;
+}
+.sq:hover { border-color: var(--blue-line); }
+.sqAny { border-style: dashed; color: var(--muted); }
+.sqOn { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); font-weight: 700; }
+
+/* ---------------- LENGO: kadi za mikoa ---------------- */
+.tg { display: flex; flex-direction: column; gap: 8px; }
+.tgCard {
+  display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px;
+  border: 1px solid var(--line-2); border-radius: 12px; background: #fff;
+}
+.tgNum {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: #fff;
+  font-size: 12px; font-weight: 800; display: grid; place-items: center; flex: none;
+}
+.tgIc {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--blue-soft); border: 1px solid var(--blue-line);
+  color: var(--blue); display: grid; place-items: center; flex: none;
+}
+.tgBody { flex: 1; min-width: 0; }
+.tgName { margin: 0; font-size: 14px; font-weight: 700; }
+.tgSub { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+.tgSub i { font-style: normal; font-weight: 700; color: var(--blue); }
+.tgEdit {
+  border: 0; background: none; padding: 0; font: inherit; font-size: 12.5px; font-weight: 700;
+  color: var(--blue); cursor: pointer; flex: none;
+}
+.tgDel {
+  width: 24px; height: 24px; border-radius: 6px; border: 1px solid #fecaca; background: #fff;
+  color: #dc2626; display: grid; place-items: center; flex: none; cursor: pointer; padding: 0;
+}
+
+/* ---------------- MHARIRI WA MKOA (Lengo) ---------------- */
+.target { border: 1px solid var(--line-2); border-radius: 12px; padding: 12px; margin-top: 12px; background: #fff; }
 .targetHead { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-.targetHead b { flex: 1; color: var(--blue); }
-.num { width: 22px; height: 22px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
-.del { width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; color: #dc2626; background: #fef2f2; border: 0; cursor: pointer; }
-.small { font-size: 12.5px; font-weight: 600; color: var(--text-2); margin: 12px 0 6px; }
-.small em { font-style: normal; font-weight: 400; color: var(--faint); }
-.add {
-  margin-top: 12px; width: 100%; height: 38px; border: 1px dashed #93a4d8; border-radius: 8px; background: #fff;
-  font: inherit; font-size: 14px; font-weight: 600; color: var(--blue); cursor: pointer;
+.targetHead b { flex: 1; color: var(--blue); font-weight: 800; }
+.num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--blue); color: #fff;
+  font-size: 12px; font-weight: 800; display: grid; place-items: center; flex: none;
 }
+.small { font-size: 12.5px; font-weight: 700; color: var(--text-2); margin: 12px 0 6px; }
+.small em { font-style: normal; font-weight: 400; color: var(--faint); }
 
-/* ---------------- CHINI: Rudi / Endelea ---------------- */
+/* ---------------- "Ongeza" / miaka ---------------- */
+.add {
+  margin-top: 10px; width: 100%; height: 40px; border: 1px dashed #93a4d8; border-radius: 10px; background: #fff;
+  font: inherit; font-size: 13.5px; font-weight: 700; color: var(--blue); cursor: pointer;
+}
+.add:hover { background: var(--blue-tint); }
+
+.yr { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+.yrBtn {
+  flex: 1; height: 40px; border: 0; background: #fff; font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--text-2); cursor: pointer; border-left: 1px solid var(--line);
+}
+.yrBtn:first-child { border-left: 0; }
+.yrOn { background: var(--blue-soft); color: var(--blue); font-weight: 700; }
+
+/* ---------------- CHINI ---------------- */
 .actions {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   margin-top: 26px; padding-top: 16px; border-top: 1px solid #eef0f3;
 }
-.actions p { margin: 0; font-size: 13px; color: var(--muted); }
-.actions p a { color: var(--blue); font-weight: 600; text-decoration: none; }
+.haveAcc { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.haveAcc a {
+  color: var(--blue); font-weight: 700; text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-thickness: 1.5px;
+}
 .btn {
-  display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 10px 0 14px; border: 0; border-radius: 6px;
-  background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; margin-left: auto;
+  display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 10px 0 14px; border: 0; border-radius: 7px;
+  background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; margin-left: auto; white-space: nowrap; flex: none;
 }
 .btn:hover { background: var(--blue-dark); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
 .btnOutline {
-  display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 14px 0 10px; border: 1px solid var(--line);
-  border-radius: 6px; background: #fff; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 14px 0 10px;
+  border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--text-2);
+  font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
 }
