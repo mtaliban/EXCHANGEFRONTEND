@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Icon from '@/components/register/Icon';
 import s from '@/components/register/register.module.css';
 import {
-  Chosen, IdaraList, KadaPicker, Label, MasomoPicker, PhoneField, Progress, RegionGrid, SquareChips,
+  Chosen, IdaraList, KadaPicker, Label, ListHead, MasomoPicker, PhoneField, Progress, RegionGrid, SquareChips,
   Stepper, Summary, ThirdList, YearsBand, cx, type HaliNamba, type Opt,
 } from '@/components/register/ui';
 import {
@@ -76,7 +76,7 @@ type DestEntry = {
   facilityIds: string[];
 };
 
-const emptyDest = (): DestEntry => ({ regionId: '', anyDistrict: true, districtIds: [], facilityIds: [] });
+const emptyDest = (): DestEntry => ({ regionId: '', anyDistrict: false, districtIds: [], facilityIds: [] });
 
 export default function RegisterContent() {
   const router = useRouter();
@@ -121,6 +121,9 @@ export default function RegisterContent() {
   // Hatua 5
   const [dests, setDests] = useState<DestEntry[]>([emptyDest()]);
   const [editIdx, setEditIdx] = useState<number | null>(null);
+  /** Wilaya/shule za lengo zinafunguka; zikichaguliwa hujifunga kuwa kadi. */
+  const [distOpen, setDistOpen] = useState(true);
+  const [thirdOpen, setThirdOpen] = useState(true);
   const [destDistricts, setDestDistricts] = useState<Record<number, District[]>>({});
   const [destFacilities, setDestFacilities] = useState<Record<string, Facility[]>>({});
   const [years, setYears] = useState<string | null>(null);
@@ -578,17 +581,36 @@ export default function RegisterContent() {
       return kept.length ? kept : [emptyDest()];
     });
     setEditIdx(null);
+    setDistOpen(true);
+    setThirdOpen(true);
   }
 
   /* ── Kuingia Lengo: fungua mhariri wa mkoa usiokamilika ── */
   useEffect(() => {
     if (cur !== 'lengo' || editIdx !== null) return;
     const i = dests.findIndex((d) => !destComplete(d));
-    if (i >= 0) setEditIdx(i);
+    if (i >= 0) {
+      setDistOpen(true);
+      setThirdOpen(true);
+      setEditIdx(i);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cur]);
 
   const curFacFacility = curFacilities.find((f) => facId(f) === curFacility);
+
+  /* ── Mkoa unaohaririwa kwenye Lengo (Hatua 5) ── */
+  const ed = editIdx !== null ? dests[editIdx] : null;
+  const edDistricts = ed ? destDistricts[Number(ed.regionId)] || [] : [];
+  const edDistNames = ed ? edDistricts.filter((x) => ed.districtIds.includes(x.id)).map((x) => x.name) : [];
+  const edFacKey = ed
+    ? isWizara || ed.anyDistrict || ed.districtIds.length !== 1
+      ? `r:${ed.regionId}`
+      : `d:${ed.districtIds[0]}`
+    : '';
+  const edFacs = ed ? destFacilities[edFacKey] || [] : [];
+  const edFacNames = ed ? edFacs.filter((f) => ed.facilityIds.includes(facId(f))).map((f) => f.name) : [];
+  const edThirdTitle = isWizara ? 'Hospitali za lengo' : third?.chip === 'Shule' ? 'Shule za lengo' : 'Vituo vya lengo';
 
   return (
     <div className={s.page}>
@@ -833,7 +855,7 @@ export default function RegisterContent() {
                     ...(needDistrict ? [{ l: 'Wilaya', i: 'mapPin' }] : []),
                     ...(third ? [{ l: third.chip === 'Hospitali ya Rufaa' ? 'Hospitali' : third.chip, i: third.icon }] : []),
                   ]}
-                  at={!dests[editIdx].regionId ? 0 : needDistrict && dests[editIdx].anyDistrict === false && dests[editIdx].districtIds.length === 0 ? 1 : third ? 2 : 1}
+                  at={!dests[editIdx].regionId ? 0 : dests[editIdx].facilityIds.length > 0 && third ? 2 : 1}
                 />
 
                 <Label icon="mapFold">Mkoa</Label>
@@ -842,56 +864,75 @@ export default function RegisterContent() {
                     options={regionOptions}
                     value={null}
                     hidden={dests.filter((_, i) => i !== editIdx).map((d) => String(d.regionId))}
-                    onPick={(v) => updateDest(editIdx, { regionId: Number(v), districtIds: [], anyDistrict: true, facilityIds: [] })}
+                    onPick={(v) => {
+                      updateDest(editIdx, { regionId: Number(v), districtIds: [], anyDistrict: false, facilityIds: [] });
+                      setDistOpen(true);
+                      setThirdOpen(true);
+                    }}
                   />
                 ) : (
                   <Chosen
                     icon="mapFold"
                     text={regionName(dests[editIdx].regionId)}
-                    onChange={() => updateDest(editIdx, { regionId: '', districtIds: [], anyDistrict: true, facilityIds: [] })}
+                    onChange={() => {
+                      updateDest(editIdx, { regionId: '', districtIds: [], anyDistrict: false, facilityIds: [] });
+                      setDistOpen(true);
+                      setThirdOpen(true);
+                    }}
                   />
                 )}
 
                 {needDistrict && dests[editIdx].regionId !== '' && (
                   <>
                     <Label icon="mapPin" note="moja au zaidi">Wilaya za lengo</Label>
-                    <SquareChips
-                      options={(destDistricts[Number(dests[editIdx].regionId)] || []).map((d) => ({ value: String(d.id), label: d.name }))}
-                      value={dests[editIdx].anyDistrict ? [] : dests[editIdx].districtIds.map(String)}
-                      onToggle={(v) => toggleDestDistrict(editIdx, Number(v))}
-                      anyLabel="Wilaya yoyote"
-                      anyOn={dests[editIdx].anyDistrict}
-                      onAny={() => updateDest(editIdx, { anyDistrict: true, districtIds: [], facilityIds: [] })}
-                    />
+                    {(dests[editIdx].anyDistrict || dests[editIdx].districtIds.length > 0) && !distOpen ? (
+                      <Chosen
+                        icon="mapPin"
+                        text={dests[editIdx].anyDistrict ? 'Wilaya yoyote' : edDistNames.join(', ')}
+                        onChange={() => setDistOpen(true)}
+                      />
+                    ) : (
+                      <>
+                        <ListHead k={`WILAYA · ${regionName(dests[editIdx].regionId)}`} n={edDistricts.length} />
+                        <SquareChips
+                          options={edDistricts.map((d) => ({ value: String(d.id), label: d.name }))}
+                          value={dests[editIdx].anyDistrict ? [] : dests[editIdx].districtIds.map(String)}
+                          onToggle={(v) => {
+                            toggleDestDistrict(editIdx, Number(v));
+                            setDistOpen(false);
+                          }}
+                          anyLabel="Wilaya yoyote"
+                          anyOn={dests[editIdx].anyDistrict}
+                          onAny={() => {
+                            updateDest(editIdx, { anyDistrict: true, districtIds: [], facilityIds: [] });
+                            setDistOpen(false);
+                          }}
+                        />
+                      </>
+                    )}
                   </>
                 )}
 
-                {third && dests[editIdx].regionId !== '' && (isWizara || !dests[editIdx].anyDistrict) && (
+                {third && dests[editIdx].regionId !== '' && (isWizara || dests[editIdx].districtIds.length > 0) && (
                   <>
-                    <Label icon={third.icon} note="moja au zaidi">
-                      {isWizara ? 'Hospitali za lengo' : `${third.chip} za lengo`}
-                    </Label>
-                    <ThirdList
-                      head={`${isWizara ? 'HOSPITALI' : third.chip === 'Shule' ? 'SHULE' : 'VITUO'} · ${
-                        isWizara
-                          ? regionName(dests[editIdx].regionId)
-                          : dests[editIdx].districtIds
-                              .map((id) => (destDistricts[Number(dests[editIdx].regionId)] || []).find((x) => x.id === id)?.name)
-                              .filter(Boolean)
-                              .join(', ')
-                      }`}
-                      options={thirdOptions(
-                        destFacilities[
-                          isWizara || dests[editIdx].anyDistrict || dests[editIdx].districtIds.length !== 1
-                            ? `r:${dests[editIdx].regionId}`
-                            : `d:${dests[editIdx].districtIds[0]}`
-                        ] || [],
-                      )}
-                      value={dests[editIdx].facilityIds}
-                      onToggle={(v) => toggleDestFacility(editIdx, v)}
-                      placeholder={third.tafuta}
-                      multi={isWizara}
-                    />
+                    <Label icon={third.icon}>{edThirdTitle}</Label>
+                    {dests[editIdx].facilityIds.length > 0 && !thirdOpen ? (
+                      <Chosen icon={third.icon} text={edFacNames.join(', ')} onChange={() => setThirdOpen(true)} />
+                    ) : (
+                      <ThirdList
+                        head={`${isWizara ? 'HOSPITALI' : third.chip === 'Shule' ? 'SHULE' : 'VITUO'} · ${
+                          isWizara ? regionName(dests[editIdx].regionId) : edDistNames.join(', ')
+                        }`}
+                        options={thirdOptions(edFacs)}
+                        value={dests[editIdx].facilityIds}
+                        onToggle={(v) => {
+                          toggleDestFacility(editIdx, v);
+                          setThirdOpen(false);
+                        }}
+                        placeholder={third.tafuta}
+                        multi={isWizara}
+                      />
+                    )}
                   </>
                 )}
               </div>
@@ -924,7 +965,17 @@ export default function RegisterContent() {
                         <p className={s.tgName}>{regionName(d.regionId)}</p>
                         <p className={s.tgSub}>{sub || '—'}</p>
                       </div>
-                      <button type="button" className={s.tgEdit} onClick={() => setEditIdx(i)}>Badilisha</button>
+                      <button
+                        type="button"
+                        className={s.tgEdit}
+                        onClick={() => {
+                          setDistOpen(true);
+                          setThirdOpen(true);
+                          setEditIdx(i);
+                        }}
+                      >
+                        Badilisha
+                      </button>
                       {i > 0 && (
                         <button
                           type="button"
@@ -941,14 +992,19 @@ export default function RegisterContent() {
               </div>
             )}
 
-            {dests.length < 5 && (
+            {dests.length < 5 && (editIdx === null || dests[editIdx].regionId !== '') && (
               <button
                 type="button"
                 className={s.add}
                 onClick={() => {
-                  const idx = dests.length;
-                  setDests((arr) => [...arr, emptyDest()]);
-                  setEditIdx(idx);
+                  const current = editIdx !== null ? dests[editIdx] : null;
+                  const kept = dests.filter((d, i) => i !== editIdx && destComplete(d));
+                  const carried = current && current.regionId !== '' ? [current] : [];
+                  const nextArr = [...kept, ...carried, emptyDest()];
+                  setDests(nextArr);
+                  setEditIdx(nextArr.length - 1);
+                  setDistOpen(true);
+                  setThirdOpen(true);
                 }}
               >
                 + Ongeza Mkoa Mwingine
