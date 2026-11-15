@@ -1066,6 +1066,8 @@ export default function RegisterContent() {
             {editIdx === null && (
               <div className={s.tg}>
                 {dests.map((d, i) => {
+                  /* Mstari unaonekana tu pale mkoa umechaguliwa kweli */
+                  if (!d.regionId) return null;
                   const facs = destFacilities[
                     isWizara || d.anyDistrict || d.districtIds.length !== 1 ? `r:${d.regionId}` : `d:${d.districtIds[0]}`
                   ] || [];
@@ -1102,16 +1104,27 @@ export default function RegisterContent() {
                       >
                         Badilisha
                       </button>
-                      {i > 0 && (
-                        <button
-                          type="button"
-                          className={s.tgDel}
-                          aria-label="Futa mkoa"
-                          onClick={() => setDests((arr) => arr.filter((_, idx) => idx !== i))}
-                        >
-                          <Icon name="xSquare" size={16} strokeWidth={2} />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        className={s.tgDel}
+                        aria-label="Futa mkoa"
+                        onClick={() => {
+                          const kept = dests.filter((_, idx) => idx !== i);
+                          if (kept.length === 0) {
+                            /* Amefuta wote: anaanza upya na gridi ya mikoa wazi */
+                            setDests([emptyDest()]);
+                            setEditIdx(0);
+                            setDistOpen(true);
+                            setThirdOpen(false);
+                            return;
+                          }
+                          /* Wa pili anapanda kuwa wa kwanza */
+                          setDests(kept);
+                          setEditIdx((e) => (e === null ? null : e > i ? e - 1 : e));
+                        }}
+                      >
+                        <Icon name="xSquare" size={16} strokeWidth={2} />
+                      </button>
                     </div>
                   );
                 })}
@@ -1145,7 +1158,8 @@ export default function RegisterContent() {
               value={years}
               onChange={(v) => {
                 setYears(v);
-                if (editIdx !== null) closeEditor();
+                /* Akichagua miaka kabla ya kumaliza mkoa: hakuna kinachofungwa */
+                if (editIdx !== null && dests[editIdx] && destComplete(dests[editIdx])) closeEditor();
               }}
             />
           </>
