@@ -491,6 +491,7 @@ export function ThirdList({
   skipLabel,
   multi,
   loading,
+  onClose,
 }: {
   head: string;
   options: Opt[];
@@ -500,6 +501,8 @@ export function ThirdList({
   skipLabel?: string;
   multi?: boolean;
   loading?: boolean;
+  /** Orodha ya hiari: kitufe cha "× Funga" kinachoirudisha kwenye kitufe cha + Chagua */
+  onClose?: () => void;
 }) {
   const [q, setQ] = useState('');
   const list = options.filter((o) => o.label.toLowerCase().includes(q.trim().toLowerCase()));
@@ -517,7 +520,11 @@ export function ThirdList({
           <div className={s.msList}>
             <div className={s.msHead}>
               <span>{head}</span>
-              <b>{list.length}</b>
+              {onClose ? (
+                <button type="button" className={s.msClose} onClick={onClose}>× Funga</button>
+              ) : (
+                <b>{list.length}</b>
+              )}
             </div>
             <div className={s.msScroll}>
               {skipLabel && !q && (

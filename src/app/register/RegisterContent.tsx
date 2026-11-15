@@ -877,6 +877,7 @@ export default function RegisterContent() {
                     placeholder={third.tafuta}
                     skipLabel={third.lazima ? undefined : `Ruka – sitaki kuchagua ${third.neno}`}
                     loading={loadingFacilities}
+                    onClose={third.lazima ? undefined : () => setCurThirdOpen(false)}
                   />
                 ) : (
                   <button type="button" className={s.addOpt} onClick={() => setCurThirdOpen(true)}>
@@ -993,6 +994,7 @@ export default function RegisterContent() {
                         }}
                         placeholder={third.tafuta}
                         multi={isWizara}
+                        onClose={isWizara ? undefined : () => setThirdOpen(false)}
                       />
                     ) : (
                       <button type="button" className={s.addOpt} onClick={() => setThirdOpen(true)}>
