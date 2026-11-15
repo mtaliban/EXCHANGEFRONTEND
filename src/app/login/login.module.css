@@ -42,22 +42,26 @@
   left: 18px;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  height: 36px;
-  padding: 0 14px 0 9px;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 9px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 7px;
   background: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text);
   text-decoration: none;
   transition: border-color 0.15s, background 0.15s;
 }
 
 .back:hover {
-  border-color: #9ca3af;
-  background: #f9fafb;
+  border-color: var(--blue);
+  background: #f8faff;
+}
+
+.back:active {
+  background: #eef2ff;
 }
 
 .back svg {
