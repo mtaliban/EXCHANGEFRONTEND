@@ -873,8 +873,14 @@ export default function RegisterContent() {
                     value={null}
                     hidden={dests.filter((_, i) => i !== editIdx).map((d) => String(d.regionId))}
                     onPick={(v) => {
-                      updateDest(editIdx, { regionId: Number(v), districtIds: [], anyDistrict: false, facilityIds: [] });
-                      setDistOpen(true);
+                      /* Mkoa peke yake unatosha: wilaya inakuwa "Wilaya yoyote" na inajifunga */
+                      updateDest(editIdx, {
+                        regionId: Number(v),
+                        districtIds: [],
+                        anyDistrict: !isWizara,
+                        facilityIds: [],
+                      });
+                      setDistOpen(false);
                       setThirdOpen(false);
                       setCurThirdOpen(false);
                     }}
