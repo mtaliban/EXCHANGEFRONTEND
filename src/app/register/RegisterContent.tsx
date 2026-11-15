@@ -948,8 +948,8 @@ export default function RegisterContent() {
                           options={edDistricts.map((d) => ({ value: String(d.id), label: d.name }))}
                           value={dests[editIdx].anyDistrict ? [] : dests[editIdx].districtIds.map(String)}
                           onToggle={(v) => {
+                            /* Wilaya nyingi: orodha inabaki wazi hadi atakapoenda ngazi ya tatu */
                             toggleDestDistrict(editIdx, Number(v));
-                            setDistOpen(false);
                             setThirdOpen(false);
                           }}
                           anyLabel="Wilaya yoyote"
@@ -957,7 +957,6 @@ export default function RegisterContent() {
                           onAny={() => {
                             if (dests[editIdx].anyDistrict) return;
                             updateDest(editIdx, { anyDistrict: true, districtIds: [], facilityIds: [] });
-                            setDistOpen(false);
                           }}
                         />
                       </>
@@ -967,7 +966,10 @@ export default function RegisterContent() {
 
                 {third && dests[editIdx].regionId !== '' && (isWizara || dests[editIdx].districtIds.length > 0) && (
                   <>
-                    <Label icon={third.icon} note={isWizara ? 'moja au zaidi' : 'hiari'}>{edThirdTitle}</Label>
+                    {/* Kichwa kinaonekana orodha ikiwa wazi au kitu kimechaguliwa; kitufe cha + hakina kichwa */}
+                    {(isWizara || thirdOpen || dests[editIdx].facilityIds.length > 0) && (
+                      <Label icon={third.icon} note={isWizara ? 'moja au zaidi' : 'hiari'}>{edThirdTitle}</Label>
+                    )}
                     {dests[editIdx].facilityIds.length > 0 && !thirdOpen ? (
                       <Chosen icon={third.icon} text={edFacNames.join(', ')} onChange={() => setThirdOpen(true)} />
                     ) : isWizara || thirdOpen ? (
@@ -986,7 +988,15 @@ export default function RegisterContent() {
                         onClose={isWizara ? undefined : () => setThirdOpen(false)}
                       />
                     ) : (
-                      <button type="button" className={s.addOpt} onClick={() => setThirdOpen(true)}>
+                      <button
+                        type="button"
+                        className={s.addOpt}
+                        onClick={() => {
+                          /* Kuingia shule za lengo: wilaya zilizochaguliwa zinafungwa kuwa kadi */
+                          setDistOpen(false);
+                          setThirdOpen(true);
+                        }}
+                      >
                         + Chagua {third.chip === 'Shule' ? 'shule' : 'vituo'} za lengo (hiari)
                       </button>
                     )}
@@ -1026,7 +1036,8 @@ export default function RegisterContent() {
                         type="button"
                         className={s.tgEdit}
                         onClick={() => {
-                          setDistOpen(true);
+                          /* Wilaya zikiwa tayari kuchaguliwa zinafungwa kuwa kadi */
+                          setDistOpen(d.districtIds.length === 0 && !d.anyDistrict);
                           setThirdOpen(true);
                           setEditIdx(i);
                         }}
