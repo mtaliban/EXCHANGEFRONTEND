@@ -141,7 +141,10 @@ export default function RegisterContent() {
    * "agriculture" n.k., kwa hiyo tunakagua code na jina pamoja. */
   const KILIMO_RE = /kilimo|agric|livestock|mifugo/i;
   const isKilimo = !!category && KILIMO_RE.test(`${category} ${departments.find((d) => d.code === category)?.name ?? ''}`);
-  const skipKada = isKilimo;
+  /* Watumishi wa Umma: kada inachaguliwa ndani ya Hatua 2, kwa hiyo hatua ni 4 tu. */
+  const UMMA_RE = /public|umma|utumishi/i;
+  const isUmma = !!category && UMMA_RE.test(`${category} ${departments.find((d) => d.code === category)?.name ?? ''}`);
+  const skipKada = isKilimo || isUmma;
 
   /** Hatua zinazotumika kwa idara iliyochaguliwa. */
   const flow = useMemo(() => {
@@ -408,7 +411,10 @@ export default function RegisterContent() {
       case 'utambulisho':
         return !nameError && !phoneError && !altError && primaryCheck !== 'taken' && altCheck !== 'taken';
       case 'idara':
-        return !!category && (!isHealth || !!sector) && (!isEducation || !!educationLevel);
+        if (!category || (isHealth && !sector) || (isEducation && !educationLevel)) return false;
+        /* Umma: kada ni sehemu ya hatua hii, kwa hiyo inahitajika kabla ya kuendelea. */
+        if (isUmma) return cadres.length === 0 ? true : !!cadreCode;
+        return true;
       case 'kada':
         if (isEducation) return selectedSubjects.length === 2;
         return cadres.length === 0 ? true : !!cadreCode;
@@ -423,7 +429,7 @@ export default function RegisterContent() {
     }
   }, [
     cur, nameError, phoneError, altError, primaryCheck, altCheck, category, isHealth, sector,
-    isEducation, educationLevel, selectedSubjects.length, cadres.length, cadreCode, curRegion,
+    isEducation, educationLevel, isUmma, selectedSubjects.length, cadres.length, cadreCode, curRegion,
     isWizara, curFacility, curDistrict, years, dests,
   ]);
 
@@ -719,6 +725,25 @@ export default function RegisterContent() {
                 branchValue={branchValue}
                 onBranch={onBranch}
               />
+            )}
+
+            {/* Umma: kada inachaguliwa ndani ya hatua hii */}
+            {isUmma && !loadingDepts && (
+              loadingCadres ? (
+                <div className={s.loadRow}><span className={s.spin} /> Inapakia kada...</div>
+              ) : cadres.length === 0 ? (
+                <p className={s.noteBlue}>
+                  Idara hii haijawekwa kada bado — unaweza kuendelea; utapatanishwa na wenzako wote wa idara hii.
+                </p>
+              ) : (
+                <KadaPicker
+                  group="Umma"
+                  options={cadreOptions}
+                  value={cadreCode || null}
+                  onChange={changeCadre}
+                  mfano="VEO"
+                />
+              )
             )}
           </>
         )}
@@ -1075,7 +1100,7 @@ export default function RegisterContent() {
             </button>
           )}
 
-          <button type="button" className={s.btn} disabled={sending} onClick={next}>
+          <button type="button" className={cx(s.btn, last && s.btnFinal)} disabled={sending} onClick={next}>
             {!last ? (
               <>
                 Endelea <Icon name="chevronRight" size={14} strokeWidth={2.6} />
