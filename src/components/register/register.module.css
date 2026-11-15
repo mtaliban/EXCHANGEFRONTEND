@@ -21,7 +21,8 @@
   min-height: 100dvh;
   max-width: 440px;
   margin: 0 auto;
-  padding: 16px 12.5% 28px;
+  /* Upana wa fomu: 85% ya skrini kwenye simu (padding 7.5% kila upande) */
+  padding: 16px 7.5% 28px;
   background: #fff;
   color: var(--text);
   font-family: Inter, Roboto, system-ui, -apple-system, sans-serif;
