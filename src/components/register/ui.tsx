@@ -38,13 +38,36 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
 }
 
 /* ---------------- Label (ikoni ndani ya mraba wa bluu hafifu) ---------------- */
-export function Label({ icon, children, note }: { icon?: string; children: React.ReactNode; note?: string }) {
+export function Label({
+  icon,
+  children,
+  note,
+  err,
+}: {
+  icon?: string;
+  children: React.ReactNode;
+  note?: string;
+  /** Kosa la hatua: mstari mmoja mekundu chini ya kichwa, ikoni ikiwa nyekundu. */
+  err?: string | null;
+}) {
   return (
-    <div className={s.label}>
-      {icon && <span className={s.lblIc}><Icon name={icon} size={16} strokeWidth={2.1} /></span>}
-      {children}
-      {note && <em className={note === 'hiari' ? s.noteBold : undefined}>({note})</em>}
-    </div>
+    <>
+      <div className={cx(s.label, err && s.labelNo)}>
+        {icon && <span className={cx(s.lblIc, err && s.lblIcNo)}><Icon name={icon} size={16} strokeWidth={2.1} /></span>}
+        {children}
+        {note && <em className={note === 'hiari' ? s.noteBold : undefined}>({note})</em>}
+      </div>
+      {err && <Kosa>{err}</Kosa>}
+    </>
+  );
+}
+
+/* ---------- Ujumbe wa kosa (mtu akibonyeza Endelea bila kujaza) ---------- */
+export function Kosa({ children }: { children: React.ReactNode }) {
+  return (
+    <p className={s.kosa} data-kosa role="alert">
+      <Icon name="alertCircle" size={14} strokeWidth={2.4} /> <span>{children}</span>
+    </p>
   );
 }
 
@@ -87,10 +110,10 @@ export function PhoneField({
           ) : null}
         </span>
       </div>
-      {hali === 'si_sahihi' && <p className={cx(s.phMsg, s.phMsgNo)}>Namba si sahihi</p>}
+      {hali === 'si_sahihi' && <p className={cx(s.phMsg, s.phMsgNo)} data-kosa>Namba si sahihi</p>}
       {hali === 'huru' && <p className={cx(s.phMsg, s.phMsgOk)}>Namba hii ipo huru</p>}
       {hali === 'imetumika' && (
-        <p className={cx(s.phMsg, s.phMsgNo)}>
+        <p className={cx(s.phMsg, s.phMsgNo)} data-kosa>
           Namba hii imeshasajiliwa. <a href="/login">Ingia hapa</a>
         </p>
       )}

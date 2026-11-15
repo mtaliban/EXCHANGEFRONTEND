@@ -131,6 +131,17 @@
 .label em { font-style: normal; font-weight: 500; font-size: 12.5px; color: var(--muted); }
 /* "(hiari)" ni nzito na nyeusi */
 .label em.noteBold { color: var(--text); font-weight: 700; }
+.labelNo { color: #dc2626; }
+.lblIcNo { background: #fef2f2; color: #dc2626; }
+/* MAKOSA: mtu akibonyeza Endelea bila kujaza – maneno mekundu tu, mstari MMOJA */
+.kosa {
+  display: flex; align-items: center; gap: 5px; margin: 6px 0 0; min-width: 0;
+  font-size: 12.5px; font-weight: 600; color: #b91c1c; scroll-margin: 120px;
+  white-space: nowrap; overflow: hidden;
+}
+.kosa svg { flex: none; }
+.kosa span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.label + .kosa { margin: -3px 0 8px; }
 
 /* Kitufe cha kufungua sehemu ya hiari */
 .addOpt {
@@ -438,10 +449,13 @@
 }
 .btn {
   display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 10px 0 14px; border: 0; border-radius: 7px;
-  background: var(--blue-soft); color: var(--blue); font: inherit; font-size: 13px; font-weight: 700;
+  background: #fff; color: var(--text); box-shadow: inset 0 0 0 1px var(--line);
+  font: inherit; font-size: 13px; font-weight: 700;
   cursor: pointer; margin-left: auto; white-space: nowrap; flex: none;
 }
-.btn:hover { background: #dbe4fb; }
+.btn:hover { background: var(--blue-tint); }
+/* Hatua haijakamilika: hafifu LAKINI inabonyezeka (si disabled) */
+.btnOff { opacity: .45; }
 /* Hatua ya mwisho: Najisajili nyeupe, mpaka hafifu wa bluu, maandishi mazito ya bluu */
 .btnFinal { background: #fff; color: var(--blue); box-shadow: inset 0 0 0 1.5px #c7d2fe; }
 .btnFinal:hover { background: var(--blue-tint); }

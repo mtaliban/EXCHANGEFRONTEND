@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Icon from '@/components/register/Icon';
 import s from '@/components/register/register.module.css';
 import {
-  Chosen, IdaraList, KadaPicker, Label, ListHead, MasomoPicker, PhoneField, Progress, RegionGrid, SquareChips,
+  Chosen, IdaraList, KadaPicker, Kosa, Label, ListHead, MasomoPicker, PhoneField, Progress, RegionGrid, SquareChips,
   Stepper, Summary, ThirdList, YearsBand, cx, type HaliNamba, type Opt,
 } from '@/components/register/ui';
 import {
@@ -88,7 +88,6 @@ export default function RegisterContent() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
-  const [touched, setTouched] = useState({ name: false, phone: false, alt: false });
   const [attempted, setAttempted] = useState(false);
   const [primaryCheck, setPrimaryCheck] = useState<CheckState>('idle');
   const [altCheck, setAltCheck] = useState<CheckState>('idle');
@@ -331,18 +330,26 @@ export default function RegisterContent() {
 
   const nameMsg = (v: string) => {
     const c = v.trim();
-    if (!c) return 'Tafadhali ingiza majina yako.';
-    return c.length < 3 ? 'Jina lazima liwe na angalau herufi 3' : null;
+    return c.length < 3 ? 'Andika jina lako kamili' : null;
   };
-  const phoneMsg = (v: string) => {
+  const phoneMsg = (v: string, neno = 'namba ya simu') => {
     const c = clean(v);
-    if (!c) return 'Tafadhali ingiza namba yako.';
+    if (!c) return `Andika ${neno}`;
     return PHONE_RE.test(c) ? null : 'Namba si sahihi';
   };
 
   const nameError = nameMsg(fullName);
   const phoneError = phoneMsg(phone);
-  const altError = phoneMsg(whatsapp);
+  const altError = phoneMsg(whatsapp, 'namba ya WhatsApp');
+
+  /** Kosa la Hatua 2: idara, tawi au kada ya Umma. */
+  const idaraErr = (): string | null => {
+    if (!category) return 'Chagua idara yako';
+    if (isHealth && !sector) return 'Chagua Wizara au TAMISEMI';
+    if (isEducation && !educationLevel) return 'Chagua Msingi au Sekondari';
+    if (isUmma && cadres.length > 0 && !cadreCode) return 'Chagua kada yako';
+    return null;
+  };
 
   /** Hali ya namba: tupu → hakuna; si sahihi → "si_sahihi"; vinginevyo hali ya server. */
   const haliOf = (v: string, check: CheckState): HaliNamba => {
@@ -586,8 +593,11 @@ export default function RegisterContent() {
   const next = () => {
     setError(null);
     if (!canNext) {
+      /* Endelea haiendi: onyesha makosa, kisha shuka hadi la kwanza */
       setAttempted(true);
-      if (cur === 'lengo' && editIdx !== null) closeEditor();
+      requestAnimationFrame(() =>
+        document.querySelector('[data-kosa]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+      );
       return;
     }
     setAttempted(false);
@@ -671,34 +681,33 @@ export default function RegisterContent() {
           <>
             <Label icon="userCircle">Jina Kamili</Label>
             <input
-              className={cx(s.input, (touched.name || attempted) && nameError && s.inputError)}
+              className={s.input}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              onBlur={() => setTouched((t) => ({ ...t, name: true }))}
               placeholder="Mfano: Kieffer Madyedye"
               autoComplete="name"
             />
-            {(touched.name || attempted) && nameError && <p className={s.err}>{nameError}</p>}
+            {attempted && nameError && <Kosa>{nameError}</Kosa>}
 
             <Label icon="phone">Namba ya Simu</Label>
             <PhoneField
               value={phone}
               onChange={setPhone}
-              onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
               placeholder="0712345678"
               hali={haliOf(phone, primaryCheck)}
               checking={!phoneError && primaryCheck === 'checking'}
             />
+            {attempted && !clean(phone) && <Kosa>{phoneError}</Kosa>}
 
             <Label icon="waLogo">Namba ya WhatsApp</Label>
             <PhoneField
               value={whatsapp}
               onChange={setWhatsapp}
-              onBlur={() => setTouched((t) => ({ ...t, alt: true }))}
               placeholder="0623456789"
               hali={haliOf(whatsapp, altCheck)}
               checking={!altError && altCheck === 'checking'}
             />
+            {attempted && !clean(whatsapp) && <Kosa>{altError}</Kosa>}
           </>
         )}
 
@@ -712,7 +721,7 @@ export default function RegisterContent() {
                 <span>{deptError}</span>
               </div>
             )}
-            <Label icon="layers">Chagua Idara</Label>
+            <Label icon="layers" err={attempted ? idaraErr() : null}>Chagua Idara</Label>
             {loadingDepts ? (
               <div className={s.loadRow}><span className={s.spin} /> Inapakia idara...</div>
             ) : (
@@ -750,7 +759,19 @@ export default function RegisterContent() {
                 },
               ]}
             />
-            <Label icon="tag" note="chagua 2">Masomo unayofundisha</Label>
+            <Label
+              icon="tag"
+              note="chagua 2"
+              err={
+                attempted && selectedSubjects.length < 2
+                  ? selectedSubjects.length === 0
+                    ? 'Chagua masomo 2'
+                    : 'Chagua somo la pili'
+                  : null
+              }
+            >
+              Masomo unayofundisha
+            </Label>
             <MasomoPicker
               options={subjects.map((x) => ({ value: x.code, label: x.name }))}
               value={selectedSubjects}
@@ -777,7 +798,13 @@ export default function RegisterContent() {
                   : [{ k: 'Idara', icon: 'idBadge', v: deptName }]
               }
             />
-            <Label icon="idBadge" note="chagua moja">Kada yako</Label>
+            <Label
+              icon="idBadge"
+              note="chagua moja"
+              err={attempted && cadres.length > 0 && !cadreCode ? 'Chagua kada yako' : null}
+            >
+              Kada yako
+            </Label>
             {loadingCadres ? (
               <div className={s.loadRow}><span className={s.spin} /> Inapakia kada...</div>
             ) : cadres.length === 0 ? (
@@ -810,7 +837,7 @@ export default function RegisterContent() {
               at={!curRegion ? 0 : needDistrict && !curDistrict ? 1 : third ? 2 : 1}
             />
 
-            <Label icon="mapFold">Mkoa Wako</Label>
+            <Label icon="mapFold" err={attempted && !curRegion ? 'Chagua mkoa wako' : null}>Mkoa Wako</Label>
             {!curRegion ? (
               <RegionGrid
                 options={regionOptions}
@@ -827,7 +854,12 @@ export default function RegisterContent() {
 
             {needDistrict && curRegion !== '' && (
               <>
-                <Label icon="mapPin">Wilaya</Label>
+                <Label
+                  icon="mapPin"
+                  err={attempted && curDistrict === '' ? 'Chagua wilaya yako' : null}
+                >
+                  Wilaya
+                </Label>
                 {curDistrict === '' ? (
                   <SquareChips
                     options={districtOptions}
@@ -846,7 +878,11 @@ export default function RegisterContent() {
 
             {third && curRegion !== '' && (isWizara || curDistrict !== '') && (
               <>
-                <Label icon={third.icon} note={third.lazima ? undefined : 'hiari'}>
+                <Label
+                  icon={third.icon}
+                  note={third.lazima ? undefined : 'hiari'}
+                  err={third.lazima && attempted && !curFacility ? 'Chagua hospitali yako' : null}
+                >
                   {curFacility ? third.yako : third.chagua}
                 </Label>
                 {curFacility ? (
@@ -899,7 +935,9 @@ export default function RegisterContent() {
                   at={!dests[editIdx].regionId ? 0 : dests[editIdx].facilityIds.length > 0 && third ? 2 : 1}
                 />
 
-                <Label icon="mapFold">Mkoa</Label>
+                <Label icon="mapFold" err={attempted && !dests[editIdx].regionId ? 'Chagua mkoa unaotaka kwenda' : null}>
+                  Mkoa
+                </Label>
                 {!dests[editIdx].regionId ? (
                   <RegionGrid
                     options={regionOptions}
@@ -934,7 +972,17 @@ export default function RegisterContent() {
 
                 {needDistrict && dests[editIdx].regionId !== '' && (
                   <>
-                    <Label icon="mapPin" note="moja au zaidi">Wilaya za lengo</Label>
+                    <Label
+                      icon="mapPin"
+                      note="moja au zaidi"
+                      err={
+                        attempted && !dests[editIdx].anyDistrict && dests[editIdx].districtIds.length === 0
+                          ? 'Chagua wilaya ya mkoa huu'
+                          : null
+                      }
+                    >
+                      Wilaya za lengo
+                    </Label>
                     {(dests[editIdx].anyDistrict || dests[editIdx].districtIds.length > 0) && !distOpen ? (
                       <Chosen
                         icon="mapPin"
@@ -968,7 +1016,17 @@ export default function RegisterContent() {
                   <>
                     {/* Kichwa kinaonekana orodha ikiwa wazi au kitu kimechaguliwa; kitufe cha + hakina kichwa */}
                     {(isWizara || thirdOpen || dests[editIdx].facilityIds.length > 0) && (
-                      <Label icon={third.icon} note={isWizara ? 'moja au zaidi' : 'hiari'}>{edThirdTitle}</Label>
+                      <Label
+                        icon={third.icon}
+                        note={isWizara ? 'moja au zaidi' : 'hiari'}
+                        err={
+                          isWizara && attempted && dests[editIdx].facilityIds.length === 0
+                            ? 'Chagua hospitali ya mkoa huu'
+                            : null
+                        }
+                      >
+                        {edThirdTitle}
+                      </Label>
                     )}
                     {dests[editIdx].facilityIds.length > 0 && !thirdOpen ? (
                       <Chosen icon={third.icon} text={edFacNames.join(', ')} onChange={() => setThirdOpen(true)} />
@@ -1079,7 +1137,9 @@ export default function RegisterContent() {
               </button>
             )}
 
-            <Label icon="calendar">Umefanya kazi kwa miaka mingapi?</Label>
+            <Label icon="calendar" err={attempted && !years ? 'Chagua miaka ya kazi' : null}>
+              Umefanya kazi kwa miaka mingapi?
+            </Label>
             <YearsBand
               options={YEARS}
               value={years}
@@ -1102,7 +1162,12 @@ export default function RegisterContent() {
             </button>
           )}
 
-          <button type="button" className={cx(s.btn, last && s.btnFinal)} disabled={sending} onClick={next}>
+          <button
+            type="button"
+            className={cx(s.btn, last && s.btnFinal, !canNext && s.btnOff)}
+            disabled={sending}
+            onClick={next}
+          >
             {!last ? (
               <>
                 Endelea <Icon name="chevronRight" size={14} strokeWidth={2.6} />
