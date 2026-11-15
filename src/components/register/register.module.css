@@ -129,6 +129,16 @@
   display: grid; place-items: center; flex: none;
 }
 .label em { font-style: normal; font-weight: 500; font-size: 12.5px; color: var(--muted); }
+/* "(hiari)" ni nzito na nyeusi */
+.label em.noteBold { color: var(--text); font-weight: 700; }
+
+/* Kitufe cha kufungua sehemu ya hiari */
+.addOpt {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; height: 40px; margin-top: 8px; border: 1px solid var(--blue-line); border-radius: 10px;
+  background: #fff; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--blue); cursor: pointer;
+}
+.addOpt:hover { background: var(--blue-tint); }
 
 /* ---------------- INPUT ---------------- */
 .input {

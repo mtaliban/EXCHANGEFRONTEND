@@ -117,13 +117,15 @@ export default function RegisterContent() {
   const [curDistricts, setCurDistricts] = useState<District[]>([]);
   const [curFacilities, setCurFacilities] = useState<Facility[]>([]);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
+  /** Shule/kituo/ofisi ni hiari: orodha imefungwa mpaka mtumiaji abonyeze. */
+  const [curThirdOpen, setCurThirdOpen] = useState(false);
 
   // Hatua 5
   const [dests, setDests] = useState<DestEntry[]>([emptyDest()]);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   /** Wilaya/shule za lengo zinafunguka; zikichaguliwa hujifunga kuwa kadi. */
   const [distOpen, setDistOpen] = useState(true);
-  const [thirdOpen, setThirdOpen] = useState(true);
+  const [thirdOpen, setThirdOpen] = useState(false);
   const [destDistricts, setDestDistricts] = useState<Record<number, District[]>>({});
   const [destFacilities, setDestFacilities] = useState<Record<string, Facility[]>>({});
   const [years, setYears] = useState<string | null>(null);
@@ -582,7 +584,7 @@ export default function RegisterContent() {
     });
     setEditIdx(null);
     setDistOpen(true);
-    setThirdOpen(true);
+    setThirdOpen(false);
   }
 
   /* ── Kuingia Lengo: fungua mhariri wa mkoa usiokamilika ── */
@@ -591,7 +593,7 @@ export default function RegisterContent() {
     const i = dests.findIndex((d) => !destComplete(d));
     if (i >= 0) {
       setDistOpen(true);
-      setThirdOpen(true);
+      setThirdOpen(false);
       setEditIdx(i);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -787,7 +789,7 @@ export default function RegisterContent() {
               <Chosen
                 icon="mapFold"
                 text={regionName(curRegion)}
-                onChange={() => { setCurRegion(''); setCurDistrict(''); setCurFacility(''); }}
+                onChange={() => { setCurRegion(''); setCurDistrict(''); setCurFacility(''); setCurThirdOpen(false); }}
               />
             )}
 
@@ -798,13 +800,13 @@ export default function RegisterContent() {
                   <SquareChips
                     options={districtOptions}
                     value={[]}
-                    onToggle={(v) => setCurDistrict(Number(v))}
+                    onToggle={(v) => { setCurDistrict(Number(v)); setCurThirdOpen(false); }}
                   />
                 ) : (
                   <Chosen
                     icon="mapPin"
                     text={curDistricts.find((d) => d.id === Number(curDistrict))?.name || ''}
-                    onChange={() => { setCurDistrict(''); setCurFacility(''); }}
+                    onChange={() => { setCurDistrict(''); setCurFacility(''); setCurThirdOpen(false); }}
                   />
                 )}
               </>
@@ -812,14 +814,16 @@ export default function RegisterContent() {
 
             {third && curRegion !== '' && (isWizara || curDistrict !== '') && (
               <>
-                <Label icon={third.icon}>{curFacility ? third.yako : third.chagua}</Label>
+                <Label icon={third.icon} note={third.lazima ? undefined : 'hiari'}>
+                  {curFacility ? third.yako : third.chagua}
+                </Label>
                 {curFacility ? (
                   <Chosen
                     icon={third.icon}
                     text={curFacFacility?.name || 'Imechaguliwa'}
                     onChange={() => setCurFacility('')}
                   />
-                ) : (
+                ) : third.lazima || curThirdOpen ? (
                   <ThirdList
                     head={`${third.chip === 'Shule' ? 'SHULE' : third.chip === 'Kituo' ? 'VITUO' : 'HOSPITALI'} · ${
                       isWizara ? regionName(curRegion) : curDistricts.find((d) => d.id === Number(curDistrict))?.name || ''
@@ -831,6 +835,10 @@ export default function RegisterContent() {
                     skipLabel={third.lazima ? undefined : `Ruka – sitaki kuchagua ${third.neno}`}
                     loading={loadingFacilities}
                   />
+                ) : (
+                  <button type="button" className={s.addOpt} onClick={() => setCurThirdOpen(true)}>
+                    + Chagua {third.chip === 'Shule' ? 'shule' : 'kituo'} (hiari)
+                  </button>
                 )}
               </>
             )}
@@ -867,7 +875,8 @@ export default function RegisterContent() {
                     onPick={(v) => {
                       updateDest(editIdx, { regionId: Number(v), districtIds: [], anyDistrict: false, facilityIds: [] });
                       setDistOpen(true);
-                      setThirdOpen(true);
+                      setThirdOpen(false);
+                      setCurThirdOpen(false);
                     }}
                   />
                 ) : (
@@ -877,7 +886,8 @@ export default function RegisterContent() {
                     onChange={() => {
                       updateDest(editIdx, { regionId: '', districtIds: [], anyDistrict: false, facilityIds: [] });
                       setDistOpen(true);
-                      setThirdOpen(true);
+                      setThirdOpen(false);
+                      setCurThirdOpen(false);
                     }}
                   />
                 )}
@@ -900,6 +910,7 @@ export default function RegisterContent() {
                           onToggle={(v) => {
                             toggleDestDistrict(editIdx, Number(v));
                             setDistOpen(false);
+                            setThirdOpen(false);
                           }}
                           anyLabel="Wilaya yoyote"
                           anyOn={dests[editIdx].anyDistrict}
@@ -915,10 +926,10 @@ export default function RegisterContent() {
 
                 {third && dests[editIdx].regionId !== '' && (isWizara || dests[editIdx].districtIds.length > 0) && (
                   <>
-                    <Label icon={third.icon}>{edThirdTitle}</Label>
+                    <Label icon={third.icon} note={isWizara ? 'moja au zaidi' : 'hiari'}>{edThirdTitle}</Label>
                     {dests[editIdx].facilityIds.length > 0 && !thirdOpen ? (
                       <Chosen icon={third.icon} text={edFacNames.join(', ')} onChange={() => setThirdOpen(true)} />
-                    ) : (
+                    ) : isWizara || thirdOpen ? (
                       <ThirdList
                         head={`${isWizara ? 'HOSPITALI' : third.chip === 'Shule' ? 'SHULE' : 'VITUO'} · ${
                           isWizara ? regionName(dests[editIdx].regionId) : edDistNames.join(', ')
@@ -932,6 +943,10 @@ export default function RegisterContent() {
                         placeholder={third.tafuta}
                         multi={isWizara}
                       />
+                    ) : (
+                      <button type="button" className={s.addOpt} onClick={() => setThirdOpen(true)}>
+                        + Chagua {third.chip === 'Shule' ? 'shule' : 'vituo'} za lengo (hiari)
+                      </button>
                     )}
                   </>
                 )}
@@ -1004,7 +1019,7 @@ export default function RegisterContent() {
                   setDests(nextArr);
                   setEditIdx(nextArr.length - 1);
                   setDistOpen(true);
-                  setThirdOpen(true);
+                  setThirdOpen(false);
                 }}
               >
                 + Ongeza Mkoa Mwingine

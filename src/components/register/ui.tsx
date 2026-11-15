@@ -43,7 +43,7 @@ export function Label({ icon, children, note }: { icon?: string; children: React
     <div className={s.label}>
       {icon && <span className={s.lblIc}><Icon name={icon} size={16} strokeWidth={2.1} /></span>}
       {children}
-      {note && <em>({note})</em>}
+      {note && <em className={note === 'hiari' ? s.noteBold : undefined}>({note})</em>}
     </div>
   );
 }
