@@ -19,6 +19,8 @@
 
   min-height: 100vh;
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   max-width: 440px;
   margin: 0 auto;
   /* Upana wa fomu: 85% ya skrini kwenye simu (padding 7.5% kila upande) */
@@ -58,7 +60,8 @@
 .back:active { background: var(--blue-soft); }
 
 /* ---------------- Kichwa ---------------- */
-.content { padding-top: 18px; }
+/* Ukurasa mfupi unakaa katikati ya skrini; mrefu unaanza juu */
+.content { margin: auto 0; padding-top: 18px; }
 .title { margin: 0; font-size: 23px; font-weight: 800; text-align: center; letter-spacing: -.3px; }
 .title span { color: var(--blue); }
 .subtitle { margin: 6px 0 0; font-size: 13.5px; color: var(--muted); text-align: center; }
