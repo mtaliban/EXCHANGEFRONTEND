@@ -333,8 +333,13 @@ export default function RegisterContent() {
   const phoneError = phoneMsg(phone);
   const altError = phoneMsg(whatsapp);
 
-  const haliOf = (err: string | null, check: CheckState): HaliNamba =>
-    err ? 'si_sahihi' : check === 'taken' ? 'imetumika' : check === 'available' ? 'huru' : null;
+  /** Hali ya namba: tupu → hakuna; si sahihi → "si_sahihi"; vinginevyo hali ya server. */
+  const haliOf = (v: string, check: CheckState): HaliNamba => {
+    const c = clean(v);
+    if (!c) return null;
+    if (!PHONE_RE.test(c)) return 'si_sahihi';
+    return check === 'taken' ? 'imetumika' : check === 'available' ? 'huru' : null;
+  };
 
   const deptOptions: Opt[] = useMemo(
     () => departments.map((d) => ({ value: d.code, label: d.name, icon: DEPT_ICONS[d.code] || 'building' })),
@@ -633,7 +638,7 @@ export default function RegisterContent() {
               onChange={setPhone}
               onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
               placeholder="0712345678"
-              hali={haliOf(phoneError, primaryCheck)}
+              hali={haliOf(phone, primaryCheck)}
               checking={!phoneError && primaryCheck === 'checking'}
             />
 
@@ -643,7 +648,7 @@ export default function RegisterContent() {
               onChange={setWhatsapp}
               onBlur={() => setTouched((t) => ({ ...t, alt: true }))}
               placeholder="0623456789"
-              hali={haliOf(altError, altCheck)}
+              hali={haliOf(whatsapp, altCheck)}
               checking={!altError && altCheck === 'checking'}
             />
           </>
