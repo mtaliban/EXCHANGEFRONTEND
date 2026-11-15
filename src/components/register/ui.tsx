@@ -209,9 +209,11 @@ export function KadaPicker({
   if (current && !open) {
     return (
       <div className={s.plCard}>
-        <span className={s.plCardIc}><Icon name="briefcase" size={15} strokeWidth={2} /></span>
-        <b>{current.label}</b>
-        {current.code && <span className={s.kdBadgeOn}>{codeLabel(current.code)}</span>}
+        <span className={s.plCardIc}><Icon name="idBadge" size={15} strokeWidth={2} /></span>
+        <div className={s.kdPickBody}>
+          <b>{current.label}</b>
+          {current.code && <span className={s.kdBadgeOn}>{codeLabel(current.code)}</span>}
+        </div>
         <button type="button" onClick={() => setOpen(true)}>Badilisha</button>
       </div>
     );

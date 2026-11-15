@@ -743,7 +743,7 @@ export default function RegisterContent() {
                   : [{ k: 'Idara', icon: 'idBadge', v: deptName }]
               }
             />
-            <Label icon="briefcase" note="chagua moja">Kada yako</Label>
+            <Label icon="idBadge" note="chagua moja">Kada yako</Label>
             {loadingCadres ? (
               <div className={s.loadRow}><span className={s.spin} /> Inapakia kada...</div>
             ) : cadres.length === 0 ? (

@@ -289,7 +289,9 @@
 .kdOn { color: var(--blue); background: var(--blue-tint); }
 .kdOn .idRadio { border: 5px solid var(--blue); }
 .kdOn .kdCode { background: var(--blue); color: #fff; }
-/* Beji ya kada iliyochaguliwa (kwenye kadi iliyojifunga) */
+/* Kadi ya kada iliyochaguliwa: jina juu, beji chini */
+.kdPickBody { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.kdPickBody b { flex: none; font-size: 14px; font-weight: 700; line-height: 1.25; }
 .kdBadgeOn {
   flex: none; max-width: 44%; padding: 4px 8px; border-radius: 6px; background: var(--blue); color: #fff;
   font-size: 11px; font-weight: 800; letter-spacing: .3px;
