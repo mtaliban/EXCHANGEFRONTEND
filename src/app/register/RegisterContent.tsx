@@ -137,8 +137,11 @@ export default function RegisterContent() {
   const isHealth = category === 'health';
   const isWizara = isHealth && sector === 'wizara_afya';
   const isEducation = category === 'education';
-  // Kilimo na Ufugaji haina hatua ya Kada.
-  const skipKada = category === 'agriculture' || category === 'livestock';
+  /* Kilimo na Ufugaji haina hatua ya Kada. Code inaweza kuwa "kilimo",
+   * "agriculture" n.k., kwa hiyo tunakagua code na jina pamoja. */
+  const KILIMO_RE = /kilimo|agric|livestock|mifugo/i;
+  const isKilimo = !!category && KILIMO_RE.test(`${category} ${departments.find((d) => d.code === category)?.name ?? ''}`);
+  const skipKada = isKilimo;
 
   /** Hatua zinazotumika kwa idara iliyochaguliwa. */
   const flow = useMemo(() => {
@@ -347,7 +350,22 @@ export default function RegisterContent() {
   };
 
   const deptOptions: Opt[] = useMemo(
-    () => departments.map((d) => ({ value: d.code, label: d.name, icon: DEPT_ICONS[d.code] || 'building' })),
+    () =>
+      departments.map((d) => {
+        const t = `${d.code} ${d.name}`.toLowerCase();
+        const kilimo = KILIMO_RE.test(t);
+        const icon = kilimo
+          ? 'leaf'
+          : /health|afya/.test(t)
+            ? 'afya'
+            : /educ|elimu/.test(t)
+              ? 'graduation'
+              : /public|umma|utumishi/.test(t)
+                ? 'idBadge'
+                : DEPT_ICONS[d.code] || 'building';
+        return { value: d.code, label: kilimo ? 'Kilimo na Ufugaji' : d.name, icon };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [departments],
   );
   const regionOptions: Opt[] = useMemo(
