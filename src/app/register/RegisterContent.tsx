@@ -898,7 +898,8 @@ export default function RegisterContent() {
                         anyDistrict: !isWizara,
                         facilityIds: [],
                       });
-                      setDistOpen(false);
+                      /* Wilaya zinafunguka wazi, "Wilaya yoyote" ikiwa imewaka tayari */
+                      setDistOpen(true);
                       setThirdOpen(false);
                       setCurThirdOpen(false);
                     }}
@@ -939,6 +940,7 @@ export default function RegisterContent() {
                           anyLabel="Wilaya yoyote"
                           anyOn={dests[editIdx].anyDistrict}
                           onAny={() => {
+                            if (dests[editIdx].anyDistrict) return;
                             updateDest(editIdx, { anyDistrict: true, districtIds: [], facilityIds: [] });
                             setDistOpen(false);
                           }}
