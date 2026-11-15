@@ -724,26 +724,15 @@ export default function RegisterContent() {
                 branchOf={branchOf}
                 branchValue={branchValue}
                 onBranch={onBranch}
+                kada={isUmma ? { options: cadreOptions, value: cadreCode || null, onChange: changeCadre, loading: loadingCadres } : undefined}
               />
             )}
 
-            {/* Umma: kada inachaguliwa ndani ya hatua hii */}
-            {isUmma && !loadingDepts && (
-              loadingCadres ? (
-                <div className={s.loadRow}><span className={s.spin} /> Inapakia kada...</div>
-              ) : cadres.length === 0 ? (
-                <p className={s.noteBlue}>
-                  Idara hii haijawekwa kada bado — unaweza kuendelea; utapatanishwa na wenzako wote wa idara hii.
-                </p>
-              ) : (
-                <KadaPicker
-                  group="Umma"
-                  options={cadreOptions}
-                  value={cadreCode || null}
-                  onChange={changeCadre}
-                  mfano="VEO"
-                />
-              )
+            {/* Umma: idara haina kada bado */}
+            {isUmma && !loadingCadres && cadres.length === 0 && (
+              <p className={s.noteBlue}>
+                Idara hii haijawekwa kada bado — unaweza kuendelea; utapatanishwa na wenzako wote wa idara hii.
+              </p>
             )}
           </>
         )}

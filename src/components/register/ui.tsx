@@ -107,6 +107,7 @@ export function IdaraList({
   branchOf,
   branchValue,
   onBranch,
+  kada,
 }: {
   title: string;
   options: Opt[];
@@ -116,6 +117,8 @@ export function IdaraList({
   branchOf: Record<string, Opt[]>;
   branchValue: string | null;
   onBranch: (v: string) => void;
+  /** Umma: kada zinafunguka ndani ya idara iliyochaguliwa, kama tawi. */
+  kada?: { options: Opt[]; value: string | null; onChange: (v: string) => void; loading?: boolean };
 }) {
   return (
     <div className={s.idList} role="radiogroup">
@@ -139,6 +142,30 @@ export function IdaraList({
               <span className={s.idName}>{o.label}</span>
               <span className={s.idIc}><Icon name={o.icon || 'building'} size={16} strokeWidth={2} /></span>
             </button>
+            {on && kada && (
+              kada.loading ? (
+                <div className={s.idBranch}>
+                  <div className={s.loadRow}><span className={s.spin} /> Inapakia kada...</div>
+                </div>
+              ) : kada.options.length > 0 && (
+                <div className={s.idBranch} role="radiogroup">
+                  {kada.options.map((k) => (
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={kada.value === k.value}
+                      key={k.value}
+                      className={cx(s.idSub, kada.value === k.value && s.idOn)}
+                      onClick={() => kada.onChange(k.value)}
+                    >
+                      <i className={s.idRadio} />
+                      <span className={s.idName}>{k.label}</span>
+                      {k.code && <b className={s.kdBadgeOn}>{k.code.replace(/_/g, ' ')}</b>}
+                    </button>
+                  ))}
+                </div>
+              )
+            )}
             {sub && sub.length > 0 && (
               <div className={s.idBranch} role="radiogroup">
                 {sub.map((b) => (
