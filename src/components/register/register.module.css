@@ -282,12 +282,19 @@
 .kdRow + .kdRow { border-top: 1px solid var(--line-2); }
 .kdName { flex: 1; min-width: 0; }
 .kdCode {
-  flex: none; padding: 4px 8px; border-radius: 6px; background: #f3f4f6; color: var(--text-2);
+  flex: none; max-width: 44%; padding: 4px 8px; border-radius: 6px; background: var(--blue-soft); color: var(--blue);
   font-size: 11px; font-weight: 800; letter-spacing: .3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;
 }
 .kdOn { color: var(--blue); background: var(--blue-tint); }
 .kdOn .idRadio { border: 5px solid var(--blue); }
 .kdOn .kdCode { background: var(--blue); color: #fff; }
+/* Beji ya kada iliyochaguliwa (kwenye kadi iliyojifunga) */
+.kdBadgeOn {
+  flex: none; max-width: 44%; padding: 4px 8px; border-radius: 6px; background: var(--blue); color: #fff;
+  font-size: 11px; font-weight: 800; letter-spacing: .3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .kdOnSkip { color: var(--muted); background: #fff; }
 .kdOnSkip .idRadio { border: 5px solid var(--muted); }
 

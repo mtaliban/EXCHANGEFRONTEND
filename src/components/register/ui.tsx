@@ -196,10 +196,27 @@ export function KadaPicker({
   mfano: string;
 }) {
   const [q, setQ] = useState('');
+  const [open, setOpen] = useState(!value);
   const qq = q.trim().toLowerCase();
   const list = options.filter(
     (o) => o.label.toLowerCase().includes(qq) || (o.code ?? '').toLowerCase().includes(qq),
   );
+  const current = options.find((o) => o.value === value) || null;
+  /* Kifupi kirefu: `_` inakuwa nafasi, kisha kinakatwa kwa "…" */
+  const codeLabel = (c: string) => c.replace(/_/g, ' ');
+
+  /* Kada ikiwa imechaguliwa, orodha inajifunga kuwa kadi moja */
+  if (current && !open) {
+    return (
+      <div className={s.plCard}>
+        <span className={s.plCardIc}><Icon name="briefcase" size={15} strokeWidth={2} /></span>
+        <b>{current.label}</b>
+        {current.code && <span className={s.kdBadgeOn}>{codeLabel(current.code)}</span>}
+        <button type="button" onClick={() => setOpen(true)}>Badilisha</button>
+      </div>
+    );
+  }
+
   return (
     <>
       <label className={cx(s.msSearch, q && s.msSearchOn)}>
@@ -221,11 +238,14 @@ export function KadaPicker({
                 aria-checked={value === o.value}
                 key={o.value}
                 className={cx(s.kdRow, value === o.value && s.kdOn)}
-                onClick={() => onChange(o.value)}
+                onClick={() => {
+                  onChange(o.value);
+                  setOpen(false);
+                }}
               >
                 <i className={s.idRadio} />
                 <span className={s.kdName}>{o.label}</span>
-                {o.code && <b className={s.kdCode}>{o.code}</b>}
+                {o.code && <b className={s.kdCode}>{codeLabel(o.code)}</b>}
               </button>
             ))}
           </div>
