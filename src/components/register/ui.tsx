@@ -548,7 +548,7 @@ export function ThirdList({
             <div className={s.msHead}>
               <span>{head}</span>
               {onClose ? (
-                <button type="button" className={s.msClose} onClick={onClose}>× Funga</button>
+                <button type="button" className={s.msClose} onClick={onClose}>× Ghairi</button>
               ) : (
                 <b>{list.length}</b>
               )}
