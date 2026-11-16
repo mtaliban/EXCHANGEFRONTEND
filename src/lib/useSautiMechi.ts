@@ -50,12 +50,43 @@ function marimba() {
   [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => noti(c, f, t + i * 0.11, sauti));
 }
 
+/** Tengeneza AudioContext mara moja (haitoi sauti yenyewe). */
+function kianzishe(): boolean {
+  if (ctx) return true;
+  const AC =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AC) return false;
+  try {
+    ctx = new AC();
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+/** Kivinjari huruhusu sauti tu baada ya mtu kugusa ukurasa — hata kabla ya kadi kuonekana. */
+function ruhusaTayari(): boolean {
+  if (ameGusa) return true;
+  const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+  if (ua?.hasBeenActive) {
+    ameGusa = true;
+    return true;
+  }
+  return false;
+}
+
 function cheza() {
-  if (!ameGusa || document.hidden || !ctx) return; // sharti la kivinjari + ukurasa uonekane
+  if (document.hidden) return; // tab nyingine / skrini imezimwa
+  if (!ruhusaTayari()) return; // bado hakuna mguso wowote kwenye ukurasa
   const sasa = Date.now();
   if (sasa - mwishoKulia < MZUNGUKO_MS * 0.8) return; // isilie mara mbili kwa mtikisiko mmoja
   mwishoKulia = sasa;
-  if (ctx.state === "suspended") void ctx.resume();
+  if (!kianzishe() || !ctx) return;
+  if (ctx.state === "suspended") {
+    void ctx.resume().then(marimba).catch(() => {});
+    return;
+  }
   marimba();
 }
 
@@ -64,19 +95,17 @@ export function useSautiMechi<T extends HTMLElement>() {
   const ref = useRef<T>(null);
 
   useEffect(() => {
-    // Vivinjari haviruhusu sauti mpaka mtu aguse ukurasa mara moja (Ingia tayari inahesabika)
+    /* Mguso wa kwanza wowote kwenye ukurasa unaruhusu sauti. Kama mtumiaji alishagusa
+     * kabla ya kadi hii kupakiwa (mf. kubonyeza "Ingia"), tunatumia userActivation. */
     const ruhusu = () => {
       ameGusa = true;
-      if (!ctx) {
-        const AC =
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-        if (AC) ctx = new AC();
-      }
-      if (ctx && ctx.state === "suspended") void ctx.resume();
+      if (!kianzishe() || !ctx) return;
+      if (ctx.state === "suspended") void ctx.resume().catch(() => {});
     };
-    window.addEventListener("pointerdown", ruhusu, { once: true });
-    window.addEventListener("keydown", ruhusu, { once: true });
+    if (ruhusaTayari()) ruhusu();
+    window.addEventListener("pointerdown", ruhusu);
+    window.addEventListener("keydown", ruhusu);
+    window.addEventListener("touchstart", ruhusu);
 
     const el = ref.current;
     if (!el) return;
@@ -94,6 +123,7 @@ export function useSautiMechi<T extends HTMLElement>() {
       clearTimeout(saa);
       window.removeEventListener("pointerdown", ruhusu);
       window.removeEventListener("keydown", ruhusu);
+      window.removeEventListener("touchstart", ruhusu);
     };
   }, []);
 
