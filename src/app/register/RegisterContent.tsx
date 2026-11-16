@@ -62,6 +62,20 @@ const DEPT_ICONS: Record<string, string> = {
 };
 
 /** Namba ya simu: tarakimu 10 kuanzia 0, au +255/255 na tarakimu 9. */
+/** Maneno madogo yanayobaki chini katikati ya jina la kada. */
+const SMALL_WORDS = new Set(['ya', 'na', 'wa', 'za', 'la', 'kwa', 'cha', 'vya', 'au']);
+
+/** "IDARA YA UTAWALA(VEO)" → "Idara ya Utawala" – kifupi kinaonekana kwenye beji. */
+function prettyCadreName(name: string): string {
+  const base = name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  if (!base || base !== base.toUpperCase()) return base || name;
+  return base
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w, i) => (i > 0 && SMALL_WORDS.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(' ');
+}
+
 const PHONE_RE = /^(\+?255|0)\d{9}$/;
 const clean = (v: string) => v.replace(/[\s-]/g, '');
 const facId = (f: Facility) => String(f.id ?? f.code ?? '');
@@ -103,6 +117,8 @@ export default function RegisterContent() {
 
   // Hatua 3
   const [cadres, setCadres] = useState<Cadre[]>([]);
+  /** Kada za Umma: zinaletwa ukurasa ukifunguka, si wakati wa kubonyeza idara. */
+  const [ummaCadres, setUmmaCadres] = useState<Cadre[]>([]);
   const [loadingCadres, setLoadingCadres] = useState(false);
   const [cadreCode, setCadreCode] = useState('');
   const [subjects, setSubjects] = useState<{ code: string; name: string }[]>([]);
@@ -202,19 +218,40 @@ export default function RegisterContent() {
     getRegions(true).then(setRegions).catch(() => {});
   }, []);
 
+  /* ── Kada za Umma: huletwa mara moja ukurasa ukifunguka ── */
+  const ummaDept = departments.find((d) => UMMA_RE.test(`${d.code} ${d.name}`));
+  useEffect(() => {
+    if (!ummaDept) return;
+    let alive = true;
+    getCadres(ummaDept.code, undefined, true)
+      .then((list) => { if (alive) setUmmaCadres(list); })
+      .catch(() => {});
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ummaDept?.code]);
+
   /* ── Kada: hubadilika idara au sekta inapobadilika ── */
   useEffect(() => {
     if (!category) { setCadres([]); return; }
-    let alive = true;
-    setLoadingCadres(true);
     setCadreCode('');
     setSelectedSubjects([]);
+    /* Umma: kada ziko tayari – zinaonyeshwa papo hapo, bila spinner */
+    if (isUmma) return;
+    let alive = true;
+    setLoadingCadres(true);
     getCadres(category, sector || undefined, true)
       .then((list) => { if (alive) setCadres(list); })
       .catch(() => { if (alive) setCadres([]); })
       .finally(() => { if (alive) setLoadingCadres(false); });
     return () => { alive = false; };
-  }, [category, sector]);
+  }, [category, sector, isUmma]);
+
+  /* ── Umma: tawi linatumia kada zilizoletwa tayari ── */
+  useEffect(() => {
+    if (!isUmma) return;
+    setLoadingCadres(false);
+    setCadres(ummaCadres);
+  }, [isUmma, ummaCadres]);
 
   /* ── Elimu: ngazi (Msingi/Sekondari) → kada inayolingana ── */
   useEffect(() => {
@@ -387,7 +424,7 @@ export default function RegisterContent() {
     [curDistricts],
   );
   const cadreOptions: Opt[] = useMemo(
-    () => cadres.map((c) => ({ value: c.code, label: c.display_name, code: c.code })),
+    () => cadres.map((c) => ({ value: c.code, label: prettyCadreName(c.display_name), code: c.code })),
     [cadres],
   );
 
@@ -733,7 +770,7 @@ export default function RegisterContent() {
                 branchOf={branchOf}
                 branchValue={branchValue}
                 onBranch={onBranch}
-                kada={isUmma ? { options: cadreOptions, value: cadreCode || null, onChange: changeCadre, loading: loadingCadres } : undefined}
+                kada={isUmma ? { options: cadreOptions, value: cadreCode || null, onChange: changeCadre } : undefined}
               />
             )}
 
