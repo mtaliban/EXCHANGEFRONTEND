@@ -127,7 +127,7 @@
 .optCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .optName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .optOn .kCode { background: #fff; }
-.trip { margin-top: 14px; border: 1px solid var(--l); border-radius: 12px; padding: 12px; background: #fcfcfd; }
+.trip { margin-top: 14px; }
 .stop { display: flex; gap: 12px; position: relative; }
 .stop + .stop { margin-top: 10px; }
 .stop:not(:last-child)::after { content: ""; position: absolute; left: 4px; top: 16px; height: calc(100% - 6px); border-left: 2px dotted #cbd5e1; }
@@ -299,8 +299,20 @@
 .helpIcCall { background: var(--blue-soft); color: var(--blue); }
 
 /* ---------- MECHI ("Inalingana") ---------- */
-.tripMatched { position: relative; padding-right: 66px; border-color: #c7d2fe; }
+.tripMatched { position: relative; }
+.tripMatched .tripWaka { padding-right: 66px; }
 .tripWobble { animation: wobble 4s cubic-bezier(.36, .07, .19, .97) infinite; will-change: transform; }
+/* Kuwakawaka kama "online": mpaka unawaka bluu na kuzimika – mwanga MWEMBAMBA (3px) */
+.tripWaka {
+  position: relative; border: 1.5px solid var(--l); border-radius: 12px;
+  padding: 12px; background: #fcfcfd;
+}
+.tripWakaOn { animation: mechiWaka 1.4s ease-in-out infinite; }
+@keyframes mechiWaka {
+  0%, 100% { border-color: #c7d2fe; box-shadow: 0 0 0 0 rgba(30, 64, 175, 0); }
+  50% { border-color: #1e40af; box-shadow: 0 0 0 3px rgba(30, 64, 175, .15); }
+}
+@media (prefers-reduced-motion: reduce) { .tripWakaOn { animation: none; } }
 .mSide { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .mRingBox { position: relative; display: grid; place-items: center; }
 .mRingBox svg { position: absolute; inset: 0; }

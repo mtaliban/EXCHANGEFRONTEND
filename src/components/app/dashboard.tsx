@@ -5,6 +5,7 @@ import AppIcon from "./AppIcon";
 import ChangiaTaarifa from "@/components/ChangiaTaarifa";
 import type { Matokeo } from "@/lib/match";
 import { deptAsButton, deptFull } from "@/lib/depts";
+import { useSautiMechi } from "@/lib/useSautiMechi";
 import s from "./app.module.css";
 
 export const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(" ");
@@ -252,6 +253,7 @@ export function TeacherCard({
   payTick?: number;
   match?: Matokeo | null;
 }) {
+  const mtikisikoRef = useSautiMechi<HTMLDivElement>();
   const from = c.current_station || {};
   const to = c.matching_destination || c.desired_destinations?.[0] || null;
   const subjects: string[] = c.subjects || [];
@@ -320,7 +322,12 @@ export function TeacherCard({
         </div>
       </div>
 
-      <div className={cx(s.trip, !!match && s.tripWobble, !!match && s.tripMatched)}>
+      {/* Nje: mtikisiko. Ndani: kuwakawaka – animation mbili zisigongane. */}
+      <div
+        className={cx(s.trip, !!match && s.tripWobble, !!match && s.tripMatched)}
+        ref={mtikisikoRef}
+      >
+        <div className={cx(s.tripWaka, !!match && s.tripWakaOn)}>
         {match && <MatchSide pct={match.pct} sababu={match.sababu} />}
         <div className={s.stop}>
           <i />
@@ -350,6 +357,7 @@ export function TeacherCard({
               <b>{myRegionName || "—"}</b>
             </p>
           </div>
+        </div>
         </div>
       </div>
 
