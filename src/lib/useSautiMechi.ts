@@ -9,10 +9,10 @@ import { useEffect, useRef } from "react";
 const MZUNGUKO_MS = 4000;
 const ANZA_MS = 2680;
 
-/* ---- Faili la sauti - liweke kwenye: public/sauti-metch.mpeg ----
+/* ---- Faili la sauti - liweke kwenye: public/sauti-metch.mp3 ----
  * Likipatikana, hili ndilo linalolia; likikosekana, code inarudi kwenye marimba
  * inayotengenezwa kwa Web Audio (hakuna kosa linaloonekana kwa mtumiaji). */
-const SAUTI_URL = "/sauti-metch.mpeg";
+const SAUTI_URL = "/sauti-metch.mp3";
 let sautiEl: HTMLAudioElement | null = null;
 let sautiHaipo = false;
 
