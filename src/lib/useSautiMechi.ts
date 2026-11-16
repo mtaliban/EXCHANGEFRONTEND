@@ -9,6 +9,28 @@ import { useEffect, useRef } from "react";
 const MZUNGUKO_MS = 4000;
 const ANZA_MS = 2680;
 
+/* ---- Faili la sauti (mp3) - liweke kwenye: public/sauti-5-marimba.mp3 ----
+ * Likipatikana, hili ndilo linalolia; likikosekana, code inarudi kwenye marimba
+ * inayotengenezwa kwa Web Audio (hakuna kosa linaloonekana kwa mtumiaji). */
+const SAUTI_URL = "/sauti-5-marimba.mp3";
+let sautiEl: HTMLAudioElement | null = null;
+let sautiHaipo = false;
+
+function tayarishaFaili() {
+  if (sautiEl || sautiHaipo || typeof window === "undefined") return;
+  try {
+    const el = new Audio(SAUTI_URL);
+    el.preload = "auto";
+    el.addEventListener("error", () => {
+      sautiHaipo = true;
+      sautiEl = null;
+    });
+    sautiEl = el;
+  } catch {
+    sautiHaipo = true;
+  }
+}
+
 /* ================= SAUTI 5 (MARIMBA) – inatengenezwa na code, HAKUNA faili ================= */
 let ctx: AudioContext | null = null;
 let mwishoKulia = 0;
@@ -38,7 +60,7 @@ function noti(c: AudioContext, freq: number, anza: number, sauti: GainNode) {
   juu.stop(anza + 0.6);
 }
 
-/** Sauti 5: noti 4 zinazopanda – C5, E5, G5, C6 (kila moja baada ya sekunde 0.11) */
+/** Marimba ya akiba: noti 4 zinazopanda – C5, E5, G5, C6 (kila moja baada ya sekunde 0.11) */
 function marimba() {
   const c = ctx;
   if (!c) return;
@@ -69,6 +91,18 @@ function kianzishe(): boolean {
  * (Navbar, "Ingia", kitufe chochote) – kivinjari huruhusu sauti baada ya hapo tu.
  */
 export function andaaSauti() {
+  /* Faili la mp3: kicheza kimoja tu, kinachotumika tena kila mtikisiko */
+  tayarishaFaili();
+  if (sautiEl) {
+    sautiEl
+      .play()
+      .then(() => {
+        sautiEl?.pause();
+        if (sautiEl) sautiEl.currentTime = 0;
+      })
+      .catch(() => {});
+  }
+  /* Marimba ya akiba (Web Audio) */
   if (!kianzishe() || !ctx) return;
   if (ctx.state === "suspended") void ctx.resume().catch(() => {});
 }
@@ -78,6 +112,20 @@ function cheza() {
   const sasa = Date.now();
   if (sasa - mwishoKulia < MZUNGUKO_MS * 0.8) return; // isilie mara mbili kwa mtikisiko mmoja
   mwishoKulia = sasa;
+
+  /* 1) Faili la mp3 likiwa lipo */
+  tayarishaFaili();
+  if (sautiEl && !sautiHaipo) {
+    try {
+      sautiEl.currentTime = 0;
+      void sautiEl.play().catch(() => {});
+      return;
+    } catch {
+      /* linaendelea kwenye marimba ya akiba */
+    }
+  }
+
+  /* 2) Marimba ya akiba (Web Audio) */
   if (!kianzishe() || !ctx) return;
   if (ctx.state === "suspended") {
     void ctx.resume().then(marimba).catch(() => {});
