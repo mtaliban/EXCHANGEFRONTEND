@@ -18,7 +18,7 @@ const FAILI = ["/sauti-mechi.mp3", "/sauti-metch.mp3"];
 
 /* Sauti: ukubwa kamili + kupanda taratibu. Hakuna kuunganisha kwenye Web Audio
  * kwa sababu hiyo inaweza kunyamazisha sauti kabisa AudioContext ikiwa haitoi sauti. */
-const UKUBWA_WA_SAUTI = 0.6; // 0.0 – 1.0 (kiwango cha sauti)
+const UKUBWA_WA_SAUTI = 0.3; // 0.0 – 1.0 (kiwango cha sauti)
 const KUPANDA_MS = 700; // sauti inapanda 0 → kamili kwa muda huu (fade-in)
 /** Kadi lazima ionekane kwa kiwango hiki cha skrini ndipo sauti ilie. */
 const KIONEKANA_KIMA = 0.55;
