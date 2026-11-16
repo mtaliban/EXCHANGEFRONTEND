@@ -4,26 +4,40 @@ import { useEffect, useRef } from "react";
 
 /* ---- Namba za mtikisiko wa kadi ya mechi (`.tripWobble` kwenye app.module.css) ----
  * animation: wobble 4s … infinite        → mzunguko mmoja = 4000ms
- * @keyframes wobble: translateX ya kwanza isiyo 0 iko 67%  → 4000 × 0.67 = 2680ms
+ * @keyframes wobble: translateX ya kwanza isiyo 0 iko 61%? Hapana — keyframes zetu
+ * zinaanza 67%, kwa hiyo 4000 × 0.67 = 2680ms (si 2440ms).
+ * (`getAnimations()` inathibitisha muda halisi kila mzunguko.)
  */
 const MZUNGUKO_MS = 4000;
 const ANZA_MS = 2680;
 
-/* ---- Faili la sauti - liweke kwenye: public/sauti-metch.mp3 ----
- * Likipatikana, hili ndilo linalolia; likikosekana, code inarudi kwenye marimba
- * inayotengenezwa kwa Web Audio (hakuna kosa linaloonekana kwa mtumiaji). */
-const SAUTI_URL = "/sauti-metch.mp3";
+/* ---- Faili za sauti - zinawekwa kwenye public/ ----
+ * 1) /sauti-mechi.mp3  – Sauti 10 (upepo + kengele)
+ * 2) /sauti-metch.mp3  – Sauti 5 ya awali (akiba)
+ * Likikosekana lolote, code inarudi kwenye marimba ya Web Audio (hakuna kosa
+ * linaloonekana kwa mtumiaji). Njia haziandiki "public/" – Next.js inaanza na "/". */
+const FAILI = ["/sauti-mechi.mp3", "/sauti-metch.mp3"];
+const UKUBWA_WA_SAUTI = 0.7; // 0.0 – 1.0
 let sautiEl: HTMLAudioElement | null = null;
+let filiIdx = 0;
 let sautiHaipo = false;
 
 function tayarishaFaili() {
   if (sautiEl || sautiHaipo || typeof window === "undefined") return;
+  const url = FAILI[filiIdx];
+  if (!url) {
+    sautiHaipo = true;
+    return;
+  }
   try {
-    const el = new Audio(SAUTI_URL);
+    const el = new Audio(url);
     el.preload = "auto";
+    el.volume = UKUBWA_WA_SAUTI;
+    /* Faili halipo / halipatikani → jaribu linalofuata, hatimaye marimba ya akiba */
     el.addEventListener("error", () => {
-      sautiHaipo = true;
       sautiEl = null;
+      filiIdx += 1;
+      tayarishaFaili();
     });
     sautiEl = el;
   } catch {

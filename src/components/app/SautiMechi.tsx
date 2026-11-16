@@ -4,14 +4,19 @@ import { useEffect } from "react";
 import { andaaSauti } from "@/lib/useSautiMechi";
 
 /**
+ * Sauti ya mechi (Sauti 10) – haionekani.
+ *
  * Mguso wa kwanza wowote kwenye tovuti (Navbar, "Ingia", kitufe chochote)
- * unafungua sauti ya mechi. Kivinjari huruhusu sauti baada ya mguso huo tu;
- * kuanzia hapo marimba inalia yenyewe kila mtikisiko, bila mguso mwingine.
+ * unafungua sauti; kuanzia hapo `/sauti-mechi.mp3` inalia yenyewe kila
+ * kisanduku cha Kutoka/Anataka kinapotikisika.
+ *
+ * Kivinjari huruhusu sauti baada ya mguso mmoja tu kwa kila kikao cha ukurasa;
+ * hilo ni sharti la kivinjari, haliwezi kuepukwa na code.
  */
-export default function AndaaSauti() {
+export default function SautiMechi() {
   useEffect(() => {
     const fungua = () => andaaSauti();
-    andaaSauti(); // tengeneza AudioContext mapema (inaanza "suspended")
+    andaaSauti(); // tengeneza kicheza mapema (kinasubiri mguso kuanza)
     window.addEventListener("pointerdown", fungua, { passive: true });
     window.addEventListener("keydown", fungua);
     window.addEventListener("touchstart", fungua, { passive: true });
