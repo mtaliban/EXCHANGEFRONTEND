@@ -3,53 +3,33 @@
 import { useEffect, useRef } from "react";
 
 /* ---- Namba za mtikisiko wa kadi ya mechi (`.tripWobble` kwenye app.module.css) ----
- * animation: wobble 4s … infinite        → mzunguko mmoja = 4000ms
- * @keyframes wobble: translateX ya kwanza isiyo 0 iko 61%? Hapana — keyframes zetu
- * zinaanza 67%, kwa hiyo 4000 × 0.67 = 2680ms (si 2440ms).
- * (`getAnimations()` inathibitisha muda halisi kila mzunguko.)
+ * animation: wobble 4s … infinite  → mzunguko mmoja = 4000ms
+ * @keyframes wobble: translateX ya kwanza isiyo 0 iko 67% → 4000 × 0.67 = 2680ms
  */
 const MZUNGUKO_MS = 4000;
 const ANZA_MS = 2680;
 
 /* ---- Faili za sauti - zinawekwa kwenye public/ ----
  * 1) /sauti-mechi.mp3  – Sauti 10 (upepo + kengele)
- * 2) /sauti-metch.mp3  – Sauti 5 ya awali (akiba)
- * Likikosekana lolote, code inarudi kwenye marimba ya Web Audio (hakuna kosa
- * linaloonekana kwa mtumiaji). Njia haziandiki "public/" – Next.js inaanza na "/". */
+ * 2) /sauti-metch.mp3  – sauti ya awali (akiba)
+ * Likikosekana lolote, code inarudi kwenye marimba ya Web Audio.
+ * Njia haziandiki "public/" – Next.js inaanza na "/". */
 const FAILI = ["/sauti-mechi.mp3", "/sauti-metch.mp3"];
-const UKUBWA_WA_SAUTI = 0.7; // 0.0 – 1.0
+
+/* Sauti: ukubwa kamili + ukuzaji wa dijitali (kwa faili zenye sauti ya chini). */
+const UKUBWA_WA_SAUTI = 1; // 0.0 – 1.0 (kiwango cha juu cha <audio>)
+const UKUZAJI = 2.4; // mara ya ukuzaji (1 = hakuna; 2.4 ≈ +8 dB)
+const KUPANDA_MS = 800; // sauti inapanda 0 → kamili kwa muda huu (fade-in)
+
+let ctx: AudioContext | null = null;
 let sautiEl: HTMLAudioElement | null = null;
 let filiIdx = 0;
 let sautiHaipo = false;
-
-function tayarishaFaili() {
-  if (sautiEl || sautiHaipo || typeof window === "undefined") return;
-  const url = FAILI[filiIdx];
-  if (!url) {
-    sautiHaipo = true;
-    return;
-  }
-  try {
-    const el = new Audio(url);
-    el.preload = "auto";
-    el.volume = UKUBWA_WA_SAUTI;
-    /* Faili halipo / halipatikani → jaribu linalofuata, hatimaye marimba ya akiba */
-    el.addEventListener("error", () => {
-      sautiEl = null;
-      filiIdx += 1;
-      tayarishaFaili();
-    });
-    sautiEl = el;
-  } catch {
-    sautiHaipo = true;
-  }
-}
-
-/* ================= SAUTI 5 (MARIMBA) – inatengenezwa na code, HAKUNA faili ================= */
-let ctx: AudioContext | null = null;
+let chanzo: MediaElementAudioSourceNode | null = null;
+let rampSaa: ReturnType<typeof setInterval> | undefined;
 let mwishoKulia = 0;
 
-/** Noti moja ya marimba: sauti kuu + mlio mdogo wa juu unaopotea haraka (ndio "mbao") */
+/* ================= MARIMBA YA AKIBA (Web Audio) ================= */
 function noti(c: AudioContext, freq: number, anza: number, sauti: GainNode) {
   const kuu = c.createOscillator();
   kuu.type = "sine";
@@ -59,13 +39,12 @@ function noti(c: AudioContext, freq: number, anza: number, sauti: GainNode) {
   juu.frequency.value = freq * 4;
   const gKuu = c.createGain();
   const gJuu = c.createGain();
-  // inaingia haraka (ms 5), kisha inafifia taratibu
   gKuu.gain.setValueAtTime(0, anza);
   gKuu.gain.linearRampToValueAtTime(1, anza + 0.005);
-  gKuu.gain.setTargetAtTime(0, anza + 0.005, 0.083); // inafifia ndani ya ~0.4s
+  gKuu.gain.setTargetAtTime(0, anza + 0.005, 0.083);
   gJuu.gain.setValueAtTime(0, anza);
   gJuu.gain.linearRampToValueAtTime(0.35, anza + 0.004);
-  gJuu.gain.setTargetAtTime(0, anza + 0.004, 0.024); // mlio wa mbao unapotea haraka
+  gJuu.gain.setTargetAtTime(0, anza + 0.004, 0.024);
   kuu.connect(gKuu).connect(sauti);
   juu.connect(gJuu).connect(sauti);
   kuu.start(anza);
@@ -74,18 +53,17 @@ function noti(c: AudioContext, freq: number, anza: number, sauti: GainNode) {
   juu.stop(anza + 0.6);
 }
 
-/** Marimba ya akiba: noti 4 zinazopanda – C5, E5, G5, C6 (kila moja baada ya sekunde 0.11) */
 function marimba() {
   const c = ctx;
   if (!c) return;
   const t = c.currentTime + 0.01;
   const sauti = c.createGain();
-  sauti.gain.value = 0.22; // ukubwa wa sauti (0.1 – 0.4)
+  sauti.gain.value = 0.32;
   sauti.connect(c.destination);
   [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => noti(c, f, t + i * 0.11, sauti));
 }
 
-/** Tengeneza AudioContext mara moja (haitoi sauti yenyewe). */
+/* ================= KICHEZA CHA FAILI ================= */
 function kianzishe(): boolean {
   if (ctx) return true;
   const AC =
@@ -100,25 +78,103 @@ function kianzishe(): boolean {
   return true;
 }
 
+function tayarishaFaili() {
+  if (sautiEl || sautiHaipo || typeof window === "undefined") return;
+  const url = FAILI[filiIdx];
+  if (!url) {
+    sautiHaipo = true;
+    return;
+  }
+  try {
+    const el = new Audio(url);
+    el.preload = "auto";
+    el.volume = UKUBWA_WA_SAUTI;
+    el.addEventListener("error", () => {
+      sautiEl = null;
+      chanzo = null;
+      filiIdx += 1;
+      tayarishaFaili();
+    });
+    sautiEl = el;
+  } catch {
+    sautiHaipo = true;
+  }
+}
+
+/**
+ * Ukuzaji wa sauti: faili linaunganishwa kwenye gain + compressor ili lisikike
+ * kwa nguvu zaidi kuliko kiwango chake halisi, bila kukatika (clipping).
+ * Hufanyika tu AudioContext ikiwa imeshaanza kufanya kazi (baada ya mguso).
+ */
+function unganishaUkuzaji(el: HTMLAudioElement) {
+  if (chanzo || !ctx || ctx.state !== "running") return;
+  try {
+    chanzo = ctx.createMediaElementSource(el);
+    const gain = ctx.createGain();
+    gain.gain.value = UKUZAJI;
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -10;
+    comp.ratio.value = 6;
+    comp.attack.value = 0.003;
+    comp.release.value = 0.25;
+    chanzo.connect(gain);
+    gain.connect(comp);
+    comp.connect(ctx.destination);
+  } catch {
+    chanzo = null; // ikishindikana, sauti inaendelea moja kwa moja (bila ukuzaji)
+  }
+}
+
+/** Cheza faili kwa kupanda taratibu: volume 0 → kamili ndani ya KUPANDA_MS. */
+function chezaFaili(el: HTMLAudioElement) {
+  clearInterval(rampSaa);
+  try {
+    el.currentTime = 0;
+    el.volume = 0;
+    void el
+      .play()
+      .then(() => {
+        const hatua = 40;
+        const nyongeza = UKUBWA_WA_SAUTI / (KUPANDA_MS / hatua);
+        let v = 0;
+        rampSaa = setInterval(() => {
+          v = Math.min(UKUBWA_WA_SAUTI, v + nyongeza);
+          el.volume = v;
+          if (v >= UKUBWA_WA_SAUTI) clearInterval(rampSaa);
+        }, hatua);
+      })
+      .catch(() => {});
+  } catch {
+    /* inaendelea kwenye marimba ya akiba */
+  }
+}
+
 /**
  * Fungua sauti ya tovuti hii. Inaitwa kwenye mguso WA KWANZA wowote wa ukurasa
  * (Navbar, "Ingia", kitufe chochote) – kivinjari huruhusu sauti baada ya hapo tu.
  */
 export function andaaSauti() {
-  /* Faili la mp3: kicheza kimoja tu, kinachotumika tena kila mtikisiko */
   tayarishaFaili();
+  if (!kianzishe() || !ctx) return;
+  if (ctx.state === "suspended") void ctx.resume().catch(() => {});
   if (sautiEl) {
+    /* "Kufungua" kicheza kwa utulivu (bila mlio), ili iOS ikubali kucheza baadaye */
+    const ukubwa = sautiEl.volume;
+    sautiEl.volume = 0;
     sautiEl
       .play()
       .then(() => {
         sautiEl?.pause();
-        if (sautiEl) sautiEl.currentTime = 0;
+        if (sautiEl) {
+          sautiEl.currentTime = 0;
+          sautiEl.volume = ukubwa;
+        }
+        if (sautiEl) unganishaUkuzaji(sautiEl);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (sautiEl) sautiEl.volume = ukubwa;
+      });
   }
-  /* Marimba ya akiba (Web Audio) */
-  if (!kianzishe() || !ctx) return;
-  if (ctx.state === "suspended") void ctx.resume().catch(() => {});
 }
 
 function cheza() {
@@ -127,16 +183,13 @@ function cheza() {
   if (sasa - mwishoKulia < MZUNGUKO_MS * 0.8) return; // isilie mara mbili kwa mtikisiko mmoja
   mwishoKulia = sasa;
 
-  /* 1) Faili la mp3 likiwa lipo */
+  /* 1) Faili la sauti likiwa lipo */
   tayarishaFaili();
+  if (ctx && ctx.state === "suspended") void ctx.resume().catch(() => {});
   if (sautiEl && !sautiHaipo) {
-    try {
-      sautiEl.currentTime = 0;
-      void sautiEl.play().catch(() => {});
-      return;
-    } catch {
-      /* linaendelea kwenye marimba ya akiba */
-    }
+    if (ctx && ctx.state === "running") unganishaUkuzaji(sautiEl);
+    chezaFaili(sautiEl);
+    return;
   }
 
   /* 2) Marimba ya akiba (Web Audio) */
