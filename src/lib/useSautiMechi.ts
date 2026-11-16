@@ -18,8 +18,10 @@ const FAILI = ["/sauti-mechi.mp3", "/sauti-metch.mp3"];
 
 /* Sauti: ukubwa kamili + kupanda taratibu. Hakuna kuunganisha kwenye Web Audio
  * kwa sababu hiyo inaweza kunyamazisha sauti kabisa AudioContext ikiwa haitoi sauti. */
-const UKUBWA_WA_SAUTI = 1; // 0.0 – 1.0 (kiwango cha juu cha <audio>)
+const UKUBWA_WA_SAUTI = 0.6; // 0.0 – 1.0 (kiwango cha sauti)
 const KUPANDA_MS = 700; // sauti inapanda 0 → kamili kwa muda huu (fade-in)
+/** Kadi lazima ionekane kwa kiwango hiki cha skrini ndipo sauti ilie. */
+const KIONEKANA_KIMA = 0.55;
 
 let ctx: AudioContext | null = null;
 let sautiEl: HTMLAudioElement | null = null;
@@ -224,29 +226,52 @@ export function useSautiMechi<T extends HTMLElement>() {
     if (!el) return;
 
     let saa: ReturnType<typeof setTimeout> | undefined;
+    /* Sauti ilie TU kwenye kadi iliyo wazi kwenye skrini (aliyoisoma sasa).
+     * Kadi isiyo ya KUMATCH haina mtikisiko, kwa hiyo haina sauti. */
+    let inaonekana = false;
     /* Ratiba inayojiendea: kila mzunguko inahesabu muda hadi mtikisiko ujao kutoka
      * saa ya animation, kisha inalia. Hivyo sauti inalia kila mtikisiko, hata kama
      * `animationstart` ilitokea kabla ya kadi kusikiliza. */
     const ratiba = () => {
       clearTimeout(saa);
+      if (!inaonekana) return; // kadi imeshuka chini/juu – haina sauti
       const d = delayHadiMtikisiko(el);
       if (d === null) return; // hakuna mtikisiko – hakuna sauti
       saa = setTimeout(
         () => {
-          cheza();
+          if (inaonekana) cheza();
           ratiba();
         },
         d || MZUNGUKO_MS,
       );
     };
-    ratiba();
+
     const kwaMzunguko = () => ratiba();
     el.addEventListener("animationstart", kwaMzunguko);
     el.addEventListener("animationiteration", kwaMzunguko);
 
+    /* Kufuatilia kadi ipi iko wazi kwenye skrini */
+    let io: IntersectionObserver | undefined;
+    if (typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            inaonekana = e.isIntersecting && e.intersectionRatio >= KIONEKANA_KIMA;
+          }
+          ratiba(); // ikiwa wazi → anza; ikiwa imeshuka → simamisha (clearTimeout)
+        },
+        { threshold: [0, KIONEKANA_KIMA, 0.9] },
+      );
+      io.observe(el);
+    } else {
+      inaonekana = true;
+      ratiba();
+    }
+
     return () => {
       el.removeEventListener("animationstart", kwaMzunguko);
       el.removeEventListener("animationiteration", kwaMzunguko);
+      io?.disconnect();
       clearTimeout(saa);
     };
   }, []);
