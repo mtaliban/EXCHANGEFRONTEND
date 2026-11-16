@@ -16,16 +16,16 @@ const ANZA_MS = 2680;
  * Njia haziandiki "public/" – Next.js inaanza na "/". */
 const FAILI = ["/sauti-mechi.mp3", "/sauti-metch.mp3"];
 
-/* Sauti: ukubwa kamili + ukuzaji wa dijitali (kwa faili zenye sauti ya chini). */
+/* Sauti: ukubwa kamili + kupanda taratibu. Hakuna kuunganisha kwenye Web Audio
+ * kwa sababu hiyo inaweza kunyamazisha sauti kabisa AudioContext ikiwa haitoi sauti. */
 const UKUBWA_WA_SAUTI = 1; // 0.0 – 1.0 (kiwango cha juu cha <audio>)
-const UKUZAJI = 2.4; // mara ya ukuzaji (1 = hakuna; 2.4 ≈ +8 dB)
-const KUPANDA_MS = 800; // sauti inapanda 0 → kamili kwa muda huu (fade-in)
+const KUPANDA_MS = 700; // sauti inapanda 0 → kamili kwa muda huu (fade-in)
 
 let ctx: AudioContext | null = null;
 let sautiEl: HTMLAudioElement | null = null;
 let filiIdx = 0;
 let sautiHaipo = false;
-let chanzo: MediaElementAudioSourceNode | null = null;
+let amefunguliwa = false;
 let rampSaa: ReturnType<typeof setInterval> | undefined;
 let mwishoKulia = 0;
 
@@ -88,10 +88,10 @@ function tayarishaFaili() {
   try {
     const el = new Audio(url);
     el.preload = "auto";
+    el.muted = false;
     el.volume = UKUBWA_WA_SAUTI;
     el.addEventListener("error", () => {
       sautiEl = null;
-      chanzo = null;
       filiIdx += 1;
       tayarishaFaili();
     });
@@ -101,51 +101,43 @@ function tayarishaFaili() {
   }
 }
 
-/**
- * Ukuzaji wa sauti: faili linaunganishwa kwenye gain + compressor ili lisikike
- * kwa nguvu zaidi kuliko kiwango chake halisi, bila kukatika (clipping).
- * Hufanyika tu AudioContext ikiwa imeshaanza kufanya kazi (baada ya mguso).
- */
-function unganishaUkuzaji(el: HTMLAudioElement) {
-  if (chanzo || !ctx || ctx.state !== "running") return;
-  try {
-    chanzo = ctx.createMediaElementSource(el);
-    const gain = ctx.createGain();
-    gain.gain.value = UKUZAJI;
-    const comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -10;
-    comp.ratio.value = 6;
-    comp.attack.value = 0.003;
-    comp.release.value = 0.25;
-    chanzo.connect(gain);
-    gain.connect(comp);
-    comp.connect(ctx.destination);
-  } catch {
-    chanzo = null; // ikishindikana, sauti inaendelea moja kwa moja (bila ukuzaji)
-  }
-}
-
 /** Cheza faili kwa kupanda taratibu: volume 0 → kamili ndani ya KUPANDA_MS. */
 function chezaFaili(el: HTMLAudioElement) {
   clearInterval(rampSaa);
+  el.muted = false;
+  el.volume = 0;
   try {
     el.currentTime = 0;
-    el.volume = 0;
-    void el
-      .play()
-      .then(() => {
-        const hatua = 40;
-        const nyongeza = UKUBWA_WA_SAUTI / (KUPANDA_MS / hatua);
-        let v = 0;
-        rampSaa = setInterval(() => {
-          v = Math.min(UKUBWA_WA_SAUTI, v + nyongeza);
-          el.volume = v;
-          if (v >= UKUBWA_WA_SAUTI) clearInterval(rampSaa);
-        }, hatua);
-      })
-      .catch(() => {});
   } catch {
-    /* inaendelea kwenye marimba ya akiba */
+    /* bado haijapakiwa – play() itaanza ikisha tayari */
+  }
+
+  const anzaKupanda = () => {
+    const hatua = 40;
+    const nyongeza = UKUBWA_WA_SAUTI / (KUPANDA_MS / hatua);
+    let v = 0;
+    clearInterval(rampSaa);
+    rampSaa = setInterval(() => {
+      v = Math.min(UKUBWA_WA_SAUTI, v + nyongeza);
+      el.volume = v;
+      if (v >= UKUBWA_WA_SAUTI) clearInterval(rampSaa);
+    }, hatua);
+  };
+
+  let p: Promise<void> | undefined;
+  try {
+    p = el.play();
+  } catch {
+    el.volume = UKUBWA_WA_SAUTI;
+    return;
+  }
+  if (p && typeof p.then === "function") {
+    p.then(anzaKupanda).catch(() => {
+      /* Ikizuiwa (autoplay): rudisha ukubwa ili mtikisiko ujao usikute volume 0 */
+      el.volume = UKUBWA_WA_SAUTI;
+    });
+  } else {
+    anzaKupanda();
   }
 }
 
@@ -157,24 +149,23 @@ export function andaaSauti() {
   tayarishaFaili();
   if (!kianzishe() || !ctx) return;
   if (ctx.state === "suspended") void ctx.resume().catch(() => {});
-  if (sautiEl) {
-    /* "Kufungua" kicheza kwa utulivu (bila mlio), ili iOS ikubali kucheza baadaye */
-    const ukubwa = sautiEl.volume;
-    sautiEl.volume = 0;
-    sautiEl
-      .play()
-      .then(() => {
-        sautiEl?.pause();
-        if (sautiEl) {
-          sautiEl.currentTime = 0;
-          sautiEl.volume = ukubwa;
-        }
-        if (sautiEl) unganishaUkuzaji(sautiEl);
-      })
-      .catch(() => {
-        if (sautiEl) sautiEl.volume = ukubwa;
-      });
-  }
+  /* Kufungua kicheza mara MOJA tu (iOS); baadaye hatuigusi sauti inayolia */
+  if (amefunguliwa || !sautiEl) return;
+  amefunguliwa = true;
+  const ukubwa = sautiEl.volume;
+  sautiEl.volume = 0;
+  sautiEl
+    .play()
+    .then(() => {
+      sautiEl?.pause();
+      if (sautiEl) {
+        sautiEl.currentTime = 0;
+        sautiEl.volume = ukubwa;
+      }
+    })
+    .catch(() => {
+      if (sautiEl) sautiEl.volume = ukubwa;
+    });
 }
 
 function cheza() {
@@ -187,7 +178,6 @@ function cheza() {
   tayarishaFaili();
   if (ctx && ctx.state === "suspended") void ctx.resume().catch(() => {});
   if (sautiEl && !sautiHaipo) {
-    if (ctx && ctx.state === "running") unganishaUkuzaji(sautiEl);
     chezaFaili(sautiEl);
     return;
   }
@@ -201,12 +191,21 @@ function cheza() {
   marimba();
 }
 
-/** Muda hadi mtikisiko ujao uanze – kutoka saa ya animation yenyewe (si kubahatisha). */
+/**
+ * Muda hadi mtikisiko ujao uanze – kutoka saa ya animation yenyewe (si kubahatisha).
+ * Hapa HATUTAFUTI jina la `@keyframes`: CSS Modules hupanga upya majina hayo
+ * (mf. `wobble` inakuwa `wobble__a1b2c`), kwa hiyo tunatambua mtikisiko kwa
+ * MUDA wake (4000ms) na kwa kuwa unajirudia (infinite).
+ */
 function delayHadiMtikisiko(el: HTMLElement): number | null {
-  const wob = el
-    .getAnimations()
-    .find((a) => (a as CSSAnimation).animationName === "wobble") as CSSAnimation | undefined;
-  if (!wob) return null; // kisanduku hiki hakina mtikisiko
+  const anims = el.getAnimations() as CSSAnimation[];
+  if (!anims.length) return null; // kisanduku hiki hakina mtikisiko
+  const wob =
+    anims.find((a) => {
+      const dur = a.effect?.getComputedTiming?.().duration;
+      return typeof dur === "number" && Math.abs(dur - MZUNGUKO_MS) < 60;
+    }) ?? anims[0];
+  if (!wob) return null;
   const t = Number(wob.currentTime ?? 0) % MZUNGUKO_MS;
   return (ANZA_MS - t + MZUNGUKO_MS) % MZUNGUKO_MS;
 }
