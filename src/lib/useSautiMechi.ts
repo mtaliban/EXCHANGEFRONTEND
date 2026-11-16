@@ -11,7 +11,6 @@ const ANZA_MS = 2680;
 
 /* ================= SAUTI 5 (MARIMBA) – inatengenezwa na code, HAKUNA faili ================= */
 let ctx: AudioContext | null = null;
-let ameGusa = false;
 let mwishoKulia = 0;
 
 /** Noti moja ya marimba: sauti kuu + mlio mdogo wa juu unaopotea haraka (ndio "mbao") */
@@ -65,20 +64,17 @@ function kianzishe(): boolean {
   return true;
 }
 
-/** Kivinjari huruhusu sauti tu baada ya mtu kugusa ukurasa — hata kabla ya kadi kuonekana. */
-function ruhusaTayari(): boolean {
-  if (ameGusa) return true;
-  const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
-  if (ua?.hasBeenActive) {
-    ameGusa = true;
-    return true;
-  }
-  return false;
+/**
+ * Fungua sauti ya tovuti hii. Inaitwa kwenye mguso WA KWANZA wowote wa ukurasa
+ * (Navbar, "Ingia", kitufe chochote) – kivinjari huruhusu sauti baada ya hapo tu.
+ */
+export function andaaSauti() {
+  if (!kianzishe() || !ctx) return;
+  if (ctx.state === "suspended") void ctx.resume().catch(() => {});
 }
 
 function cheza() {
   if (document.hidden) return; // tab nyingine / skrini imezimwa
-  if (!ruhusaTayari()) return; // bado hakuna mguso wowote kwenye ukurasa
   const sasa = Date.now();
   if (sasa - mwishoKulia < MZUNGUKO_MS * 0.8) return; // isilie mara mbili kwa mtikisiko mmoja
   mwishoKulia = sasa;
@@ -90,40 +86,54 @@ function cheza() {
   marimba();
 }
 
+/** Muda hadi mtikisiko ujao uanze – kutoka saa ya animation yenyewe (si kubahatisha). */
+function delayHadiMtikisiko(el: HTMLElement): number | null {
+  const wob = el
+    .getAnimations()
+    .find((a) => (a as CSSAnimation).animationName === "wobble") as CSSAnimation | undefined;
+  if (!wob) return null; // kisanduku hiki hakina mtikisiko
+  const t = Number(wob.currentTime ?? 0) % MZUNGUKO_MS;
+  return (ANZA_MS - t + MZUNGUKO_MS) % MZUNGUKO_MS;
+}
+
 /** Weka ref hii kwenye kisanduku chenye mtikisiko. Sauti inalia kila mtikisiko unapoanza. */
 export function useSautiMechi<T extends HTMLElement>() {
   const ref = useRef<T>(null);
 
   useEffect(() => {
-    /* Mguso wa kwanza wowote kwenye ukurasa unaruhusu sauti. Kama mtumiaji alishagusa
-     * kabla ya kadi hii kupakiwa (mf. kubonyeza "Ingia"), tunatumia userActivation. */
-    const ruhusu = () => {
-      ameGusa = true;
-      if (!kianzishe() || !ctx) return;
-      if (ctx.state === "suspended") void ctx.resume().catch(() => {});
-    };
-    if (ruhusaTayari()) ruhusu();
-    window.addEventListener("pointerdown", ruhusu);
-    window.addEventListener("keydown", ruhusu);
-    window.addEventListener("touchstart", ruhusu);
+    /* Kama mtumiaji alishagusa ukurasa kabla ya kadi hii kupakiwa (mf. "Ingia"),
+     * tunafungua sauti mara moja – hakuna mguso mpya unaohitajika. */
+    const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+    if (ua?.hasBeenActive) andaaSauti();
 
     const el = ref.current;
     if (!el) return;
+
     let saa: ReturnType<typeof setTimeout> | undefined;
-    // Kila mzunguko mpya wa mtikisiko unapoanza → subiri mpaka mtikisiko wenyewe uanze → lia
-    const kwaMzunguko = () => {
+    /* Ratiba inayojiendea: kila mzunguko inahesabu muda hadi mtikisiko ujao kutoka
+     * saa ya animation, kisha inalia. Hivyo sauti inalia kila mtikisiko, hata kama
+     * `animationstart` ilitokea kabla ya kadi kusikiliza. */
+    const ratiba = () => {
       clearTimeout(saa);
-      saa = setTimeout(cheza, ANZA_MS);
+      const d = delayHadiMtikisiko(el);
+      if (d === null) return; // hakuna mtikisiko – hakuna sauti
+      saa = setTimeout(
+        () => {
+          cheza();
+          ratiba();
+        },
+        d || MZUNGUKO_MS,
+      );
     };
+    ratiba();
+    const kwaMzunguko = () => ratiba();
     el.addEventListener("animationstart", kwaMzunguko);
     el.addEventListener("animationiteration", kwaMzunguko);
+
     return () => {
       el.removeEventListener("animationstart", kwaMzunguko);
       el.removeEventListener("animationiteration", kwaMzunguko);
       clearTimeout(saa);
-      window.removeEventListener("pointerdown", ruhusu);
-      window.removeEventListener("keydown", ruhusu);
-      window.removeEventListener("touchstart", ruhusu);
     };
   }, []);
 

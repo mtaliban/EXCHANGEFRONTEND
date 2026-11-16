@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ThemeInit from '@/components/ThemeInit';
+import AndaaSauti from '@/components/AndaaSauti';
 import { PublicLangProvider } from '@/components/public/PublicLang';
 import Script from 'next/script';
 
@@ -143,6 +144,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <ThemeInit />
+        {/* Mguso wa kwanza wowote unafungua sauti ya mechi (sharti la vivinjari) */}
+        <AndaaSauti />
         <Navbar />
         <main className="flex-1">
           <PublicLangProvider>{children}</PublicLangProvider>
