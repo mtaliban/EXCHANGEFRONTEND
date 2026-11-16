@@ -9,10 +9,10 @@ import { useEffect, useRef } from "react";
 const MZUNGUKO_MS = 4000;
 const ANZA_MS = 2680;
 
-/* ---- Faili la sauti (mp3) - liweke kwenye: public/sauti-5-marimba.mp3 ----
+/* ---- Faili la sauti - liweke kwenye: public/sauti-metch.mpeg ----
  * Likipatikana, hili ndilo linalolia; likikosekana, code inarudi kwenye marimba
  * inayotengenezwa kwa Web Audio (hakuna kosa linaloonekana kwa mtumiaji). */
-const SAUTI_URL = "/sauti-5-marimba.mp3";
+const SAUTI_URL = "/sauti-metch.mpeg";
 let sautiEl: HTMLAudioElement | null = null;
 let sautiHaipo = false;
 
