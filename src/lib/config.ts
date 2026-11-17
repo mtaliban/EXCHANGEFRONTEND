@@ -62,6 +62,6 @@ export const APP_ROUTES = [
   '/changia', '/maoni', '/wasifu',
   '/notifications', '/announcements', '/maoni',
   // Login/Register pia hazina header/footer — page safi (mshale wa kurudi tu).
-  '/login', '/register', '/forgot-password', '/reset-password',
+  '/login', '/register', '/forgot-password', '/forgot-number', '/reset-password',
 ];
 

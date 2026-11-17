@@ -264,7 +264,7 @@ export default function LoginContent() {
             </button>
           )}
 
-          <Link href="/forgot-password" className={styles.link}>
+          <Link href="/forgot-number" className={styles.link}>
             Umesahau namba? Bonyeza hapa
           </Link>
 
