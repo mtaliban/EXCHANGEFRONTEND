@@ -4,10 +4,11 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, X } from 'lucide-react';
-import { login, login2FA, extractErrorMessage } from '@/lib/api';
+import { ChevronLeft } from 'lucide-react';
+import { login, login2FA } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
+import AdminCode from '@/components/admin/AdminCode';
 import styles from './login.module.css';
 
 export default function LoginContent() {
@@ -23,8 +24,6 @@ export default function LoginContent() {
 
   // 2FA — code input inachukua nafasi ya button pale pale
   const [twoFA, setTwoFA] = useState<{ email: string } | null>(null);
-  const [twoFACode, setTwoFACode] = useState('');
-  const [twoFALoading, setTwoFALoading] = useState(false);
 
   const isEmail = identifier.includes('@');
 
@@ -88,7 +87,6 @@ export default function LoginContent() {
       const res: any = await login(identifier.trim());
       if (res.two_factor_required) {
         setTwoFA({ email: res.email });
-        setTwoFACode('');
         setLoading(false);
         return;
       }
@@ -120,10 +118,10 @@ export default function LoginContent() {
     }
   }
 
-  // Auto-submit — code 6 tarakimu inajiingiza yenyewe
-  async function submitTwoFA(code: string) {
-    if (code.length !== 6 || twoFALoading) return;
-    setTwoFALoading(true);
+  /* ---------- CODE YA ADMIN (visanduku 6) ---------- */
+
+  /** Inakagua code kwa API; ikisahihi inahifadhi session. */
+  async function thibitishaCode(code: string): Promise<boolean> {
     setError(null);
     try {
       const res = await login2FA(twoFA!.email, code);
@@ -136,34 +134,30 @@ export default function LoginContent() {
         is_admin: res.is_admin,
         is_verified: res.is_verified,
       });
-      const returnTo = sessionStorage.getItem('kv_return_to');
-      if (returnTo) {
-        sessionStorage.removeItem('kv_return_to');
-        router.push(returnTo);
-      } else {
-        router.push('/admin');
-      }
-    } catch (err: any) {
-      if (isErrorNetwork(err)) {
-        setError(t('login.error_network'));
-      } else {
-        setError(extractErrorMessage(err, t('login.error_user')));
-      }
-    } finally {
-      setTwoFALoading(false);
+      return true;
+    } catch {
+      return false;
     }
   }
 
-  function onTwoFAChange(v: string) {
-    const code = v.replace(/\D/g, '');
-    setTwoFACode(code);
-    setError(null);
-    if (code.length === 6) submitTwoFA(code);
+  /** Code ikiwa sahihi (baada ya kijani kuonekana) → ingia. */
+  function ingiaAdmin() {
+    const returnTo = sessionStorage.getItem('kv_return_to');
+    if (returnTo) {
+      sessionStorage.removeItem('kv_return_to');
+      router.push(returnTo);
+    } else {
+      router.push('/admin');
+    }
   }
 
-  function cancelTwoFA() {
+  /** Tuma code mpya — login tena kwa email inatuma code nyingine. */
+  async function tumaCodeUpya() {
+    await login(twoFA!.email);
+  }
+
+  function rudiKwenyeKuingia() {
     setTwoFA(null);
-    setTwoFACode('');
     setError(null);
   }
 
@@ -204,19 +198,27 @@ export default function LoginContent() {
             {isEmail ? 'Email ya Admin' : t('login.phone_label')}
           </label>
           <div className={`${styles.field} ${fieldError ? styles.fieldError : ''}`}>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" />
-            </svg>
             {/* type="text" + inputMode="text": keyboard isiwe ya namba peke yake —
                 Admin anaingia kwa email, namba za simu bado zinapokelewa. */}
+            {isEmail ? (
+              /* Ikoni ya barua kwa "Email ya Admin" */
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+            ) : (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" />
+              </svg>
+            )}
             <input
               ref={identifierRef}
               id="phone"
@@ -237,42 +239,28 @@ export default function LoginContent() {
           {formError && <p className={styles.fieldMsg} role="alert">{formError}</p>}
 
           {twoFA ? (
-            /* 3. Code ya 2FA – inachukua nafasi ya button pale pale */
-            <div className={styles.codeWrap}>
-              <div className={`${styles.field} ${styles.codeField}`}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className={styles.codeInput}
-                  placeholder="000000"
-                  maxLength={6}
-                  value={twoFACode}
-                  onChange={(e) => onTwoFAChange(e.target.value)}
-                  autoFocus
-                  disabled={twoFALoading}
-                  aria-label="Code ya uthibitisho"
-                />
-              </div>
-              <button type="button" onClick={cancelTwoFA} className={styles.codeX} title="Rudi">
-                <X size={16} />
-              </button>
-              <p className={styles.codeNote}>
-                Code ya tarakimu 6 imetumwa kwa {twoFA.email}
-              </p>
-            </div>
+            /* 3. Admin: code ya tarakimu 6 kwenye visanduku 6 (hakuna vitufe wala links) */
+            <AdminCode
+              thibitisha={thibitishaCode}
+              umeingia={ingiaAdmin}
+              tumaUpya={tumaCodeUpya}
+              rudi={rudiKwenyeKuingia}
+            />
           ) : (
-            <button type="submit" className={styles.btnPrimary} disabled={loading}>
-              {loading ? t('login.logging_in') : t('login.submit')}
-            </button>
+            <>
+              <button type="submit" className={styles.btnPrimary} disabled={loading}>
+                {loading ? t('login.logging_in') : t('login.submit')}
+              </button>
+
+              <Link href="/forgot-number" className={styles.link}>
+                Umesahau namba? Bonyeza hapa
+              </Link>
+
+              <Link href="/register" className={styles.btnOutline}>
+                {t('login.register_now')}
+              </Link>
+            </>
           )}
-
-          <Link href="/forgot-number" className={styles.link}>
-            Umesahau namba? Bonyeza hapa
-          </Link>
-
-          <Link href="/register" className={styles.btnOutline}>
-            {t('login.register_now')}
-          </Link>
         </form>
       </div>
     </main>
