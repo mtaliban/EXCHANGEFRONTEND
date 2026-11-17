@@ -17,9 +17,9 @@
   position: relative;
   min-height: 100vh;
   min-height: 100svh;
-  max-width: 440px;
+  max-width: 380px;
   margin: 0 auto;
-  padding: 18px 20px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -71,9 +71,9 @@
 }
 
 .logoTile {
-  width: 200px;
-  height: 200px;
-  border-radius: 36px;
+  width: 150px;
+  height: 150px;
+  border-radius: 28px;
   background: #fff;
   border: 1px solid #f1f2f4;
   box-shadow: 0 8px 26px rgba(17, 24, 39, 0.12);
@@ -83,7 +83,7 @@
 }
 
 .logo {
-  width: 170px;
+  width: 126px;
   height: auto;
   display: block;
 }
@@ -91,7 +91,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  margin-top: 24px;
+  margin-top: 20px;
   border: none;
   box-shadow: none;
   background: transparent;
@@ -99,15 +99,15 @@
 
 .title {
   margin: 0;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
   text-align: center;
 }
 
 .label {
   display: block;
-  margin: 22px 0 7px;
+  margin: 18px 0 7px;
   font-size: 14px;
   font-weight: 600;
   color: var(--label);
@@ -353,15 +353,15 @@
   background: #f5f7ff;
 }
 
-/* Simu ndogo sana */
+/* Skrini ndogo sana */
 @media (max-height: 640px) {
   .logoTile {
-    width: 160px;
-    height: 160px;
-    border-radius: 30px;
+    width: 128px;
+    height: 128px;
+    border-radius: 24px;
   }
 
   .logo {
-    width: 136px;
+    width: 108px;
   }
 }
